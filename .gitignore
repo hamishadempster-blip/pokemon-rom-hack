@@ -1,0 +1,7 @@
+rom/*.gba
+rom/*.GBA
+rom/*.sav
+rom/*.sa2
+rom/*.ss*
+!rom/.gitkeep
+!rom/README.md
