@@ -1,0 +1,197 @@
+#ifndef GUARD_COOP_PROTOCOL_H
+#define GUARD_COOP_PROTOCOL_H
+
+// Host-testable 8-word co-op frame. The GBA link already checksums the cable
+// frame. Word 7 is this layer's checksum so a bad command can be dropped
+// without tearing the session down.
+//
+// Word 0: COOP_LINKCMD, or LINKCMD_SEND_HELD_KEYS when packed as the fallback.
+// Word 1: build id folded to 16 bits.
+// Word 2: map group in the high byte, map number in the low byte.
+// Word 3: x in the high byte, y in the low byte.
+// Word 4: facing (bits 0-2), acro bike (bit 3), level cap (bit 4),
+//         request (bits 5-8), gender (bit 9), bike (bit 10), surf (bit 11),
+//         slot (bits 12-15).
+// Word 5: joint badges in the low byte, rival stage in bits 8-11.
+// Word 6: sequence in the low byte, three 2-bit legendary owners in bits 8-13.
+// Word 7: checksum of words 1-6.
+
+#ifdef COOP_HOST_TEST
+#include <stdint.h>
+typedef uint8_t u8;
+typedef uint16_t u16;
+typedef uint32_t u32;
+#else
+#include "global.h"
+#endif
+
+#define COOP_BUILD_ID  0xC0170117u
+#define COOP_BUILD_XOR ((u16)(((COOP_BUILD_ID) & 0xFFFFu) ^ ((COOP_BUILD_ID) >> 16)))
+#define COOP_LINKCMD   0xC0A1
+#define COOP_HELD_KEYS_CMD 0xCAFE
+
+#define COOP_REQ_NONE      0
+#define COOP_REQ_TRADE     2
+#define COOP_REQ_TRADE_YES 3
+#define COOP_REQ_TALK      4
+#define COOP_REQ_ACCEPT    5
+#define COOP_REQ_CANCEL    6
+#define COOP_REQ_CASE      7
+#define COOP_REQ_CLAIM     8
+
+#define COOP_UNPACK_DROP  0
+#define COOP_UNPACK_OK    1
+#define COOP_UNPACK_BUILD 2
+
+#define COOP_OWNER_NONE    0
+#define COOP_OWNER_LOCAL   1
+#define COOP_OWNER_PARTNER 2
+
+struct CoopFrame
+{
+    u16 buildXor;
+    u8 mapGroup;
+    u8 mapNum;
+    u8 x;
+    u8 y;
+    u8 facing;
+    u8 acro;
+    u8 capOn;
+    u8 request;
+    u8 gender;
+    u8 bike;
+    u8 surf;
+    u8 slot;
+    u8 badges;
+    u8 rivalStage;
+    u8 seq;
+    u8 legend[3];
+};
+
+struct CoopProgress
+{
+    u8 badges;
+    u8 rivalStage;
+    u8 capOn;
+    u8 legend[3];
+};
+
+static inline u16 CoopProtocol_Checksum(const u16 *words)
+{
+    u16 sum = COOP_LINKCMD;
+    u16 i;
+
+    for (i = 1; i <= 6; i++)
+        sum = (u16)((sum + words[i]) ^ (u16)(words[i] << 1));
+    return sum;
+}
+
+static inline int CoopProtocol_MapOk(u8 mapGroup, u8 mapNum)
+{
+    return mapGroup < 64 && mapNum < 128;
+}
+
+static inline void CoopProtocol_Pack(u16 out[8], const struct CoopFrame *frame, int asHeldKeys)
+{
+    u16 flags = 0;
+    u16 legend = 0;
+
+    flags |= (u16)(frame->facing & 7);
+    flags |= (u16)(frame->acro & 1) << 3;
+    flags |= (u16)(frame->capOn & 1) << 4;
+    flags |= (u16)(frame->request & 0xF) << 5;
+    flags |= (u16)(frame->gender & 1) << 9;
+    flags |= (u16)(frame->bike & 1) << 10;
+    flags |= (u16)(frame->surf & 1) << 11;
+    flags |= (u16)(frame->slot & 0xF) << 12;
+
+    legend |= (u16)(frame->legend[0] & 3);
+    legend |= (u16)(frame->legend[1] & 3) << 2;
+    legend |= (u16)(frame->legend[2] & 3) << 4;
+
+    out[0] = asHeldKeys ? COOP_HELD_KEYS_CMD : COOP_LINKCMD;
+    out[1] = frame->buildXor;
+    out[2] = (u16)((frame->mapGroup << 8) | frame->mapNum);
+    out[3] = (u16)((frame->x << 8) | frame->y);
+    out[4] = flags;
+    out[5] = (u16)(frame->badges | ((frame->rivalStage & 0xF) << 8));
+    out[6] = (u16)(frame->seq | (legend << 8));
+    out[7] = CoopProtocol_Checksum(out);
+}
+
+static inline int CoopProtocol_Unpack(const u16 in[8], struct CoopFrame *frame, u16 expectedBuild)
+{
+    u16 words[8];
+    u16 flags;
+    u16 legend;
+    int i;
+
+    if (in[0] != COOP_LINKCMD && in[0] != COOP_HELD_KEYS_CMD)
+        return COOP_UNPACK_DROP;
+
+    for (i = 0; i < 8; i++)
+        words[i] = in[i];
+    if (in[0] == COOP_HELD_KEYS_CMD)
+        words[0] = COOP_LINKCMD;
+
+    if (CoopProtocol_Checksum(words) != in[7])
+        return COOP_UNPACK_DROP;
+
+    frame->buildXor = in[1];
+    frame->mapGroup = (u8)(in[2] >> 8);
+    frame->mapNum = (u8)(in[2] & 0xFF);
+    frame->x = (u8)(in[3] >> 8);
+    frame->y = (u8)(in[3] & 0xFF);
+    flags = in[4];
+    frame->facing = (u8)(flags & 7);
+    frame->acro = (u8)((flags >> 3) & 1);
+    frame->capOn = (u8)((flags >> 4) & 1);
+    frame->request = (u8)((flags >> 5) & 0xF);
+    frame->gender = (u8)((flags >> 9) & 1);
+    frame->bike = (u8)((flags >> 10) & 1);
+    frame->surf = (u8)((flags >> 11) & 1);
+    frame->slot = (u8)((flags >> 12) & 0xF);
+    frame->badges = (u8)(in[5] & 0xFF);
+    frame->rivalStage = (u8)((in[5] >> 8) & 0xF);
+    frame->seq = (u8)(in[6] & 0xFF);
+    legend = (u16)(in[6] >> 8);
+    frame->legend[0] = (u8)(legend & 3);
+    frame->legend[1] = (u8)((legend >> 2) & 3);
+    frame->legend[2] = (u8)((legend >> 4) & 3);
+
+    if (!CoopProtocol_MapOk(frame->mapGroup, frame->mapNum))
+        return COOP_UNPACK_DROP;
+    if (frame->buildXor != expectedBuild)
+        return COOP_UNPACK_BUILD;
+    return COOP_UNPACK_OK;
+}
+
+// Remote owner 1 means the other save has the Pokémon, which is owner 2 here.
+static inline int CoopProtocol_Merge(const struct CoopProgress *local, const struct CoopProgress *remote, struct CoopProgress *out)
+{
+    int i;
+
+    if (local->capOn != remote->capOn)
+        return 1;
+
+    out->capOn = local->capOn;
+    out->badges = (u8)(local->badges | remote->badges);
+    out->rivalStage = local->rivalStage > remote->rivalStage ? local->rivalStage : remote->rivalStage;
+
+    for (i = 0; i < 3; i++)
+    {
+        u8 mine = local->legend[i];
+        u8 theirs = remote->legend[i];
+        u8 theirsHere = theirs == COOP_OWNER_LOCAL ? COOP_OWNER_PARTNER : theirs == COOP_OWNER_PARTNER ? COOP_OWNER_LOCAL : COOP_OWNER_NONE;
+
+        if (mine == COOP_OWNER_NONE)
+            out->legend[i] = theirsHere;
+        else if (theirsHere == COOP_OWNER_NONE || mine == theirsHere)
+            out->legend[i] = mine;
+        else
+            return 2;
+    }
+    return 0;
+}
+
+#endif // GUARD_COOP_PROTOCOL_H
