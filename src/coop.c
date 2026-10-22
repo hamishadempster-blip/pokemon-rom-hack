@@ -27,6 +27,7 @@
 #include "constants/rgb.h"
 #include "constants/species.h"
 #include "constants/trainers.h"
+#include "constants/trainer_types.h"
 #include "constants/vars.h"
 #include "data.h"
 
@@ -73,7 +74,7 @@ EWRAM_DATA bool8 gCoopBattleLaunching = FALSE;
 EWRAM_DATA bool8 gCoopArmWild = FALSE;
 
 static EWRAM_DATA u8 sLinkState = COOP_LINK_IDLE;
-static EWRAM_DATA u8 sTaskId = TASK_NONE;
+static EWRAM_DATA u8 sTaskId = 0;
 static EWRAM_DATA u8 sHandshakeSaved = FALSE;
 static EWRAM_DATA u8 sMerged = FALSE;
 static EWRAM_DATA u8 sSeq = 0;
@@ -95,11 +96,11 @@ static EWRAM_DATA u8 sBattleKind = 0;
 static EWRAM_DATA u8 sBattleBadge = 0;
 static EWRAM_DATA u16 sBattleFlag = 0;
 static EWRAM_DATA u8 sLegendKind = 0;
-static EWRAM_DATA u8 sRivalFightStage = 0xFF;
-static EWRAM_DATA u8 sProposedCase = COOP_CASE_NONE;
-static EWRAM_DATA u8 sClaim = COOP_CASE_NONE;
+static EWRAM_DATA u8 sRivalFightStage = 0;
+static EWRAM_DATA u8 sProposedCase = 0;
+static EWRAM_DATA u8 sClaim = 0;
 static EWRAM_DATA u8 sWaitKind = 0;
-static EWRAM_DATA u8 sTradeSlot = 0xFF;
+static EWRAM_DATA u8 sTradeSlot = 0;
 static EWRAM_DATA u8 sTradeSent = FALSE;
 static EWRAM_DATA u8 sTradeGot = FALSE;
 static EWRAM_DATA struct Pokemon sTradeMon = {0};
@@ -665,6 +666,10 @@ static void Coop_PollHandshake(void)
     if (gReceivedRemoteLinkPlayers && IsLinkPlayerDataExchangeComplete())
     {
         sLinkState = COOP_LINK_UP;
+        sTradeSlot = 0xFF;
+        sRivalFightStage = 0xFF;
+        sProposedCase = COOP_CASE_NONE;
+        sClaim = COOP_CASE_NONE;
         gLinkCallback = Coop_LinkCallback;
         SetSuppressLinkErrorMessage(TRUE);
     }
