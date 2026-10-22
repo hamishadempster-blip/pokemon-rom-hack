@@ -4594,7 +4594,7 @@ Gender: Male
 Music: Elite Four
 Items: Full Restore / Full Restore
 Double Battle: Yes
-AI: Check Bad Move / Try To Faint / Check Viability / HP Aware
+AI: Check Bad Move / Try To Faint / Check Viability / HP Aware / Smart Switching / Try To 2HKO
 Mugshot: Purple
 
 Mightyena
@@ -4629,7 +4629,7 @@ Gender: Female
 Music: Elite Four
 Items: Full Restore / Full Restore
 Double Battle: Yes
-AI: Check Bad Move / Try To Faint / Check Viability / HP Aware
+AI: Check Bad Move / Try To Faint / Check Viability / HP Aware / Smart Switching / Try To 2HKO
 Mugshot: Green
 
 Dusclops
@@ -4664,7 +4664,7 @@ Gender: Female
 Music: Elite Four
 Items: Full Restore / Full Restore
 Double Battle: Yes
-AI: Check Bad Move / Try To Faint / Check Viability / HP Aware
+AI: Check Bad Move / Try To Faint / Check Viability / HP Aware / Smart Switching / Try To 2HKO
 Mugshot: Pink
 
 Sealeo
@@ -4699,7 +4699,7 @@ Gender: Male
 Music: Elite Four
 Items: Full Restore / Full Restore
 Double Battle: Yes
-AI: Check Bad Move / Try To Faint / Check Viability / HP Aware
+AI: Check Bad Move / Try To Faint / Check Viability / HP Aware / Smart Switching / Try To 2HKO
 Mugshot: Blue
 
 Shelgon
@@ -4734,7 +4734,7 @@ Gender: Female
 Music: Female
 Items: Potion / Potion
 Double Battle: Yes
-AI: Check Bad Move / Try To Faint / Check Viability / HP Aware
+AI: Check Bad Move / Try To Faint / Check Viability / HP Aware / Smart Switching / Try To 2HKO
 
 Nosepass @ Oran Berry
 Ability: Sturdy
@@ -4769,7 +4769,7 @@ Gender: Male
 Music: Male
 Items: Super Potion / Super Potion
 Double Battle: Yes
-AI: Check Bad Move / Try To Faint / Check Viability / HP Aware
+AI: Check Bad Move / Try To Faint / Check Viability / HP Aware / Smart Switching / Try To 2HKO
 
 Makuhita
 Level: 20
@@ -4804,7 +4804,7 @@ Gender: Male
 Music: Male
 Items: Super Potion / Super Potion
 Double Battle: Yes
-AI: Check Bad Move / Try To Faint / Check Viability / HP Aware
+AI: Check Bad Move / Try To Faint / Check Viability / HP Aware / Smart Switching / Try To 2HKO
 
 Magneton
 Ability: Magnet Pull
@@ -4839,7 +4839,7 @@ Gender: Female
 Music: Female
 Items: Hyper Potion / Hyper Potion
 Double Battle: Yes
-AI: Check Bad Move / Try To Faint / Check Viability / HP Aware
+AI: Check Bad Move / Try To Faint / Check Viability / HP Aware / Smart Switching / Try To 2HKO
 
 Torkoal @ White Herb
 Ability: Drought
@@ -4874,7 +4874,7 @@ Gender: Male
 Music: Male
 Items: Hyper Potion / Hyper Potion
 Double Battle: Yes
-AI: Check Bad Move / Try To Faint / Check Viability / HP Aware
+AI: Check Bad Move / Try To Faint / Check Viability / HP Aware / Smart Switching / Try To 2HKO
 
 Slaking @ Sitrus Berry
 Ability: Truant
@@ -4909,7 +4909,7 @@ Gender: Female
 Music: Female
 Items: Hyper Potion / Hyper Potion
 Double Battle: Yes
-AI: Check Bad Move / Try To Faint / Check Viability / HP Aware
+AI: Check Bad Move / Try To Faint / Check Viability / HP Aware / Smart Switching / Try To 2HKO
 
 Altaria @ Sitrus Berry
 Level: 46
@@ -4943,7 +4943,7 @@ Gender: Male
 Music: Female
 Items: Hyper Potion / Hyper Potion
 Double Battle: Yes
-AI: Check Bad Move / Try To Faint / Check Viability / HP Aware
+AI: Check Bad Move / Try To Faint / Check Viability / HP Aware / Smart Switching / Try To 2HKO
 
 Lunatone @ Sitrus Berry
 Level: 52
@@ -4977,7 +4977,7 @@ Gender: Male
 Music: Male
 Items: Hyper Potion / Hyper Potion
 Double Battle: Yes
-AI: Check Bad Move / Try To Faint / Check Viability / HP Aware
+AI: Check Bad Move / Try To Faint / Check Viability / HP Aware / Smart Switching / Try To 2HKO
 
 Ludicolo
 Ability: Swift Swim
@@ -16763,7 +16763,7 @@ Pic: Hiker
 Gender: Male
 Music: Hiker
 Double Battle: Yes
-AI: Check Bad Move / Try To Faint / Check Viability / HP Aware
+AI: Check Bad Move / Try To Faint / Check Viability / HP Aware / Smart Switching / Try To 2HKO
 
 Anorith
 Level: 15
@@ -16796,7 +16796,7 @@ Pic: Black Belt
 Gender: Male
 Music: Intense
 Double Battle: Yes
-AI: Check Bad Move / Try To Faint / Check Viability / HP Aware
+AI: Check Bad Move / Try To Faint / Check Viability / HP Aware / Smart Switching / Try To 2HKO
 
 Meditite
 Level: 20
@@ -16829,7 +16829,7 @@ Pic: Guitarist
 Gender: Male
 Music: Intense
 Double Battle: Yes
-AI: Check Bad Move / Try To Faint / Check Viability / HP Aware
+AI: Check Bad Move / Try To Faint / Check Viability / HP Aware / Smart Switching / Try To 2HKO
 
 Lanturn
 Ability: Volt Absorb
@@ -16864,7 +16864,7 @@ Pic: Kindler
 Gender: Male
 Music: Hiker
 Double Battle: Yes
-AI: Check Bad Move / Try To Faint / Check Viability / HP Aware
+AI: Check Bad Move / Try To Faint / Check Viability / HP Aware / Smart Switching / Try To 2HKO
 
 Houndoom
 Ability: Flash Fire
@@ -16899,7 +16899,7 @@ Pic: Lady
 Gender: Female
 Music: Female
 Double Battle: Yes
-AI: Check Bad Move / Try To Faint / Check Viability / HP Aware
+AI: Check Bad Move / Try To Faint / Check Viability / HP Aware / Smart Switching / Try To 2HKO
 
 Kecleon
 Level: 40
@@ -16932,7 +16932,7 @@ Pic: Bird Keeper
 Gender: Male
 Music: Cool
 Double Battle: Yes
-AI: Check Bad Move / Try To Faint / Check Viability / HP Aware
+AI: Check Bad Move / Try To Faint / Check Viability / HP Aware / Smart Switching / Try To 2HKO
 
 Skarmory
 Level: 46
@@ -16965,7 +16965,7 @@ Pic: Leader Tate And Liza
 Gender: Female
 Music: Female
 Double Battle: Yes
-AI: Check Bad Move / Try To Faint / Check Viability / HP Aware
+AI: Check Bad Move / Try To Faint / Check Viability / HP Aware / Smart Switching / Try To 2HKO
 
 Xatu
 Level: 50
@@ -16998,7 +16998,7 @@ Pic: Champion Wallace
 Gender: Male
 Music: Male
 Double Battle: Yes
-AI: Check Bad Move / Try To Faint / Check Viability / HP Aware
+AI: Check Bad Move / Try To Faint / Check Viability / HP Aware / Smart Switching / Try To 2HKO
 
 Pelipper
 Ability: Drizzle
@@ -17033,7 +17033,7 @@ Gender: Male
 Music: Male
 Items: Full Restore / Full Restore
 Double Battle: Yes
-AI: Check Bad Move / Try To Faint / Check Viability / HP Aware
+AI: Check Bad Move / Try To Faint / Check Viability / HP Aware / Smart Switching / Try To 2HKO
 
 Metagross @ Sitrus Berry
 Level: 66
@@ -17067,7 +17067,7 @@ Gender: Male
 Music: Male
 Items: Full Restore / Full Restore
 Double Battle: Yes
-AI: Check Bad Move / Try To Faint / Check Viability / HP Aware
+AI: Check Bad Move / Try To Faint / Check Viability / HP Aware / Smart Switching / Try To 2HKO
 
 Milotic @ Sitrus Berry
 Level: 66
@@ -17971,7 +17971,7 @@ Gender: Female
 Music: Female
 Items: Full Restore / Full Restore
 Double Battle: Yes
-AI: Check Bad Move / Try To Faint / Check Viability / HP Aware
+AI: Check Bad Move / Try To Faint / Check Viability / HP Aware / Smart Switching / Try To 2HKO
 
 Nosepass
 Level: 68
@@ -18005,7 +18005,7 @@ Gender: Male
 Music: Hiker
 Items: Full Restore / Full Restore
 Double Battle: Yes
-AI: Check Bad Move / Try To Faint / Check Viability / HP Aware
+AI: Check Bad Move / Try To Faint / Check Viability / HP Aware / Smart Switching / Try To 2HKO
 
 Lunatone
 Level: 70
@@ -18039,7 +18039,7 @@ Gender: Male
 Music: Male
 Items: Full Restore / Full Restore
 Double Battle: Yes
-AI: Check Bad Move / Try To Faint / Check Viability / HP Aware
+AI: Check Bad Move / Try To Faint / Check Viability / HP Aware / Smart Switching / Try To 2HKO
 
 Hariyama @ Flame Orb
 Ability: Guts
@@ -18074,7 +18074,7 @@ Gender: Male
 Music: Intense
 Items: Full Restore / Full Restore
 Double Battle: Yes
-AI: Check Bad Move / Try To Faint / Check Viability / HP Aware
+AI: Check Bad Move / Try To Faint / Check Viability / HP Aware / Smart Switching / Try To 2HKO
 
 Skarmory
 Level: 70
@@ -18108,7 +18108,7 @@ Gender: Male
 Music: Male
 Items: Full Restore / Full Restore
 Double Battle: Yes
-AI: Check Bad Move / Try To Faint / Check Viability / HP Aware
+AI: Check Bad Move / Try To Faint / Check Viability / HP Aware / Smart Switching / Try To 2HKO
 
 Magneton
 Ability: Magnet Pull
@@ -18144,7 +18144,7 @@ Gender: Male
 Music: Intense
 Items: Full Restore / Full Restore
 Double Battle: Yes
-AI: Check Bad Move / Try To Faint / Check Viability / HP Aware
+AI: Check Bad Move / Try To Faint / Check Viability / HP Aware / Smart Switching / Try To 2HKO
 
 Pelipper
 Ability: Drizzle
@@ -18181,7 +18181,7 @@ Gender: Female
 Music: Female
 Items: Full Restore / Full Restore
 Double Battle: Yes
-AI: Check Bad Move / Try To Faint / Check Viability / HP Aware
+AI: Check Bad Move / Try To Faint / Check Viability / HP Aware / Smart Switching / Try To 2HKO
 
 Torkoal
 Ability: Drought
@@ -18216,7 +18216,7 @@ Gender: Male
 Music: Hiker
 Items: Full Restore / Full Restore
 Double Battle: Yes
-AI: Check Bad Move / Try To Faint / Check Viability / HP Aware
+AI: Check Bad Move / Try To Faint / Check Viability / HP Aware / Smart Switching / Try To 2HKO
 
 Lunatone
 Level: 70
@@ -18252,7 +18252,7 @@ Gender: Male
 Music: Male
 Items: Full Restore / Full Restore
 Double Battle: Yes
-AI: Check Bad Move / Try To Faint / Check Viability / HP Aware
+AI: Check Bad Move / Try To Faint / Check Viability / HP Aware / Smart Switching / Try To 2HKO
 
 Slaking @ Sitrus Berry
 Ability: Truant
@@ -18287,7 +18287,7 @@ Gender: Female
 Music: Female
 Items: Full Restore / Full Restore
 Double Battle: Yes
-AI: Check Bad Move / Try To Faint / Check Viability / HP Aware
+AI: Check Bad Move / Try To Faint / Check Viability / HP Aware / Smart Switching / Try To 2HKO
 
 Skarmory
 Level: 70
@@ -18321,7 +18321,7 @@ Gender: Female
 Music: Female
 Items: Full Restore / Full Restore
 Double Battle: Yes
-AI: Check Bad Move / Try To Faint / Check Viability / HP Aware
+AI: Check Bad Move / Try To Faint / Check Viability / HP Aware / Smart Switching / Try To 2HKO
 
 Altaria @ Sitrus Berry
 Level: 70
@@ -18355,7 +18355,7 @@ Gender: Male
 Music: Cool
 Items: Full Restore / Full Restore
 Double Battle: Yes
-AI: Check Bad Move / Try To Faint / Check Viability / HP Aware
+AI: Check Bad Move / Try To Faint / Check Viability / HP Aware / Smart Switching / Try To 2HKO
 
 Lunatone
 Level: 70
@@ -18389,7 +18389,7 @@ Gender: Male
 Music: Female
 Items: Full Restore / Full Restore
 Double Battle: Yes
-AI: Check Bad Move / Try To Faint / Check Viability / HP Aware
+AI: Check Bad Move / Try To Faint / Check Viability / HP Aware / Smart Switching / Try To 2HKO
 
 Claydol
 Level: 70
@@ -18423,7 +18423,7 @@ Gender: Female
 Music: Female
 Items: Full Restore / Full Restore
 Double Battle: Yes
-AI: Check Bad Move / Try To Faint / Check Viability / HP Aware
+AI: Check Bad Move / Try To Faint / Check Viability / HP Aware / Smart Switching / Try To 2HKO
 
 Pelipper
 Ability: Drizzle
@@ -18459,7 +18459,7 @@ Gender: Male
 Music: Male
 Items: Full Restore / Full Restore
 Double Battle: Yes
-AI: Check Bad Move / Try To Faint / Check Viability / HP Aware
+AI: Check Bad Move / Try To Faint / Check Viability / HP Aware / Smart Switching / Try To 2HKO
 
 Torkoal
 Ability: Drought
@@ -18494,7 +18494,7 @@ Gender: Male
 Music: Male
 Items: Full Restore / Full Restore
 Double Battle: Yes
-AI: Check Bad Move / Try To Faint / Check Viability / HP Aware
+AI: Check Bad Move / Try To Faint / Check Viability / HP Aware / Smart Switching / Try To 2HKO
 
 Camerupt
 Level: 70
@@ -18529,7 +18529,7 @@ Gender: Male
 Music: Elite Four
 Items: Full Restore / Full Restore
 Double Battle: Yes
-AI: Check Bad Move / Try To Faint / Check Viability / HP Aware
+AI: Check Bad Move / Try To Faint / Check Viability / HP Aware / Smart Switching / Try To 2HKO
 Mugshot: Purple
 
 Crawdaunt
@@ -18564,7 +18564,7 @@ Gender: Female
 Music: Elite Four
 Items: Full Restore / Full Restore
 Double Battle: Yes
-AI: Check Bad Move / Try To Faint / Check Viability / HP Aware
+AI: Check Bad Move / Try To Faint / Check Viability / HP Aware / Smart Switching / Try To 2HKO
 Mugshot: Green
 
 Banette
@@ -18599,7 +18599,7 @@ Gender: Female
 Music: Elite Four
 Items: Full Restore / Full Restore
 Double Battle: Yes
-AI: Check Bad Move / Try To Faint / Check Viability / HP Aware
+AI: Check Bad Move / Try To Faint / Check Viability / HP Aware / Smart Switching / Try To 2HKO
 Mugshot: Pink
 
 Glalie
@@ -18634,7 +18634,7 @@ Gender: Male
 Music: Elite Four
 Items: Full Restore / Full Restore
 Double Battle: Yes
-AI: Check Bad Move / Try To Faint / Check Viability / HP Aware
+AI: Check Bad Move / Try To Faint / Check Viability / HP Aware / Smart Switching / Try To 2HKO
 Mugshot: Blue
 
 Flygon

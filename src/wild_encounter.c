@@ -583,6 +583,53 @@ bool8 TryGenerateWildMon(const struct WildPokemonInfo *wildMonInfo, enum WildPok
     return TRUE;
 }
 
+static enum Species Coop_WildPairPartner(enum Species species)
+{
+    switch (species)
+    {
+    case SPECIES_PLUSLE: return SPECIES_MINUN;
+    case SPECIES_MINUN: return SPECIES_PLUSLE;
+    case SPECIES_VOLBEAT: return SPECIES_ILLUMISE;
+    case SPECIES_ILLUMISE: return SPECIES_VOLBEAT;
+    case SPECIES_LUNATONE: return SPECIES_SOLROCK;
+    case SPECIES_SOLROCK: return SPECIES_LUNATONE;
+    case SPECIES_SEVIPER: return SPECIES_ZANGOOSE;
+    case SPECIES_ZANGOOSE: return SPECIES_SEVIPER;
+    default: return SPECIES_NONE;
+    }
+}
+
+void Coop_ApplyWildPair(void)
+{
+    struct Pokemon kept;
+    enum Species partner;
+    u8 level;
+
+    if (!Coop_PartnerOnSameTile())
+        return;
+
+    partner = Coop_WildPairPartner((enum Species)GetMonData(&gParties[B_TRAINER_OPPONENT_A][0], MON_DATA_SPECIES));
+    if (partner != SPECIES_NONE)
+    {
+        if (GetMonData(&gParties[B_TRAINER_OPPONENT_A][1], MON_DATA_SPECIES) == (u32)partner)
+            return;
+        kept = gParties[B_TRAINER_OPPONENT_A][0];
+        level = GetMonData(&kept, MON_DATA_LEVEL);
+        CreateWildMon(partner, level);
+        gParties[B_TRAINER_OPPONENT_A][1] = gParties[B_TRAINER_OPPONENT_A][0];
+        gParties[B_TRAINER_OPPONENT_A][0] = kept;
+        return;
+    }
+
+    partner = Coop_WildPairPartner((enum Species)GetMonData(&gParties[B_TRAINER_OPPONENT_A][1], MON_DATA_SPECIES));
+    if (partner == SPECIES_NONE || GetMonData(&gParties[B_TRAINER_OPPONENT_A][0], MON_DATA_SPECIES) == (u32)partner)
+        return;
+    kept = gParties[B_TRAINER_OPPONENT_A][1];
+    level = GetMonData(&kept, MON_DATA_LEVEL);
+    CreateWildMon(partner, level);
+    gParties[B_TRAINER_OPPONENT_A][1] = kept;
+}
+
 static u16 GenerateFishingWildMon(const struct WildPokemonInfo *wildMonInfo, u8 rod)
 {
     u8 wildMonIndex = ChooseWildMonIndex_Fishing(rod);
@@ -747,6 +794,7 @@ bool8 StandardWildEncounter(u16 curMetatileBehavior, u16 prevMetatileBehavior)
                         struct Pokemon mon1 = gParties[B_TRAINER_OPPONENT_A][0];
                         TryGenerateWildMon(gWildMonHeaders[headerId].encounterTypes[timeOfDay].landMonsInfo, WILD_AREA_LAND, WILD_CHECK_KEEN_EYE);
                         gParties[B_TRAINER_OPPONENT_A][1] = mon1;
+                        Coop_ApplyWildPair();
                         BattleSetup_StartDoubleWildBattle();
                     }
                     else
@@ -792,6 +840,7 @@ bool8 StandardWildEncounter(u16 curMetatileBehavior, u16 prevMetatileBehavior)
                         struct Pokemon mon1 = gParties[B_TRAINER_OPPONENT_A][0];
                         TryGenerateWildMon(gWildMonHeaders[headerId].encounterTypes[timeOfDay].waterMonsInfo, WILD_AREA_WATER, WILD_CHECK_KEEN_EYE);
                         gParties[B_TRAINER_OPPONENT_A][1] = mon1;
+                        Coop_ApplyWildPair();
                         BattleSetup_StartDoubleWildBattle();
                     }
                     else
@@ -832,6 +881,7 @@ void RockSmashWildEncounter(void)
                 struct Pokemon mon1 = gParties[B_TRAINER_OPPONENT_A][0];
                 TryGenerateWildMon(wildPokemonInfo, WILD_AREA_ROCKS, WILD_CHECK_REPEL | WILD_CHECK_KEEN_EYE);
                 gParties[B_TRAINER_OPPONENT_A][1] = mon1;
+                Coop_ApplyWildPair();
                 BattleSetup_StartDoubleWildBattle();
                 gSpecialVar_Result = TRUE;
             }

@@ -70,7 +70,48 @@ No custom server. If the public RetroArch relay is down, try UPnP, then a direct
 
 Each player brings a party of 6 (`COOP_PARTY_SIZE` in `include/coop.h`). Enemy gyms are 6 either way. If a link battle desyncs on the extra Pokémon, set `COOP_PARTY_SIZE` to 3 and rebuild. That fallback is a decision, not a silent cut. This tree still sends 6.
 
-Megas, Z-Moves, Dynamax, and Terastallization are off, including Primal Reversion. Species tables are unchanged.
+Megas, Z-Moves, Dynamax, and Terastallization are off, including Primal Reversion.
+
+A few Hoenn Pokémon were retuned for doubles. See [Roster changes](#roster-changes). When both players stand on the same tile, a wild double that rolls Plusle, Minun, Volbeat, Illumise, Lunatone, Solrock, Seviper, or Zangoose brings that Pokémon's pair instead of a random second species. Gym leaders, their partners, the Elite Four, and the champion also switch more carefully and look for a two-hit knockout. Their ace levels are unchanged.
+
+## Roster changes
+
+Stats below are HP / Attack / Defense / Sp. Atk / Sp. Def / Speed. Abilities are listed as ability 1, ability 2, hidden.
+
+| Pokémon | Before | After | What changed |
+| --- | --- | --- | --- |
+| Plusle | 60/50/40/85/75/95, Plus / Lightning Rod | 60/50/40/100/75/105, Plus / Lightning Rod | Special attack and speed. Already learns Helping Hand and Encore. |
+| Minun | 60/40/50/75/85/95, Minus / Volt Absorb | 60/40/50/75/100/105, Minus / Volt Absorb | Special defense and speed. Same cheering moves as Plusle. |
+| Castform | 70 across, Forecast | 80/70/70/100/100/90, Forecast | All four forms. Weather Ball and the weather moves were already there. |
+| Luvdisc | 43/30/55/40/65/97, Swift Swim / Hydration | 70/30/65/70/95/105, Swift Swim / Hydration | Bulk so Swift Swim is worth a slot. Learns Rain Dance and Heal Pulse. |
+| Delcatty | 70/65/65/55/55/90, Cute Charm / Normalize / Wonder Skin | 80/65/65/80/65/110, Cute Charm / Prankster / Normalize | Prankster support. Learns Thunder Wave and Assist. |
+| Spinda | 60 across, Own Tempo / Tangled Feet / Contrary | 80/60/60/70/60/80, Prankster / Tangled Feet / Contrary | Contrary stays hidden. Learns Skill Swap and Assist. |
+| Volbeat | 65/73/75/47/85/85, Illuminate / Swarm / Prankster | 75/73/85/47/85/95, Prankster / Swarm / Illuminate | Prankster is now the first ability. Learns Encore. Tail Glow stays. |
+| Illumise | 65/47/75/73/85/85, Oblivious / Tinted Lens / Prankster | 75/47/85/80/85/95, Prankster / Tinted Lens / Oblivious | Same support role. Encore and Wish were already on the learnset. |
+| Lunatone | 90/55/65/95/85/70, Levitate | 90/55/70/110/90/60, Levitate | Slower, so Trick Room still wants it. Learns Trick Room. |
+| Solrock | 90/95/85/55/65/70, Levitate | 90/115/90/55/70/60, Levitate | Physical twin, still slow. Learns Trick Room. |
+| Zangoose | 73/115/60/60/60/90, Immunity / Toxic Boost | 73/125/60/60/60/105, Toxic Boost / Immunity | Faster attacker. Learns Facade. Toxic Boost is the ability you see first. |
+| Seviper | 73/100/60/100/60/65, Shed Skin / Infiltrator | 73/100/60/115/65/80, Shed Skin / Merciless / Infiltrator | Merciless crits a poisoned target. Learns Toxic. |
+
+Together on the same tile, a wild double of any of these pairs is the pair itself: Plusle and Minun, Volbeat and Illumise, Lunatone and Solrock, Seviper and Zangoose.
+
+| New Pokémon | Where | Level |
+| --- | --- | --- |
+| Veluza | Route 106, surfing | 20–25 |
+| Basculegion | Route 107, surfing | 25–30 |
+| Dondozo | Route 109, surfing | 25–30 |
+| Sandile | Route 111 desert | 19 and 21 |
+| Helioptile | Route 111 desert | 20 and 22 |
+| Gigalith | Desert Underpass | 42 |
+| Greavard | Mt. Pyre 1F | 24 |
+| Dreepy | Mt. Pyre 1F | 28 |
+| Mimikyu | Mt. Pyre 1F | 29 |
+| Politoed | Route 119 surf, and Route 120 surf | 26–30, and 25–30 |
+| Abomasnow | Shoal Cave, low tide inner room | 32 |
+
+Gigalith is not on Route 111. The underpass encounter table already runs from 35 to 45, so level 42 is inside that table. Sandile and Helioptile stay at the desert's own levels.
+
+Gym leaders, gym partners, rematches, the Elite Four, and both champions now have Smart Switching and Try To 2HKO on top of their old AI. The doubles-trick score bonuses are a bit higher, so they commit to Thunder Wave, Fake Out, Discharge, Eruption, Protect, Helping Hand, Tailwind, Trick Room, and the safe Earthquakes more often. Ace levels are the same.
 
 ## Level cap
 

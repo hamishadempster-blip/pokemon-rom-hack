@@ -3167,29 +3167,29 @@ static s32 AI_CoopGymLead(enum BattlerId battler, enum Move move)
     partnerSpecies = gBattleMons[partner].species;
 
     if (species == SPECIES_NOSEPASS && move == MOVE_THUNDER_WAVE)
-        bonus += 20;
+        bonus += 26;
     if ((species == SPECIES_MAKUHITA || species == SPECIES_MEDITITE) && move == MOVE_FAKE_OUT && gBattleResults.battleTurnCounter == 0)
-        bonus += 25;
+        bonus += 32;
     if (species == SPECIES_MAGNETON && move == MOVE_DISCHARGE && partnerSpecies == SPECIES_LANTURN)
-        bonus += 20;
+        bonus += 26;
     if (species == SPECIES_TORKOAL && move == MOVE_ERUPTION && partnerSpecies == SPECIES_HOUNDOOM)
-        bonus += 20;
+        bonus += 28;
     if (species == SPECIES_HOUNDOOM && move == MOVE_PROTECT && gBattleResults.battleTurnCounter == 0)
-        bonus += 20;
+        bonus += 26;
     if (species == SPECIES_KECLEON && partnerSpecies == SPECIES_SLAKING && (move == MOVE_HELPING_HAND || move == MOVE_SKILL_SWAP))
-        bonus += 18;
+        bonus += 24;
     if (species == SPECIES_SKARMORY && move == MOVE_TAILWIND && gBattleResults.battleTurnCounter == 0)
-        bonus += 25;
+        bonus += 32;
     if (species == SPECIES_ALTARIA && move == MOVE_EARTHQUAKE && (partnerSpecies == SPECIES_SKARMORY || partnerSpecies == SPECIES_GYARADOS))
-        bonus += 15;
+        bonus += 20;
     if (species == SPECIES_LUNATONE && move == MOVE_TRICK_ROOM)
-        bonus += 22;
+        bonus += 30;
     if (species == SPECIES_CLAYDOL && move == MOVE_EARTHQUAKE && partnerSpecies == SPECIES_XATU)
-        bonus += 15;
+        bonus += 20;
     if (species == SPECIES_WHISCASH && move == MOVE_EARTHQUAKE)
-        bonus += AI_CoopPartnerFlies(partnerSpecies) ? 15 : -30;
+        bonus += AI_CoopPartnerFlies(partnerSpecies) ? 20 : -30;
     if (species == SPECIES_CAMERUPT && move == MOVE_EARTHQUAKE && partnerSpecies == SPECIES_HOUNDOOM)
-        bonus -= 40;
+        bonus -= 50;
     return bonus;
 }
 

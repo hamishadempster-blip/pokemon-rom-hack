@@ -617,6 +617,7 @@ static bool32 StartWildBattleWithOWE_CheckDoubleBattle(struct ObjectEvent *owe, 
         if (TryGenerateWildMon(wildMonInfo, wildArea, WILD_CHECK_REPEL | WILD_CHECK_KEEN_EYE))
         {
             gParties[B_TRAINER_OPPONENT_A][1] = mon1;
+            Coop_ApplyWildPair();
             BattleSetup_StartDoubleWildBattle();
             return TRUE;
         }
