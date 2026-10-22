@@ -1166,3 +1166,79 @@ Route104_Text_BrendanPostBattle:
 	.string "making POKéMON battle.\p"
 	.string "Like MR. BRINEY, it's important to\n"
 	.string "become friends with your POKéMON.$"
+
+Route104_EventScript_ApplinScout::
+	lock
+	faceplayer
+	goto_if_set FLAG_COOP_QUEST_APPLIN, Route104_EventScript_ApplinScoutDone
+	msgbox Route104_EventScript_ApplinScoutAsk, MSGBOX_YESNO
+	goto_if_eq VAR_RESULT, NO, Route104_EventScript_ApplinScoutDecline
+	msgbox Route104_EventScript_ApplinScoutWhich, MSGBOX_DEFAULT
+	chooseboxmon
+	waitstate
+	goto_if_eq VAR_0x8004, PARTY_NOTHING_CHOSEN, Route104_EventScript_ApplinScoutDecline
+	specialvar VAR_RESULT, ScriptGetShownMonSpecies
+	goto_if_eq VAR_RESULT, SPECIES_EGG, Route104_EventScript_ApplinScoutEgg
+	goto_if_eq VAR_RESULT, SPECIES_NONE, Route104_EventScript_ApplinScoutWrong
+	goto_if_eq VAR_RESULT, SPECIES_APPLIN, Route104_EventScript_ApplinScoutReward
+	goto Route104_EventScript_ApplinScoutWrong
+
+Route104_EventScript_ApplinScoutReward::
+	msgbox Route104_EventScript_ApplinScoutYes, MSGBOX_DEFAULT
+	giveitem ITEM_SWEET_APPLE
+	goto_if_eq VAR_RESULT, FALSE, Common_EventScript_ShowBagIsFull
+	setflag FLAG_COOP_QUEST_APPLIN
+	msgbox Route104_EventScript_ApplinScoutAfter, MSGBOX_DEFAULT
+	release
+	end
+
+Route104_EventScript_ApplinScoutWrong::
+	msgbox Route104_EventScript_ApplinScoutWrongText, MSGBOX_DEFAULT
+	release
+	end
+
+Route104_EventScript_ApplinScoutEgg::
+	msgbox Route104_EventScript_ApplinScoutEggText, MSGBOX_DEFAULT
+	release
+	end
+
+Route104_EventScript_ApplinScoutDecline::
+	msgbox Route104_EventScript_ApplinScoutDeclineText, MSGBOX_DEFAULT
+	release
+	end
+
+Route104_EventScript_ApplinScoutDone::
+	msgbox Route104_EventScript_ApplinScoutDoneText, MSGBOX_DEFAULT
+	release
+	end
+
+Route104_EventScript_ApplinScoutAsk::
+	.string "A small apple dragon nests\n"
+	.string "in the grass on this route.\p"
+	.string "Show me an Applin and\n"
+	.string "this Sweet Apple is yours.$"
+
+Route104_EventScript_ApplinScoutWhich::
+	.string "Which one did you bring?$"
+
+Route104_EventScript_ApplinScoutYes::
+	.string "It looked right at the apple.$"
+
+Route104_EventScript_ApplinScoutWrongText::
+	.string "I asked for an Applin.$"
+
+Route104_EventScript_ApplinScoutEggText::
+	.string "I can't tell an Egg's\n"
+	.string "species from the shell.$"
+
+Route104_EventScript_ApplinScoutDeclineText::
+	.string "The apple will keep.\n"
+	.string "Applin like this grass.$"
+
+Route104_EventScript_ApplinScoutAfter::
+	.string "Feed it the Sweet Apple\n"
+	.string "when you want it to grow.$"
+
+Route104_EventScript_ApplinScoutDoneText::
+	.string "Appletun is the round one.\n"
+	.string "The apple decided.$"

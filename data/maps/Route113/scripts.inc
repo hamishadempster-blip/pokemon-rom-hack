@@ -240,3 +240,49 @@ Route113_Text_BramblinScoutAfter::
 Route113_Text_BramblinScoutDone::
 	.string "The glass workers hate the ash.\n"
 	.string "Bramblin doesn't mind it.$"
+
+Route113_EventScript_BramblinTrade::
+	lock
+	faceplayer
+	goto_if_set FLAG_COOP_TRADE_BRAMBLIN, Route113_EventScript_BramblinTradeDone
+	ingame_trade INGAME_TRADE_BRAMBLIN, Route113_EventScript_BramblinTradeAsk, Route113_EventScript_BramblinTradeDecline, Route113_EventScript_BramblinTradeWrong, Route113_EventScript_BramblinTradeComplete
+	setflag FLAG_COOP_TRADE_BRAMBLIN
+	release
+	end
+
+Route113_EventScript_BramblinTradeDecline::
+	msgbox Route113_EventScript_BramblinTradeDeclineText, MSGBOX_DEFAULT
+	release
+	end
+
+Route113_EventScript_BramblinTradeWrong::
+	bufferspeciesname STR_VAR_1, VAR_0x8009
+	msgbox Route113_EventScript_BramblinTradeWrongText, MSGBOX_DEFAULT
+	release
+	end
+
+Route113_EventScript_BramblinTradeDone::
+	msgbox Route113_EventScript_BramblinTradeDoneText, MSGBOX_DEFAULT
+	release
+	end
+
+Route113_EventScript_BramblinTradeAsk::
+	.string "A tumbleweed ghost rolls\n"
+	.string "through the ash with Spinda.\p"
+	.string "I'll trade you my {STR_VAR_2}\n"
+	.string "for a {STR_VAR_1}.$"
+
+Route113_EventScript_BramblinTradeDeclineText::
+	.string "That's all right.\n"
+	.string "Tumble likes the wind.$"
+
+Route113_EventScript_BramblinTradeWrongText::
+	.string "Hmm. That isn't a {STR_VAR_1}.$"
+
+Route113_EventScript_BramblinTradeComplete::
+	.string "Please be gentle with Tumble.\p"
+	.string "It doesn't like to sit still.$"
+
+Route113_EventScript_BramblinTradeDoneText::
+	.string "Brambleghast is the big one.\n"
+	.string "Wind carries it.$"

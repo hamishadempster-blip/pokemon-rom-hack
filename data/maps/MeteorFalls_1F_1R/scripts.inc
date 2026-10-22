@@ -355,3 +355,79 @@ MeteorFalls_1F_1R_Text_JangmoTradeComplete::
 MeteorFalls_1F_1R_Text_JangmoTradeDone::
 	.string "Noibat share the upper cave.\n"
 	.string "Listen before you step.$"
+
+MeteorFalls_1F_1R_EventScript_NoibatScout::
+	lock
+	faceplayer
+	goto_if_set FLAG_COOP_QUEST_NOIBAT, MeteorFalls_1F_1R_EventScript_NoibatScoutDone
+	msgbox MeteorFalls_1F_1R_EventScript_NoibatScoutAsk, MSGBOX_YESNO
+	goto_if_eq VAR_RESULT, NO, MeteorFalls_1F_1R_EventScript_NoibatScoutDecline
+	msgbox MeteorFalls_1F_1R_EventScript_NoibatScoutWhich, MSGBOX_DEFAULT
+	chooseboxmon
+	waitstate
+	goto_if_eq VAR_0x8004, PARTY_NOTHING_CHOSEN, MeteorFalls_1F_1R_EventScript_NoibatScoutDecline
+	specialvar VAR_RESULT, ScriptGetShownMonSpecies
+	goto_if_eq VAR_RESULT, SPECIES_EGG, MeteorFalls_1F_1R_EventScript_NoibatScoutEgg
+	goto_if_eq VAR_RESULT, SPECIES_NONE, MeteorFalls_1F_1R_EventScript_NoibatScoutWrong
+	goto_if_eq VAR_RESULT, SPECIES_NOIBAT, MeteorFalls_1F_1R_EventScript_NoibatScoutReward
+	goto MeteorFalls_1F_1R_EventScript_NoibatScoutWrong
+
+MeteorFalls_1F_1R_EventScript_NoibatScoutReward::
+	msgbox MeteorFalls_1F_1R_EventScript_NoibatScoutYes, MSGBOX_DEFAULT
+	giveitem ITEM_SHARP_BEAK
+	goto_if_eq VAR_RESULT, FALSE, Common_EventScript_ShowBagIsFull
+	setflag FLAG_COOP_QUEST_NOIBAT
+	msgbox MeteorFalls_1F_1R_EventScript_NoibatScoutAfter, MSGBOX_DEFAULT
+	release
+	end
+
+MeteorFalls_1F_1R_EventScript_NoibatScoutWrong::
+	msgbox MeteorFalls_1F_1R_EventScript_NoibatScoutWrongText, MSGBOX_DEFAULT
+	release
+	end
+
+MeteorFalls_1F_1R_EventScript_NoibatScoutEgg::
+	msgbox MeteorFalls_1F_1R_EventScript_NoibatScoutEggText, MSGBOX_DEFAULT
+	release
+	end
+
+MeteorFalls_1F_1R_EventScript_NoibatScoutDecline::
+	msgbox MeteorFalls_1F_1R_EventScript_NoibatScoutDeclineText, MSGBOX_DEFAULT
+	release
+	end
+
+MeteorFalls_1F_1R_EventScript_NoibatScoutDone::
+	msgbox MeteorFalls_1F_1R_EventScript_NoibatScoutDoneText, MSGBOX_DEFAULT
+	release
+	end
+
+MeteorFalls_1F_1R_EventScript_NoibatScoutAsk::
+	.string "A little bat listens from\n"
+	.string "the ceiling of this cave.\p"
+	.string "Show me a Noibat and\n"
+	.string "this Sharp Beak is yours.$"
+
+MeteorFalls_1F_1R_EventScript_NoibatScoutWhich::
+	.string "Which one did you bring?$"
+
+MeteorFalls_1F_1R_EventScript_NoibatScoutYes::
+	.string "Those ears are the real thing.$"
+
+MeteorFalls_1F_1R_EventScript_NoibatScoutWrongText::
+	.string "I asked for a Noibat.$"
+
+MeteorFalls_1F_1R_EventScript_NoibatScoutEggText::
+	.string "I can't tell an Egg's\n"
+	.string "species from the shell.$"
+
+MeteorFalls_1F_1R_EventScript_NoibatScoutDeclineText::
+	.string "The falls can wait.\n"
+	.string "The bats aren't shy.$"
+
+MeteorFalls_1F_1R_EventScript_NoibatScoutAfter::
+	.string "Noivern will outgrow this\n"
+	.string "beak. It still fits today.$"
+
+MeteorFalls_1F_1R_EventScript_NoibatScoutDoneText::
+	.string "The falls echo.\n"
+	.string "The bats answer.$"

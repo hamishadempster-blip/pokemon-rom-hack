@@ -376,3 +376,50 @@ Route118_Text_IndeedeeScoutAfter::
 Route118_Text_IndeedeeScoutDone::
 	.string "Bring a friend if you want\n"
 	.string "the whole pair at once.$"
+
+Route118_EventScript_IndeedeeTrade::
+	lock
+	faceplayer
+	goto_if_set FLAG_COOP_TRADE_INDEEDEE, Route118_EventScript_IndeedeeTradeDone
+	ingame_trade INGAME_TRADE_INDEEDEE, Route118_EventScript_IndeedeeTradeAsk, Route118_EventScript_IndeedeeTradeDecline, Route118_EventScript_IndeedeeTradeWrong, Route118_EventScript_IndeedeeTradeComplete
+	setflag FLAG_COOP_TRADE_INDEEDEE
+	release
+	end
+
+Route118_EventScript_IndeedeeTradeDecline::
+	msgbox Route118_EventScript_IndeedeeTradeDeclineText, MSGBOX_DEFAULT
+	release
+	end
+
+Route118_EventScript_IndeedeeTradeWrong::
+	bufferspeciesname STR_VAR_1, VAR_0x8009
+	msgbox Route118_EventScript_IndeedeeTradeWrongText, MSGBOX_DEFAULT
+	release
+	end
+
+Route118_EventScript_IndeedeeTradeDone::
+	msgbox Route118_EventScript_IndeedeeTradeDoneText, MSGBOX_DEFAULT
+	release
+	end
+
+Route118_EventScript_IndeedeeTradeAsk::
+	.string "A helper POKéMON has paired\n"
+	.string "up on the road east of here.\p"
+	.string "I'll trade you my {STR_VAR_2}\n"
+	.string "for a {STR_VAR_1}.$"
+
+Route118_EventScript_IndeedeeTradeDeclineText::
+	.string "That's all right.\n"
+	.string "Helper can wait.$"
+
+Route118_EventScript_IndeedeeTradeWrongText::
+	.string "Hmm. That isn't a {STR_VAR_1}.$"
+
+Route118_EventScript_IndeedeeTradeComplete::
+	.string "Please be gentle with Helper.\p"
+	.string "Either Indeedee still counts\n"
+	.string "for the person studying them.$"
+
+Route118_EventScript_IndeedeeTradeDoneText::
+	.string "Helper minds the field\n"
+	.string "when two of you battle.$"

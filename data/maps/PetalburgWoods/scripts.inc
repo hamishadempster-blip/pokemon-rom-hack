@@ -520,3 +520,80 @@ PetalburgWoods_Text_TarountulaTradeDone::
 	.string "Shroodle leaves little paint\n"
 	.string "marks on the tree roots.\p"
 	.string "The map knows this grove now.$"
+
+PetalburgWoods_EventScript_ShroodleScout::
+	lock
+	faceplayer
+	goto_if_set FLAG_COOP_QUEST_SHROODLE, PetalburgWoods_EventScript_ShroodleScoutDone
+	msgbox PetalburgWoods_EventScript_ShroodleScoutAsk, MSGBOX_YESNO
+	goto_if_eq VAR_RESULT, NO, PetalburgWoods_EventScript_ShroodleScoutDecline
+	msgbox PetalburgWoods_EventScript_ShroodleScoutWhich, MSGBOX_DEFAULT
+	chooseboxmon
+	waitstate
+	goto_if_eq VAR_0x8004, PARTY_NOTHING_CHOSEN, PetalburgWoods_EventScript_ShroodleScoutDecline
+	specialvar VAR_RESULT, ScriptGetShownMonSpecies
+	goto_if_eq VAR_RESULT, SPECIES_EGG, PetalburgWoods_EventScript_ShroodleScoutEgg
+	goto_if_eq VAR_RESULT, SPECIES_NONE, PetalburgWoods_EventScript_ShroodleScoutWrong
+	goto_if_eq VAR_RESULT, SPECIES_SHROODLE, PetalburgWoods_EventScript_ShroodleScoutReward
+	goto PetalburgWoods_EventScript_ShroodleScoutWrong
+
+PetalburgWoods_EventScript_ShroodleScoutReward::
+	msgbox PetalburgWoods_EventScript_ShroodleScoutYes, MSGBOX_DEFAULT
+	giveitem ITEM_POISON_BARB
+	goto_if_eq VAR_RESULT, FALSE, Common_EventScript_ShowBagIsFull
+	setflag FLAG_COOP_QUEST_SHROODLE
+	msgbox PetalburgWoods_EventScript_ShroodleScoutAfter, MSGBOX_DEFAULT
+	release
+	end
+
+PetalburgWoods_EventScript_ShroodleScoutWrong::
+	msgbox PetalburgWoods_EventScript_ShroodleScoutWrongText, MSGBOX_DEFAULT
+	release
+	end
+
+PetalburgWoods_EventScript_ShroodleScoutEgg::
+	msgbox PetalburgWoods_EventScript_ShroodleScoutEggText, MSGBOX_DEFAULT
+	release
+	end
+
+PetalburgWoods_EventScript_ShroodleScoutDecline::
+	msgbox PetalburgWoods_EventScript_ShroodleScoutDeclineText, MSGBOX_DEFAULT
+	release
+	end
+
+PetalburgWoods_EventScript_ShroodleScoutDone::
+	msgbox PetalburgWoods_EventScript_ShroodleScoutDoneText, MSGBOX_DEFAULT
+	release
+	end
+
+PetalburgWoods_EventScript_ShroodleScoutAsk::
+	.string "A little poison shrew has\n"
+	.string "moved into these woods.\p"
+	.string "Show me a Shroodle and\n"
+	.string "this Poison Barb is yours.$"
+
+PetalburgWoods_EventScript_ShroodleScoutWhich::
+	.string "Which one did you bring?$"
+
+PetalburgWoods_EventScript_ShroodleScoutYes::
+	.string "That's the shrew.\n"
+	.string "The barb is yours.$"
+
+PetalburgWoods_EventScript_ShroodleScoutWrongText::
+	.string "I asked for a Shroodle.$"
+
+PetalburgWoods_EventScript_ShroodleScoutEggText::
+	.string "I can't tell an Egg's\n"
+	.string "species from the shell.$"
+
+PetalburgWoods_EventScript_ShroodleScoutDeclineText::
+	.string "The woods can wait.\n"
+	.string "The shrews aren't leaving.$"
+
+PetalburgWoods_EventScript_ShroodleScoutAfter::
+	.string "Grafaiai paints with that\n"
+	.string "poison once it grows.$"
+
+PetalburgWoods_EventScript_ShroodleScoutDoneText::
+	.string "The shrews still rustle\n"
+	.string "in the grass.$"

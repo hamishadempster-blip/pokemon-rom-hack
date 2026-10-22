@@ -26,6 +26,10 @@ enum InGameTradeID
     INGAME_TRADE_CHARCADET,
     INGAME_TRADE_JANGMO_O,
     INGAME_TRADE_FINIZEN,
+    INGAME_TRADE_PAWMI,
+    INGAME_TRADE_NACLI,
+    INGAME_TRADE_BRAMBLIN,
+    INGAME_TRADE_INDEEDEE,
 };
 
 // Return values for CanTradeSelectedMon and CanSpinTradeMon

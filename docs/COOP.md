@@ -98,6 +98,11 @@ Stats below are HP / Attack / Defense / Sp. Atk / Sp. Def / Speed. Abilities are
 | Huntail | 55/104/105/94/75/52, Swift Swim / Water Veil | 55/120/105/94/75/80, Swift Swim / Water Veil | Learns Aqua Jet. Shell Smash and Rain Dance stay. |
 | Gorebyss | 55/84/105/114/75/52, Swift Swim / Hydration | 55/84/105/125/80/80, Swift Swim / Hydration | Faster special attacker. Draining Kiss and Shell Smash stay. |
 | Relicanth | 100/90/130/45/65/55, Swift Swim / Rock Head / Sturdy | 100/110/130/45/70/65, Swift Swim / Rock Head / Sturdy | Head Smash was already on the learnset. |
+| Mawile | 50/85/85/55/55/50, Hyper Cutter / Intimidate / Sheer Force | 65/100/90/55/65/50, Intimidate / Hyper Cutter / Sheer Force | Intimidate is the first ability. Learns Play Rough at level 32. |
+| Sableye | 50/75/75/65/65/50, Keen Eye / Stall / Prankster | 70/75/85/75/85/40, Prankster / Stall / Keen Eye | Prankster is the first ability. Learns Will-O-Wisp. Quash was already at level 30. |
+| Nosepass | 30/45/135/45/90/30, Sturdy / Magnet Pull / Sand Force | 60/45/135/45/90/30, Sturdy / Magnet Pull / Sand Force | More HP. Sturdy still takes the first hit. |
+| Clamperl | 35/64/85/74/55/32, Shell Armor / Rattled | 55/64/90/80/60/40, Shell Armor / Rattled | Enough bulk and speed to reach Huntail or Gorebyss. |
+| Whiscash | 110/78/73/76/71/60, Oblivious / Anticipation / Hydration | 110/95/73/76/71/60, Oblivious / Anticipation / Hydration | Higher attack. Hydration stays hidden. Juan's Whiscash is set to Hydration. |
 
 Together on the same tile, a wild double of any of these pairs is the pair itself: Plusle and Minun, Volbeat and Illumise, Lunatone and Solrock, Seviper and Zangoose, Indeedee male and female.
 
@@ -139,10 +144,25 @@ Together on the same tile, a wild double of any of these pairs is the pair itsel
 | Gimmighoul | Victory Road 1F | 36 |
 | Frigibax | Victory Road 1F | 40 |
 | Jangmo-o | Meteor Falls B1F | 40 |
+| Rookidee | Route 104 | 4 and 5 |
+| Wooloo | Route 116 | 6 and 7 |
+| Nickit | Route 116 | 6 and 8 |
+| Crabrawler | Route 106, surfing | 10–14 |
+| Arrokuda | Route 108, surfing | 20–25 |
+| Capsakid | Route 111 desert | 20 and 22 |
+| Cufant | Jagged Pass | 22 and 23 |
+| Flamigo | Route 115 | 23 and 26 |
+| Tadbulb | New Mauville | 22 and 24 |
+| Impidimp | Route 121 | 26 and 28 |
+| Pawniard | Victory Road B1F | 38 and 40 |
 
-Gigalith is on the Desert Underpass. The underpass encounter table already runs from 35 to 45, so level 42 is inside that table. Sandile and Helioptile stay at the desert's own levels.
+Gigalith is on the Desert Underpass. The underpass encounter table already runs from 35 to 45, so level 42 is inside that table. Sandile and Helioptile stay at the desert's own levels. Tadbulb uses New Mauville's own levels, 22 and 24, because that cave's table runs from 22 to 26. Crabrawler is a surf encounter on Route 106, which has no grass.
+
+Their evolution lines are in the Hoenn Pokédex beside the route where you first meet them: Corvisquire and Corviknight, Dubwool, Thievul, Crabominable, Barraskewda, Scovillain, Copperajah, Bellibolt, Morgrem and Grimmsnarl, Bisharp and Kingambit. Flamigo has no evolution.
 
 Gym leaders, gym partners, rematches, the Elite Four, and both champions now have Smart Switching and Try To 2HKO on top of their old AI. The doubles-trick score bonuses are a bit higher, so they commit to Thunder Wave, Fake Out, Discharge, Eruption, Protect, Helping Hand, Tailwind, Trick Room, and the safe Earthquakes more often. Ace levels are the same.
+
+The first clear of each gym was also edited so the two sides do not hit each other. Ace levels stay 16, 22, 28, 34, 40, 46, 52, and 58. Geodude and Onix use Protect. Lileep uses Mega Drain. Fake Out stays on Hariyama and Medicham, and Meditite is Telepathy. Voltorb uses Light Screen, and Joule sends Minun with Volt Absorb so Wattson's Discharge heals it. Camerupt uses Protect, and Cole sends Tropius with Solar Power beside Flannery's Eruption. Exploud uses Shadow Ball, Spinda uses Protect, and Zangoose holds a Toxic Orb. Altaria uses Dragon Pulse, Gyarados uses Ice Fang, and Winona's Pelipper is Drizzle with Hurricane. Claydol uses Protect, Xatu uses Trick Room, and Gardevoir uses Helping Hand. Whiscash is Hydration with Liquidation, and Kingdra is Swift Swim with Surf, Ice Beam, Dragon Pulse, and Protect. The level 68–70 rematches are a separate bracket and were left as they are.
 
 ## Hoenn Pokédex
 
@@ -163,6 +183,10 @@ In-game trades copy the level of the Pokémon you give. Each trade happens once.
 | Black Belt | Jagged Pass | Numel | Charcadet, nicknamed Cinder |
 | Expert | Meteor Falls 1F | Bagon | Jangmo-o, nicknamed Scales |
 | Swimmer | Route 124 | Wingull | Finizen, nicknamed Bubbles |
+| Man | Route 110 | Electrike | Pawmi, nicknamed Spark |
+| Black Belt | Granite Cave 1F | Aron | Nacli, nicknamed Salt |
+| Camper | Route 113 | Spinda | Bramblin, nicknamed Tumble |
+| Woman | Route 118 | Ralts | Indeedee, nicknamed Helper |
 
 Show the person a matching Pokémon from your party or your PC. The errand is once each. A full Bag refuses the item, and they ask again.
 
@@ -177,8 +201,19 @@ Show the person a matching Pokémon from your party or your PC. The errand is on
 | Pokéfan | Safari Zone, south | Fidough or Cyclizar | Soothe Bell |
 | Expert | Shoal Cave, low tide inner room | Cetoddle or Abomasnow | Never-Melt Ice |
 | Expert | Victory Road 1F | Gimmighoul, Tinkatink, or Frigibax | Nugget |
+| Bug Catcher | Petalburg Woods | Shroodle | Poison Barb |
+| Woman | Route 104 | Applin | Sweet Apple |
+| Fisherman | Route 106, on the sand | Crabrawler | Protective Pads |
+| Boy | Mauville City | Plusle, then Minun | Cell Battery |
+| Hiker | Meteor Falls 1F | Noibat | Sharp Beak |
+| Camper | Route 111 desert | Sandile or Helioptile | Heat Rock |
+| Expert | Magma Hideout 1F | Varoom | Air Balloon |
+| Swimmer | Underwater Route 126 | Wiglett | Dive Ball |
+| Fisherman | Lilycove City | Dondozo | Mystic Water |
 
-Three people only talk. A girl in Oldale explains the Pokédex map. A scientist in Mauville explains the same-spot pairs, including Indeedee. A fisherman in Lilycove talks about Dondozo and Tatsugiri.
+The Mauville boy wants Plusle on the first visit and Minun on the next. The Cell Battery is given only after both. A full Bag on the second visit keeps the errand open.
+
+Two people only talk. A girl in Oldale explains the Pokédex map. A scientist in Mauville explains the same-spot pairs, including Indeedee.
 
 ## Level cap
 

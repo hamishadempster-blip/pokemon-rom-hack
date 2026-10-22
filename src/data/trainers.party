@@ -4751,7 +4751,7 @@ IVs: 31 HP / 31 Atk / 31 Def / 31 SpA / 31 SpD / 31 Spe
 - Rock Tomb
 - Tackle
 - Defense Curl
-- Magnitude
+- Protect
 
 Aron
 Level: 16
@@ -4774,7 +4774,7 @@ AI: Check Bad Move / Try To Faint / Check Viability / HP Aware / Smart Switching
 Makuhita
 Level: 20
 IVs: 31 HP / 31 Atk / 31 Def / 31 SpA / 31 SpD / 31 Spe
-- Fake Out
+- Rock Tomb
 - Arm Thrust
 - Sand Attack
 - Bulk Up
@@ -4820,7 +4820,7 @@ Level: 26
 IVs: 31 HP / 31 Atk / 31 Def / 31 SpA / 31 SpD / 31 Spe
 - Spark
 - Rollout
-- Self Destruct
+- Light Screen
 - Shock Wave
 
 Electrode
@@ -4856,7 +4856,7 @@ IVs: 31 HP / 31 Atk / 31 Def / 31 SpA / 31 SpD / 31 Spe
 - Overheat
 - Rock Slide
 - Tackle
-- Attract
+- Protect
 
 Magcargo
 Level: 33
@@ -4896,7 +4896,7 @@ IVs: 31 HP / 31 Atk / 31 Def / 31 SpA / 31 SpD / 31 Spe
 Exploud
 Level: 39
 IVs: 31 HP / 31 Atk / 31 Def / 31 SpA / 31 SpD / 31 Spe
-- Hyper Voice
+- Shadow Ball
 - Stomp
 - Howl
 - Supersonic
@@ -4914,7 +4914,7 @@ AI: Check Bad Move / Try To Faint / Check Viability / HP Aware / Smart Switching
 Altaria @ Sitrus Berry
 Level: 46
 IVs: 31 HP / 31 Atk / 31 Def / 31 SpA / 31 SpD / 31 Spe
-- Earthquake
+- Dragon Pulse
 - Dragon Dance
 - Aerial Ace
 - Dragon Breath
@@ -4928,12 +4928,13 @@ IVs: 31 HP / 31 Atk / 31 Def / 31 SpA / 31 SpD / 31 Spe
 - Double Team
 
 Pelipper
+Ability: Drizzle
 Level: 45
 IVs: 31 HP / 31 Atk / 31 Def / 31 SpA / 31 SpD / 31 Spe
 - Water Pulse
 - Aerial Ace
 - Protect
-- Supersonic
+- Hurricane
 
 === TRAINER_TATE_AND_LIZA_1 ===
 Name: TATE
@@ -4956,7 +4957,7 @@ IVs: 31 HP / 31 Atk / 31 Def / 31 SpA / 31 SpD / 31 Spe
 Claydol
 Level: 50
 IVs: 31 HP / 31 Atk / 31 Def / 31 SpA / 31 SpD / 31 Spe
-- Earthquake
+- Protect
 - Psychic
 - Ancient Power
 - Light Screen
@@ -4989,20 +4990,22 @@ IVs: 31 HP / 31 Atk / 31 Def / 31 SpA / 31 SpD / 31 Spe
 - Rain Dance
 
 Whiscash
+Ability: Hydration
 Level: 57
 IVs: 31 HP / 31 Atk / 31 Def / 31 SpA / 31 SpD / 31 Spe
-- Earthquake
+- Liquidation
 - Surf
 - Amnesia
 - Rock Tomb
 
-Kingdra @ Chesto Berry
+Kingdra
+Ability: Swift Swim
 Level: 58
 IVs: 31 HP / 31 Atk / 31 Def / 31 SpA / 31 SpD / 31 Spe
 - Surf
-- Dragon Dance
 - Ice Beam
-- Rest
+- Dragon Pulse
+- Protect
 
 === TRAINER_JERRY_1 ===
 Name: JERRY
@@ -16778,7 +16781,7 @@ Level: 14
 IVs: 31 HP / 31 Atk / 31 Def / 31 SpA / 31 SpD / 31 Spe
 - Acid
 - Constrict
-- Ingrain
+- Mega Drain
 - Rock Tomb
 
 Onix
@@ -16787,7 +16790,7 @@ IVs: 31 HP / 31 Atk / 31 Def / 31 SpA / 31 SpD / 31 Spe
 - Rock Tomb
 - Tackle
 - Harden
-- Bind
+- Protect
 
 === TRAINER_REED_1 ===
 Name: REED
@@ -16799,9 +16802,10 @@ Double Battle: Yes
 AI: Check Bad Move / Try To Faint / Check Viability / HP Aware / Smart Switching / Try To 2HKO
 
 Meditite
+Ability: Telepathy
 Level: 20
 IVs: 31 HP / 31 Atk / 31 Def / 31 SpA / 31 SpD / 31 Spe
-- Fake Out
+- Rock Tomb
 - Confusion
 - Detect
 - Meditate
@@ -16849,7 +16853,8 @@ IVs: 31 HP / 31 Atk / 31 Def / 31 SpA / 31 SpD / 31 Spe
 - Howl
 - Thunder Wave
 
-Plusle
+Minun
+Ability: Volt Absorb
 Level: 26
 IVs: 31 HP / 31 Atk / 31 Def / 31 SpA / 31 SpD / 31 Spe
 - Shock Wave
@@ -16884,13 +16889,14 @@ IVs: 31 HP / 31 Atk / 31 Def / 31 SpA / 31 SpD / 31 Spe
 - Confuse Ray
 - Quick Attack
 
-Magmar
+Tropius
+Ability: Solar Power
 Level: 32
 IVs: 31 HP / 31 Atk / 31 Def / 31 SpA / 31 SpD / 31 Spe
-- Flamethrower
-- Smog
-- Confuse Ray
-- Feint Attack
+- Air Slash
+- Magical Leaf
+- Growth
+- Protect
 
 === TRAINER_HANA_1 ===
 Name: HANA
@@ -16912,12 +16918,12 @@ IVs: 31 HP / 31 Atk / 31 Def / 31 SpA / 31 SpD / 31 Spe
 Spinda
 Level: 38
 IVs: 31 HP / 31 Atk / 31 Def / 31 SpA / 31 SpD / 31 Spe
-- Teeter Dance
+- Protect
 - Facade
 - Psybeam
 - Encore
 
-Zangoose
+Zangoose @ Toxic Orb
 Level: 39
 IVs: 31 HP / 31 Atk / 31 Def / 31 SpA / 31 SpD / 31 Spe
 - Slash
@@ -16953,7 +16959,7 @@ IVs: 31 HP / 31 Atk / 31 Def / 31 SpA / 31 SpD / 31 Spe
 Gyarados
 Level: 45
 IVs: 31 HP / 31 Atk / 31 Def / 31 SpA / 31 SpD / 31 Spe
-- Earthquake
+- Ice Fang
 - Waterfall
 - Dragon Dance
 - Bite
@@ -16971,7 +16977,7 @@ Xatu
 Level: 50
 IVs: 31 HP / 31 Atk / 31 Def / 31 SpA / 31 SpD / 31 Spe
 - Psychic
-- Aerial Ace
+- Trick Room
 - Confuse Ray
 - Calm Mind
 
@@ -16979,7 +16985,7 @@ Gardevoir
 Level: 51
 IVs: 31 HP / 31 Atk / 31 Def / 31 SpA / 31 SpD / 31 Spe
 - Psychic
-- Calm Mind
+- Helping Hand
 - Thunderbolt
 - Magical Leaf
 

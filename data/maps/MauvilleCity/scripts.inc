@@ -674,3 +674,116 @@ MauvilleCity_Text_PairResearcher::
 	.string "and Solrock, Seviper and Zangoose.\p"
 	.string "Indeedee pair up the same way,\n"
 	.string "east of here. Bring a friend.$"
+
+MauvilleCity_EventScript_PairScout::
+	lock
+	faceplayer
+	goto_if_set FLAG_COOP_QUEST_MAUVILLE, MauvilleCity_EventScript_PairScoutDone
+	goto_if_set FLAG_COOP_QUEST_MAUVILLE_PLUSLE, MauvilleCity_EventScript_PairScoutAskMinun
+	msgbox MauvilleCity_Text_PairScoutAskPlusle, MSGBOX_YESNO
+	goto_if_eq VAR_RESULT, NO, MauvilleCity_EventScript_PairScoutDecline
+	msgbox MauvilleCity_Text_PairScoutWhich, MSGBOX_DEFAULT
+	chooseboxmon
+	waitstate
+	goto_if_eq VAR_0x8004, PARTY_NOTHING_CHOSEN, MauvilleCity_EventScript_PairScoutDecline
+	specialvar VAR_RESULT, ScriptGetShownMonSpecies
+	goto_if_eq VAR_RESULT, SPECIES_EGG, MauvilleCity_EventScript_PairScoutEgg
+	goto_if_eq VAR_RESULT, SPECIES_NONE, MauvilleCity_EventScript_PairScoutNotPlusle
+	goto_if_eq VAR_RESULT, SPECIES_PLUSLE, MauvilleCity_EventScript_PairScoutGotPlusle
+	goto MauvilleCity_EventScript_PairScoutNotPlusle
+
+MauvilleCity_EventScript_PairScoutGotPlusle::
+	setflag FLAG_COOP_QUEST_MAUVILLE_PLUSLE
+	msgbox MauvilleCity_Text_PairScoutPlusleYes, MSGBOX_DEFAULT
+	release
+	end
+
+MauvilleCity_EventScript_PairScoutAskMinun::
+	msgbox MauvilleCity_Text_PairScoutAskMinun, MSGBOX_YESNO
+	goto_if_eq VAR_RESULT, NO, MauvilleCity_EventScript_PairScoutDecline
+	msgbox MauvilleCity_Text_PairScoutWhich, MSGBOX_DEFAULT
+	chooseboxmon
+	waitstate
+	goto_if_eq VAR_0x8004, PARTY_NOTHING_CHOSEN, MauvilleCity_EventScript_PairScoutDecline
+	specialvar VAR_RESULT, ScriptGetShownMonSpecies
+	goto_if_eq VAR_RESULT, SPECIES_EGG, MauvilleCity_EventScript_PairScoutEgg
+	goto_if_eq VAR_RESULT, SPECIES_NONE, MauvilleCity_EventScript_PairScoutNotMinun
+	goto_if_eq VAR_RESULT, SPECIES_MINUN, MauvilleCity_EventScript_PairScoutReward
+	goto MauvilleCity_EventScript_PairScoutNotMinun
+
+MauvilleCity_EventScript_PairScoutReward::
+	msgbox MauvilleCity_Text_PairScoutMinunYes, MSGBOX_DEFAULT
+	giveitem ITEM_CELL_BATTERY
+	goto_if_eq VAR_RESULT, FALSE, Common_EventScript_ShowBagIsFull
+	setflag FLAG_COOP_QUEST_MAUVILLE
+	msgbox MauvilleCity_Text_PairScoutAfter, MSGBOX_DEFAULT
+	release
+	end
+
+MauvilleCity_EventScript_PairScoutNotPlusle::
+	msgbox MauvilleCity_Text_PairScoutNotPlusle, MSGBOX_DEFAULT
+	release
+	end
+
+MauvilleCity_EventScript_PairScoutNotMinun::
+	msgbox MauvilleCity_Text_PairScoutNotMinun, MSGBOX_DEFAULT
+	release
+	end
+
+MauvilleCity_EventScript_PairScoutEgg::
+	msgbox MauvilleCity_Text_PairScoutEgg, MSGBOX_DEFAULT
+	release
+	end
+
+MauvilleCity_EventScript_PairScoutDecline::
+	msgbox MauvilleCity_Text_PairScoutDecline, MSGBOX_DEFAULT
+	release
+	end
+
+MauvilleCity_EventScript_PairScoutDone::
+	msgbox MauvilleCity_Text_PairScoutDone, MSGBOX_DEFAULT
+	release
+	end
+
+MauvilleCity_Text_PairScoutAskPlusle::
+	.string "Plusle and Minun cheer\n"
+	.string "in pairs.\p"
+	.string "Show me a Plusle first.\n"
+	.string "A Cell Battery is the prize.$"
+
+MauvilleCity_Text_PairScoutWhich::
+	.string "Which one did you bring?$"
+
+MauvilleCity_Text_PairScoutPlusleYes::
+	.string "Plusle's here.\n"
+	.string "Now I need its partner.$"
+
+MauvilleCity_Text_PairScoutAskMinun::
+	.string "Plusle was the first half.\n"
+	.string "Show me a Minun.$"
+
+MauvilleCity_Text_PairScoutMinunYes::
+	.string "They make a circuit.\n"
+	.string "The battery is yours.$"
+
+MauvilleCity_Text_PairScoutNotPlusle::
+	.string "I need a Plusle first.$"
+
+MauvilleCity_Text_PairScoutNotMinun::
+	.string "I need a Minun now.$"
+
+MauvilleCity_Text_PairScoutEgg::
+	.string "I can't tell an Egg's\n"
+	.string "species from the shell.$"
+
+MauvilleCity_Text_PairScoutDecline::
+	.string "The pair can wait.\n"
+	.string "They show up together.$"
+
+MauvilleCity_Text_PairScoutAfter::
+	.string "Keep them side by side\n"
+	.string "in a double battle.$"
+
+MauvilleCity_Text_PairScoutDone::
+	.string "The pair still shows up\n"
+	.string "when two trainers share a spot.$"

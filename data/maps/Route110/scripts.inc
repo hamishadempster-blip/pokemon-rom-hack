@@ -1063,3 +1063,50 @@ Route110_Text_PawmiScoutAfter::
 Route110_Text_PawmiScoutDone::
 	.string "Plusle and Minun still cheer\n"
 	.string "farther along this road.$"
+
+Route110_EventScript_PawmiTrade::
+	lock
+	faceplayer
+	goto_if_set FLAG_COOP_TRADE_PAWMI, Route110_EventScript_PawmiTradeDone
+	ingame_trade INGAME_TRADE_PAWMI, Route110_EventScript_PawmiTradeAsk, Route110_EventScript_PawmiTradeDecline, Route110_EventScript_PawmiTradeWrong, Route110_EventScript_PawmiTradeComplete
+	setflag FLAG_COOP_TRADE_PAWMI
+	release
+	end
+
+Route110_EventScript_PawmiTradeDecline::
+	msgbox Route110_EventScript_PawmiTradeDeclineText, MSGBOX_DEFAULT
+	release
+	end
+
+Route110_EventScript_PawmiTradeWrong::
+	bufferspeciesname STR_VAR_1, VAR_0x8009
+	msgbox Route110_EventScript_PawmiTradeWrongText, MSGBOX_DEFAULT
+	release
+	end
+
+Route110_EventScript_PawmiTradeDone::
+	msgbox Route110_EventScript_PawmiTradeDoneText, MSGBOX_DEFAULT
+	release
+	end
+
+Route110_EventScript_PawmiTradeAsk::
+	.string "An electric mouse has joined\n"
+	.string "the Electrike on this route.\p"
+	.string "I'll trade you my {STR_VAR_2}\n"
+	.string "for a {STR_VAR_1}.$"
+
+Route110_EventScript_PawmiTradeDeclineText::
+	.string "That's all right.\n"
+	.string "Spark likes the road.$"
+
+Route110_EventScript_PawmiTradeWrongText::
+	.string "Hmm. That isn't a {STR_VAR_1}.$"
+
+Route110_EventScript_PawmiTradeComplete::
+	.string "Please be gentle with Spark.\p"
+	.string "Walk with Pawmi and it\n"
+	.string "learns to hit harder.$"
+
+Route110_EventScript_PawmiTradeDoneText::
+	.string "Pawmo and Pawmot come\n"
+	.string "if you keep walking.$"

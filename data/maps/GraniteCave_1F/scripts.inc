@@ -116,3 +116,50 @@ GraniteCave_1F_Text_RockScoutAfter::
 GraniteCave_1F_Text_RockScoutDone::
 	.string "Steven used to study these\n"
 	.string "stones. The map remembers.$"
+
+GraniteCave_1F_EventScript_NacliTrade::
+	lock
+	faceplayer
+	goto_if_set FLAG_COOP_TRADE_NACLI, GraniteCave_1F_EventScript_NacliTradeDone
+	ingame_trade INGAME_TRADE_NACLI, GraniteCave_1F_EventScript_NacliTradeAsk, GraniteCave_1F_EventScript_NacliTradeDecline, GraniteCave_1F_EventScript_NacliTradeWrong, GraniteCave_1F_EventScript_NacliTradeComplete
+	setflag FLAG_COOP_TRADE_NACLI
+	release
+	end
+
+GraniteCave_1F_EventScript_NacliTradeDecline::
+	msgbox GraniteCave_1F_EventScript_NacliTradeDeclineText, MSGBOX_DEFAULT
+	release
+	end
+
+GraniteCave_1F_EventScript_NacliTradeWrong::
+	bufferspeciesname STR_VAR_1, VAR_0x8009
+	msgbox GraniteCave_1F_EventScript_NacliTradeWrongText, MSGBOX_DEFAULT
+	release
+	end
+
+GraniteCave_1F_EventScript_NacliTradeDone::
+	msgbox GraniteCave_1F_EventScript_NacliTradeDoneText, MSGBOX_DEFAULT
+	release
+	end
+
+GraniteCave_1F_EventScript_NacliTradeAsk::
+	.string "A little salt rock sits\n"
+	.string "with the Aron in this cave.\p"
+	.string "I'll trade you my {STR_VAR_2}\n"
+	.string "for a {STR_VAR_1}.$"
+
+GraniteCave_1F_EventScript_NacliTradeDeclineText::
+	.string "That's all right.\n"
+	.string "Salt keeps.$"
+
+GraniteCave_1F_EventScript_NacliTradeWrongText::
+	.string "Hmm. That isn't a {STR_VAR_1}.$"
+
+GraniteCave_1F_EventScript_NacliTradeComplete::
+	.string "Please be gentle with Salt.\p"
+	.string "It is heavier than\n"
+	.string "it looks.$"
+
+GraniteCave_1F_EventScript_NacliTradeDoneText::
+	.string "Naclstack and Garganacl\n"
+	.string "come later. Salt stays salt.$"

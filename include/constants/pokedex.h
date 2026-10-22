@@ -1316,10 +1316,21 @@ enum NationalDexOrder
     F(APPLETUN) \
     F(DIPPLIN) \
     F(HYDRAPPLE) \
+    F(ROOKIDEE) \
+    F(CORVISQUIRE) \
+    F(CORVIKNIGHT) \
+    F(WOOLOO) \
+    F(DUBWOOL) \
+    F(NICKIT) \
+    F(THIEVUL) \
     F(TAROUNTULA) \
     F(SPIDOPS) \
     F(SHROODLE) \
     F(GRAFAIAI) \
+    F(CRABRAWLER) \
+    F(CRABOMINABLE) \
+    F(ARROKUDA) \
+    F(BARRASKEWDA) \
     F(NACLI) \
     F(NACLSTACK) \
     F(GARGANACL) \
@@ -1328,11 +1339,15 @@ enum NationalDexOrder
     F(PAWMI) \
     F(PAWMO) \
     F(PAWMOT) \
+    F(TADBULB) \
+    F(BELLIBOLT) \
     F(SANDILE) \
     F(KROKOROK) \
     F(KROOKODILE) \
     F(HELIOPTILE) \
     F(HELIOLISK) \
+    F(CAPSAKID) \
+    F(SCOVILLAIN) \
     F(BRAMBLIN) \
     F(BRAMBLEGHAST) \
     F(NOIBAT) \
@@ -1340,6 +1355,9 @@ enum NationalDexOrder
     F(CHARCADET) \
     F(ARMAROUGE) \
     F(CERULEDGE) \
+    F(CUFANT) \
+    F(COPPERAJAH) \
+    F(FLAMIGO) \
     F(TOEDSCOOL) \
     F(TOEDSCRUEL) \
     F(INDEEDEE) \
@@ -1347,6 +1365,9 @@ enum NationalDexOrder
     F(POLIWHIRL) \
     F(POLIWRATH) \
     F(POLITOED) \
+    F(IMPIDIMP) \
+    F(MORGREM) \
+    F(GRIMMSNARL) \
     F(GREAVARD) \
     F(HOUNDSTONE) \
     F(DREEPY) \
@@ -1383,6 +1404,9 @@ enum NationalDexOrder
     F(FRIGIBAX) \
     F(ARCTIBAX) \
     F(BAXCALIBUR) \
+    F(PAWNIARD) \
+    F(BISHARP) \
+    F(KINGAMBIT) \
     F(GIMMIGHOUL) \
     F(GHOLDENGO)
 

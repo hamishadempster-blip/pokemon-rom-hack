@@ -756,12 +756,79 @@ LilycoveCity_Text_HoneymoonVowToSeeRarePokemon:
 
 
 LilycoveCity_EventScript_HarborFisher::
-	msgbox LilycoveCity_Text_HarborFisher, MSGBOX_NPC
+	lock
+	faceplayer
+	goto_if_set FLAG_COOP_QUEST_DONDOZO, LilycoveCity_EventScript_HarborFisherDone
+	msgbox LilycoveCity_Text_HarborFisherAsk, MSGBOX_YESNO
+	goto_if_eq VAR_RESULT, NO, LilycoveCity_EventScript_HarborFisherDecline
+	msgbox LilycoveCity_Text_HarborFisherWhich, MSGBOX_DEFAULT
+	chooseboxmon
+	waitstate
+	goto_if_eq VAR_0x8004, PARTY_NOTHING_CHOSEN, LilycoveCity_EventScript_HarborFisherDecline
+	specialvar VAR_RESULT, ScriptGetShownMonSpecies
+	goto_if_eq VAR_RESULT, SPECIES_EGG, LilycoveCity_EventScript_HarborFisherEgg
+	goto_if_eq VAR_RESULT, SPECIES_NONE, LilycoveCity_EventScript_HarborFisherWrong
+	goto_if_eq VAR_RESULT, SPECIES_DONDOZO, LilycoveCity_EventScript_HarborFisherReward
+	goto LilycoveCity_EventScript_HarborFisherWrong
+
+LilycoveCity_EventScript_HarborFisherReward::
+	msgbox LilycoveCity_Text_HarborFisherYes, MSGBOX_DEFAULT
+	giveitem ITEM_MYSTIC_WATER
+	goto_if_eq VAR_RESULT, FALSE, Common_EventScript_ShowBagIsFull
+	setflag FLAG_COOP_QUEST_DONDOZO
+	msgbox LilycoveCity_Text_HarborFisherAfter, MSGBOX_DEFAULT
+	release
 	end
 
-LilycoveCity_Text_HarborFisher::
+LilycoveCity_EventScript_HarborFisherWrong::
+	msgbox LilycoveCity_Text_HarborFisherWrong, MSGBOX_DEFAULT
+	release
+	end
+
+LilycoveCity_EventScript_HarborFisherEgg::
+	msgbox LilycoveCity_Text_HarborFisherEgg, MSGBOX_DEFAULT
+	release
+	end
+
+LilycoveCity_EventScript_HarborFisherDecline::
+	msgbox LilycoveCity_Text_HarborFisherDecline, MSGBOX_DEFAULT
+	release
+	end
+
+LilycoveCity_EventScript_HarborFisherDone::
+	msgbox LilycoveCity_Text_HarborFisherDone, MSGBOX_DEFAULT
+	release
+	end
+
+LilycoveCity_Text_HarborFisherAsk::
 	.string "Past the harbor, Dondozo cruise\n"
 	.string "the deep routes. Tatsugiri\n"
 	.string "flicker along beside them.\p"
+	.string "Show me a Dondozo and this\n"
+	.string "Mystic Water is yours.$"
+
+LilycoveCity_Text_HarborFisherWhich::
+	.string "Which one did you bring?$"
+
+LilycoveCity_Text_HarborFisherYes::
+	.string "That's a harbor fish.\n"
+	.string "Tatsugiri usually follow.$"
+
+LilycoveCity_Text_HarborFisherWrong::
+	.string "I asked for a Dondozo.$"
+
+LilycoveCity_Text_HarborFisherEgg::
+	.string "I can't tell an Egg's\n"
+	.string "species from the shell.$"
+
+LilycoveCity_Text_HarborFisherDecline::
+	.string "The deep routes will\n"
+	.string "still be there.$"
+
+LilycoveCity_Text_HarborFisherAfter::
 	.string "The POKéDEX map marks the\n"
 	.string "water where they surface.$"
+
+LilycoveCity_Text_HarborFisherDone::
+	.string "Tatsugiri still flicker\n"
+	.string "along beside the big ones.$"

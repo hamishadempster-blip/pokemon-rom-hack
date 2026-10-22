@@ -679,20 +679,20 @@
 #define FLAG_COOP_QUEST_SAFARI        0x270
 #define FLAG_COOP_QUEST_VICTORY       0x271
 #define FLAG_COOP_QUEST_SHOAL         0x272
-#define FLAG_UNUSED_0x273  0x273 // Unused Flag
-#define FLAG_UNUSED_0x274  0x274 // Unused Flag
-#define FLAG_UNUSED_0x275  0x275 // Unused Flag
-#define FLAG_UNUSED_0x276  0x276 // Unused Flag
-#define FLAG_UNUSED_0x277  0x277 // Unused Flag
-#define FLAG_UNUSED_0x278  0x278 // Unused Flag
-#define FLAG_UNUSED_0x279  0x279 // Unused Flag
-#define FLAG_UNUSED_0x27A  0x27A // Unused Flag
-#define FLAG_UNUSED_0x27B  0x27B // Unused Flag
-#define FLAG_UNUSED_0x27C  0x27C // Unused Flag
-#define FLAG_UNUSED_0x27D  0x27D // Unused Flag
-#define FLAG_UNUSED_0x27E  0x27E // Unused Flag
-#define FLAG_UNUSED_0x27F  0x27F // Unused Flag
-#define FLAG_UNUSED_0x280  0x280 // Unused Flag
+#define FLAG_COOP_TRADE_PAWMI         0x273
+#define FLAG_COOP_TRADE_NACLI         0x274
+#define FLAG_COOP_TRADE_BRAMBLIN      0x275
+#define FLAG_COOP_TRADE_INDEEDEE      0x276
+#define FLAG_COOP_QUEST_SHROODLE      0x277
+#define FLAG_COOP_QUEST_APPLIN        0x278
+#define FLAG_COOP_QUEST_CRABRAWLER    0x279
+#define FLAG_COOP_QUEST_MAUVILLE_PLUSLE 0x27A
+#define FLAG_COOP_QUEST_MAUVILLE      0x27B
+#define FLAG_COOP_QUEST_NOIBAT        0x27C
+#define FLAG_COOP_QUEST_DESERT        0x27D
+#define FLAG_COOP_QUEST_VAROOM        0x27E
+#define FLAG_COOP_QUEST_WIGLETT       0x27F
+#define FLAG_COOP_QUEST_DONDOZO       0x280
 #define FLAG_UNUSED_0x281  0x281 // Unused Flag
 #define FLAG_UNUSED_0x282  0x282 // Unused Flag
 #define FLAG_UNUSED_0x283  0x283 // Unused Flag

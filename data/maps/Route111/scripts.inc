@@ -715,3 +715,82 @@ Route111_Text_TrainerHillSign:
 	.string "“Scale the heights, you hot-blooded\n"
 	.string "TRAINERS!”$"
 
+
+Route111_EventScript_DesertScout::
+	lock
+	faceplayer
+	goto_if_set FLAG_COOP_QUEST_DESERT, Route111_EventScript_DesertScoutDone
+	msgbox Route111_EventScript_DesertScoutAsk, MSGBOX_YESNO
+	goto_if_eq VAR_RESULT, NO, Route111_EventScript_DesertScoutDecline
+	msgbox Route111_EventScript_DesertScoutWhich, MSGBOX_DEFAULT
+	chooseboxmon
+	waitstate
+	goto_if_eq VAR_0x8004, PARTY_NOTHING_CHOSEN, Route111_EventScript_DesertScoutDecline
+	specialvar VAR_RESULT, ScriptGetShownMonSpecies
+	goto_if_eq VAR_RESULT, SPECIES_EGG, Route111_EventScript_DesertScoutEgg
+	goto_if_eq VAR_RESULT, SPECIES_NONE, Route111_EventScript_DesertScoutWrong
+	goto_if_eq VAR_RESULT, SPECIES_SANDILE, Route111_EventScript_DesertScoutReward
+	goto_if_eq VAR_RESULT, SPECIES_HELIOPTILE, Route111_EventScript_DesertScoutReward
+	goto Route111_EventScript_DesertScoutWrong
+
+Route111_EventScript_DesertScoutReward::
+	msgbox Route111_EventScript_DesertScoutYes, MSGBOX_DEFAULT
+	giveitem ITEM_HEAT_ROCK
+	goto_if_eq VAR_RESULT, FALSE, Common_EventScript_ShowBagIsFull
+	setflag FLAG_COOP_QUEST_DESERT
+	msgbox Route111_EventScript_DesertScoutAfter, MSGBOX_DEFAULT
+	release
+	end
+
+Route111_EventScript_DesertScoutWrong::
+	msgbox Route111_EventScript_DesertScoutWrongText, MSGBOX_DEFAULT
+	release
+	end
+
+Route111_EventScript_DesertScoutEgg::
+	msgbox Route111_EventScript_DesertScoutEggText, MSGBOX_DEFAULT
+	release
+	end
+
+Route111_EventScript_DesertScoutDecline::
+	msgbox Route111_EventScript_DesertScoutDeclineText, MSGBOX_DEFAULT
+	release
+	end
+
+Route111_EventScript_DesertScoutDone::
+	msgbox Route111_EventScript_DesertScoutDoneText, MSGBOX_DEFAULT
+	release
+	end
+
+Route111_EventScript_DesertScoutAsk::
+	.string "Sandile and Helioptile both\n"
+	.string "bake in this desert.\p"
+	.string "Show me either one and\n"
+	.string "this Heat Rock is yours.$"
+
+Route111_EventScript_DesertScoutWhich::
+	.string "Which one did you bring?$"
+
+Route111_EventScript_DesertScoutYes::
+	.string "The sand is still warm\n"
+	.string "on its feet.$"
+
+Route111_EventScript_DesertScoutWrongText::
+	.string "I asked for a Sandile\n"
+	.string "or a Helioptile.$"
+
+Route111_EventScript_DesertScoutEggText::
+	.string "I can't tell an Egg's\n"
+	.string "species from the shell.$"
+
+Route111_EventScript_DesertScoutDeclineText::
+	.string "The desert isn't cooling\n"
+	.string "off. Come back with one.$"
+
+Route111_EventScript_DesertScoutAfter::
+	.string "A Heat Rock makes the\n"
+	.string "sun last longer.$"
+
+Route111_EventScript_DesertScoutDoneText::
+	.string "Lavaridge likes that sun.\n"
+	.string "The desert never lost it.$"
