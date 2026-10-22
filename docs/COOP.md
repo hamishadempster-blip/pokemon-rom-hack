@@ -72,7 +72,7 @@ Each player brings a party of 6 (`COOP_PARTY_SIZE` in `include/coop.h`). Enemy g
 
 Megas, Z-Moves, Dynamax, and Terastallization are off, including Primal Reversion.
 
-A few Hoenn Pokémon were retuned for doubles. See [Roster changes](#roster-changes). When both players stand on the same tile, a wild double that rolls Plusle, Minun, Volbeat, Illumise, Lunatone, Solrock, Seviper, or Zangoose brings that Pokémon's pair instead of a random second species. Gym leaders, their partners, the Elite Four, and the champion also switch more carefully and look for a two-hit knockout. Their ace levels are unchanged.
+A few Hoenn Pokémon were retuned for doubles. See [Roster changes](#roster-changes). When both players stand on the same tile, a wild double that rolls Plusle, Minun, Volbeat, Illumise, Lunatone, Solrock, Seviper, Zangoose, or either Indeedee brings that Pokémon's pair instead of a random second species. Gym leaders, their partners, the Elite Four, and the champion also switch more carefully and look for a two-hit knockout. Their ace levels are unchanged.
 
 ## Roster changes
 
@@ -87,13 +87,19 @@ Stats below are HP / Attack / Defense / Sp. Atk / Sp. Def / Speed. Abilities are
 | Delcatty | 70/65/65/55/55/90, Cute Charm / Normalize / Wonder Skin | 80/65/65/80/65/110, Cute Charm / Prankster / Normalize | Prankster support. Learns Thunder Wave and Assist. |
 | Spinda | 60 across, Own Tempo / Tangled Feet / Contrary | 80/60/60/70/60/80, Prankster / Tangled Feet / Contrary | Contrary stays hidden. Learns Skill Swap and Assist. |
 | Volbeat | 65/73/75/47/85/85, Illuminate / Swarm / Prankster | 75/73/85/47/85/95, Prankster / Swarm / Illuminate | Prankster is now the first ability. Learns Encore. Tail Glow stays. |
-| Illumise | 65/47/75/73/85/85, Oblivious / Tinted Lens / Prankster | 75/47/85/80/85/95, Prankster / Tinted Lens / Oblivious | Same support role. Encore and Wish were already on the learnset. |
+| Illumise | 65/47/75/73/85/85, Oblivious / Tinted Lens / Prankster | 75/47/85/80/85/95, Prankster / Tinted Lens / Oblivious | Learns Follow Me. Encore and Wish were already on the learnset. |
 | Lunatone | 90/55/65/95/85/70, Levitate | 90/55/70/110/90/60, Levitate | Slower, so Trick Room still wants it. Learns Trick Room. |
 | Solrock | 90/95/85/55/65/70, Levitate | 90/115/90/55/70/60, Levitate | Physical twin, still slow. Learns Trick Room. |
 | Zangoose | 73/115/60/60/60/90, Immunity / Toxic Boost | 73/125/60/60/60/105, Toxic Boost / Immunity | Faster attacker. Learns Facade. Toxic Boost is the ability you see first. |
 | Seviper | 73/100/60/100/60/65, Shed Skin / Infiltrator | 73/100/60/115/65/80, Shed Skin / Merciless / Infiltrator | Merciless crits a poisoned target. Learns Toxic. |
+| Kecleon | 60/90/70/60/120/40, Color Change / Protean | 70/100/70/70/120/70, Color Change / Protean | Faster, and it learns Skill Swap. Protean stays hidden. |
+| Tropius | 99/68/83/72/87/51, Chlorophyll / Solar Power / Harvest | 109/78/83/82/87/71, Chlorophyll / Solar Power / Harvest | Learns Tailwind. Wide Guard stays. |
+| Chimecho | 75/50/80/95/90/65, Levitate | 85/50/85/110/100/85, Levitate / Telepathy | Telepathy is hidden, so Levitate is still the usual ability. Heal Bell and Heal Pulse stay. |
+| Huntail | 55/104/105/94/75/52, Swift Swim / Water Veil | 55/120/105/94/75/80, Swift Swim / Water Veil | Learns Aqua Jet. Shell Smash and Rain Dance stay. |
+| Gorebyss | 55/84/105/114/75/52, Swift Swim / Hydration | 55/84/105/125/80/80, Swift Swim / Hydration | Faster special attacker. Draining Kiss and Shell Smash stay. |
+| Relicanth | 100/90/130/45/65/55, Swift Swim / Rock Head / Sturdy | 100/110/130/45/70/65, Swift Swim / Rock Head / Sturdy | Head Smash was already on the learnset. |
 
-Together on the same tile, a wild double of any of these pairs is the pair itself: Plusle and Minun, Volbeat and Illumise, Lunatone and Solrock, Seviper and Zangoose.
+Together on the same tile, a wild double of any of these pairs is the pair itself: Plusle and Minun, Volbeat and Illumise, Lunatone and Solrock, Seviper and Zangoose, Indeedee male and female.
 
 | New Pokémon | Where | Level |
 | --- | --- | --- |
@@ -108,8 +114,33 @@ Together on the same tile, a wild double of any of these pairs is the pair itsel
 | Mimikyu | Mt. Pyre 1F | 29 |
 | Politoed | Route 119 surf, and Route 120 surf | 26–30, and 25–30 |
 | Abomasnow | Shoal Cave, low tide inner room | 32 |
+| Lechonk | Route 102 | 3 |
+| Tandemaus | Route 102 | 4 |
+| Applin | Route 104 | 4 |
+| Tarountula | Petalburg Woods | 5 |
+| Shroodle | Petalburg Woods | 6 |
+| Nacli | Granite Cave 1F | 7 |
+| Glimmet | Granite Cave 1F | 10 |
+| Pawmi | Route 110 | 13 |
+| Bramblin | Route 113 | 16 |
+| Noibat | Meteor Falls 1F | 20 |
+| Charcadet | Jagged Pass | 22 |
+| Toedscool | Route 119 | 24 |
+| Indeedee (male) | Route 118 | 24 |
+| Indeedee (female) | Route 118 | 26 |
+| Fidough | Safari Zone, south | 27 |
+| Cyclizar | Safari Zone, south | 29 |
+| Cetoddle | Shoal Cave, low tide inner room | 30 |
+| Finizen | Route 124, surfing | 25–30 |
+| Tatsugiri | Route 128, surfing | 25–30 |
+| Wiglett | Underwater Route 126 | 30–35 |
+| Varoom | Magma Hideout 1F | 33 |
+| Tinkatink | Victory Road 1F | 38 |
+| Gimmighoul | Victory Road 1F | 36 |
+| Frigibax | Victory Road 1F | 40 |
+| Jangmo-o | Meteor Falls B1F | 40 |
 
-Gigalith is not on Route 111. The underpass encounter table already runs from 35 to 45, so level 42 is inside that table. Sandile and Helioptile stay at the desert's own levels.
+Gigalith is on the Desert Underpass. The underpass encounter table already runs from 35 to 45, so level 42 is inside that table. Sandile and Helioptile stay at the desert's own levels.
 
 Gym leaders, gym partners, rematches, the Elite Four, and both champions now have Smart Switching and Try To 2HKO on top of their old AI. The doubles-trick score bonuses are a bit higher, so they commit to Thunder Wave, Fake Out, Discharge, Eruption, Protect, Helping Hand, Tailwind, Trick Room, and the safe Earthquakes more often. Ace levels are the same.
 

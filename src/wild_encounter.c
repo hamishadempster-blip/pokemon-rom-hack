@@ -595,6 +595,8 @@ static enum Species Coop_WildPairPartner(enum Species species)
     case SPECIES_SOLROCK: return SPECIES_LUNATONE;
     case SPECIES_SEVIPER: return SPECIES_ZANGOOSE;
     case SPECIES_ZANGOOSE: return SPECIES_SEVIPER;
+    case SPECIES_INDEEDEE_M: return SPECIES_INDEEDEE_F;
+    case SPECIES_INDEEDEE_F: return SPECIES_INDEEDEE_M;
     default: return SPECIES_NONE;
     }
 }
