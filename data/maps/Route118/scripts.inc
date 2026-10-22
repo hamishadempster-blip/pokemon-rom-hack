@@ -298,3 +298,81 @@ Route118_Text_RouteSign119:
 	.string "ROUTE 118\n"
 	.string "{UP_ARROW} ROUTE 119$"
 
+
+Route118_EventScript_IndeedeeScout::
+	lock
+	faceplayer
+	goto_if_set FLAG_COOP_QUEST_INDEEDEE, Route118_EventScript_IndeedeeScoutDone
+	msgbox Route118_Text_IndeedeeScoutAsk, MSGBOX_YESNO
+	goto_if_eq VAR_RESULT, NO, Route118_EventScript_IndeedeeScoutDecline
+	msgbox Route118_Text_IndeedeeScoutWhich, MSGBOX_DEFAULT
+	chooseboxmon
+	waitstate
+	goto_if_eq VAR_0x8004, PARTY_NOTHING_CHOSEN, Route118_EventScript_IndeedeeScoutDecline
+	specialvar VAR_RESULT, ScriptGetShownMonSpecies
+	goto_if_eq VAR_RESULT, SPECIES_EGG, Route118_EventScript_IndeedeeScoutEgg
+	goto_if_eq VAR_RESULT, SPECIES_NONE, Route118_EventScript_IndeedeeScoutWrong
+	goto_if_eq VAR_RESULT, SPECIES_INDEEDEE_M, Route118_EventScript_IndeedeeScoutReward
+	goto_if_eq VAR_RESULT, SPECIES_INDEEDEE_F, Route118_EventScript_IndeedeeScoutReward
+	goto Route118_EventScript_IndeedeeScoutWrong
+
+Route118_EventScript_IndeedeeScoutReward::
+	msgbox Route118_Text_IndeedeeScoutYes, MSGBOX_DEFAULT
+	giveitem ITEM_DESTINY_KNOT
+	goto_if_eq VAR_RESULT, FALSE, Common_EventScript_ShowBagIsFull
+	setflag FLAG_COOP_QUEST_INDEEDEE
+	msgbox Route118_Text_IndeedeeScoutAfter, MSGBOX_DEFAULT
+	release
+	end
+
+Route118_EventScript_IndeedeeScoutWrong::
+	msgbox Route118_Text_IndeedeeScoutWrong, MSGBOX_DEFAULT
+	release
+	end
+
+Route118_EventScript_IndeedeeScoutEgg::
+	msgbox Route118_Text_IndeedeeScoutEgg, MSGBOX_DEFAULT
+	release
+	end
+
+Route118_EventScript_IndeedeeScoutDecline::
+	msgbox Route118_Text_IndeedeeScoutDecline, MSGBOX_DEFAULT
+	release
+	end
+
+Route118_EventScript_IndeedeeScoutDone::
+	msgbox Route118_Text_IndeedeeScoutDone, MSGBOX_DEFAULT
+	release
+	end
+
+Route118_Text_IndeedeeScoutAsk::
+	.string "Indeedee come in a pair.\n"
+	.string "One listens. One answers.\p"
+	.string "Show me either one.\n"
+	.string "I have a Destiny Knot.$"
+
+Route118_Text_IndeedeeScoutWhich::
+	.string "Which Indeedee did you meet?$"
+
+Route118_Text_IndeedeeScoutYes::
+	.string "They stand closer when\n"
+	.string "two trainers share the grass.$"
+
+Route118_Text_IndeedeeScoutWrong::
+	.string "That isn't an Indeedee.$"
+
+Route118_Text_IndeedeeScoutEgg::
+	.string "An Egg hasn't chosen\n"
+	.string "which of the pair it is.$"
+
+Route118_Text_IndeedeeScoutDecline::
+	.string "They'll wait.\n"
+	.string "Pairs are patient.$"
+
+Route118_Text_IndeedeeScoutAfter::
+	.string "Route 118 should glow\n"
+	.string "on your POKéDEX map.$"
+
+Route118_Text_IndeedeeScoutDone::
+	.string "Bring a friend if you want\n"
+	.string "the whole pair at once.$"

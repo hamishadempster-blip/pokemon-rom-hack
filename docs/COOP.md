@@ -144,6 +144,42 @@ Gigalith is on the Desert Underpass. The underpass encounter table already runs 
 
 Gym leaders, gym partners, rematches, the Elite Four, and both champions now have Smart Switching and Try To 2HKO on top of their old AI. The doubles-trick score bonuses are a bit higher, so they commit to Thunder Wave, Fake Out, Discharge, Eruption, Protect, Helping Hand, Tailwind, Trick Room, and the safe Earthquakes more often. Ace levels are the same.
 
+## Hoenn Pokédex
+
+Houndour and Houndoom sit with Poochyena, so the Cinder starter registers as soon as you take it. Every visitor above, and the rest of its evolution line, is in the Hoenn Pokédex after Deoxys. The new pages sit in roughly the order you can meet them. Seeing or catching one registers it before the National Dex is unlocked. The area screen reads the wild tables, so a seen species lights the route, cave, or water where that species is encountered. An evolution lights a place only when that evolved form is itself in a wild table. Politoed, Abomasnow, and Gigalith are. A pre-evolution you have not seen yet stays a blank slot until you do.
+
+A species with no Hoenn number no longer counts as a Hoenn species for the summary screen or a link trade. Before the National Dex, a link trade still accepts anything in this regional list, including the visitors.
+
+## People, trades, and errands
+
+These work for one player. A link partner is not required, and none of them hand out a story item or a badge.
+
+In-game trades copy the level of the Pokémon you give. Each trade happens once.
+
+| Who | Where | They want | They give |
+| --- | --- | --- | --- |
+| Lass | Route 102 | Zigzagoon | Lechonk, nicknamed Oinker |
+| Woman | Petalburg Woods | Wurmple | Tarountula, nicknamed Webby |
+| Black Belt | Jagged Pass | Numel | Charcadet, nicknamed Cinder |
+| Expert | Meteor Falls 1F | Bagon | Jangmo-o, nicknamed Scales |
+| Swimmer | Route 124 | Wingull | Finizen, nicknamed Bubbles |
+
+Show the person a matching Pokémon from your party or your PC. The errand is once each. A full Bag refuses the item, and they ask again.
+
+| Who | Where | Show them | Reward |
+| --- | --- | --- | --- |
+| Expert | Granite Cave 1F | Nacli or Glimmet | Hard Stone |
+| Lass | Route 110 | Pawmi | Magnet |
+| Hex Maniac | Route 113 | Bramblin | Soft Sand |
+| Psychic | Route 118 | Indeedee, either | Destiny Knot |
+| Woman | Route 119 | Toedscool | Big Mushroom |
+| Hex Maniac | Mt. Pyre 1F | Greavard, Mimikyu, or Dreepy | Spell Tag |
+| Pokéfan | Safari Zone, south | Fidough or Cyclizar | Soothe Bell |
+| Expert | Shoal Cave, low tide inner room | Cetoddle or Abomasnow | Never-Melt Ice |
+| Expert | Victory Road 1F | Gimmighoul, Tinkatink, or Frigibax | Nugget |
+
+Three people only talk. A girl in Oldale explains the Pokédex map. A scientist in Mauville explains the same-spot pairs, including Indeedee. A fisherman in Lilycove talks about Dondozo and Tatsugiri.
+
 ## Level cap
 
 Default on. The steps are 16, 22, 28, 34, 40, 46, 52, 58, then 66 for the Elite Four, then 75 after the champion. EXP, Rare Candy, the day care, and EXP Share stop at the cap. A Pokémon already above the cap is not lowered. The party screen shows the cap next to the level. Both saves have to agree before a link comes up. Gym levels do not scale.

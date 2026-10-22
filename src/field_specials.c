@@ -1643,6 +1643,22 @@ enum Species ScriptGetPartyMonSpecies(void)
     return GetMonData(&gParties[B_TRAINER_PLAYER][gSpecialVar_0x8004], MON_DATA_SPECIES_OR_EGG, NULL);
 }
 
+enum Species ScriptGetShownMonSpecies(void)
+{
+    if (gSpecialVar_0x8004 < PARTY_SIZE)
+        return GetMonData(&gParties[B_TRAINER_PLAYER][gSpecialVar_0x8004], MON_DATA_SPECIES_OR_EGG, NULL);
+
+    if (gSpecialVar_0x8004 == PC_MON_CHOSEN)
+    {
+        struct BoxPokemon *boxMon = GetBoxedMonPtr(gSpecialVar_MonBoxId, gSpecialVar_MonBoxPos);
+
+        if (boxMon != NULL)
+            return GetBoxMonData(boxMon, MON_DATA_SPECIES_OR_EGG, NULL);
+    }
+
+    return SPECIES_NONE;
+}
+
 // Removed for Emerald
 void TryInitBattleTowerAwardManObjectEvent(void)
 {

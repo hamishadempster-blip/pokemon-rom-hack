@@ -652,3 +652,4 @@ gSpecials::
 	def_special Coop_RequestLabWarp
 	def_special Coop_BufferPartnerLocation
 	def_special Coop_BufferCapText
+	def_special ScriptGetShownMonSpecies

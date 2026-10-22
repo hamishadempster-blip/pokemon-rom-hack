@@ -754,3 +754,14 @@ LilycoveCity_Text_HoneymoonVowToSeeRarePokemon:
 	.string "POKéMON as soon as we arrived.\p"
 	.string "I mean, we are totally happy!$"
 
+
+LilycoveCity_EventScript_HarborFisher::
+	msgbox LilycoveCity_Text_HarborFisher, MSGBOX_NPC
+	end
+
+LilycoveCity_Text_HarborFisher::
+	.string "Past the harbor, Dondozo cruise\n"
+	.string "the deep routes. Tatsugiri\n"
+	.string "flicker along beside them.\p"
+	.string "The POKéDEX map marks the\n"
+	.string "water where they surface.$"

@@ -307,3 +307,51 @@ MeteorFalls_1F_1R_Text_WhatsTeamMagmaDoingAtMtChimney:
 	.string "PROF. COZMO: But that TEAM MAGMA…\p"
 	.string "What are they going to do with that\n"
 	.string "METEORITE at MT. CHIMNEY?$"
+
+MeteorFalls_1F_1R_EventScript_JangmoTrade::
+	lock
+	faceplayer
+	goto_if_set FLAG_COOP_TRADE_JANGMO_O, MeteorFalls_1F_1R_EventScript_JangmoTradeDone
+	ingame_trade INGAME_TRADE_JANGMO_O, MeteorFalls_1F_1R_Text_JangmoTradeAsk, MeteorFalls_1F_1R_EventScript_JangmoTradeDecline, MeteorFalls_1F_1R_EventScript_JangmoTradeWrong, MeteorFalls_1F_1R_Text_JangmoTradeComplete
+	setflag FLAG_COOP_TRADE_JANGMO_O
+	release
+	end
+
+MeteorFalls_1F_1R_EventScript_JangmoTradeDecline::
+	msgbox MeteorFalls_1F_1R_Text_JangmoTradeDecline, MSGBOX_DEFAULT
+	release
+	end
+
+MeteorFalls_1F_1R_EventScript_JangmoTradeWrong::
+	bufferspeciesname STR_VAR_1, VAR_0x8009
+	msgbox MeteorFalls_1F_1R_Text_JangmoTradeWrong, MSGBOX_DEFAULT
+	release
+	end
+
+MeteorFalls_1F_1R_EventScript_JangmoTradeDone::
+	msgbox MeteorFalls_1F_1R_Text_JangmoTradeDone, MSGBOX_DEFAULT
+	release
+	end
+
+MeteorFalls_1F_1R_Text_JangmoTradeAsk::
+	.string "Deeper in, scales click\n"
+	.string "like armor on the stone.\p"
+	.string "I'll trade my {STR_VAR_2}\n"
+	.string "for a {STR_VAR_1}.$"
+
+MeteorFalls_1F_1R_Text_JangmoTradeDecline::
+	.string "Scales can stay with me.\n"
+	.string "The falls echo either way.$"
+
+MeteorFalls_1F_1R_Text_JangmoTradeWrong::
+	.string "That isn't a {STR_VAR_1}.$"
+
+MeteorFalls_1F_1R_Text_JangmoTradeComplete::
+	.string "Scales grows by battling.\n"
+	.string "Take the lower floor slowly.\p"
+	.string "Jangmo-o live down there,\n"
+	.string "and the map will show it.$"
+
+MeteorFalls_1F_1R_Text_JangmoTradeDone::
+	.string "Noibat share the upper cave.\n"
+	.string "Listen before you step.$"

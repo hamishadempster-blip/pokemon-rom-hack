@@ -134,3 +134,82 @@ ShoalCave_LowTideInnerRoom_EventScript_ShoalSalt2::
 	setflag FLAG_RECEIVED_SHOAL_SALT_2
 	releaseall
 	end
+
+ShoalCave_LowTideInnerRoom_EventScript_IceScout::
+	lock
+	faceplayer
+	goto_if_set FLAG_COOP_QUEST_SHOAL, ShoalCave_LowTideInnerRoom_EventScript_IceScoutDone
+	msgbox ShoalCave_LowTideInnerRoom_Text_IceScoutAsk, MSGBOX_YESNO
+	goto_if_eq VAR_RESULT, NO, ShoalCave_LowTideInnerRoom_EventScript_IceScoutDecline
+	msgbox ShoalCave_LowTideInnerRoom_Text_IceScoutWhich, MSGBOX_DEFAULT
+	chooseboxmon
+	waitstate
+	goto_if_eq VAR_0x8004, PARTY_NOTHING_CHOSEN, ShoalCave_LowTideInnerRoom_EventScript_IceScoutDecline
+	specialvar VAR_RESULT, ScriptGetShownMonSpecies
+	goto_if_eq VAR_RESULT, SPECIES_EGG, ShoalCave_LowTideInnerRoom_EventScript_IceScoutEgg
+	goto_if_eq VAR_RESULT, SPECIES_NONE, ShoalCave_LowTideInnerRoom_EventScript_IceScoutWrong
+	goto_if_eq VAR_RESULT, SPECIES_CETODDLE, ShoalCave_LowTideInnerRoom_EventScript_IceScoutReward
+	goto_if_eq VAR_RESULT, SPECIES_ABOMASNOW, ShoalCave_LowTideInnerRoom_EventScript_IceScoutReward
+	goto ShoalCave_LowTideInnerRoom_EventScript_IceScoutWrong
+
+ShoalCave_LowTideInnerRoom_EventScript_IceScoutReward::
+	msgbox ShoalCave_LowTideInnerRoom_Text_IceScoutYes, MSGBOX_DEFAULT
+	giveitem ITEM_NEVER_MELT_ICE
+	goto_if_eq VAR_RESULT, FALSE, Common_EventScript_ShowBagIsFull
+	setflag FLAG_COOP_QUEST_SHOAL
+	msgbox ShoalCave_LowTideInnerRoom_Text_IceScoutAfter, MSGBOX_DEFAULT
+	release
+	end
+
+ShoalCave_LowTideInnerRoom_EventScript_IceScoutWrong::
+	msgbox ShoalCave_LowTideInnerRoom_Text_IceScoutWrong, MSGBOX_DEFAULT
+	release
+	end
+
+ShoalCave_LowTideInnerRoom_EventScript_IceScoutEgg::
+	msgbox ShoalCave_LowTideInnerRoom_Text_IceScoutEgg, MSGBOX_DEFAULT
+	release
+	end
+
+ShoalCave_LowTideInnerRoom_EventScript_IceScoutDecline::
+	msgbox ShoalCave_LowTideInnerRoom_Text_IceScoutDecline, MSGBOX_DEFAULT
+	release
+	end
+
+ShoalCave_LowTideInnerRoom_EventScript_IceScoutDone::
+	msgbox ShoalCave_LowTideInnerRoom_Text_IceScoutDone, MSGBOX_DEFAULT
+	release
+	end
+
+ShoalCave_LowTideInnerRoom_Text_IceScoutAsk::
+	.string "The inner cave stays cold\n"
+	.string "even when the tide is out.\p"
+	.string "Show me a Cetoddle or\n"
+	.string "an Abomasnow.\p"
+	.string "This ice never melts.$"
+
+ShoalCave_LowTideInnerRoom_Text_IceScoutWhich::
+	.string "Which one braved the cold?$"
+
+ShoalCave_LowTideInnerRoom_Text_IceScoutYes::
+	.string "Your breath fogs the same way.$"
+
+ShoalCave_LowTideInnerRoom_Text_IceScoutWrong::
+	.string "I need a Cetoddle\n"
+	.string "or an Abomasnow.$"
+
+ShoalCave_LowTideInnerRoom_Text_IceScoutEgg::
+	.string "Don't leave an Egg\n"
+	.string "in a cave this cold.$"
+
+ShoalCave_LowTideInnerRoom_Text_IceScoutDecline::
+	.string "Low tide won't last.\n"
+	.string "Come through while you can.$"
+
+ShoalCave_LowTideInnerRoom_Text_IceScoutAfter::
+	.string "Shoal Cave glows on\n"
+	.string "the POKéDEX map.$"
+
+ShoalCave_LowTideInnerRoom_Text_IceScoutDone::
+	.string "Snover root in the same ice.\n"
+	.string "The map knows the room.$"

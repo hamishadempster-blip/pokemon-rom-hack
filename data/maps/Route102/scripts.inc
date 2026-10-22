@@ -107,3 +107,50 @@ Route102_Text_RouteSignOldale:
 Route102_Text_RouteSignPetalburg:
 	.string "ROUTE 102\n"
 	.string "{LEFT_ARROW} PETALBURG CITY$"
+
+Route102_EventScript_LechonkTrade::
+	lock
+	faceplayer
+	goto_if_set FLAG_COOP_TRADE_LECHONK, Route102_EventScript_LechonkTradeDone
+	ingame_trade INGAME_TRADE_LECHONK, Route102_Text_LechonkTradeAsk, Route102_EventScript_LechonkTradeDecline, Route102_EventScript_LechonkTradeWrong, Route102_Text_LechonkTradeComplete
+	setflag FLAG_COOP_TRADE_LECHONK
+	release
+	end
+
+Route102_EventScript_LechonkTradeDecline::
+	msgbox Route102_Text_LechonkTradeDecline, MSGBOX_DEFAULT
+	release
+	end
+
+Route102_EventScript_LechonkTradeWrong::
+	bufferspeciesname STR_VAR_1, VAR_0x8009
+	msgbox Route102_Text_LechonkTradeWrong, MSGBOX_DEFAULT
+	release
+	end
+
+Route102_EventScript_LechonkTradeDone::
+	msgbox Route102_Text_LechonkTradeDone, MSGBOX_DEFAULT
+	release
+	end
+
+Route102_Text_LechonkTradeAsk::
+	.string "A round little pig moved onto\n"
+	.string "this route beside the Zigzagoon.\p"
+	.string "I'll trade you my {STR_VAR_2}\n"
+	.string "for a {STR_VAR_1}.$"
+
+Route102_Text_LechonkTradeDecline::
+	.string "That's all right.\n"
+	.string "Oinker likes the grass here.$"
+
+Route102_Text_LechonkTradeWrong::
+	.string "Hmm. That isn't a {STR_VAR_1}.$"
+
+Route102_Text_LechonkTradeComplete::
+	.string "Please be gentle with Oinker.\p"
+	.string "Open the POKéDEX map.\n"
+	.string "Route 102 should be glowing.$"
+
+Route102_Text_LechonkTradeDone::
+	.string "Any POKéMON settles in\n"
+	.string "if you walk with it a while.$"

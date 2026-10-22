@@ -662,3 +662,15 @@ MauvilleCity_Text_ExplainTV:
 
 MauvilleCity_Text_BeenCheckingOutTV:
 	.string "Hi, have you been checking out TVs?$"
+
+MauvilleCity_EventScript_PairResearcher::
+	msgbox MauvilleCity_Text_PairResearcher, MSGBOX_NPC
+	end
+
+MauvilleCity_Text_PairResearcher::
+	.string "Plusle and Minun show up together\n"
+	.string "when two trainers share a spot.\p"
+	.string "Volbeat and Illumise, Lunatone\n"
+	.string "and Solrock, Seviper and Zangoose.\p"
+	.string "Indeedee pair up the same way,\n"
+	.string "east of here. Bring a friend.$"

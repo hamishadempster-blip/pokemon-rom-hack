@@ -264,3 +264,51 @@ JaggedPass_Text_AutumnPostBattle:
 	.string "What is that odd rock protrusion\n"
 	.string "a little up the hill from here?$"
 
+
+JaggedPass_EventScript_CharcadetTrade::
+	lock
+	faceplayer
+	goto_if_set FLAG_COOP_TRADE_CHARCADET, JaggedPass_EventScript_CharcadetTradeDone
+	ingame_trade INGAME_TRADE_CHARCADET, JaggedPass_Text_CharcadetTradeAsk, JaggedPass_EventScript_CharcadetTradeDecline, JaggedPass_EventScript_CharcadetTradeWrong, JaggedPass_Text_CharcadetTradeComplete
+	setflag FLAG_COOP_TRADE_CHARCADET
+	release
+	end
+
+JaggedPass_EventScript_CharcadetTradeDecline::
+	msgbox JaggedPass_Text_CharcadetTradeDecline, MSGBOX_DEFAULT
+	release
+	end
+
+JaggedPass_EventScript_CharcadetTradeWrong::
+	bufferspeciesname STR_VAR_1, VAR_0x8009
+	msgbox JaggedPass_Text_CharcadetTradeWrong, MSGBOX_DEFAULT
+	release
+	end
+
+JaggedPass_EventScript_CharcadetTradeDone::
+	msgbox JaggedPass_Text_CharcadetTradeDone, MSGBOX_DEFAULT
+	release
+	end
+
+JaggedPass_Text_CharcadetTradeAsk::
+	.string "The rocks here stay warm enough\n"
+	.string "to wake a little fire knight.\p"
+	.string "Trade me a {STR_VAR_1} and\n"
+	.string "my {STR_VAR_2} is yours.$"
+
+JaggedPass_Text_CharcadetTradeDecline::
+	.string "Cinder can wait.\n"
+	.string "The pass isn't cooling off.$"
+
+JaggedPass_Text_CharcadetTradeWrong::
+	.string "I asked for a {STR_VAR_1}.\n"
+	.string "That isn't one.$"
+
+JaggedPass_Text_CharcadetTradeComplete::
+	.string "Cinder fights with a full heart.\p"
+	.string "The POKéDEX map marks\n"
+	.string "Jagged Pass for its kind.$"
+
+JaggedPass_Text_CharcadetTradeDone::
+	.string "Numel like the heat too.\n"
+	.string "Don't rush either of them.$"

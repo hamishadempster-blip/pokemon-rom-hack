@@ -1211,6 +1211,86 @@ static const struct InGameTrade sIngameTrades[] =
         .otGender = MALE,
         .sheen = 10,
         .requestedSpecies = SPECIES_PONYTA
+    },
+    [INGAME_TRADE_LECHONK] =
+    {
+        .nickname = _("OINKER"),
+        .species = SPECIES_LECHONK,
+        .ivs = {5, 5, 5, 5, 5, 5},
+        .abilityNum = 0,
+        .otId = 48102,
+        .conditions = {5, 5, 5, 5, 5},
+        .personality = 0x6F,
+        .heldItem = ITEM_ORAN_BERRY,
+        .mailNum = -1,
+        .otName = _("NIA"),
+        .otGender = FEMALE,
+        .sheen = 10,
+        .requestedSpecies = SPECIES_ZIGZAGOON
+    },
+    [INGAME_TRADE_TAROUNTULA] =
+    {
+        .nickname = _("WEBBY"),
+        .species = SPECIES_TAROUNTULA,
+        .ivs = {5, 5, 5, 5, 5, 5},
+        .abilityNum = 0,
+        .otId = 48116,
+        .conditions = {5, 5, 5, 5, 5},
+        .personality = 0x84,
+        .heldItem = ITEM_PECHA_BERRY,
+        .mailNum = -1,
+        .otName = _("LUCY"),
+        .otGender = FEMALE,
+        .sheen = 10,
+        .requestedSpecies = SPECIES_WURMPLE
+    },
+    [INGAME_TRADE_CHARCADET] =
+    {
+        .nickname = _("CINDER"),
+        .species = SPECIES_CHARCADET,
+        .ivs = {5, 5, 5, 5, 5, 5},
+        .abilityNum = 0,
+        .otId = 48128,
+        .conditions = {5, 5, 5, 5, 5},
+        .personality = 0x7F,
+        .heldItem = ITEM_RAWST_BERRY,
+        .mailNum = -1,
+        .otName = _("ASH"),
+        .otGender = MALE,
+        .sheen = 10,
+        .requestedSpecies = SPECIES_NUMEL
+    },
+    [INGAME_TRADE_JANGMO_O] =
+    {
+        .nickname = _("SCALES"),
+        .species = SPECIES_JANGMO_O,
+        .ivs = {5, 5, 5, 5, 5, 5},
+        .abilityNum = 0,
+        .otId = 48133,
+        .conditions = {5, 5, 5, 5, 5},
+        .personality = 0x8B,
+        .heldItem = ITEM_ORAN_BERRY,
+        .mailNum = -1,
+        .otName = _("RIN"),
+        .otGender = FEMALE,
+        .sheen = 10,
+        .requestedSpecies = SPECIES_BAGON
+    },
+    [INGAME_TRADE_FINIZEN] =
+    {
+        .nickname = _("BUBBLES"),
+        .species = SPECIES_FINIZEN,
+        .ivs = {5, 5, 5, 5, 5, 5},
+        .abilityNum = 0,
+        .otId = 48140,
+        .conditions = {5, 5, 5, 5, 5},
+        .personality = 0x5A,
+        .heldItem = ITEM_CHESTO_BERRY,
+        .mailNum = -1,
+        .otName = _("CORA"),
+        .otGender = FEMALE,
+        .sheen = 10,
+        .requestedSpecies = SPECIES_WINGULL
     }
 };
 

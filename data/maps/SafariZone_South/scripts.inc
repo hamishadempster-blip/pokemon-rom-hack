@@ -148,3 +148,80 @@ SafariZone_Northeast_EventScript_Woman::
 SafariZone_Northeast_EventScript_Girl::
 	msgbox SafariZone_Northeast_Text_Girl, MSGBOX_NPC
 	end
+
+SafariZone_South_EventScript_SafariScout::
+	lock
+	faceplayer
+	goto_if_set FLAG_COOP_QUEST_SAFARI, SafariZone_South_EventScript_SafariScoutDone
+	msgbox SafariZone_South_Text_SafariScoutAsk, MSGBOX_YESNO
+	goto_if_eq VAR_RESULT, NO, SafariZone_South_EventScript_SafariScoutDecline
+	msgbox SafariZone_South_Text_SafariScoutWhich, MSGBOX_DEFAULT
+	chooseboxmon
+	waitstate
+	goto_if_eq VAR_0x8004, PARTY_NOTHING_CHOSEN, SafariZone_South_EventScript_SafariScoutDecline
+	specialvar VAR_RESULT, ScriptGetShownMonSpecies
+	goto_if_eq VAR_RESULT, SPECIES_EGG, SafariZone_South_EventScript_SafariScoutEgg
+	goto_if_eq VAR_RESULT, SPECIES_NONE, SafariZone_South_EventScript_SafariScoutWrong
+	goto_if_eq VAR_RESULT, SPECIES_FIDOUGH, SafariZone_South_EventScript_SafariScoutReward
+	goto_if_eq VAR_RESULT, SPECIES_CYCLIZAR, SafariZone_South_EventScript_SafariScoutReward
+	goto SafariZone_South_EventScript_SafariScoutWrong
+
+SafariZone_South_EventScript_SafariScoutReward::
+	msgbox SafariZone_South_Text_SafariScoutYes, MSGBOX_DEFAULT
+	giveitem ITEM_SOOTHE_BELL
+	goto_if_eq VAR_RESULT, FALSE, Common_EventScript_ShowBagIsFull
+	setflag FLAG_COOP_QUEST_SAFARI
+	msgbox SafariZone_South_Text_SafariScoutAfter, MSGBOX_DEFAULT
+	release
+	end
+
+SafariZone_South_EventScript_SafariScoutWrong::
+	msgbox SafariZone_South_Text_SafariScoutWrong, MSGBOX_DEFAULT
+	release
+	end
+
+SafariZone_South_EventScript_SafariScoutEgg::
+	msgbox SafariZone_South_Text_SafariScoutEgg, MSGBOX_DEFAULT
+	release
+	end
+
+SafariZone_South_EventScript_SafariScoutDecline::
+	msgbox SafariZone_South_Text_SafariScoutDecline, MSGBOX_DEFAULT
+	release
+	end
+
+SafariZone_South_EventScript_SafariScoutDone::
+	msgbox SafariZone_South_Text_SafariScoutDone, MSGBOX_DEFAULT
+	release
+	end
+
+SafariZone_South_Text_SafariScoutAsk::
+	.string "A dough puppy and a swift\n"
+	.string "lizard turned up in the south.\p"
+	.string "Show me a Fidough or\n"
+	.string "a Cyclizar. I baked a bell.$"
+
+SafariZone_South_Text_SafariScoutWhich::
+	.string "Which one came back with you?$"
+
+SafariZone_South_Text_SafariScoutYes::
+	.string "The Safari still surprises me.$"
+
+SafariZone_South_Text_SafariScoutWrong::
+	.string "I need a Fidough\n"
+	.string "or a Cyclizar.$"
+
+SafariZone_South_Text_SafariScoutEgg::
+	.string "The Safari won't count an Egg.$"
+
+SafariZone_South_Text_SafariScoutDecline::
+	.string "Safari Balls run out fast.\n"
+	.string "Save one if you see them.$"
+
+SafariZone_South_Text_SafariScoutAfter::
+	.string "The south area glows\n"
+	.string "on the POKéDEX map.$"
+
+SafariZone_South_Text_SafariScoutDone::
+	.string "The bell soothes a shy one.\n"
+	.string "Fidough likes the sound.$"

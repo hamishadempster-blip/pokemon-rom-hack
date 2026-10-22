@@ -164,3 +164,79 @@ Route113_Text_GlassWorkshopSign:
 	.string "GLASS WORKSHOP\n"
 	.string "“Turning Volcanic Ash into Glass Items”$"
 
+
+Route113_EventScript_BramblinScout::
+	lock
+	faceplayer
+	goto_if_set FLAG_COOP_QUEST_BRAMBLIN, Route113_EventScript_BramblinScoutDone
+	msgbox Route113_Text_BramblinScoutAsk, MSGBOX_YESNO
+	goto_if_eq VAR_RESULT, NO, Route113_EventScript_BramblinScoutDecline
+	msgbox Route113_Text_BramblinScoutWhich, MSGBOX_DEFAULT
+	chooseboxmon
+	waitstate
+	goto_if_eq VAR_0x8004, PARTY_NOTHING_CHOSEN, Route113_EventScript_BramblinScoutDecline
+	specialvar VAR_RESULT, ScriptGetShownMonSpecies
+	goto_if_eq VAR_RESULT, SPECIES_EGG, Route113_EventScript_BramblinScoutEgg
+	goto_if_eq VAR_RESULT, SPECIES_NONE, Route113_EventScript_BramblinScoutWrong
+	goto_if_eq VAR_RESULT, SPECIES_BRAMBLIN, Route113_EventScript_BramblinScoutReward
+	goto Route113_EventScript_BramblinScoutWrong
+
+Route113_EventScript_BramblinScoutReward::
+	msgbox Route113_Text_BramblinScoutYes, MSGBOX_DEFAULT
+	giveitem ITEM_SOFT_SAND
+	goto_if_eq VAR_RESULT, FALSE, Common_EventScript_ShowBagIsFull
+	setflag FLAG_COOP_QUEST_BRAMBLIN
+	msgbox Route113_Text_BramblinScoutAfter, MSGBOX_DEFAULT
+	release
+	end
+
+Route113_EventScript_BramblinScoutWrong::
+	msgbox Route113_Text_BramblinScoutWrong, MSGBOX_DEFAULT
+	release
+	end
+
+Route113_EventScript_BramblinScoutEgg::
+	msgbox Route113_Text_BramblinScoutEgg, MSGBOX_DEFAULT
+	release
+	end
+
+Route113_EventScript_BramblinScoutDecline::
+	msgbox Route113_Text_BramblinScoutDecline, MSGBOX_DEFAULT
+	release
+	end
+
+Route113_EventScript_BramblinScoutDone::
+	msgbox Route113_Text_BramblinScoutDone, MSGBOX_DEFAULT
+	release
+	end
+
+Route113_Text_BramblinScoutAsk::
+	.string "The ash rolls itself into\n"
+	.string "a tumbleweed some days.\p"
+	.string "Show me a Bramblin.\n"
+	.string "I saved some Soft Sand.$"
+
+Route113_Text_BramblinScoutWhich::
+	.string "Is that the tumbleweed?$"
+
+Route113_Text_BramblinScoutYes::
+	.string "It even smells like the pass.$"
+
+Route113_Text_BramblinScoutWrong::
+	.string "That isn't a Bramblin.$"
+
+Route113_Text_BramblinScoutEgg::
+	.string "That's an Egg, not a\n"
+	.string "tumble of dried brush.$"
+
+Route113_Text_BramblinScoutDecline::
+	.string "Don't breathe too deep\n"
+	.string "while you search the ash.$"
+
+Route113_Text_BramblinScoutAfter::
+	.string "Route 113 glows on the\n"
+	.string "POKéDEX map for Bramblin.$"
+
+Route113_Text_BramblinScoutDone::
+	.string "The glass workers hate the ash.\n"
+	.string "Bramblin doesn't mind it.$"

@@ -102,3 +102,52 @@ Route124_EventScript_Isabella::
 Route124_Text_HuntersHouse:
 	.string "HUNTER'S HOUSE$"
 
+
+Route124_EventScript_FinizenTrade::
+	lock
+	faceplayer
+	goto_if_set FLAG_COOP_TRADE_FINIZEN, Route124_EventScript_FinizenTradeDone
+	ingame_trade INGAME_TRADE_FINIZEN, Route124_Text_FinizenTradeAsk, Route124_EventScript_FinizenTradeDecline, Route124_EventScript_FinizenTradeWrong, Route124_Text_FinizenTradeComplete
+	setflag FLAG_COOP_TRADE_FINIZEN
+	release
+	end
+
+Route124_EventScript_FinizenTradeDecline::
+	msgbox Route124_Text_FinizenTradeDecline, MSGBOX_DEFAULT
+	release
+	end
+
+Route124_EventScript_FinizenTradeWrong::
+	bufferspeciesname STR_VAR_1, VAR_0x8009
+	msgbox Route124_Text_FinizenTradeWrong, MSGBOX_DEFAULT
+	release
+	end
+
+Route124_EventScript_FinizenTradeDone::
+	msgbox Route124_Text_FinizenTradeDone, MSGBOX_DEFAULT
+	release
+	end
+
+Route124_Text_FinizenTradeAsk::
+	.string "A round dolphin pops up\n"
+	.string "beside the Wingull out here.\p"
+	.string "I'll trade my {STR_VAR_2}\n"
+	.string "for a {STR_VAR_1}.$"
+
+Route124_Text_FinizenTradeDecline::
+	.string "Bubbles will keep the ring.\n"
+	.string "Come back if you change your mind.$"
+
+Route124_Text_FinizenTradeWrong::
+	.string "I need a {STR_VAR_1}.\n"
+	.string "That isn't one.$"
+
+Route124_Text_FinizenTradeComplete::
+	.string "Bubbles loves open water.\p"
+	.string "Surf this route and the\n"
+	.string "POKéDEX map will light it.$"
+
+Route124_Text_FinizenTradeDone::
+	.string "Farther out, Tatsugiri\n"
+	.string "swim with the bigger fish.\p"
+	.string "The map marks that water too.$"

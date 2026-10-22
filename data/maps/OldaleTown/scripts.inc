@@ -395,3 +395,13 @@ OldaleTown_Text_TownSign:
 	.string "OLDALE TOWN\n"
 	.string "“Where things start off scarce.”$"
 
+
+OldaleTown_EventScript_DexKid::
+	msgbox OldaleTown_Text_DexKid, MSGBOX_NPC
+	end
+
+OldaleTown_Text_DexKid::
+	.string "My POKéDEX map lights up\n"
+	.string "where a POKéMON lives.\p"
+	.string "Some new ones already glow\n"
+	.string "on Route 102. Go look!$"

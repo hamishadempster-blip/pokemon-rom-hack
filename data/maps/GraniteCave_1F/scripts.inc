@@ -37,3 +37,82 @@ GraniteCave_1F_Text_ExplainFlash:
 	.string "But, to use it, you need the GYM BADGE\n"
 	.string "from DEWFORD's POKéMON GYM.$"
 
+
+GraniteCave_1F_EventScript_RockScout::
+	lock
+	faceplayer
+	goto_if_set FLAG_COOP_QUEST_GRANITE, GraniteCave_1F_EventScript_RockScoutDone
+	msgbox GraniteCave_1F_Text_RockScoutAsk, MSGBOX_YESNO
+	goto_if_eq VAR_RESULT, NO, GraniteCave_1F_EventScript_RockScoutDecline
+	msgbox GraniteCave_1F_Text_RockScoutWhich, MSGBOX_DEFAULT
+	chooseboxmon
+	waitstate
+	goto_if_eq VAR_0x8004, PARTY_NOTHING_CHOSEN, GraniteCave_1F_EventScript_RockScoutDecline
+	specialvar VAR_RESULT, ScriptGetShownMonSpecies
+	goto_if_eq VAR_RESULT, SPECIES_EGG, GraniteCave_1F_EventScript_RockScoutEgg
+	goto_if_eq VAR_RESULT, SPECIES_NONE, GraniteCave_1F_EventScript_RockScoutWrong
+	goto_if_eq VAR_RESULT, SPECIES_NACLI, GraniteCave_1F_EventScript_RockScoutReward
+	goto_if_eq VAR_RESULT, SPECIES_GLIMMET, GraniteCave_1F_EventScript_RockScoutReward
+	goto GraniteCave_1F_EventScript_RockScoutWrong
+
+GraniteCave_1F_EventScript_RockScoutReward::
+	msgbox GraniteCave_1F_Text_RockScoutYes, MSGBOX_DEFAULT
+	giveitem ITEM_HARD_STONE
+	goto_if_eq VAR_RESULT, FALSE, Common_EventScript_ShowBagIsFull
+	setflag FLAG_COOP_QUEST_GRANITE
+	msgbox GraniteCave_1F_Text_RockScoutAfter, MSGBOX_DEFAULT
+	release
+	end
+
+GraniteCave_1F_EventScript_RockScoutWrong::
+	msgbox GraniteCave_1F_Text_RockScoutWrong, MSGBOX_DEFAULT
+	release
+	end
+
+GraniteCave_1F_EventScript_RockScoutEgg::
+	msgbox GraniteCave_1F_Text_RockScoutEgg, MSGBOX_DEFAULT
+	release
+	end
+
+GraniteCave_1F_EventScript_RockScoutDecline::
+	msgbox GraniteCave_1F_Text_RockScoutDecline, MSGBOX_DEFAULT
+	release
+	end
+
+GraniteCave_1F_EventScript_RockScoutDone::
+	msgbox GraniteCave_1F_Text_RockScoutDone, MSGBOX_DEFAULT
+	release
+	end
+
+GraniteCave_1F_Text_RockScoutAsk::
+	.string "Nacli and Glimmet both live\n"
+	.string "in this cave.\p"
+	.string "Show me either one and\n"
+	.string "this Hard Stone is yours.$"
+
+GraniteCave_1F_Text_RockScoutWhich::
+	.string "Which one did you bring?$"
+
+GraniteCave_1F_Text_RockScoutYes::
+	.string "That's the one.\n"
+	.string "The cave has been kind to you.$"
+
+GraniteCave_1F_Text_RockScoutWrong::
+	.string "I asked for a Nacli\n"
+	.string "or a Glimmet.$"
+
+GraniteCave_1F_Text_RockScoutEgg::
+	.string "I can't tell an Egg's\n"
+	.string "species from the shell.$"
+
+GraniteCave_1F_Text_RockScoutDecline::
+	.string "The salt and the crystals\n"
+	.string "will still be here.$"
+
+GraniteCave_1F_Text_RockScoutAfter::
+	.string "Your POKéDEX map should\n"
+	.string "glow on Granite Cave now.$"
+
+GraniteCave_1F_Text_RockScoutDone::
+	.string "Steven used to study these\n"
+	.string "stones. The map remembers.$"

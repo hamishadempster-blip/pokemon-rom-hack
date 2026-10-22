@@ -471,3 +471,52 @@ PetalburgWoods_Text_TrainerTipsPP:
 	.string "If a POKéMON runs out of PP, it must be\n"
 	.string "taken to a POKéMON CENTER.$"
 
+
+PetalburgWoods_EventScript_TarountulaTrade::
+	lock
+	faceplayer
+	goto_if_set FLAG_COOP_TRADE_TAROUNTULA, PetalburgWoods_EventScript_TarountulaTradeDone
+	ingame_trade INGAME_TRADE_TAROUNTULA, PetalburgWoods_Text_TarountulaTradeAsk, PetalburgWoods_EventScript_TarountulaTradeDecline, PetalburgWoods_EventScript_TarountulaTradeWrong, PetalburgWoods_Text_TarountulaTradeComplete
+	setflag FLAG_COOP_TRADE_TAROUNTULA
+	release
+	end
+
+PetalburgWoods_EventScript_TarountulaTradeDecline::
+	msgbox PetalburgWoods_Text_TarountulaTradeDecline, MSGBOX_DEFAULT
+	release
+	end
+
+PetalburgWoods_EventScript_TarountulaTradeWrong::
+	bufferspeciesname STR_VAR_1, VAR_0x8009
+	msgbox PetalburgWoods_Text_TarountulaTradeWrong, MSGBOX_DEFAULT
+	release
+	end
+
+PetalburgWoods_EventScript_TarountulaTradeDone::
+	msgbox PetalburgWoods_Text_TarountulaTradeDone, MSGBOX_DEFAULT
+	release
+	end
+
+PetalburgWoods_Text_TarountulaTradeAsk::
+	.string "Tarountula and Shroodle both\n"
+	.string "settled in these woods.\p"
+	.string "I'll trade my {STR_VAR_2} for\n"
+	.string "a {STR_VAR_1}, if you want.$"
+
+PetalburgWoods_Text_TarountulaTradeDecline::
+	.string "Okay. Webby will keep spinning\n"
+	.string "until somebody says yes.$"
+
+PetalburgWoods_Text_TarountulaTradeWrong::
+	.string "That doesn't look like\n"
+	.string "a {STR_VAR_1} to me.$"
+
+PetalburgWoods_Text_TarountulaTradeComplete::
+	.string "Webby is a night spinner.\n"
+	.string "Check the POKéDEX map.\p"
+	.string "Petalburg Woods should glow.$"
+
+PetalburgWoods_Text_TarountulaTradeDone::
+	.string "Shroodle leaves little paint\n"
+	.string "marks on the tree roots.\p"
+	.string "The map knows this grove now.$"

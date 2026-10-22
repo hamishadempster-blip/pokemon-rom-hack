@@ -608,3 +608,80 @@ Route119_Text_TrainerTipsDecoration:
 	.string "Pick your favorite items and create\n"
 	.string "your very own SECRET BASE exactly the\l"
 	.string "way you want.$"
+
+Route119_EventScript_ToedscoolScout::
+	lock
+	faceplayer
+	goto_if_set FLAG_COOP_QUEST_TOEDSCOOL, Route119_EventScript_ToedscoolScoutDone
+	msgbox Route119_Text_ToedscoolScoutAsk, MSGBOX_YESNO
+	goto_if_eq VAR_RESULT, NO, Route119_EventScript_ToedscoolScoutDecline
+	msgbox Route119_Text_ToedscoolScoutWhich, MSGBOX_DEFAULT
+	chooseboxmon
+	waitstate
+	goto_if_eq VAR_0x8004, PARTY_NOTHING_CHOSEN, Route119_EventScript_ToedscoolScoutDecline
+	specialvar VAR_RESULT, ScriptGetShownMonSpecies
+	goto_if_eq VAR_RESULT, SPECIES_EGG, Route119_EventScript_ToedscoolScoutEgg
+	goto_if_eq VAR_RESULT, SPECIES_NONE, Route119_EventScript_ToedscoolScoutWrong
+	goto_if_eq VAR_RESULT, SPECIES_TOEDSCOOL, Route119_EventScript_ToedscoolScoutReward
+	goto Route119_EventScript_ToedscoolScoutWrong
+
+Route119_EventScript_ToedscoolScoutReward::
+	msgbox Route119_Text_ToedscoolScoutYes, MSGBOX_DEFAULT
+	giveitem ITEM_BIG_MUSHROOM
+	goto_if_eq VAR_RESULT, FALSE, Common_EventScript_ShowBagIsFull
+	setflag FLAG_COOP_QUEST_TOEDSCOOL
+	msgbox Route119_Text_ToedscoolScoutAfter, MSGBOX_DEFAULT
+	release
+	end
+
+Route119_EventScript_ToedscoolScoutWrong::
+	msgbox Route119_Text_ToedscoolScoutWrong, MSGBOX_DEFAULT
+	release
+	end
+
+Route119_EventScript_ToedscoolScoutEgg::
+	msgbox Route119_Text_ToedscoolScoutEgg, MSGBOX_DEFAULT
+	release
+	end
+
+Route119_EventScript_ToedscoolScoutDecline::
+	msgbox Route119_Text_ToedscoolScoutDecline, MSGBOX_DEFAULT
+	release
+	end
+
+Route119_EventScript_ToedscoolScoutDone::
+	msgbox Route119_Text_ToedscoolScoutDone, MSGBOX_DEFAULT
+	release
+	end
+
+Route119_Text_ToedscoolScoutAsk::
+	.string "A mushroom with ten toes\n"
+	.string "has been walking the damp grass.\p"
+	.string "Show me a Toedscool and\n"
+	.string "this Big Mushroom is yours.$"
+
+Route119_Text_ToedscoolScoutWhich::
+	.string "Let me see those toes.$"
+
+Route119_Text_ToedscoolScoutYes::
+	.string "Careful. The caps stain.$"
+
+Route119_Text_ToedscoolScoutWrong::
+	.string "That isn't a Toedscool.$"
+
+Route119_Text_ToedscoolScoutEgg::
+	.string "Eggs don't grow caps.$"
+
+Route119_Text_ToedscoolScoutDecline::
+	.string "The rain will keep\n"
+	.string "the caps growing.$"
+
+Route119_Text_ToedscoolScoutAfter::
+	.string "The POKéDEX map marks\n"
+	.string "Route 119 for Toedscool.\p"
+	.string "Politoed sing farther\n"
+	.string "along the river, too.$"
+
+Route119_Text_ToedscoolScoutDone::
+	.string "I still hear the rain frogs\n"
+	.string "when the weather turns.$"

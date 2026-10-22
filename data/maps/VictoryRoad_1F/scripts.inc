@@ -216,3 +216,84 @@ VictoryRoad_1F_Text_KatelynnDefeat:
 VictoryRoad_1F_Text_KatelynnPostBattle:
 	.string "Humph, go right on ahead.\n"
 	.string "See if I care.$"
+
+VictoryRoad_1F_EventScript_RoadScout::
+	lock
+	faceplayer
+	goto_if_set FLAG_COOP_QUEST_VICTORY, VictoryRoad_1F_EventScript_RoadScoutDone
+	msgbox VictoryRoad_1F_Text_RoadScoutAsk, MSGBOX_YESNO
+	goto_if_eq VAR_RESULT, NO, VictoryRoad_1F_EventScript_RoadScoutDecline
+	msgbox VictoryRoad_1F_Text_RoadScoutWhich, MSGBOX_DEFAULT
+	chooseboxmon
+	waitstate
+	goto_if_eq VAR_0x8004, PARTY_NOTHING_CHOSEN, VictoryRoad_1F_EventScript_RoadScoutDecline
+	specialvar VAR_RESULT, ScriptGetShownMonSpecies
+	goto_if_eq VAR_RESULT, SPECIES_EGG, VictoryRoad_1F_EventScript_RoadScoutEgg
+	goto_if_eq VAR_RESULT, SPECIES_NONE, VictoryRoad_1F_EventScript_RoadScoutWrong
+	goto_if_eq VAR_RESULT, SPECIES_GIMMIGHOUL, VictoryRoad_1F_EventScript_RoadScoutReward
+	goto_if_eq VAR_RESULT, SPECIES_TINKATINK, VictoryRoad_1F_EventScript_RoadScoutReward
+	goto_if_eq VAR_RESULT, SPECIES_FRIGIBAX, VictoryRoad_1F_EventScript_RoadScoutReward
+	goto VictoryRoad_1F_EventScript_RoadScoutWrong
+
+VictoryRoad_1F_EventScript_RoadScoutReward::
+	msgbox VictoryRoad_1F_Text_RoadScoutYes, MSGBOX_DEFAULT
+	giveitem ITEM_NUGGET
+	goto_if_eq VAR_RESULT, FALSE, Common_EventScript_ShowBagIsFull
+	setflag FLAG_COOP_QUEST_VICTORY
+	msgbox VictoryRoad_1F_Text_RoadScoutAfter, MSGBOX_DEFAULT
+	release
+	end
+
+VictoryRoad_1F_EventScript_RoadScoutWrong::
+	msgbox VictoryRoad_1F_Text_RoadScoutWrong, MSGBOX_DEFAULT
+	release
+	end
+
+VictoryRoad_1F_EventScript_RoadScoutEgg::
+	msgbox VictoryRoad_1F_Text_RoadScoutEgg, MSGBOX_DEFAULT
+	release
+	end
+
+VictoryRoad_1F_EventScript_RoadScoutDecline::
+	msgbox VictoryRoad_1F_Text_RoadScoutDecline, MSGBOX_DEFAULT
+	release
+	end
+
+VictoryRoad_1F_EventScript_RoadScoutDone::
+	msgbox VictoryRoad_1F_Text_RoadScoutDone, MSGBOX_DEFAULT
+	release
+	end
+
+VictoryRoad_1F_Text_RoadScoutAsk::
+	.string "Treasure, hammers, and a\n"
+	.string "little ice dragon share this road.\p"
+	.string "Show me a Gimmighoul,\n"
+	.string "a Tinkatink, or a Frigibax.\p"
+	.string "I found a Nugget in the rocks.$"
+
+VictoryRoad_1F_Text_RoadScoutWhich::
+	.string "Let's see what you found.$"
+
+VictoryRoad_1F_Text_RoadScoutYes::
+	.string "You made it this far.\n"
+	.string "That Nugget is honest pay.$"
+
+VictoryRoad_1F_Text_RoadScoutWrong::
+	.string "I asked for a Gimmighoul,\n"
+	.string "a Tinkatink, or a Frigibax.$"
+
+VictoryRoad_1F_Text_RoadScoutEgg::
+	.string "An Egg isn't ready\n"
+	.string "for Victory Road.$"
+
+VictoryRoad_1F_Text_RoadScoutDecline::
+	.string "The League can wait\n"
+	.string "one more cave.$"
+
+VictoryRoad_1F_Text_RoadScoutAfter::
+	.string "Victory Road glows on\n"
+	.string "the POKéDEX map now.$"
+
+VictoryRoad_1F_Text_RoadScoutDone::
+	.string "Gholdengo is what a chest\n"
+	.string "full of coins dreams of becoming.$"

@@ -5043,7 +5043,7 @@ u16 SpeciesToPokedexNum(enum Species species)
     else
     {
         species = SpeciesToRegionalPokedexNum(species);
-        if (species <= REGIONAL_DEX_COUNT)
+        if (species != 0 && species < REGIONAL_DEX_COUNT)
             return species;
         return 0xFFFF;
     }
@@ -5058,18 +5058,20 @@ bool32 IsSpeciesInRegionalDex(enum Species species)
 
 bool32 IsSpeciesInKantoDex(enum Species species)
 {
-    if (SpeciesToKantoPokedexNum(species) > KANTO_DEX_COUNT)
+    enum KantoDexOrder kantoNum = SpeciesToKantoPokedexNum(species);
+
+    if (kantoNum == KANTO_DEX_NONE || kantoNum >= KANTO_DEX_COUNT)
         return FALSE;
-    else
-        return TRUE;
+    return TRUE;
 }
 
 bool32 IsSpeciesInHoennDex(enum Species species)
 {
-    if (SpeciesToHoennPokedexNum(species) > HOENN_DEX_COUNT)
+    enum HoennDexOrder hoennNum = SpeciesToHoennPokedexNum(species);
+
+    if (hoennNum == HOENN_DEX_NONE || hoennNum >= HOENN_DEX_COUNT)
         return FALSE;
-    else
-        return TRUE;
+    return TRUE;
 }
 
 u16 GetBattleBGM(void)

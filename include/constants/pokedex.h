@@ -1102,6 +1102,8 @@ enum NationalDexOrder
     F(SWAMPERT) \
     F(POOCHYENA) \
     F(MIGHTYENA) \
+    F(HOUNDOUR) \
+    F(HOUNDOOM) \
     F(ZIGZAGOON) \
     F(LINOONE) \
     HOENN_DEX_IF(P_GALARIAN_FORMS, F(OBSTAGOON)) \
@@ -1304,7 +1306,85 @@ enum NationalDexOrder
     F(GROUDON) \
     F(RAYQUAZA) \
     F(JIRACHI) \
-    F(DEOXYS)
+    F(DEOXYS) \
+    F(LECHONK) \
+    F(OINKOLOGNE) \
+    F(TANDEMAUS) \
+    F(MAUSHOLD) \
+    F(APPLIN) \
+    F(FLAPPLE) \
+    F(APPLETUN) \
+    F(DIPPLIN) \
+    F(HYDRAPPLE) \
+    F(TAROUNTULA) \
+    F(SPIDOPS) \
+    F(SHROODLE) \
+    F(GRAFAIAI) \
+    F(NACLI) \
+    F(NACLSTACK) \
+    F(GARGANACL) \
+    F(GLIMMET) \
+    F(GLIMMORA) \
+    F(PAWMI) \
+    F(PAWMO) \
+    F(PAWMOT) \
+    F(SANDILE) \
+    F(KROKOROK) \
+    F(KROOKODILE) \
+    F(HELIOPTILE) \
+    F(HELIOLISK) \
+    F(BRAMBLIN) \
+    F(BRAMBLEGHAST) \
+    F(NOIBAT) \
+    F(NOIVERN) \
+    F(CHARCADET) \
+    F(ARMAROUGE) \
+    F(CERULEDGE) \
+    F(TOEDSCOOL) \
+    F(TOEDSCRUEL) \
+    F(INDEEDEE) \
+    F(POLIWAG) \
+    F(POLIWHIRL) \
+    F(POLIWRATH) \
+    F(POLITOED) \
+    F(GREAVARD) \
+    F(HOUNDSTONE) \
+    F(DREEPY) \
+    F(DRAKLOAK) \
+    F(DRAGAPULT) \
+    F(MIMIKYU) \
+    F(VELUZA) \
+    F(BASCULIN) \
+    F(BASCULEGION) \
+    F(DONDOZO) \
+    F(FIDOUGH) \
+    F(DACHSBUN) \
+    F(CYCLIZAR) \
+    F(CETODDLE) \
+    F(CETITAN) \
+    F(SNOVER) \
+    F(ABOMASNOW) \
+    F(ROGGENROLA) \
+    F(BOLDORE) \
+    F(GIGALITH) \
+    F(FINIZEN) \
+    F(PALAFIN) \
+    F(TATSUGIRI) \
+    F(WIGLETT) \
+    F(WUGTRIO) \
+    F(VAROOM) \
+    F(REVAVROOM) \
+    F(JANGMO_O) \
+    F(HAKAMO_O) \
+    F(KOMMO_O) \
+    F(TINKATINK) \
+    F(TINKATUFF) \
+    F(TINKATON) \
+    F(FRIGIBAX) \
+    F(ARCTIBAX) \
+    F(BAXCALIBUR) \
+    F(GIMMIGHOUL) \
+    F(GHOLDENGO)
 
 // Hoenn Pokédex order
 enum HoennDexOrder
@@ -1525,7 +1605,7 @@ enum KantoDexOrder
 };
 
 #define KANTO_DEX_COUNT (KANTO_DEX_MEW + 1)
-#define HOENN_DEX_COUNT (HOENN_DEX_DEOXYS + 1)
+#define HOENN_DEX_COUNT (HOENN_DEX_GHOLDENGO + 1)
 
 #define REGIONAL_DEX_COUNT (IS_FRLG ? KANTO_DEX_COUNT : HOENN_DEX_COUNT)
 

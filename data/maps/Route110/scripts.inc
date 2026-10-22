@@ -987,3 +987,79 @@ Route110_Text_KeepAnEyeOutForRival:
 	.string "Well, I had better get going.\n"
 	.string "See you again, {PLAYER}{KUN}!$"
 
+
+Route110_EventScript_PawmiScout::
+	lock
+	faceplayer
+	goto_if_set FLAG_COOP_QUEST_PAWMI, Route110_EventScript_PawmiScoutDone
+	msgbox Route110_Text_PawmiScoutAsk, MSGBOX_YESNO
+	goto_if_eq VAR_RESULT, NO, Route110_EventScript_PawmiScoutDecline
+	msgbox Route110_Text_PawmiScoutWhich, MSGBOX_DEFAULT
+	chooseboxmon
+	waitstate
+	goto_if_eq VAR_0x8004, PARTY_NOTHING_CHOSEN, Route110_EventScript_PawmiScoutDecline
+	specialvar VAR_RESULT, ScriptGetShownMonSpecies
+	goto_if_eq VAR_RESULT, SPECIES_EGG, Route110_EventScript_PawmiScoutEgg
+	goto_if_eq VAR_RESULT, SPECIES_NONE, Route110_EventScript_PawmiScoutWrong
+	goto_if_eq VAR_RESULT, SPECIES_PAWMI, Route110_EventScript_PawmiScoutReward
+	goto Route110_EventScript_PawmiScoutWrong
+
+Route110_EventScript_PawmiScoutReward::
+	msgbox Route110_Text_PawmiScoutYes, MSGBOX_DEFAULT
+	giveitem ITEM_MAGNET
+	goto_if_eq VAR_RESULT, FALSE, Common_EventScript_ShowBagIsFull
+	setflag FLAG_COOP_QUEST_PAWMI
+	msgbox Route110_Text_PawmiScoutAfter, MSGBOX_DEFAULT
+	release
+	end
+
+Route110_EventScript_PawmiScoutWrong::
+	msgbox Route110_Text_PawmiScoutWrong, MSGBOX_DEFAULT
+	release
+	end
+
+Route110_EventScript_PawmiScoutEgg::
+	msgbox Route110_Text_PawmiScoutEgg, MSGBOX_DEFAULT
+	release
+	end
+
+Route110_EventScript_PawmiScoutDecline::
+	msgbox Route110_Text_PawmiScoutDecline, MSGBOX_DEFAULT
+	release
+	end
+
+Route110_EventScript_PawmiScoutDone::
+	msgbox Route110_Text_PawmiScoutDone, MSGBOX_DEFAULT
+	release
+	end
+
+Route110_Text_PawmiScoutAsk::
+	.string "A little electric mouse\n"
+	.string "has been sparking the grass.\p"
+	.string "Show me a Pawmi and\n"
+	.string "I'll give you a Magnet.$"
+
+Route110_Text_PawmiScoutWhich::
+	.string "Let's see your Pawmi.$"
+
+Route110_Text_PawmiScoutYes::
+	.string "Yes. The fur is still warm.$"
+
+Route110_Text_PawmiScoutWrong::
+	.string "That isn't a Pawmi.$"
+
+Route110_Text_PawmiScoutEgg::
+	.string "An Egg won't spark.\n"
+	.string "Bring me the mouse itself.$"
+
+Route110_Text_PawmiScoutDecline::
+	.string "Mind the static if you\n"
+	.string "go looking in the grass.$"
+
+Route110_Text_PawmiScoutAfter::
+	.string "The POKéDEX map marks\n"
+	.string "Route 110 for Pawmi.$"
+
+Route110_Text_PawmiScoutDone::
+	.string "Plusle and Minun still cheer\n"
+	.string "farther along this road.$"
