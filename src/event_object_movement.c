@@ -6552,8 +6552,11 @@ u32 GetObjectObjectCollidesWith(struct ObjectEvent *objectEvent, s16 x, s16 y, b
     for (i = 0; i < OBJECT_EVENTS_COUNT; i++)
     {
         curObject = &gObjectEvents[i];
+        // The co-op partner is only a picture of the other game's player. A
+        // solid partner lets two people block each other in a doorway forever.
         if (curObject->active && (curObject->movementType != MOVEMENT_TYPE_FOLLOW_PLAYER || objectEvent != &gObjectEvents[gPlayerAvatar.objectEventId]) && curObject != objectEvent
          && !FollowerNPC_IsCollisionExempt(curObject, objectEvent)
+         && curObject->localId != OBJ_EVENT_ID_COOP_PARTNER
          )
         {
             // check for collision if curObject is active, not the object in question, and not exempt from collisions

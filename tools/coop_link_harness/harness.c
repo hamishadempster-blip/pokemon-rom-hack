@@ -46,6 +46,7 @@ struct Player {
 	int waitMask, awake;
 	int32_t cyclesPosted;
 	int barrierReached;
+	int stable;
 	int done;
 };
 
@@ -103,6 +104,19 @@ static const char* symName(unsigned addr) {
 		if ((sSyms[i].type == 'T' || sSyms[i].type == 't') && (sSyms[i].addr & ~1u) == addr)
 			return sSyms[i].name;
 	snprintf(buf, sizeof(buf), "%08x", addr);
+	return buf;
+}
+
+static const char* symAt(unsigned addr) {
+	static __thread char buf[120];
+	int best = -1;
+	addr &= ~1u;
+	for (int i = 0; i < sNumSyms; i++)
+		if ((sSyms[i].type == 'T' || sSyms[i].type == 't') && sSyms[i].addr >= 0x02000000 && (sSyms[i].addr & ~1u) <= addr
+		 && (best < 0 || sSyms[i].addr > sSyms[best].addr))
+			best = i;
+	if (best < 0) snprintf(buf, sizeof(buf), "%08x", addr);
+	else snprintf(buf, sizeof(buf), "%s+0x%x", sSyms[best].name, addr - (sSyms[best].addr & ~1u));
 	return buf;
 }
 
@@ -181,6 +195,31 @@ static void dump(struct Player* p, const char* tag) {
 	    rd8(p, coopStatic("sLinkState")), rd8(p, coopStatic("sRequest")), rd8(p, coopStatic("sWaitKind")),
 	    rd8(p, coopStatic("sSlot")), rd8(p, coopStatic("sBattleKind")), rd8(p, coopStatic("sInBattle")),
 	    rd8(p, coopStatic("sPartnerValid")), rd8(p, coopStatic("sIsGuest")), rd8(p, symAddr("gCoopHoldLink")));
+}
+
+static void battleDump(struct Player* p) {
+	char ctl[4][64];
+	unsigned funcs = symAddr("gBattlerControllerFuncs");
+	for (int i = 0; i < 4; i++)
+		snprintf(ctl[i], sizeof(ctl[i]), "%s", symName(rd32(p, funcs + i * 4)));
+	out("[f%06d p%d battle] main=%s exec=%08x comm=%02x %02x %02x %02x ctl={%s, %s, %s, %s} linkState=%u multiId=%u\n",
+	    p->frame, p->id, symName(rd32(p, symAddr("gBattleMainFunc"))), rd32(p, symAddr("gBattleControllerExecFlags")),
+	    rd8(p, symAddr("gBattleCommunication")), rd8(p, symAddr("gBattleCommunication") + 1),
+	    rd8(p, symAddr("gBattleCommunication") + 2), rd8(p, symAddr("gBattleCommunication") + 3),
+	    ctl[0], ctl[1], ctl[2], ctl[3], rd8(p, symAddr("gLink") + 1), rd8(p, symAddr("gLink") + 2));
+	unsigned ends = symAddr("gBattlerControllerEndFuncs");
+	out("[f%06d p%d bend] vbl1=%u vbl2=%u cb1=%s count=%u end={%s, %s, %s, %s}\n", p->frame, p->id, rd32(p, sMain + 0x20), rd32(p, sMain + 0x24),
+	    symName(rd32(p, sMain)), rd8(p, symAddr("gBattlersCount")),
+	    symName(rd32(p, ends)), symName(rd32(p, ends + 4)), symName(rd32(p, ends + 8)), symName(rd32(p, ends + 12)));
+	unsigned tasks = symAddr("gTasks");
+	unsigned st = tasks + rd8(p, symAddr("battle_controllers.sLinkSendTaskId")) * 0x28;
+	unsigned rt = tasks + rd8(p, symAddr("battle_controllers.sLinkReceiveTaskId")) * 0x28;
+	unsigned bs = symAddr("link.sBlockSend");
+	out("[f%06d p%d blink] send{state=%d start=%d end=%d delay=%d} recv{start=%d end=%d} linkCb=%s blockSend{active=%u pos=%u size=%u} blockRecv=%02x%02x linkq{send=%u recv=%u}\n",
+	    p->frame, p->id, (int16_t)rd16(p, st + 8 + 22), (int16_t)rd16(p, st + 8 + 30), (int16_t)rd16(p, st + 8 + 28), (int16_t)rd16(p, st + 8 + 26),
+	    (int16_t)rd16(p, rt + 8 + 30), (int16_t)rd16(p, rt + 8 + 28), symName(rd32(p, symAddr("gLinkCallback"))),
+	    rd8(p, bs + 8), rd16(p, bs), rd16(p, bs + 2), rd8(p, symAddr("gBlockReceivedStatus")), rd8(p, symAddr("gBlockReceivedStatus") + 1),
+	    rd8(p, symAddr("gLink") + 0x18 + 0x321), rd8(p, symAddr("gLink") + 0x33c + 0xc81));
 }
 
 static bool inField(struct Player* p) {
@@ -262,7 +301,12 @@ static void frameCallback(struct mCoreThread* t) {
 			unsigned obj = sObjEvents + rd8(p, sAvatar + 5) * 0x24;
 			int x = (int16_t)rd16(p, obj + 0x10) - 7, y = (int16_t)rd16(p, obj + 0x12) - 7;
 			int tx = (int)c->addr, ty = c->value;
-			if (x == tx && y == ty) { advance = true; break; }
+			if (x == tx && y == ty) {
+				// currentCoords flips at the start of the last step. Let it finish.
+				if (++p->stable >= 16) { p->stable = 0; advance = true; }
+				break;
+			}
+			p->stable = 0;
 			keys = x < tx ? 1u << 4 : x > tx ? 1u << 5 : y > ty ? 1u << 6 : 1u << 7;
 			if (++p->step >= c->frames) {
 				out("[p%d] FAIL goto (%d,%d) stuck at (%d,%d)\n", p->id, tx, ty, x, y);
@@ -283,6 +327,13 @@ static void frameCallback(struct mCoreThread* t) {
 		}
 		case C_DUMP:
 			dump(p, c->text);
+			if ((rd32(p, sMain + 4) & ~1u) == symAddr("BattleMainCB2")) battleDump(p);
+			{
+				struct ARMCore* cpu = ((struct GBA*)p->core->board)->cpu;
+				char pc[120];
+				snprintf(pc, sizeof(pc), "%s", symAt(cpu->gprs[15]));
+				out("[f%06d p%d cpu] pc=%s lr=%s mode=%x\n", p->frame, p->id, pc, symAt(cpu->gprs[14]), cpu->cpsr.priv);
+			}
 			advance = true;
 			break;
 		case C_BARRIER:
@@ -297,11 +348,16 @@ static void frameCallback(struct mCoreThread* t) {
 			bool ok = c->kind == C_UNTIL_CB2 ? (rd32(p, sMain + 4) & ~1u) == c->addr
 			        : c->kind == C_UNTIL_FIELD ? inField(p)
 			        : rdN(p, c->addr, c->size) == c->value;
-			if (ok) { advance = true; break; }
+			if (c->kind == C_UNTIL_FIELD) {
+				p->stable = ok ? p->stable + 1 : 0;
+				ok = p->stable >= 20;
+			}
+			if (ok) { p->stable = 0; advance = true; break; }
 			if (c->keys && (p->step % 24) < 2) keys = c->keys;
 			if (++p->step >= c->frames) {
 				out("[p%d] FAIL timeout waiting for %s (line cmd %d)\n", p->id, c->text, p->pc);
 				dump(p, "fail");
+				if ((rd32(p, sMain + 4) & ~1u) == symAddr("BattleMainCB2")) battleDump(p);
 				writePng(p, "fail");
 				sFailures++;
 				p->done = 1;
@@ -366,9 +422,13 @@ static void loadScript(const char* path, int depth) {
 		int n = sscanf(line, "%7s %31s %95s %95s %95s", who, cmd, a, b, d);
 		if (n < 1) continue;
 		if (!strcmp(who, "include")) {
-			char inc[512];
+			char inc[512], rel[256];
 			const char* slash = strrchr(path, '/');
-			snprintf(inc, sizeof(inc), "%.*s%s", slash ? (int)(slash - path + 1) : 0, path, cmd);
+			if (sscanf(line, "%*s %255s", rel) != 1) continue;
+			if (rel[0] == '/')
+				snprintf(inc, sizeof(inc), "%s", rel);
+			else
+				snprintf(inc, sizeof(inc), "%.*s%s", slash ? (int)(slash - path + 1) : 0, path, rel);
 			loadScript(inc, depth + 1);
 			continue;
 		}
@@ -392,6 +452,13 @@ static void loadScript(const char* path, int depth) {
 		} else if (!strcmp(cmd, "expect_partner") || !strcmp(cmd, "expect_no_partner")) {
 			c.kind = C_PARTNER; c.value = strcmp(cmd, "expect_partner") == 0;
 			snprintf(c.text, sizeof(c.text), "%s %s", cmd, n >= 3 ? a : "");
+			if (w == 2) {
+				// Both stand still for the whole check: barrier, check, barrier.
+				addCmd(w, c);
+				struct Cmd bar = { .kind = C_BARRIER, .barrier = ++sBarrierCount };
+				addCmd(2, bar);
+				continue;
+			}
 		} else if (!strcmp(cmd, "goto")) {
 			c.kind = C_GOTO; c.addr = atoi(a); c.value = atoi(b); c.frames = n >= 5 ? atoi(d) : 600;
 		} else if (!strcmp(cmd, "hex")) {

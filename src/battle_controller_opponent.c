@@ -474,11 +474,16 @@ static void OpponentHandleChooseMove(enum BattlerId battler)
         }
         else if (IsDoubleBattle())
         {
-            enum BattlerId targetBattler;
-            do {
-                enum BattlerPosition pos = RandomPercentage(RNG_WILD_MON_TARGET, 50) ? B_POSITION_PLAYER_LEFT : B_POSITION_PLAYER_RIGHT;
-                targetBattler = GetBattlerAtPosition(pos);
-            } while (!CanTargetBattler(battler, targetBattler, move));
+            enum BattlerId targetBattler = GetBattlerAtPosition(B_POSITION_PLAYER_LEFT);
+            // With no valid foe the random pick below would never terminate.
+            if (CanTargetBattler(battler, targetBattler, move)
+             || CanTargetBattler(battler, GetBattlerAtPosition(B_POSITION_PLAYER_RIGHT), move))
+            {
+                do {
+                    enum BattlerPosition pos = RandomPercentage(RNG_WILD_MON_TARGET, 50) ? B_POSITION_PLAYER_LEFT : B_POSITION_PLAYER_RIGHT;
+                    targetBattler = GetBattlerAtPosition(pos);
+                } while (!CanTargetBattler(battler, targetBattler, move));
+            }
 
             // Don't bother to check if they're enemies if the move can't attack ally
             if (WE_WILD_NATURAL_ENEMIES && moveTarget != TARGET_BOTH)

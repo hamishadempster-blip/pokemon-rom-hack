@@ -16,13 +16,18 @@ if [ ! -f "$mgba/build/libmgba.a" ]; then
 		-DUSE_EDITLINE=OFF -DM_CORE_GB=OFF -DUSE_DISCORD_RPC=OFF -DCMAKE_BUILD_TYPE=Release >/dev/null && make -j8 >/dev/null)
 fi
 
-gcc -O2 -Wall -DM_CORE_GBA -DUSE_PTHREADS -I"$mgba/include" -I"$mgba/build/include" -I"$mgba/src" \
+gcc -O2 -Wall -Wno-stringop-truncation -DM_CORE_GBA -DUSE_PTHREADS -I"$mgba/include" -I"$mgba/build/include" -I"$mgba/src" \
 	"$here/harness.c" "$mgba/build/libmgba.a" -lz -lpthread -lm -o "$out/coop_link_harness"
 
-# Global symbols, then coop.c statics as coop.<name> from the object's .sbss base.
+# Global symbols, then the RAM statics of a few objects as <file>.<name>,
+# placed through the section bases in the linker map.
 arm-none-eabi-nm -S "$root/pokeemerald.elf" | grep -vE ' [a-zA-Z] [_.$]' > "$out/syms.txt"
-base=$(awk '/^ \.sbss/ && /src\/coop\.o$/ {print $2; exit}' "$root/pokeemerald.map")
-arm-none-eabi-nm -S --defined-only "$root/build/emerald/src/coop.o" | while read -r off size type name; do
-	case "$type" in b|B) printf '%08x %s %s coop.%s\n' $((base + 0x$off)) "$size" "$type" "$name" ;; esac
+for obj in coop link battle_controllers battle_main; do
+	arm-none-eabi-objdump -t "$root/build/emerald/src/$obj.o" | while read -r off scope kind sect size name; do
+		[ "$kind" = O ] || continue
+		case "$sect" in .bss|.sbss|.data) ;; *) continue ;; esac
+		base=$(awk -v s="$sect" -v o="src/$obj.o" '$1 == s && $4 == o {print $2; exit}' "$root/pokeemerald.map")
+		[ -n "$base" ] && printf '%08x %s b %s.%s\n' $((base + 0x$off)) "$size" "$obj" "$name"
+	done
 done >> "$out/syms.txt"
 echo "$out/coop_link_harness"

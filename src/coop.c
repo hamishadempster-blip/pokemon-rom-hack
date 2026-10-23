@@ -115,6 +115,9 @@ static EWRAM_DATA bool8 sBirchBag = FALSE;
 static EWRAM_DATA u8 sRescueField = COOP_RESCUE_RETURN_NONE;
 static EWRAM_DATA u8 sRescueResult = 0;
 static EWRAM_DATA bool8 sRescueGuestFollow = FALSE;
+// Both games still echo the rescue request when they come back from the
+// fight. Without this latch that stale echo starts the fight a second time.
+static EWRAM_DATA bool8 sRescueDone = FALSE;
 static EWRAM_DATA u16 sRescueGuestTimer = 0;
 static EWRAM_DATA u8 sTalkNpc = 0;
 static EWRAM_DATA u8 sMerged = FALSE;
@@ -1099,10 +1102,27 @@ static void Coop_PollInviteTimeout(void)
 // it while any script or text box was open. That looked like "still in a
 // menu" after the bag had already closed. The position frame is enough:
 // the partner echoes the case once they are standing on the route.
+static void Coop_EndRescueRequest(void)
+{
+    if (sRequest == COOP_REQ_RESCUE)
+        sRequest = COOP_REQ_NONE;
+    if (sWaitKind == COOP_REQ_RESCUE)
+        sWaitKind = 0;
+    sRescueEcho = 0;
+    sRescueDone = TRUE;
+}
+
 static void Coop_PollRescue(void)
 {
     if (gMain.inBattle || sInBattle || !sPartnerValid)
         return;
+
+    if (sRescueDone)
+    {
+        if (sRequest == COOP_REQ_RESCUE)
+            sRequest = COOP_REQ_NONE;
+        return;
+    }
 
     if (sWaitKind == COOP_REQ_RESCUE)
     {
@@ -1300,6 +1320,7 @@ static void Coop_PollHandshake(void)
             sLinkState = COOP_LINK_UP;
             gCoopHoldLink = TRUE;
             sLinkErrorStreak = 0;
+            sRescueDone = FALSE;
             sTradeSlot = 0xFF;
             sRivalFightStage = 0xFF;
             sProposedCase = COOP_CASE_NONE;
@@ -2029,6 +2050,7 @@ u16 Coop_StartRescueBattle(void)
     }
     Coop_GiveRescueStarter((u8)caseId, TRUE);
     CreateScriptedDoubleWildMon(SPECIES_POOCHYENA, 2, ITEM_NONE, SPECIES_POOCHYENA, 2, ITEM_NONE);
+    sRescueDone = FALSE;
     sRescueResult = 1;
     sRescueField = COOP_RESCUE_RETURN_NONE;
     sResumeScript = TRUE;
@@ -2548,6 +2570,7 @@ bool8 Coop_FinishWildBattle(void)
     Coop_DeliverCatches();
     if (sBattleKind == COOP_KIND_RESCUE)
     {
+        Coop_EndRescueRequest();
         sRescueResult = 1;
         sBirchBag = FALSE;
         if (sIsGuest)
@@ -2601,6 +2624,7 @@ static void Coop_CB2_AbortToField(void)
     if (rescue)
     {
         // The starters are already given. Both players still go to the lab.
+        Coop_EndRescueRequest();
         sRescueResult = 1;
         if (rescueGuest)
         {

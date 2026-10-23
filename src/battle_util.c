@@ -2013,8 +2013,23 @@ bool32 HasNoMonsToSwitch(enum BattlerId battler, u8 partyIdBattlerOn1, u8 partyI
     {
         for (i = 0; i < lastId; i++)
         {
-            if (IsValidForBattle(&party[i]))
-                break;
+            if (!IsValidForBattle(&party[i]))
+                continue;
+            // Co-op wild foes share one party, so the partner's mon is on the field, not in reserve.
+            if (gBattleTypeFlags & BATTLE_TYPE_COOP)
+            {
+                enum BattlerId other;
+
+                for (other = 0; other < gBattlersCount; other++)
+                {
+                    if (other != battler && GetBattlerParty(other) == party
+                     && gBattlerPartyIndexes[other] == i && IsBattlerAlive(other))
+                        break;
+                }
+                if (other < gBattlersCount)
+                    continue;
+            }
+            break;
         }
         return (i == lastId);
     }

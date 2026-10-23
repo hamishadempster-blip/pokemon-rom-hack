@@ -2034,6 +2034,9 @@ void TrySetLinkBattleTowerEnemyPartyLevel(void)
 {
     if (!TESTING)
     {
+        // Co-op fights are story and wild battles, not facility battles: keep their own levels.
+        if (gBattleTypeFlags & BATTLE_TYPE_COOP)
+            return;
         if (gBattleTypeFlags & (BATTLE_TYPE_LINK | BATTLE_TYPE_RECORDED_LINK))
         {
             u32 i;
