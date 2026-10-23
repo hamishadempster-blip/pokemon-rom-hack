@@ -215,6 +215,28 @@ The Mauville boy wants Plusle on the first visit and Minun on the next. The Cell
 
 Two people only talk. A girl in Oldale explains the Pokédex map. A scientist in Mauville explains the same-spot pairs, including Indeedee.
 
+## Types and evolution items
+
+Fairy is part of the battle rules. The type chart, the summary icons, and the Pokédex search all include it. Clefairy, Jigglypuff, Marill, Ralts, Mawile, and Impidimp are Fairy. Charm and Baby-Doll Eyes are Fairy moves, so an Eevee that knows one can become Sylveon by friendship.
+
+Fire, Water, Thunder, Leaf, Moon, and Sun Stones were already placed in Hoenn. These later evolution items were not. Each one below is a single Poké Ball. Metal Coat, Dragon Scale, Prism Scale, and Reaper Cloth can be used from the bag.
+
+| Item | Where | What it evolves |
+| --- | --- | --- |
+| Tart Apple | Route 104 | Applin into Flapple |
+| Sweet Apple | Route 104 errand | Applin into Appletun |
+| Syrupy Apple | Route 123 | Applin into Dipplin. The next level, after it learns Dragon Cheer, becomes Hydrapple |
+| Ice Stone | Shoal Cave, low tide ice room | Cetoddle into Cetitan |
+| Dawn Stone | Meteor Falls 1F | A male Kirlia into Gallade |
+| Dawn Stone | Shoal Cave, low tide inner room | A female Snorunt into Froslass |
+| Shiny Stone | Route 117 | Roselia into Roserade |
+| Reaper Cloth | Mt. Pyre 1F | Dusclops into Dusknoir |
+| Prism Scale | Route 119 | Feebas into Milotic |
+| Metal Coat | Granite Cave B2F | Onix into Steelix |
+| Dragon Scale | Route 124, on the sandbar | Seadra into Kingdra |
+
+Crabrawler and Eevee can also become Crabominable and Glaceon by leveling in the Shoal Cave ice room. Eevee can become Leafeon by leveling in Petalburg Woods.
+
 ## Level cap
 
 Default on. The steps are 16, 22, 28, 34, 40, 46, 52, 58, then 66 for the Elite Four, then 75 after the champion. EXP, Rare Candy, the day care, and EXP Share stop at the cap. A Pokémon already above the cap is not lowered. The party screen shows the cap next to the level. Both saves have to agree before a link comes up. Gym levels do not scale.
