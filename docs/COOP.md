@@ -66,7 +66,7 @@ No custom server. If the public RetroArch relay is down, try UPnP, then a direct
 - Soren and Mira take the case that beats yours. They show up in the old Brendan and May fights. Both of you have to be there.
 - Gyms are two leaders, three Pokémon each. You cannot start one alone. Ace levels are 16, 22, 28, 34, 40, 46, 52, 58. Rematches are a second pair around level 70.
 - With the Twin Beacon off, ordinary trainers stay single even on the same map. With it on, most trainers lean doubles while you are together on their map. A trainer whose id is divisible by 4 stays a single. Magma and Aqua grunts are a pair. Leaders, the Elite Four, the champion, and rivals (Wally included) always ask for both of you, whether or not the Beacon is on.
-- The Elite Four and the champion are the same 3+3 shape. The champion pair is Steven and Wallace. The guest does not watch the Hall of Fame cutscene. Both saves still set the champion flag.
+- The Elite Four and the champion are the same 3+3 shape. The champion pair is Steven and Wallace. After the win the guest goes straight to the Hall of Fame and records their own party, while the host plays the champion's room scene and arrives after. Both saves set the champion flag. If you both walk up and talk to an Elite Four member or Wallace at the same moment, link player 1 joins player 0's fight.
 - Terra Cave and Marine Cave both start Groudon and Kyogre together. Their weather overwrites itself. Sky Pillar is Rayquaza. One catch. The person whose ball lands keeps it. The other person can get it only by the party trade. A KO still clears the story flags.
 
 ### Party in co-op battles

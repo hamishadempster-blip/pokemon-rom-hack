@@ -96,6 +96,33 @@ int main(void)
     Expect(merged.legend[0] == COOP_OWNER_LOCAL, "agreed owner stays local");
     Expect(merged.legend[1] == COOP_OWNER_PARTNER, "remote local becomes partner");
 
+    memset(&local, 0, sizeof(local));
+    memset(&remote, 0, sizeof(remote));
+    local.capOn = remote.capOn = 1;
+    local.badges = 0x01;
+    local.rivalStage = 0;
+    remote.badges = 0x7F;
+    remote.rivalStage = 3;
+    remote.legend[1] = COOP_OWNER_LOCAL;
+    Expect(CoopProtocol_Merge(&local, &remote, &merged) == 0, "older save reconnects");
+    Expect(merged.badges == 0x7F, "older save gains every joint badge");
+    Expect(merged.rivalStage == 3, "older save gains the higher rival stage");
+    Expect(merged.legend[0] == COOP_OWNER_NONE && merged.legend[1] == COOP_OWNER_PARTNER && merged.legend[2] == COOP_OWNER_NONE,
+           "older save learns the partner owns Kyogre");
+    Expect(sizeof(struct CoopProgress) == 6, "progress carries only badges, rival, cap, and owners");
+    Expect(CoopProtocol_Merge(&remote, &local, &merged) == 0 && merged.badges == 0x7F && merged.rivalStage == 3,
+           "newer save keeps its badges and rival stage");
+
+    local.legend[1] = COOP_OWNER_LOCAL;
+    Expect(CoopProtocol_Merge(&local, &remote, &merged) == 2, "both saves claiming Kyogre drops the link");
+    Expect(CoopProtocol_Merge(&remote, &local, &merged) == 2, "Kyogre conflict either way round");
+
+    Expect(CoopProtocol_KeepOwnInvite(0, 1, 1, 1) == 1, "link player 0 keeps its Elite Four invite");
+    Expect(CoopProtocol_KeepOwnInvite(1, 1, 1, 1) == 0, "link player 1 joins player 0's invite");
+    Expect(CoopProtocol_KeepOwnInvite(0, 0, 1, 1) == 0, "no own invite means join");
+    Expect(CoopProtocol_KeepOwnInvite(0, 1, 0, 1) == 0, "an optional wait yields to a mandatory fight");
+    Expect(CoopProtocol_KeepOwnInvite(0, 1, 1, 0) == 0, "an optional invite is not held off by this rule");
+
     Expect(CoopProtocol_SameMap(3, 10, 3, 10) == 1, "same map shows the sprite");
     Expect(CoopProtocol_SameMap(3, 10, 4, 10) == 0, "different map hides the sprite");
     Expect(CoopProtocol_SameMap(3, 10, 3, 11) == 0, "a door drops the sprite");

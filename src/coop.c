@@ -709,6 +709,12 @@ static bool8 Coop_IsOptionalKind(u8 kind)
     return kind == COOP_KIND_TRAINER || kind == COOP_KIND_WILD || kind == COOP_KIND_PAIR;
 }
 
+static bool8 Coop_IsMandatoryKind(u8 kind)
+{
+    return kind == COOP_KIND_GYM || kind == COOP_KIND_RIVAL || kind == COOP_KIND_E4
+        || kind == COOP_KIND_CHAMPION || kind == COOP_KIND_LEGEND;
+}
+
 // An optional invite never pulls a player out of a menu, a script, a trade,
 // or a prompt that is already on screen.
 static bool8 Coop_GuestBusy(void)
@@ -783,6 +789,9 @@ static void Coop_HandleInvite(u32 playerId, const struct CoopInvite *invite)
     }
 
     if (sInBattle || gMain.inBattle)
+        return;
+
+    if (CoopProtocol_KeepOwnInvite(GetMultiplayerId(), sWaitingAck, Coop_IsMandatoryKind(sBattleKind), Coop_IsMandatoryKind(invite->kind)))
         return;
 
     if (invite->kind == COOP_KIND_RESCUE)
@@ -1913,8 +1922,17 @@ static void Coop_QueueGuestFollowup(void)
 {
     if (sBattleKind == COOP_KIND_E4)
     {
-        // Stop the room's walk-in from playing again before the door opens.
-        VarSet(VAR_ELITE_4_STATE, 1);
+        // Each room's walk-in leaves its own value; a walk-in cut short by
+        // the invite would replay without it, and a lower value replays the
+        // next room's walk-in on the wrong door.
+        if (sBattleFlag == FLAG_DEFEATED_ELITE_4_SIDNEY)
+            VarSet(VAR_ELITE_4_STATE, 1);
+        else if (sBattleFlag == FLAG_DEFEATED_ELITE_4_PHOEBE)
+            VarSet(VAR_ELITE_4_STATE, 2);
+        else if (sBattleFlag == FLAG_DEFEATED_ELITE_4_GLACIA)
+            VarSet(VAR_ELITE_4_STATE, 3);
+        else if (sBattleFlag == FLAG_DEFEATED_ELITE_4_DRAKE)
+            VarSet(VAR_ELITE_4_STATE, 4);
         sGuestFollowup = 9;
     }
     else if (sBattleKind == COOP_KIND_CHAMPION)

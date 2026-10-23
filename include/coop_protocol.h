@@ -27,7 +27,7 @@ typedef uint32_t u32;
 #include "global.h"
 #endif
 
-#define COOP_BUILD_ID  0xC0170121u
+#define COOP_BUILD_ID  0xC0170122u
 #define COOP_BUILD_XOR ((u16)(((COOP_BUILD_ID) & 0xFFFFu) ^ ((COOP_BUILD_ID) >> 16)))
 #define COOP_LINKCMD   0xC0A1
 #define COOP_HELD_KEYS_CMD 0xCAFE
@@ -229,6 +229,14 @@ static inline int CoopProtocol_Merge(const struct CoopProgress *local, const str
             return 2;
     }
     return 0;
+}
+
+// Elite Four and champion rooms walk both players up to the same NPC, so
+// both games can ask for the same mandatory fight at once. Link player 0
+// keeps its own invite; the other game takes player 0's invite as guest.
+static inline int CoopProtocol_KeepOwnInvite(u8 myLinkId, u8 waitingAck, u8 ownMandatory, u8 incomingMandatory)
+{
+    return myLinkId == 0 && waitingAck && ownMandatory && incomingMandatory;
 }
 
 // Stage 1. The partner sprite exists only while this is true. A door changes

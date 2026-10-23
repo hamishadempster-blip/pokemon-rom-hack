@@ -456,7 +456,9 @@ Coop_EventScript_GuestLavaridgeTrainers::
 	end
 
 Coop_EventScript_GuestPetalburg::
+	goto_if_ge VAR_PETALBURG_GYM_STATE, 7, Coop_EventScript_GuestPetalburgStory
 	setvar VAR_PETALBURG_GYM_STATE, 7
+Coop_EventScript_GuestPetalburgStory::
 	special ResetHealLocationFromDewford
 	call EventScript_HideMrBriney
 	setflag FLAG_HIDE_MAUVILLE_GYM_WATTSON
