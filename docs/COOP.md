@@ -52,6 +52,10 @@ No custom server, and no relay is built into this ROM. gpSP has to be set to **L
 
 gpSP drops a peer after four seconds with no cable packet. The game uses that same wait before it decides the cable is gone, so a short hitch does not end the session and a pulled cable still does.
 
+## Test start
+
+On the title screen, choose **NEW GAME**. The game asks whether to skip to the clock in your room. Yes puts you in the bedroom, in front of the clock, with a random name. The next question is boy or girl. No plays the normal intro. Text speed is fast on a test start. You still set the clock yourself, then go downstairs for Mum's television scene.
+
 ## How a session works
 
 1. Both games are the same build. Each copy of the ROM needs its own file name and its own save. In mGBA, open one copy, choose File, New Multiplayer Window, and open the other copy there. RetroArch has to already be in a Gen 3 link lobby. Open the start menu, choose **CO-OP**, and say yes. The question stays on the bedroom. The game then waits on a message that counts how many games the cable can see. It should go from 1 to 2, then say who you linked with. Press B to cancel. A count that stays at 1 means the two mGBA windows are not in the same multiplayer session.

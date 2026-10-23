@@ -192,6 +192,9 @@ static void Task_HandleMainMenuInput(u8);
 static void Task_HandleMainMenuAPressed(u8);
 static void Task_HandleMainMenuBPressed(u8);
 static void Task_NewGameBirchSpeech_Init(u8);
+static void Task_CoopAskTestStart(u8);
+static void Task_CoopAskTestStartInput(u8);
+static void Task_CoopAskGenderInput(u8);
 static void Task_DisplayMainMenuInvalidActionError(u8);
 static void AddBirchSpeechObjects(u8);
 static void Task_NewGameBirchSpeech_WaitToShowBirch(u8);
@@ -1091,7 +1094,7 @@ static void Task_HandleMainMenuAPressed(u8 taskId)
 
             gPlttBufferUnfaded[0] = RGB_BLACK;
             gPlttBufferFaded[0] = RGB_BLACK;
-            gTasks[taskId].func = Task_NewGameBirchSpeech_Init;
+            gTasks[taskId].func = Task_CoopAskTestStart;
             break;
         case ACTION_CONTINUE:
             gPlttBufferUnfaded[0] = RGB_BLACK;
@@ -1293,6 +1296,53 @@ static void HighlightSelectedMainMenuItem(enum PartyMenuType menuType, u8 select
 #define tLotadSpriteId data[9]
 #define tBrendanSpriteId data[10]
 #define tMaySpriteId data[11]
+
+static const u8 *const sText_TestStartAsk = COMPOUND_STRING("Skip to the clock\nin your room?");
+static const u8 *const sText_TestStartGender = COMPOUND_STRING("Play as a boy?\nNO plays as a girl.");
+
+static void Task_CoopAskTestStart(u8 taskId)
+{
+    CreateMainMenuErrorWindow(sText_TestStartAsk);
+    CreateYesNoMenuParameterized(18, 8, MAIN_MENU_BORDER_TILE, 0x1E0, 2, 15);
+    gTasks[taskId].func = Task_CoopAskTestStartInput;
+}
+
+static void Task_CoopAskTestStartInput(u8 taskId)
+{
+    switch (Menu_ProcessInputNoWrapClearOnChoose())
+    {
+    case 0:
+        PlaySE(SE_SELECT);
+        CreateMainMenuErrorWindow(sText_TestStartGender);
+        CreateYesNoMenuParameterized(18, 8, MAIN_MENU_BORDER_TILE, 0x1E0, 2, 15);
+        gTasks[taskId].func = Task_CoopAskGenderInput;
+        break;
+    case 1:
+    case MENU_B_PRESSED:
+        PlaySE(SE_SELECT);
+        ClearStdWindowAndFrame(7, TRUE);
+        gTasks[taskId].func = Task_NewGameBirchSpeech_Init;
+        break;
+    }
+}
+
+static void Task_CoopAskGenderInput(u8 taskId)
+{
+    switch (Menu_ProcessInputNoWrapClearOnChoose())
+    {
+    case 0:
+        PlaySE(SE_SELECT);
+        DestroyTask(taskId);
+        Coop_BeginTestStart(MALE);
+        break;
+    case 1:
+    case MENU_B_PRESSED:
+        PlaySE(SE_SELECT);
+        DestroyTask(taskId);
+        Coop_BeginTestStart(FEMALE);
+        break;
+    }
+}
 
 static void Task_NewGameBirchSpeech_Init(u8 taskId)
 {

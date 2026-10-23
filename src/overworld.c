@@ -10,6 +10,7 @@
 #include "clock.h"
 #include "dexnav.h"
 #include "event_data.h"
+#include "constants/heal_locations.h"
 #include "event_object_movement.h"
 #include "event_scripts.h"
 #include "fake_rtc.h"
@@ -1953,6 +1954,91 @@ void CB2_NewGame(void)
     // Wall clock now track local time so we set it to 10AM to match initial wall clock time
     RtcCalcLocalTimeOffset(0, 10, 0, 0);
 #endif
+}
+
+static EWRAM_DATA u8 sCoopTestGender = MALE;
+
+static void Coop_GiveTestName(void)
+{
+    static const u8 *const names[] = {
+        COMPOUND_STRING("ASH"),
+        COMPOUND_STRING("MISTY"),
+        COMPOUND_STRING("BROCK"),
+        COMPOUND_STRING("MAY"),
+        COMPOUND_STRING("DAWN"),
+        COMPOUND_STRING("LEAF"),
+        COMPOUND_STRING("RED"),
+        COMPOUND_STRING("BLUE"),
+    };
+    u8 pick = (Random() + gMain.vblankCounter2) % ARRAY_COUNT(names);
+
+    StringCopy(gSaveBlock2Ptr->playerName, names[pick]);
+}
+
+static void Coop_ApplyClockStart(void)
+{
+    gSaveBlock2Ptr->playerGender = sCoopTestGender;
+    gSaveBlock2Ptr->optionsTextSpeed = OPTIONS_TEXT_SPEED_FAST;
+    Coop_GiveTestName();
+    if (sCoopTestGender == MALE)
+    {
+        FlagSet(FLAG_HIDE_LITTLEROOT_TOWN_MAYS_HOUSE_MOM);
+        FlagSet(FLAG_HIDE_LITTLEROOT_TOWN_MAYS_HOUSE_TRUCK);
+        FlagSet(FLAG_HIDE_LITTLEROOT_TOWN_BRENDANS_HOUSE_RIVAL_MOM);
+        FlagSet(FLAG_HIDE_LITTLEROOT_TOWN_BRENDANS_HOUSE_RIVAL_SIBLING);
+        FlagSet(FLAG_HIDE_LITTLEROOT_TOWN_BRENDANS_HOUSE_2F_POKE_BALL);
+        FlagSet(FLAG_HIDE_LITTLEROOT_TOWN_BRENDANS_HOUSE_TRUCK);
+        VarSet(VAR_LITTLEROOT_HOUSES_STATE_BRENDAN, 1);
+        SetContinueGameWarpToHealLocation(HEAL_LOCATION_LITTLEROOT_TOWN_BRENDANS_HOUSE_2F);
+        SetWarpDestination(MAP_GROUP(MAP_LITTLEROOT_TOWN_BRENDANS_HOUSE_2F), MAP_NUM(MAP_LITTLEROOT_TOWN_BRENDANS_HOUSE_2F), WARP_ID_NONE, 5, 3);
+    }
+    else
+    {
+        FlagSet(FLAG_HIDE_LITTLEROOT_TOWN_BRENDANS_HOUSE_MOM);
+        FlagSet(FLAG_HIDE_LITTLEROOT_TOWN_BRENDANS_HOUSE_TRUCK);
+        FlagSet(FLAG_HIDE_LITTLEROOT_TOWN_MAYS_HOUSE_RIVAL_MOM);
+        FlagSet(FLAG_HIDE_LITTLEROOT_TOWN_MAYS_HOUSE_RIVAL_SIBLING);
+        FlagSet(FLAG_HIDE_LITTLEROOT_TOWN_MAYS_HOUSE_2F_POKE_BALL);
+        FlagSet(FLAG_HIDE_LITTLEROOT_TOWN_MAYS_HOUSE_TRUCK);
+        VarSet(VAR_LITTLEROOT_HOUSES_STATE_MAY, 1);
+        SetContinueGameWarpToHealLocation(HEAL_LOCATION_LITTLEROOT_TOWN_MAYS_HOUSE_2F);
+        SetWarpDestination(MAP_GROUP(MAP_LITTLEROOT_TOWN_MAYS_HOUSE_2F), MAP_NUM(MAP_LITTLEROOT_TOWN_MAYS_HOUSE_2F), WARP_ID_NONE, 3, 3);
+    }
+    FlagSet(FLAG_HIDE_LITTLEROOT_TOWN_MOM_OUTSIDE);
+    FlagClear(FLAG_HIDE_LITTLEROOT_TOWN_FAT_MAN);
+    FlagSet(FLAG_VISITED_LITTLEROOT_TOWN);
+    // 4 is "told to set the clock". Entering the bedroom moves it to 5.
+    VarSet(VAR_LITTLEROOT_INTRO_STATE, 4);
+    WarpIntoMap();
+}
+
+static void CB2_CoopTestStart(void)
+{
+    FieldClearVBlankHBlankCallbacks();
+    StopMapMusic();
+    ResetSafariZoneFlag_();
+    NewGameInitData();
+    Coop_ApplyClockStart();
+    ResetInitialPlayerAvatarState();
+    sInitialPlayerAvatarState.direction = DIR_NORTH;
+    PlayTimeCounter_Start();
+    ScriptContext_Init();
+    UnlockPlayerFieldControls();
+    gFieldCallback = FieldCB_WarpExitFadeFromBlack;
+    gFieldCallback2 = NULL;
+    DoMapLoadLoop(&gMain.state);
+    SetFieldVBlankCallback();
+    SetMainCallback1(CB1_Overworld);
+    SetMainCallback2(CB2_Overworld);
+#if OW_USE_FAKE_RTC
+    RtcCalcLocalTimeOffset(0, 10, 0, 0);
+#endif
+}
+
+void Coop_BeginTestStart(u8 gender)
+{
+    sCoopTestGender = gender;
+    SetMainCallback2(CB2_CoopTestStart);
 }
 
 void CB2_WhiteOut(void)
