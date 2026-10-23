@@ -2936,6 +2936,11 @@ void RemoveObjectEventsOutsideView(void)
                 continue;
             if (objectEvent->localId == OBJ_EVENT_ID_NPC_FOLLOWER || objectEvent->localId == OBJ_EVENT_ID_FOLLOWER)
                 continue;
+            // A cutscene pans the camera, and a door reload asks every object
+            // outside the window to leave. The partner is not a map object.
+            // Deleting them here is why they vanished until the cable was joined again.
+            if (objectEvent->localId == OBJ_EVENT_ID_COOP_PARTNER)
+                continue;
             if (IsOWEDespawnExempt(objectEvent))
                 continue;
 

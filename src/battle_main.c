@@ -574,6 +574,9 @@ static void CB2_InitBattleInternal(void)
     LoadBattleTextboxAndBackground();
     ResetSpriteData();
     ResetTasks();
+    // Mark the fight before the co-op task is restored. Restoring it must
+    // not wipe the cable: the party exchange is about to use that cable.
+    gMain.inBattle = TRUE;
     // The rescue battle and every later fight start by wiping tasks.
     // Put the co-op session back so the cable is still up when the fight ends.
     Coop_ResumeAfterTasksReset();
@@ -592,7 +595,6 @@ static void CB2_InitBattleInternal(void)
     else
         SetMainCallback2(CB2_HandleStartBattle);
 
-    gMain.inBattle = TRUE;
     gSaveBlock2Ptr->frontier.disableRecordBattle = FALSE;
 
     for (i = 0; i < PARTY_SIZE; i++)
@@ -3285,6 +3287,11 @@ static void DoBattleIntro(void)
             gBattleStruct->eventState.battleIntro++;
         break;
     case BATTLE_INTRO_STATE_INTRO_TEXT:
+        // A link battle must finish the sprite commands before the text.
+        // Queueing the message early blocks the "done" reply behind it, and
+        // the fight sits on this screen with an empty text box.
+        if ((gBattleTypeFlags & BATTLE_TYPE_LINK) && gBattleControllerExecFlags)
+            break;
         if (!IsBattlerMarkedForControllerExec(GetBattlerAtPosition(B_POSITION_PLAYER_LEFT)))
         {
             PrepareStringBattle(STRINGID_INTROMSG, GetBattlerAtPosition(B_POSITION_PLAYER_LEFT));
@@ -3292,6 +3299,8 @@ static void DoBattleIntro(void)
         }
         break;
     case BATTLE_INTRO_STATE_WAIT_FOR_INTRO_TEXT:
+        if ((gBattleTypeFlags & BATTLE_TYPE_LINK) && gBattleControllerExecFlags)
+            break;
         if (!IsBattlerMarkedForControllerExec(GetBattlerAtPosition(B_POSITION_PLAYER_LEFT)))
         {
             if (gBattleTypeFlags & BATTLE_TYPE_TRAINER)
@@ -3350,6 +3359,8 @@ static void DoBattleIntro(void)
             gBattleStruct->eventState.battleIntro++;
         break;
     case BATTLE_INTRO_STATE_WAIT_FOR_WILD_BATTLE_TEXT:
+        if ((gBattleTypeFlags & BATTLE_TYPE_LINK) && gBattleControllerExecFlags)
+            break;
         if (!IsBattlerMarkedForControllerExec(GetBattlerAtPosition(B_POSITION_PLAYER_LEFT)))
         {
             if (gBattleTypeFlags & BATTLE_TYPE_GHOST && CheckBagHasItem(ITEM_SILPH_SCOPE, 1))
@@ -3361,6 +3372,8 @@ static void DoBattleIntro(void)
         }
         break;
     case BATTLE_INTRO_STATE_PRINT_PLAYER_SEND_OUT_TEXT:
+        if ((gBattleTypeFlags & BATTLE_TYPE_LINK) && gBattleControllerExecFlags)
+            break;
         if (!(gBattleTypeFlags & BATTLE_TYPE_SAFARI))
         {
             if (gBattleTypeFlags & BATTLE_TYPE_RECORDED_LINK && !(gBattleTypeFlags & BATTLE_TYPE_RECORDED_IS_MASTER))

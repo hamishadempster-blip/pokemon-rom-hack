@@ -110,6 +110,7 @@ static EWRAM_DATA u16 sLinkWaitTimer = 0;
 static EWRAM_DATA u8 sLinkPlayersSeen = 0;
 static EWRAM_DATA u8 sLinkStatusCount = 0;
 static EWRAM_DATA u8 sLinkErrorStreak = 0;
+static EWRAM_DATA u8 sBadFrameStreak = 0;
 static EWRAM_DATA bool8 sBirchBag = FALSE;
 static EWRAM_DATA u8 sRescueField = COOP_RESCUE_RETURN_NONE;
 static EWRAM_DATA u8 sRescueResult = 0;
@@ -313,8 +314,27 @@ static void Coop_PartnerTarget(s16 *x, s16 *y)
 
 // A cutscene can park a step on top of Mum or the player. That step never
 // finishes, and the old code then ignored every later position.
+static void Coop_NoteBadFrame(void)
+{
+    if (gMain.inBattle || sLinkState != COOP_LINK_UP)
+        return;
+    if (++sBadFrameStreak < 20)
+        return;
+    sBadFrameStreak = 0;
+    Link_RecoverCoopCable();
+    sPartnerResettle = TRUE;
+    sSpriteGfx = 0xFFFF;
+}
+
+static void Coop_NoteGoodFrame(void)
+{
+    sBadFrameStreak = 0;
+}
+
 static void Coop_ShowPartner(struct ObjectEvent *obj)
 {
+    if (obj->spriteId >= MAX_SPRITES || !gSprites[obj->spriteId].inUse)
+        return;
     obj->invisible = FALSE;
     gSprites[obj->spriteId].invisible = FALSE;
 }
@@ -378,6 +398,12 @@ static void Coop_UpdateSprite(void)
 
     gfx = Coop_PartnerGfx(&sPartner);
     objectId = GetObjectEventIdByLocalIdAndMap(OBJ_EVENT_ID_COOP_PARTNER, gSaveBlock1Ptr->location.mapNum, gSaveBlock1Ptr->location.mapGroup);
+    if (objectId < OBJECT_EVENTS_COUNT
+     && (gObjectEvents[objectId].spriteId >= MAX_SPRITES || !gSprites[gObjectEvents[objectId].spriteId].inUse))
+    {
+        Coop_RemoveSprite();
+        objectId = OBJECT_EVENTS_COUNT;
+    }
     if (objectId >= OBJECT_EVENTS_COUNT || sSpriteGfx != gfx)
     {
         Coop_RemoveSprite();
@@ -624,6 +650,7 @@ static void Coop_AcceptPartner(const struct CoopFrame *frame)
 
     sPartner = *frame;
     sPartnerValid = TRUE;
+    Coop_NoteGoodFrame();
     if (sMerged)
         return;
 
@@ -687,7 +714,15 @@ static void Coop_HandleFrame(u32 playerId, const u16 *words)
 
 void Coop_OnRecv(u32 playerId)
 {
-    Coop_HandleFrame(playerId, gRecvCmds[playerId]);
+    u16 words[8];
+
+    memcpy(words, gRecvCmds[playerId], sizeof(words));
+    if (CoopProtocol_Checksum(words) != words[7])
+    {
+        Coop_NoteBadFrame();
+        return;
+    }
+    Coop_HandleFrame(playerId, words);
 }
 
 bool8 Coop_TryParseHeldKeys(u32 playerId)
@@ -703,7 +738,10 @@ bool8 Coop_TryParseHeldKeys(u32 playerId)
     memcpy(probe, words, sizeof(probe));
     probe[0] = COOP_LINKCMD;
     if (CoopProtocol_Checksum(probe) != words[7])
+    {
+        Coop_NoteBadFrame();
         return FALSE;
+    }
     Coop_HandleFrame(playerId, words);
     return TRUE;
 }
@@ -1279,7 +1317,9 @@ static void Coop_NoteLinkHealth(void)
     }
     if (!gReceivedRemoteLinkPlayers || EXTRACT_RECEIVED_NOTHING(gLinkStatus))
     {
-        if (++sLinkErrorStreak >= COOP_LINK_QUIET_LIMIT)
+        if (++sLinkErrorStreak == 45)
+            Link_RecoverCoopCable();
+        if (sLinkErrorStreak >= COOP_LINK_QUIET_LIMIT)
             Coop_Drop(Coop_EventScript_Disconnected);
     }
     else
@@ -1299,6 +1339,7 @@ static void Coop_Drop(const u8 *message)
         message = Coop_EventScript_WarpToLab;
     sRescueGuestFollow = FALSE;
     sLinkErrorStreak = 0;
+    sBadFrameStreak = 0;
     if (sWaitingAck && !gMain.inBattle)
         Coop_FailWait();
     sGuestPairPending = FALSE;
@@ -1384,9 +1425,16 @@ void Coop_ResumeAfterTasksReset(void)
         return;
     gCoopHoldLink = TRUE;
     SetSuppressLinkErrorMessage(TRUE);
+    // Doors, the clock, and the starter bag all wipe the sprite list.
+    // A half-sent frame from that moment also leaves the cable unable
+    // to deliver the partner's new map, so the sprite never returns.
+    Link_RecoverCoopCable();
     if (gLinkCallback == NULL && gReceivedRemoteLinkPlayers && !gMain.inBattle)
         gLinkCallback = Coop_LinkCallback;
     sTaskId = TASK_NONE;
+    sSpriteGfx = 0xFFFF;
+    sPartnerResettle = TRUE;
+    sPartnerStepWait = 0;
     Coop_EnsureTask();
 }
 

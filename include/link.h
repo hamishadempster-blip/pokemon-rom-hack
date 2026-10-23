@@ -296,6 +296,7 @@ void SetLinkDebugValues(u32 seed, u32 flags);
 void SetBerryBlenderLinkCallback(void);
 void SetSuppressLinkErrorMessage(bool8 flag);
 void Link_ConsumeErrors(void);
+void Link_RecoverCoopCable(void);
 void ConvertLinkPlayerName(struct LinkPlayer *player);
 void ClearSavedLinkPlayers(void);
 void SetLinkErrorBuffer(u32 status, u8 lastSendQueueCount, u8 lastRecvQueueCount, bool8 disconnected);

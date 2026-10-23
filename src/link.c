@@ -60,6 +60,7 @@ static u32 sPlayerDataExchangeStatus;
 static u8 sLinkTestLastBlockSendPos;
 static u8 sLinkTestLastBlockRecvPos[MAX_LINK_PLAYERS];
 static u8 sNumVBlanksWithoutSerialIntr;
+static u8 sCoopBurstStall;
 static bool8 sSendBufferEmpty;
 static u16 sSendNonzeroCheck;
 static u16 sRecvNonzeroCheck;
@@ -960,6 +961,37 @@ static void LinkCB_BlockSend(void)
 static void LinkCB_BlockSendEnd(void)
 {
     gLinkCallback = NULL;
+}
+
+// A door or a cutscene can drop one serial burst. The session stays "linked",
+// but every later frame fails its checksum, so the partner sprite never comes
+// back until the cable is joined again. Throw away the broken burst and
+// start clean. Battle blocks own the cable and must not be reset here.
+void Link_RecoverCoopCable(void)
+{
+    if (gMain.inBattle)
+        return;
+
+    gLink.serialIntrCounter = 0;
+    gLink.lag = LAG_NONE;
+    gLink.badChecksum = FALSE;
+    gLink.hardwareError = FALSE;
+    gLink.queueFull = 0;
+    gLink.sendCmdIndex = 0;
+    gLink.recvCmdIndex = 0;
+    gLink.checksum = 0;
+    gLink.sendQueue.count = 0;
+    gLink.sendQueue.pos = 0;
+    gLink.recvQueue.count = 0;
+    gLink.recvQueue.pos = 0;
+    gLinkErrorOccurred = FALSE;
+    sCoopBurstStall = 0;
+    sNumVBlanksWithoutSerialIntr = 0;
+    ResetBlockSend();
+    if (gLinkCallback == LinkCB_BlockSendBegin
+     || gLinkCallback == LinkCB_BlockSend
+     || gLinkCallback == LinkCB_BlockSendEnd)
+        gLinkCallback = NULL;
 }
 
 static void LinkCB_BerryBlenderSendHeldKeys(void)
@@ -2072,10 +2104,25 @@ void LinkVSync(void)
                 // A burst still running is not a pulled cable. A counter of 0
                 // means nothing is in flight: start one, or the battle's first
                 // block never leaves and both screens stay black.
+                // A counter stuck between 1 and 8 means the burst died in a
+                // door or a cutscene. Leaving it there stops every later
+                // frame, and the partner sprite never returns.
                 if (gCoopHoldLink)
                 {
+                    gLink.lag = LAG_NONE;
                     if (gLink.serialIntrCounter == 0)
+                    {
+                        sCoopBurstStall = 0;
                         StartTransfer();
+                    }
+                    else if (++sCoopBurstStall >= 3)
+                    {
+                        sCoopBurstStall = 0;
+                        gLink.serialIntrCounter = 0;
+                        gLink.sendCmdIndex = 0;
+                        gLink.recvCmdIndex = 0;
+                        StartTransfer();
+                    }
                     break;
                 }
                 if (gLink.hardwareError != TRUE)
@@ -2087,9 +2134,14 @@ void LinkVSync(void)
                     StartTransfer();
                 }
             }
-            else if (gLink.lag != LAG_MASTER)
+            else if (gLink.lag != LAG_MASTER || gCoopHoldLink)
             {
+                // lag was latched before the co-op session took the cable.
+                // Vanilla then refuses to start the next burst, so the link
+                // looks connected and never delivers another frame.
+                gLink.lag = LAG_NONE;
                 gLink.serialIntrCounter = 0;
+                sCoopBurstStall = 0;
                 StartTransfer();
             }
             break;

@@ -725,7 +725,10 @@ static void Task_HandleSendLinkBuffersData(u8 taskId)
                     gTasks[taskId].tCurrentBlock_Start    = 0;
                 }
                 blockSize = (BYTE_TO_SEND(LINK_BUFF_SIZE_LO) | (BYTE_TO_SEND(LINK_BUFF_SIZE_HI) << 8)) + LINK_BUFF_DATA;
-                SendBlock(BitmaskAllOtherLinkPlayers(), &BYTE_TO_SEND(0), blockSize);
+                // A failed send used to count as sent. The reply was skipped,
+                // and the intro waited forever after the Pokémon appeared.
+                if (!SendBlock(BitmaskAllOtherLinkPlayers(), &BYTE_TO_SEND(0), blockSize))
+                    break;
                 gTasks[taskId].tState++;
             }
             else
