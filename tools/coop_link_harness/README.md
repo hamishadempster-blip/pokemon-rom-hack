@@ -20,8 +20,13 @@ every ROM build.
 ## Run
 
 ```sh
-tools/coop_link_harness/run_scenario.sh tools/coop_link_harness/scenarios/opening.txt
+tools/coop_link_harness/run_scenario.sh tools/coop_link_harness/scenarios/littleroot.txt
+tools/coop_link_harness/run_scenario.sh tools/coop_link_harness/scenarios/rescue.txt
 ```
+
+`littleroot.txt` links two fresh saves and walks both players out of their
+houses. `rescue.txt` continues through the twin block, Birch's bag, the
+Poochyena double, and the warp into the lab.
 
 Player 0 is the cable master. Screenshots and failure dumps go to the output
 directory. The exit code is non-zero when any `until_*`, `goto`, or `expect`
@@ -43,7 +48,7 @@ for both players to reach it.
 | `until_cb2 SYMBOL [timeout]` | Wait for `gMain.callback2` |
 | `until_mem SYM[+off][:size] VALUE [timeout]` | Wait for a RAM value |
 | `expect SYM[+off][:size] VALUE` | Check a RAM value now |
-| `dump [tag]` | Print callbacks, map, position, partner sprite, and co-op state |
+| `dump [tag]` | Print callbacks, map, position, partner sprite, co-op state, and CPU pc/lr (plus battle and link state in a battle) |
 | `expect_partner [tag]` | The sprite for the other player is drawn on their real tile (same map only) |
 | `expect_no_partner [tag]` | No partner sprite (other map) |
 | `hex SYM [len] [off]` | Print raw bytes |
