@@ -1,0 +1,21 @@
+# Fresh saves: link in the bedrooms, TV scene in separate houses, then meet
+# outside. The partner must show and track through stairs and doors.
+include boot.inc
+include link.inc
+b expect_no_partner bedrooms
+include tv.inc
+b expect_no_partner houses
+0 goto 8 7
+1 goto 2 7
+0 press DOWN 50
+1 press DOWN 50
+b wait 40
+b until_field 600
+b wait 40
+b expect_partner outside-doors
+b shot outside
+0 goto 10 9
+1 goto 11 9
+b wait 60
+b expect_partner side-by-side
+b shot together
