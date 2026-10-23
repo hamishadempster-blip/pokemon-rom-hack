@@ -483,7 +483,8 @@ void CB2_InitBattle(void)
     gLoadFail = FALSE;
 #endif // TESTING
 
-    if (gBattleTypeFlags & BATTLE_TYPE_MULTI && gBattleTypeFlags & BATTLE_TYPE_TRAINER)
+    // Co-op keeps the session cable open, so it skips the party showcase that closes and reopens the link.
+    if (gBattleTypeFlags & BATTLE_TYPE_MULTI && gBattleTypeFlags & BATTLE_TYPE_TRAINER && !(gBattleTypeFlags & BATTLE_TYPE_COOP))
     {
         if (gBattleTypeFlags & BATTLE_TYPE_RECORDED)
         {
@@ -752,7 +753,7 @@ static void SetAllPlayersBerryData(void)
 
         if (gBattleTypeFlags & BATTLE_TYPE_MULTI)
         {
-            if (gBattleTypeFlags & BATTLE_TYPE_BATTLE_TOWER)
+            if (gBattleTypeFlags & (BATTLE_TYPE_BATTLE_TOWER | BATTLE_TYPE_COOP))
                 numPlayers = 2;
             else
                 numPlayers = 4;
@@ -1099,8 +1100,18 @@ static void CB2_HandleStartMultiPartnerBattle(void)
                 gLinkPlayers[1].id = 2;
                 gLinkPlayers[2].id = 1;
                 gLinkPlayers[3].id = 3;
-                GetFrontierTrainerName(gLinkPlayers[2].name, TRAINER_BATTLE_PARAM.opponentA);
-                GetFrontierTrainerName(gLinkPlayers[3].name, TRAINER_BATTLE_PARAM.opponentB);
+                if (gBattleTypeFlags & BATTLE_TYPE_COOP)
+                {
+                    StringCopyN(gLinkPlayers[2].name, TRAINER_BATTLE_PARAM.opponentA < TRAINERS_COUNT ? GetTrainerNameFromId(TRAINER_BATTLE_PARAM.opponentA) : gText_EmptyString2, PLAYER_NAME_LENGTH);
+                    StringCopyN(gLinkPlayers[3].name, TRAINER_BATTLE_PARAM.opponentB < TRAINERS_COUNT ? GetTrainerNameFromId(TRAINER_BATTLE_PARAM.opponentB) : gText_EmptyString2, PLAYER_NAME_LENGTH);
+                    gLinkPlayers[2].name[PLAYER_NAME_LENGTH] = EOS;
+                    gLinkPlayers[3].name[PLAYER_NAME_LENGTH] = EOS;
+                }
+                else
+                {
+                    GetFrontierTrainerName(gLinkPlayers[2].name, TRAINER_BATTLE_PARAM.opponentA);
+                    GetFrontierTrainerName(gLinkPlayers[3].name, TRAINER_BATTLE_PARAM.opponentB);
+                }
                 GetBattleTowerTrainerLanguage(&language, TRAINER_BATTLE_PARAM.opponentA);
                 gLinkPlayers[2].language = language;
                 GetBattleTowerTrainerLanguage(&language, TRAINER_BATTLE_PARAM.opponentB);

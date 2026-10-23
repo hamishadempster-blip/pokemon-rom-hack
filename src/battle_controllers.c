@@ -219,7 +219,8 @@ static void InitBtlControllersInternal(void)
     else
         gBattlersCount = MAX_BATTLERS_COUNT;
 
-    if ((gBattleTypeFlags & BATTLE_TYPE_BATTLE_TOWER)
+    // Co-op is two humans against NPCs, the same controller layout as the tower link multi.
+    if ((gBattleTypeFlags & (BATTLE_TYPE_BATTLE_TOWER | BATTLE_TYPE_COOP))
         || !isMulti
         || (TESTING && isMulti)
         || (!isLink && !isRecorded)
@@ -682,7 +683,7 @@ static void Task_HandleSendLinkBuffersData(u8 taskId)
         }
         else
         {
-            if (gBattleTypeFlags & BATTLE_TYPE_BATTLE_TOWER)
+            if (gBattleTypeFlags & (BATTLE_TYPE_BATTLE_TOWER | BATTLE_TYPE_COOP))
                 numPlayers = 2;
             else
                 numPlayers = (gBattleTypeFlags & BATTLE_TYPE_MULTI) ? 4 : 2;
@@ -3334,7 +3335,7 @@ enum BattleTrainer GetBattlerTrainer(enum BattlerId battler)
         case BATTLE_CONTROLLER_LINK_OPPONENT:
         case BATTLE_CONTROLLER_RECORDED_OPPONENT:
         case BATTLE_CONTROLLER_OPPONENT:
-            if (gBattleTypeFlags & BATTLE_TYPE_MULTI)
+            if (gBattleTypeFlags & BATTLE_TYPE_MULTI && BattleSideHasTwoTrainers(B_SIDE_OPPONENT))
                 return (battler & BIT_FLANK) ? B_TRAINER_OPPONENT_B : B_TRAINER_OPPONENT_A;
             return B_TRAINER_OPPONENT_A;
         default:
@@ -3354,6 +3355,9 @@ bool32 BattleSideHasTwoTrainers(enum BattleSide side)
 {
     if (side == B_SIDE_PLAYER)
         return gBattleTypeFlags & BATTLE_TYPE_MULTI;
+    // Co-op opponents are NPCs: one trainer or a wild pair shares one party.
+    else if (gBattleTypeFlags & BATTLE_TYPE_COOP)
+        return (gBattleTypeFlags & BATTLE_TYPE_TWO_OPPONENTS) != 0;
     else
         return ((gBattleTypeFlags & BATTLE_TYPE_TWO_OPPONENTS && TRAINER_BATTLE_PARAM.opponentB != 0xFFFF) || (gBattleTypeFlags & BATTLE_TYPE_LINK && gBattleTypeFlags & BATTLE_TYPE_MULTI));
 }

@@ -2452,7 +2452,14 @@ void BufferStringBattle(enum StringID stringID, enum BattlerId battler)
     case STRINGID_INTROMSG: // first battle msg
         if (gBattleTypeFlags & BATTLE_TYPE_TRAINER)
         {
-            if (gBattleTypeFlags & (BATTLE_TYPE_LINK | BATTLE_TYPE_RECORDED_LINK))
+            if (gBattleTypeFlags & BATTLE_TYPE_COOP)
+            {
+                if (gBattleTypeFlags & BATTLE_TYPE_TWO_OPPONENTS)
+                    stringPtr = sText_TwoTrainersWantToBattle;
+                else
+                    stringPtr = sText_Trainer1WantsToBattle;
+            }
+            else if (gBattleTypeFlags & (BATTLE_TYPE_LINK | BATTLE_TYPE_RECORDED_LINK))
             {
                 if (gBattleTypeFlags & BATTLE_TYPE_TOWER_LINK_MULTI)
                 {
@@ -2559,6 +2566,8 @@ void BufferStringBattle(enum StringID stringID, enum BattlerId battler)
                     stringPtr = sText_LinkTrainerSentOutTwoPkmn;
                 else if (BATTLE_TWO_VS_ONE_OPPONENT)
                     stringPtr = sText_Trainer1SentOutTwoPkmn;
+                else if (gBattleTypeFlags & BATTLE_TYPE_COOP)
+                    stringPtr = (gBattleTypeFlags & BATTLE_TYPE_TWO_OPPONENTS) ? sText_TwoTrainersSentPkmn : sText_Trainer1SentOutTwoPkmn;
                 else if ((gBattleTypeFlags & BATTLE_TYPE_RECORDED_LINK && gBattleTypeFlags & BATTLE_TYPE_TWO_OPPONENTS) || (gBattleTypeFlags & BATTLE_TYPE_MULTI && (gBattleTypeFlags & BATTLE_TYPE_RECORDED_LINK || gBattleTypeFlags & BATTLE_TYPE_LINK)))
                     stringPtr = sText_TwoLinkTrainersIntroSendOutPkmn;
                 else if (gBattleTypeFlags & BATTLE_TYPE_TWO_OPPONENTS || gBattleTypeFlags & BATTLE_TYPE_TOWER_LINK_MULTI)
