@@ -9,6 +9,7 @@
 #include "event_data.h"
 #include "item.h"
 #include "event_object_movement.h"
+#include "fieldmap.h"
 #include "field_player_avatar.h"
 #include "field_screen_effect.h"
 #include "link.h"
@@ -92,6 +93,7 @@ enum
 
 EWRAM_DATA bool8 gCoopBattleLaunching = FALSE;
 EWRAM_DATA bool8 gCoopArmWild = FALSE;
+EWRAM_DATA bool8 gCoopHoldLink = FALSE;
 
 static EWRAM_DATA u8 sLinkState = COOP_LINK_IDLE;
 static EWRAM_DATA u8 sTaskId = 0;
@@ -102,6 +104,7 @@ static EWRAM_DATA bool8 sLinkWait = FALSE;
 static EWRAM_DATA u16 sLinkWaitTimer = 0;
 static EWRAM_DATA u8 sLinkPlayersSeen = 0;
 static EWRAM_DATA u8 sLinkStatusCount = 0;
+static EWRAM_DATA u8 sLinkErrorStreak = 0;
 static EWRAM_DATA u8 sMerged = FALSE;
 static EWRAM_DATA u8 sSeq = 0;
 static EWRAM_DATA u8 sRequest = 0;
@@ -280,12 +283,34 @@ static void Coop_RemoveSprite(void)
     RemoveObjectEventByLocalIdAndMap(OBJ_EVENT_ID_COOP_PARTNER, gSaveBlock1Ptr->location.mapNum, gSaveBlock1Ptr->location.mapGroup);
 }
 
+static enum Direction Coop_StepDir(s16 dx, s16 dy)
+{
+    s16 adx = dx < 0 ? -dx : dx;
+    s16 ady = dy < 0 ? -dy : dy;
+
+    if (adx >= ady && dx != 0)
+        return dx > 0 ? DIR_EAST : DIR_WEST;
+    if (dy > 0)
+        return DIR_SOUTH;
+    if (dy < 0)
+        return DIR_NORTH;
+    return DIR_NONE;
+}
+
 static void Coop_UpdateSprite(void)
 {
     u16 gfx;
     u8 objectId;
+    u8 status;
+    s16 dx, dy, adx, ady;
+    enum Direction dir;
+    struct ObjectEvent *obj;
     struct ObjectEventTemplate template;
 
+    // Map loads and door fades reset the sprite list. Spawning during that
+    // paints a character onto a blank screen and the next map wipe deletes it.
+    if (gMain.callback2 != CB2_Overworld)
+        return;
     if (!Coop_PartnerOnSameMap() || gMain.inBattle)
     {
         Coop_RemoveSprite();
@@ -301,20 +326,59 @@ static void Coop_UpdateSprite(void)
         template.localId = OBJ_EVENT_ID_COOP_PARTNER;
         template.graphicsId = gfx;
         template.kind = OBJ_KIND_NORMAL;
-        template.x = sPartner.x;
-        template.y = sPartner.y;
+        // Spawn adds MAP_OFFSET itself. The link frame already includes it.
+        template.x = (s16)sPartner.x - MAP_OFFSET;
+        template.y = (s16)sPartner.y - MAP_OFFSET;
         template.elevation = PlayerGetElevation();
         template.movementType = MOVEMENT_TYPE_FACE_DOWN;
         template.trainerType = TRAINER_TYPE_NONE;
         template.script = Coop_EventScript_TalkPartner;
         template.flagId = 0;
         sSpriteGfx = gfx;
-        SpawnSpecialObjectEvent(&template);
+        objectId = SpawnSpecialObjectEvent(&template);
+        if (objectId < OBJECT_EVENTS_COUNT && sPartner.facing != DIR_NONE)
+            ObjectEventTurn(&gObjectEvents[objectId], (enum Direction)sPartner.facing);
         return;
     }
 
-    MoveObjectEventToMapCoords(&gObjectEvents[objectId], sPartner.x, sPartner.y);
-    ObjectEventTurn(&gObjectEvents[objectId], (enum Direction)sPartner.facing);
+    obj = &gObjectEvents[objectId];
+    status = ObjectEventClearHeldMovementIfFinished(obj);
+    if (status == 0)
+        return;
+
+    dx = (s16)sPartner.x - obj->currentCoords.x;
+    dy = (s16)sPartner.y - obj->currentCoords.y;
+    adx = dx < 0 ? -dx : dx;
+    ady = dy < 0 ? -dy : dy;
+    if (dx == 0 && dy == 0)
+    {
+        if (sPartner.facing != DIR_NONE && obj->facingDirection != sPartner.facing)
+        {
+            obj->singleMovementActive = FALSE;
+            ObjectEventClearHeldMovementIfActive(obj);
+            ObjectEventSetHeldMovement(obj, GetFaceDirectionMovementAction(sPartner.facing));
+        }
+        return;
+    }
+
+    // A door or a missed packet can jump more than a couple of tiles.
+    // Anything that far is a place, not a step.
+    if (adx > 2 || ady > 2)
+    {
+        MoveObjectEventToMapCoords(obj, sPartner.x, sPartner.y);
+        if (sPartner.facing != DIR_NONE)
+            ObjectEventTurn(obj, (enum Direction)sPartner.facing);
+        return;
+    }
+
+    dir = Coop_StepDir(dx, dy);
+    if (dir == DIR_NONE)
+        return;
+    obj->singleMovementActive = FALSE;
+    ObjectEventClearHeldMovementIfActive(obj);
+    ObjectEventSetHeldMovement(obj, (sPartner.bike || adx + ady > 1)
+        ? GetPlayerRunMovementAction(dir)
+        : GetWalkNormalMovementAction(dir));
 }
 
 static void Coop_FillFrame(struct CoopFrame *frame)
@@ -895,6 +959,8 @@ static void Coop_PollHandshake(void)
         if (gReceivedRemoteLinkPlayers && IsLinkPlayerDataExchangeComplete())
         {
             sLinkState = COOP_LINK_UP;
+            gCoopHoldLink = TRUE;
+            sLinkErrorStreak = 0;
             sTradeSlot = 0xFF;
             sRivalFightStage = 0xFF;
             sProposedCase = COOP_CASE_NONE;
@@ -957,10 +1023,34 @@ static void Task_CoopEnableScript(u8 taskId)
     DestroyTask(taskId);
 }
 
+static void Coop_NoteLinkHealth(void)
+{
+    if (sLinkState != COOP_LINK_UP)
+        return;
+    // A door loads the next map across several frames. One bad packet during
+    // that load used to close the cable. A real drop keeps failing.
+    if (EXTRACT_LINK_ERRORS(gLinkStatus) || gLinkErrorOccurred)
+    {
+        bool8 live = EXTRACT_LINK_ERRORS(gLinkStatus) != 0;
+
+        Link_ConsumeErrors();
+        if (live && ++sLinkErrorStreak >= 120)
+            Coop_Drop(Coop_EventScript_Disconnected);
+        else if (!live)
+            sLinkErrorStreak = 0;
+    }
+    else
+    {
+        sLinkErrorStreak = 0;
+    }
+}
+
 static void Coop_Drop(const u8 *message)
 {
     // A pending invite would otherwise leave the field frozen or the
     // trainer script waiting on an answer that can't arrive.
+    gCoopHoldLink = FALSE;
+    sLinkErrorStreak = 0;
     if (sWaitingAck && !gMain.inBattle)
         Coop_FailWait();
     sGuestPairPending = FALSE;
@@ -1001,7 +1091,8 @@ static void Task_CoopSession(u8 taskId)
         Coop_PollInviteTimeout();
         if (sGuestPairPending && sGuestPairTimer < 0xFFFF)
             sGuestPairTimer++;
-        if (gLinkErrorOccurred || (sMerged && !gReceivedRemoteLinkPlayers))
+        Coop_NoteLinkHealth();
+        if (sLinkState == COOP_LINK_UP && sMerged && !gReceivedRemoteLinkPlayers)
             Coop_Drop(Coop_EventScript_Disconnected);
     }
     if (sPendingMessage != NULL && !gMain.inBattle && !ScriptContext_IsEnabled() && !ArePlayerFieldControlsLocked())
@@ -1017,6 +1108,20 @@ static void Coop_EnsureTask(void)
 {
     if (sTaskId == TASK_NONE || !FuncIsActiveTask(Task_CoopSession))
         sTaskId = CreateTask(Task_CoopSession, 80);
+}
+
+// Door transitions call ResetTasks, which deletes the session task.
+// The link itself is still open. Put the task back before the fade ends.
+void Coop_ResumeAfterTasksReset(void)
+{
+    if (sLinkState != COOP_LINK_UP)
+        return;
+    gCoopHoldLink = TRUE;
+    SetSuppressLinkErrorMessage(TRUE);
+    if (gLinkCallback == NULL && gReceivedRemoteLinkPlayers)
+        gLinkCallback = Coop_LinkCallback;
+    sTaskId = TASK_NONE;
+    Coop_EnsureTask();
 }
 
 void Coop_OverworldFrame(void)

@@ -1,6 +1,7 @@
 #include "global.h"
 #include "braille_puzzles.h"
 #include "decompress.h"
+#include "coop.h"
 #include "event_data.h"
 #include "event_scripts.h"
 #include "field_effect.h"
@@ -138,6 +139,7 @@ void CB2_DoChangeMap(void)
     DmaFill16(3, 0, (void *)(PLTT + 2), PLTT_SIZE - 2);
     ResetPaletteFade();
     ResetTasks();
+    Coop_ResumeAfterTasksReset();
     ResetSpriteData();
     IntrEnable(INTR_FLAG_VBLANK);
     SetVBlankCallback(VBC_ChangeMapVBlank);

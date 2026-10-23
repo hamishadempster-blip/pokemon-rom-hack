@@ -43,6 +43,8 @@ struct Pokemon;
 
 extern bool8 gCoopBattleLaunching;
 extern bool8 gCoopArmWild;
+// Set while a co-op session should survive a one-off link glitch, such as a door.
+extern bool8 gCoopHoldLink;
 
 u16 Coop_PartnerOnSameMap(void);
 u16 Coop_PartnerOnSameTile(void);
@@ -73,6 +75,7 @@ bool8 Coop_BeaconActive(void);
 bool8 Coop_OfferTrade(u8 slot);
 
 void Coop_OverworldFrame(void);
+void Coop_ResumeAfterTasksReset(void);
 void Coop_LinkCallback(void);
 void Coop_OnRecv(u32 playerId);
 bool8 Coop_TryParseHeldKeys(u32 playerId);

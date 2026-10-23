@@ -1972,12 +1972,20 @@ void CB2_WhiteOut(void)
             gFieldCallback = FieldCB_RushInjuredPokemonToCenter;
         else
             gFieldCallback = FieldCB_WarpExitFadeFromBlack;
-        state = 0;
         SetFollowerNPCData(FNPC_DATA_SURF_BLOB, FNPC_SURF_BLOB_NONE);
-        DoMapLoadLoop(&state);
-        SetFieldVBlankCallback();
-        SetMainCallback1(CB1_Overworld);
-        SetMainCallback2(CB2_Overworld);
+        if (gCoopHoldLink)
+        {
+            gMain.state = 0;
+            SetMainCallback2(CB2_LoadMap2);
+        }
+        else
+        {
+            state = 0;
+            DoMapLoadLoop(&state);
+            SetFieldVBlankCallback();
+            SetMainCallback1(CB1_Overworld);
+            SetMainCallback2(CB2_Overworld);
+        }
     }
 }
 
@@ -1993,7 +2001,17 @@ void CB2_LoadMap(void)
 
 static void CB2_LoadMap2(void)
 {
-    DoMapLoadLoop(&gMain.state);
+    // Loading every step in one call fills the link queue and the cable
+    // drops. One step per frame keeps the two games in step through a door.
+    if (gCoopHoldLink)
+    {
+        if (!LoadMapInStepsLocal(&gMain.state, FALSE))
+            return;
+    }
+    else
+    {
+        DoMapLoadLoop(&gMain.state);
+    }
     SetFieldVBlankCallback();
     SetMainCallback1(CB1_Overworld);
     SetMainCallback2(CB2_Overworld);
@@ -2168,7 +2186,9 @@ void CB2_ContinueSavedGame(void)
 
 static void FieldClearVBlankHBlankCallbacks(void)
 {
-    if (UsedPokemonCenterWarp() == TRUE)
+    // A Pokémon Center warp normally hangs up the cable club. A co-op
+    // session is supposed to survive every door, including those.
+    if (UsedPokemonCenterWarp() == TRUE && !gCoopHoldLink)
         CloseLink();
 
     if (gWirelessCommType != 0)

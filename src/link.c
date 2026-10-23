@@ -10,7 +10,6 @@
 #include "decompress.h"
 #include "string_util.h"
 #include "event_data.h"
-#include "coop.h"
 #include "item_menu.h"
 #include "overworld.h"
 #include "gpu_regs.h"
@@ -25,6 +24,7 @@
 #include "trade.h"
 #include "battle.h"
 #include "link.h"
+#include "coop.h"
 #include "link_rfu.h"
 #include "constants/rgb.h"
 #include "constants/trade.h"
@@ -1524,15 +1524,19 @@ static void TrySetLinkErrorBuffer(void)
     {
         // Link error has occurred, handle message details if
         // necessary, then stop the link.
+        gLinkErrorOccurred = TRUE;
         if (!gSuppressLinkErrorMessage)
         {
             sLinkErrorBuffer.status = gLinkStatus;
             sLinkErrorBuffer.lastRecvQueueCount = gLastRecvQueueCount;
             sLinkErrorBuffer.lastSendQueueCount = gLastSendQueueCount;
             SetMainCallback2(CB2_LinkError);
+            CloseLink();
         }
-        gLinkErrorOccurred = TRUE;
-        CloseLink();
+        else if (!gCoopHoldLink)
+        {
+            CloseLink();
+        }
     }
 }
 
@@ -1704,6 +1708,14 @@ bool8 IsLinkConnectionEstablished(void)
 void SetSuppressLinkErrorMessage(bool8 flag)
 {
     gSuppressLinkErrorMessage = flag;
+}
+
+void Link_ConsumeErrors(void)
+{
+    gLink.queueFull = 0;
+    gLink.badChecksum = FALSE;
+    gLink.hardwareError = FALSE;
+    gLinkErrorOccurred = FALSE;
 }
 
 bool8 HasLinkErrorOccurred(void)
