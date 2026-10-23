@@ -25,7 +25,7 @@ typedef uint32_t u32;
 #include "global.h"
 #endif
 
-#define COOP_BUILD_ID  0xC017011Cu
+#define COOP_BUILD_ID  0xC017011Du
 #define COOP_BUILD_XOR ((u16)(((COOP_BUILD_ID) & 0xFFFFu) ^ ((COOP_BUILD_ID) >> 16)))
 #define COOP_LINKCMD   0xC0A1
 #define COOP_HELD_KEYS_CMD 0xCAFE

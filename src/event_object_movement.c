@@ -4,6 +4,7 @@
 #include "battle_pyramid.h"
 #include "battle_util.h"
 #include "berry.h"
+#include "coop.h"
 #include "data.h"
 #include "debug.h"
 #include "decoration.h"
@@ -3653,7 +3654,17 @@ void SetObjectEventDirection(struct ObjectEvent *objectEvent, enum Direction dir
 
 static const u8 *GetObjectEventScriptPointerByLocalIdAndMap(u8 localId, u8 mapNum, u8 mapGroup)
 {
-    return GetObjectEventTemplateByLocalIdAndMap(localId, mapNum, mapGroup)->script;
+    const struct ObjectEventTemplate *obj;
+
+    // The partner is spawned in code, so the map has no template for this id.
+    // Looking one up returns NULL, and pressing A ran whatever bytes live at address 0.
+    if (localId == OBJ_EVENT_ID_COOP_PARTNER)
+        return Coop_EventScript_TalkPartner;
+
+    obj = GetObjectEventTemplateByLocalIdAndMap(localId, mapNum, mapGroup);
+    if (obj == NULL)
+        return NULL;
+    return obj->script;
 }
 
 const u8 *GetObjectEventScriptPointerByObjectEventId(u8 objectEventId)

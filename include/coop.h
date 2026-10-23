@@ -18,6 +18,8 @@
 
 #define OBJ_EVENT_ID_COOP_PARTNER 0xFC
 
+extern const u8 Coop_EventScript_TalkPartner[];
+
 #define COOP_KIND_GYM       1
 #define COOP_KIND_RIVAL     2
 #define COOP_KIND_E4        3
