@@ -1477,6 +1477,8 @@ void BattleSetup_StartTrainerBattle(void)
             ScriptContext_SetupScript(Coop_EventScript_NeedPartner);
             return;
         }
+        if (Coop_BlockUnreadyMandatory(TRAINER_BATTLE_PARAM.opponentA))
+            return;
     }
 
     if (gNoOfApproachingTrainers == 2)

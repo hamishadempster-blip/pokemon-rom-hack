@@ -226,13 +226,25 @@ MossdeepCity_SpaceCenter_2F_EventScript_ReadyForBattlePrompt::
 	applymovement VAR_LAST_TALKED, Common_Movement_FacePlayer
 	waitmovement 0
 	msgbox MossdeepCity_SpaceCenter_2F_Text_StevenAreYouReadyToBattle, MSGBOX_YESNO
-	goto_if_eq VAR_RESULT, YES, MossdeepCity_SpaceCenter_2F_EventScript_ChoosePartyForMultiBattle
+	goto_if_eq VAR_RESULT, YES, MossdeepCity_SpaceCenter_2F_EventScript_CoopBattle
 	msgbox MossdeepCity_SpaceCenter_2F_Text_StevenHurryGetReadyQuickly, MSGBOX_DEFAULT
 	closemessage
 	applymovement VAR_LAST_TALKED, Common_Movement_WalkInPlaceFasterDown
 	waitmovement 0
 	releaseall
 	end
+
+@ Both players field their first three. Steven stays to talk, and does not take a side.
+MossdeepCity_SpaceCenter_2F_EventScript_CoopBattle::
+	specialvar VAR_RESULT, Coop_PartnerOnSameMap
+	goto_if_eq VAR_RESULT, FALSE, Coop_EventScript_NeedPartner
+	setvar VAR_0x8004, TRAINER_MAXIE_MOSSDEEP
+	setvar VAR_0x8005, TRAINER_TABITHA_MOSSDEEP
+	setvar VAR_0x8006, 4 @ COOP_GATE_SPACE
+	setvar VAR_0x8007, FLAG_DEFEATED_MAGMA_SPACE_CENTER
+	special Coop_StartStoryBattle
+	goto_if_eq VAR_RESULT, FALSE, Coop_EventScript_NeedPartner
+	goto MossdeepCity_SpaceCenter_2F_EventScript_DefeatedMaxieTabitha
 
 MossdeepCity_SpaceCenter_2F_EventScript_ChoosePartyForMultiBattle::
 	applymovement VAR_LAST_TALKED, Common_Movement_WalkInPlaceFasterDown

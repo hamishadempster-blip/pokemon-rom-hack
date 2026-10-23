@@ -643,6 +643,8 @@ gSpecials::
 	def_special Coop_IsLevelCapOn
 	def_special Coop_CaseChosen
 	def_special Coop_StartGymBattle, 0, 1
+	def_special Coop_StartStoryBattle, 0, 1
+	def_special Coop_ApplyGuestStory
 	def_special Coop_StartLegendaryBattle, 0, 1
 	def_special Coop_BeginLink
 	def_special Coop_ArmLinkWait

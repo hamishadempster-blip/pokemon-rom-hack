@@ -33,6 +33,15 @@ extern const u8 Coop_EventScript_TalkPartner[];
 #define COOP_KIND_PAIR      11
 // Birch's Route 101 rescue. Both players already have a starter.
 #define COOP_KIND_RESCUE    12
+// Story bosses. The badge byte is the gate, not a gym number.
+#define COOP_KIND_STORY     13
+
+#define COOP_GATE_CHIMNEY  1
+#define COOP_GATE_MAGMA    2
+#define COOP_GATE_SEAFLOOR 3
+#define COOP_GATE_SPACE    4
+#define COOP_GATE_WEATHER  5
+#define COOP_GATE_AQUA     6
 
 #define COOP_RESCUE_RETURN_NONE  0
 #define COOP_RESCUE_RETURN_HOST  1
@@ -59,6 +68,8 @@ u16 Coop_IsLevelCapOn(void);
 u32 Coop_DisplayedLevelCap(void);
 u16 Coop_CaseChosen(void);
 u16 Coop_StartGymBattle(void);
+u16 Coop_StartStoryBattle(void);
+u16 Coop_ApplyGuestStory(void);
 u16 Coop_StartLegendaryBattle(void);
 u16 Coop_BeginLink(void);
 u16 Coop_ArmLinkWait(void);
@@ -90,6 +101,7 @@ void Coop_LinkCallback(void);
 void Coop_OnRecv(u32 playerId);
 bool8 Coop_TryParseHeldKeys(u32 playerId);
 bool8 Coop_ShouldRefuseSolo(u16 trainerId);
+bool8 Coop_BlockUnreadyMandatory(u16 trainerId);
 bool8 Coop_InterceptRival(u16 trainerId);
 bool8 Coop_TryQueueOrdinaryDouble(void);
 void Coop_OnBattleLaunched(void);

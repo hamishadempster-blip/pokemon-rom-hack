@@ -395,6 +395,33 @@ Coop_EventScript_GuestAfterBattle::
 	case 8, Coop_EventScript_GuestSootopolis
 	case 9, Coop_EventScript_GuestEliteFour
 	case 10, Coop_EventScript_GuestHallOfFame
+	case 11, Coop_EventScript_GuestCatchUp
+	case 12, Coop_EventScript_GuestCatchUp
+	case 13, Coop_EventScript_GuestCatchUp
+	case 14, Coop_EventScript_GuestCatchUp
+	case 15, Coop_EventScript_GuestCatchUp
+	case 17, Coop_EventScript_GuestCatchUp
+	case 18, Coop_EventScript_GuestCatchUp
+	case 19, Coop_EventScript_GuestCatchUp
+	case 20, Coop_EventScript_GuestCatchUp
+	case 21, Coop_EventScript_GuestCatchUp
+	case 22, Coop_EventScript_GuestCatchUp
+	releaseall
+	end
+
+@ The talker keeps playing the cutscene. This only moves the guest's save
+@ forward, and never backward. A 2 from the special warps to Route 128.
+Coop_EventScript_GuestCatchUp::
+	copyvar VAR_0x8004, VAR_RESULT
+	specialvar VAR_RESULT, Coop_ApplyGuestStory
+	goto_if_eq VAR_RESULT, 1, Common_EventScript_ShowBagIsFull
+	goto_if_eq VAR_RESULT, 2, Coop_EventScript_GuestRoute128
+	releaseall
+	end
+
+Coop_EventScript_GuestRoute128::
+	warp MAP_ROUTE128, 38, 22
+	waitstate
 	releaseall
 	end
 

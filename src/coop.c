@@ -5,6 +5,9 @@
 #include "battle_controllers.h"
 #include "battle_main.h"
 #include "battle_setup.h"
+#include "battle_pyramid.h"
+#include "constants/region_map_sections.h"
+#include "constants/battle_pyramid.h"
 #include "caps.h"
 #include "event_data.h"
 #include "item.h"
@@ -712,7 +715,7 @@ static bool8 Coop_IsOptionalKind(u8 kind)
 static bool8 Coop_IsMandatoryKind(u8 kind)
 {
     return kind == COOP_KIND_GYM || kind == COOP_KIND_RIVAL || kind == COOP_KIND_E4
-        || kind == COOP_KIND_CHAMPION || kind == COOP_KIND_LEGEND;
+        || kind == COOP_KIND_CHAMPION || kind == COOP_KIND_LEGEND || kind == COOP_KIND_STORY;
 }
 
 // An optional invite never pulls a player out of a menu, a script, a trade,
@@ -1199,7 +1202,7 @@ static void Coop_NoteLinkHealth(void)
     }
     if (!gReceivedRemoteLinkPlayers || EXTRACT_RECEIVED_NOTHING(gLinkStatus))
     {
-        if (++sLinkErrorStreak >= 180)
+        if (++sLinkErrorStreak >= COOP_LINK_QUIET_LIMIT)
             Coop_Drop(Coop_EventScript_Disconnected);
     }
     else
@@ -1566,7 +1569,11 @@ static bool8 Coop_ClassRequiresPartner(u16 trainerId)
     return cls == TRAINER_CLASS_LEADER
         || cls == TRAINER_CLASS_ELITE_FOUR
         || cls == TRAINER_CLASS_CHAMPION
-        || cls == TRAINER_CLASS_RIVAL;
+        || cls == TRAINER_CLASS_RIVAL
+        || cls == TRAINER_CLASS_AQUA_LEADER
+        || cls == TRAINER_CLASS_MAGMA_LEADER
+        || cls == TRAINER_CLASS_AQUA_ADMIN
+        || cls == TRAINER_CLASS_MAGMA_ADMIN;
 }
 
 bool8 Coop_ShouldRefuseSolo(u16 trainerId)
@@ -1574,6 +1581,69 @@ bool8 Coop_ShouldRefuseSolo(u16 trainerId)
     if (Coop_PartnerOnSameMap())
         return FALSE;
     return Coop_ClassRequiresPartner(trainerId) || Coop_RivalStageFromId(trainerId) != 0xFF;
+}
+
+bool8 Coop_BlockUnreadyMandatory(u16 trainerId)
+{
+    if (!Coop_PartnerOnSameMap())
+        return FALSE;
+    if (!Coop_ClassRequiresPartner(trainerId))
+        return FALSE;
+    if (Coop_HasBattleReadyLead())
+        return FALSE;
+    ScriptContext_SetupScript(Coop_EventScript_NotReady);
+    return TRUE;
+}
+
+static bool8 Coop_PlaceStaysSolo(void)
+{
+    u16 section = gMapHeader.regionMapSectionId;
+
+    if (section == MAPSEC_BATTLE_FRONTIER || section == MAPSEC_SAFARI_ZONE || section == MAPSEC_TRAINER_HILL)
+        return TRUE;
+    if (CurrentBattlePyramidLocation() != PYRAMID_LOCATION_NONE)
+        return TRUE;
+    return FALSE;
+}
+
+static bool8 Coop_CoupleStaysSolo(u16 trainerId)
+{
+    enum TrainerClassID cls = GetTrainerClassFromId(trainerId);
+
+    if (GetTrainerBattleType(trainerId) == TRAINER_BATTLE_TYPE_DOUBLES)
+        return TRUE;
+    switch (cls)
+    {
+    case TRAINER_CLASS_TWINS:
+    case TRAINER_CLASS_SR_AND_JR:
+    case TRAINER_CLASS_YOUNG_COUPLE:
+    case TRAINER_CLASS_OLD_COUPLE:
+    case TRAINER_CLASS_SIS_AND_BRO:
+        return TRUE;
+    default:
+        return FALSE;
+    }
+}
+
+static u8 Coop_StoryGate(u16 trainerId)
+{
+    switch (trainerId)
+    {
+    case TRAINER_MAXIE_MT_CHIMNEY:
+        return COOP_GATE_CHIMNEY;
+    case TRAINER_MAXIE_MAGMA_HIDEOUT:
+        return COOP_GATE_MAGMA;
+    case TRAINER_ARCHIE:
+        return COOP_GATE_SEAFLOOR;
+    case TRAINER_MAXIE_MOSSDEEP:
+        return COOP_GATE_SPACE;
+    case TRAINER_SHELLY_WEATHER_INSTITUTE:
+        return COOP_GATE_WEATHER;
+    case TRAINER_MATT:
+        return COOP_GATE_AQUA;
+    default:
+        return 0;
+    }
 }
 
 static void Coop_QueueRival(u8 stage)
@@ -1593,15 +1663,10 @@ static void Coop_QueueRival(u8 stage)
 bool8 Coop_TryQueueOrdinaryDouble(void)
 {
     u16 trainerA = TRAINER_BATTLE_PARAM.opponentA;
-    enum TrainerClassID cls;
-    bool8 grunt;
-    bool8 mandatory;
     u16 trainerB;
+    int category;
 
-    if (!Coop_SessionActive() || !Coop_PartnerOnSameMap() || !sBeacon.on)
-        return FALSE;
-    // Ordinary fights are optional, so a fainted front three just means this one stays solo.
-    if (!Coop_HasBattleReadyLead())
+    if (!Coop_SessionActive() || !Coop_PartnerOnSameMap())
         return FALSE;
     if (trainerA == TRAINER_NONE || trainerA >= TRAINERS_COUNT || IsSpecialTrainer(trainerA))
         return FALSE;
@@ -1610,14 +1675,20 @@ bool8 Coop_TryQueueOrdinaryDouble(void)
     // The Route 102 pair has its own ask, and stays solo when that is refused.
     if (trainerA == COOP_PAIR_LEFT_ID || trainerA == COOP_PAIR_RIGHT_ID)
         return FALSE;
-    cls = GetTrainerClassFromId(trainerA);
-    grunt = cls == TRAINER_CLASS_TEAM_AQUA || cls == TRAINER_CLASS_TEAM_MAGMA;
-    mandatory = Coop_ClassRequiresPartner(trainerA);
-    if (!grunt && !mandatory && (trainerA % 4) == 0)
+    category = CoopProtocol_TrainerCategory(Coop_PlaceStaysSolo(), Coop_ClassRequiresPartner(trainerA), Coop_CoupleStaysSolo(trainerA));
+    if (!CoopProtocol_QueuesCoop(category, sBeacon.on, TRUE))
         return FALSE;
-    trainerB = grunt ? trainerA : 0;
+    // Optional fights stay solo when the front three are down. Mandatory ones
+    // already stopped in Coop_BlockUnreadyMandatory.
+    if (!Coop_HasBattleReadyLead())
+        return FALSE;
+    trainerB = CoopProtocol_DistinctPartner(trainerA, TRAINER_BATTLE_PARAM.opponentB);
     sResumeScript = FALSE;
-    Coop_QueueInvite(COOP_KIND_TRAINER, trainerA, trainerB, 0, 0);
+    sLegendKind = 0;
+    if (category == COOP_CAT_MANDATORY)
+        Coop_QueueInvite(COOP_KIND_STORY, trainerA, trainerB, Coop_StoryGate(trainerA), 0);
+    else
+        Coop_QueueInvite(COOP_KIND_TRAINER, trainerA, trainerB, 0, 0);
     return TRUE;
 }
 
@@ -1641,6 +1712,17 @@ u16 Coop_StartGymBattle(void)
     sResumeScript = TRUE;
     sLegendKind = 0;
     Coop_QueueInvite((u8)VarGet(VAR_0x8008), VarGet(VAR_0x8004), VarGet(VAR_0x8005), (u8)VarGet(VAR_0x8006), VarGet(VAR_0x8007));
+    gSpecialVar_Result = FALSE;
+    return TRUE;
+}
+
+u16 Coop_StartStoryBattle(void)
+{
+    if (Coop_RefuseMandatory())
+        return FALSE;
+    sResumeScript = TRUE;
+    sLegendKind = 0;
+    Coop_QueueInvite(COOP_KIND_STORY, VarGet(VAR_0x8004), VarGet(VAR_0x8005), (u8)VarGet(VAR_0x8006), VarGet(VAR_0x8007));
     gSpecialVar_Result = FALSE;
     return TRUE;
 }
@@ -1904,7 +1986,9 @@ static void Coop_GiveJointWin(void)
 {
     struct CoopSave *save = CoopSave();
 
-    if (sBattleBadge >= 1 && sBattleBadge <= 8)
+    // The badge byte is a gym number only for gyms. Rivals store a stage
+    // there, and story gates store a scene id. Either one used to set a badge.
+    if (sBattleKind == COOP_KIND_GYM && sBattleBadge >= 1 && sBattleBadge <= 8)
     {
         FlagSet(FLAG_BADGE01_GET + sBattleBadge - 1);
         if (save != NULL)
@@ -1940,9 +2024,17 @@ static void Coop_QueueGuestFollowup(void)
         VarSet(VAR_TEMP_1, 1);
         sGuestFollowup = 10;
     }
+    else if (sBattleKind == COOP_KIND_STORY && sBattleBadge >= COOP_GATE_CHIMNEY && sBattleBadge <= COOP_GATE_AQUA)
+    {
+        sGuestFollowup = 16 + sBattleBadge;
+    }
     else if (sBattleKind == COOP_KIND_GYM && sBattleBadge >= 1 && sBattleBadge <= 8)
     {
         sGuestFollowup = sBattleBadge;
+    }
+    else if (sBattleKind == COOP_KIND_RIVAL && sRivalFightStage <= 4)
+    {
+        sGuestFollowup = 11 + sRivalFightStage;
     }
     else
     {
@@ -1957,6 +2049,138 @@ u16 Coop_TakeGuestFollowup(void)
 
     sGuestFollowup = 0;
     return followup;
+}
+
+static void Coop_RaiseVar(u16 varId, u16 floor)
+{
+    u16 current = VarGet(varId);
+
+    VarSet(varId, CoopProtocol_RaiseVar(current, floor));
+}
+
+static u16 Coop_GiveStoryItem(u16 item)
+{
+    if (CheckBagHasItem(item, 1))
+        return 0;
+    if (!AddBagItem(item, 1))
+        return 1;
+    return 0;
+}
+
+// VAR_0x8004 is the follow-up code. 0 means the guest can walk.
+// 1 means a story item did not fit, and this scene was left in place.
+// 2 means warp to Route 128, where the host arrives after Archie.
+u16 Coop_ApplyGuestStory(void)
+{
+    switch (VarGet(VAR_0x8004))
+    {
+    case 11:
+        FlagSet(FLAG_DEFEATED_RIVAL_ROUTE103);
+        FlagSet(FLAG_HIDE_ROUTE_103_RIVAL);
+        Coop_RaiseVar(VAR_OLDALE_RIVAL_STATE, 1);
+        return 0;
+    case 12:
+        FlagSet(FLAG_DEFEATED_RIVAL_RUSTBORO);
+        FlagSet(FLAG_HIDE_RUSTBORO_CITY_RIVAL);
+        return 0;
+    case 13:
+        if (Coop_GiveStoryItem(ITEM_DOWSING_MACHINE))
+            return 1;
+        FlagSet(FLAG_HIDE_ROUTE_110_RIVAL);
+        FlagSet(FLAG_HIDE_ROUTE_110_RIVAL_ON_BIKE);
+        Coop_RaiseVar(VAR_ROUTE110_STATE, 1);
+        return 0;
+    case 14:
+        if (!FlagGet(FLAG_RECEIVED_HM_FLY) && Coop_GiveStoryItem(ITEM_HM_FLY))
+            return 1;
+        if (!FlagGet(FLAG_RECEIVED_HM_FLY))
+            FlagSet(FLAG_RECEIVED_HM_FLY);
+        FlagSet(FLAG_HIDE_ROUTE_119_RIVAL);
+        FlagSet(FLAG_HIDE_ROUTE_119_RIVAL_ON_BIKE);
+        if (VarGet(VAR_ROUTE119_STATE) < 1)
+        {
+            VarSet(VAR_ROUTE119_STATE, 1);
+            VarSet(VAR_SCOTT_STATE, VarGet(VAR_SCOTT_STATE) + 1);
+        }
+        return 0;
+    case 15:
+        FlagSet(FLAG_MET_RIVAL_LILYCOVE);
+        FlagSet(FLAG_HIDE_LILYCOVE_CITY_RIVAL);
+        return 0;
+    case 17:
+        FlagSet(FLAG_HIDE_MT_CHIMNEY_TEAM_MAGMA);
+        FlagSet(FLAG_HIDE_MT_CHIMNEY_TEAM_AQUA);
+        FlagSet(FLAG_DEFEATED_EVIL_TEAM_MT_CHIMNEY);
+        FlagSet(FLAG_HIDE_METEOR_FALLS_1F_1R_COZMO);
+        FlagClear(FLAG_HIDE_FALLARBOR_HOUSE_PROF_COZMO);
+        FlagClear(FLAG_HIDE_MT_CHIMNEY_LAVA_COOKIE_LADY);
+        return 0;
+    case 18:
+        if (VarGet(VAR_SLATEPORT_CITY_STATE) < 1)
+        {
+            FlagClear(FLAG_HIDE_SLATEPORT_CITY_CAPTAIN_STERN);
+            FlagClear(FLAG_HIDE_SLATEPORT_CITY_GABBY_AND_TY);
+            VarSet(VAR_SLATEPORT_CITY_STATE, 1);
+            Coop_RaiseVar(VAR_SLATEPORT_HARBOR_STATE, 1);
+        }
+        FlagSet(FLAG_GROUDON_AWAKENED_MAGMA_HIDEOUT);
+        FlagSet(FLAG_HIDE_MAGMA_HIDEOUT_GRUNTS);
+        return 0;
+    case 19:
+        if (VarGet(VAR_SOOTOPOLIS_CITY_STATE) >= 6)
+            return 0;
+        Coop_RaiseVar(VAR_ROUTE128_STATE, 1);
+        Coop_RaiseVar(VAR_SOOTOPOLIS_CITY_STATE, 1);
+        Coop_RaiseVar(VAR_STEVENS_HOUSE_STATE, 2);
+        Coop_RaiseVar(VAR_SEAFLOOR_CAVERN_STATE, 1);
+        FlagClear(FLAG_HIDE_SOOTOPOLIS_CITY_STEVEN);
+        FlagClear(FLAG_HIDE_SOOTOPOLIS_CITY_ARCHIE);
+        FlagClear(FLAG_HIDE_SOOTOPOLIS_CITY_MAXIE);
+        FlagClear(FLAG_HIDE_SOOTOPOLIS_CITY_RESIDENTS);
+        FlagClear(FLAG_HIDE_SOOTOPOLIS_CITY_GROUDON);
+        FlagClear(FLAG_HIDE_SOOTOPOLIS_CITY_KYOGRE);
+        FlagSet(FLAG_HIDE_SOOTOPOLIS_CITY_MAN_1);
+        FlagSet(FLAG_LEGENDARIES_IN_SOOTOPOLIS);
+        FlagClear(FLAG_HIDE_ROUTE_128_ARCHIE);
+        FlagClear(FLAG_HIDE_ROUTE_128_MAXIE);
+        FlagSet(FLAG_SYS_WEATHER_CTRL);
+        FlagSet(FLAG_KYOGRE_ESCAPED_SEAFLOOR_CAVERN);
+        FlagSet(FLAG_HIDE_MOSSDEEP_CITY_STEVENS_HOUSE_STEVEN);
+        FlagSet(FLAG_HIDE_SEAFLOOR_CAVERN_ROOM_9_ARCHIE);
+        FlagSet(FLAG_HIDE_SEAFLOOR_CAVERN_ROOM_9_MAXIE);
+        FlagSet(FLAG_HIDE_SEAFLOOR_CAVERN_ROOM_9_MAGMA_GRUNTS);
+        FlagSet(FLAG_HIDE_SEAFLOOR_CAVERN_ROOM_9_KYOGRE);
+        FlagSet(FLAG_HIDE_SEAFLOOR_CAVERN_AQUA_GRUNTS);
+        return 2;
+    case 20:
+        Coop_RaiseVar(VAR_MOSSDEEP_CITY_STATE, 3);
+        Coop_RaiseVar(VAR_MOSSDEEP_SPACE_CENTER_STATE, 3);
+        Coop_RaiseVar(VAR_STEVENS_HOUSE_STATE, 1);
+        FlagSet(FLAG_DEFEATED_MAGMA_SPACE_CENTER);
+        FlagSet(FLAG_HIDE_MOSSDEEP_CITY_SPACE_CENTER_1F_TEAM_MAGMA);
+        FlagSet(FLAG_HIDE_MOSSDEEP_CITY_SPACE_CENTER_2F_TEAM_MAGMA);
+        FlagSet(FLAG_HIDE_MOSSDEEP_CITY_TEAM_MAGMA);
+        FlagSet(FLAG_HIDE_MOSSDEEP_CITY_SPACE_CENTER_MAGMA_NOTE);
+        if (VarGet(VAR_STEVENS_HOUSE_STATE) < 2)
+            FlagClear(FLAG_HIDE_MOSSDEEP_CITY_STEVENS_HOUSE_STEVEN);
+        return 0;
+    case 21:
+        FlagSet(FLAG_HIDE_ROUTE_119_TEAM_AQUA);
+        FlagSet(FLAG_HIDE_WEATHER_INSTITUTE_2F_AQUA_GRUNT_M);
+        if (VarGet(VAR_WEATHER_INSTITUTE_STATE) < 1)
+        {
+            VarSet(VAR_WEATHER_INSTITUTE_STATE, 1);
+            FlagClear(FLAG_HIDE_WEATHER_INSTITUTE_2F_WORKERS);
+        }
+        return 0;
+    case 22:
+        FlagSet(FLAG_TEAM_AQUA_ESCAPED_IN_SUBMARINE);
+        FlagSet(FLAG_HIDE_LILYCOVE_CITY_AQUA_GRUNTS);
+        FlagSet(FLAG_HIDE_AQUA_HIDEOUT_GRUNTS);
+        return 0;
+    default:
+        return 0;
+    }
 }
 
 bool8 Coop_FinishTrainerBattle(void)

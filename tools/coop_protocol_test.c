@@ -123,6 +123,23 @@ int main(void)
     Expect(CoopProtocol_KeepOwnInvite(0, 1, 0, 1) == 0, "an optional wait yields to a mandatory fight");
     Expect(CoopProtocol_KeepOwnInvite(0, 1, 1, 0) == 0, "an optional invite is not held off by this rule");
 
+    Expect(COOP_LINK_QUIET_LIMIT == 240, "quiet cable matches the gpSP Gen 3 peer timeout");
+    Expect(CoopProtocol_RaiseVar(0, 1) == 1, "a guest story var moves forward");
+    Expect(CoopProtocol_RaiseVar(8, 7) == 8, "a later story var stays");
+    Expect(CoopProtocol_RaiseVar(6, 6) == 6, "an equal story var stays");
+    Expect(CoopProtocol_TrainerCategory(1, 1, 0) == COOP_CAT_SOLO, "the frontier stays solo");
+    Expect(CoopProtocol_TrainerCategory(0, 1, 1) == COOP_CAT_SOLO, "a couple stays solo");
+    Expect(CoopProtocol_TrainerCategory(0, 1, 0) == COOP_CAT_MANDATORY, "a villain is mandatory");
+    Expect(CoopProtocol_TrainerCategory(0, 0, 0) == COOP_CAT_OPTIONAL, "an ordinary trainer is optional");
+    Expect(CoopProtocol_QueuesCoop(COOP_CAT_MANDATORY, 0, 1) == 1, "a villain ignores the beacon");
+    Expect(CoopProtocol_QueuesCoop(COOP_CAT_OPTIONAL, 0, 1) == 0, "an optional trainer needs the beacon");
+    Expect(CoopProtocol_QueuesCoop(COOP_CAT_OPTIONAL, 1, 0) == 0, "no battle across maps");
+    Expect(CoopProtocol_QueuesCoop(COOP_CAT_SOLO, 1, 1) == 0, "a solo category never queues");
+    Expect(CoopProtocol_DistinctPartner(30, 30) == 0, "one grunt id is not two grunts");
+    Expect(CoopProtocol_DistinctPartner(30, 0) == 0, "a missing partner stays empty");
+    Expect(CoopProtocol_DistinctPartner(30, 0xFFFF) == 0, "a follower sentinel is not a second trainer");
+    Expect(CoopProtocol_DistinctPartner(30, 31) == 31, "two different trainers both fight");
+
     Expect(CoopProtocol_SameMap(3, 10, 3, 10) == 1, "same map shows the sprite");
     Expect(CoopProtocol_SameMap(3, 10, 4, 10) == 0, "different map hides the sprite");
     Expect(CoopProtocol_SameMap(3, 10, 3, 11) == 0, "a door drops the sprite");

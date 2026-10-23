@@ -27,7 +27,14 @@ typedef uint32_t u32;
 #include "global.h"
 #endif
 
-#define COOP_BUILD_ID  0xC0170122u
+#define COOP_BUILD_ID  0xC0170123u
+// gpSP's Pokémon Gen 3 cable (serial_proto.c MAX_FRAME_TIMEOUT) drops a peer
+// after 240 frames with no packet. The overworld uses the same count.
+#define COOP_LINK_QUIET_LIMIT 240
+
+#define COOP_CAT_SOLO 0
+#define COOP_CAT_OPTIONAL 1
+#define COOP_CAT_MANDATORY 2
 #define COOP_BUILD_XOR ((u16)(((COOP_BUILD_ID) & 0xFFFFu) ^ ((COOP_BUILD_ID) >> 16)))
 #define COOP_LINKCMD   0xC0A1
 #define COOP_HELD_KEYS_CMD 0xCAFE
@@ -237,6 +244,46 @@ static inline int CoopProtocol_Merge(const struct CoopProgress *local, const str
 static inline int CoopProtocol_KeepOwnInvite(u8 myLinkId, u8 waitingAck, u8 ownMandatory, u8 incomingMandatory)
 {
     return myLinkId == 0 && waitingAck && ownMandatory && incomingMandatory;
+}
+
+// A story var only moves forward. A guest who is already past this scene
+// keeps the later state.
+static inline u16 CoopProtocol_RaiseVar(u16 current, u16 floor)
+{
+    return current > floor ? current : floor;
+}
+
+// placeSolo: Battle Frontier, Safari, Trainer Hill, Battle Pyramid.
+// couple: a trainer who is already two opponents on one save.
+// mandatory: gyms, rivals, villains, Elite Four, champion, legendaries.
+static inline int CoopProtocol_TrainerCategory(int placeSolo, int mandatory, int couple)
+{
+    if (placeSolo || couple)
+        return COOP_CAT_SOLO;
+    if (mandatory)
+        return COOP_CAT_MANDATORY;
+    return COOP_CAT_OPTIONAL;
+}
+
+// Mandatory fights ignore the Twin Beacon. Optional fights need it.
+// Nothing queues across maps. Solo never queues.
+static inline int CoopProtocol_QueuesCoop(int category, int beaconOn, int sameMap)
+{
+    if (!sameMap)
+        return 0;
+    if (category == COOP_CAT_MANDATORY)
+        return 1;
+    if (category == COOP_CAT_OPTIONAL && beaconOn)
+        return 1;
+    return 0;
+}
+
+// One trainer id never stands in for two. A repeated id is dropped.
+static inline int CoopProtocol_DistinctPartner(int trainerA, int trainerB)
+{
+    if (trainerB == 0 || trainerB == 0xFFFF || trainerB == trainerA)
+        return 0;
+    return trainerB;
 }
 
 // Stage 1. The partner sprite exists only while this is true. A door changes
