@@ -61,6 +61,7 @@ static u8 sLinkTestLastBlockSendPos;
 static u8 sLinkTestLastBlockRecvPos[MAX_LINK_PLAYERS];
 static u8 sNumVBlanksWithoutSerialIntr;
 static u8 sCoopBurstStall;
+static u16 sCoopLastSerialTick;
 static bool8 sSendBufferEmpty;
 static u16 sSendNonzeroCheck;
 static u16 sRecvNonzeroCheck;
@@ -2166,6 +2167,34 @@ void Timer3Intr(void)
     StartTransfer();
 }
 
+// The master sends each command as one burst of 9 words, ~0.75 ms apart,
+// once per frame. A slave whose interrupts are held off through a map load
+// misses a word and stays shifted from then on, so every later co-op frame
+// fails its checksum. A long quiet gap always means the master is starting
+// a new burst, so the slave restarts its word count there.
+#define COOP_BURST_GAP_TICKS 40 // TIMER_1024CLK ticks, ~2.4 ms
+
+static void CoopRealignSlaveBurst(void)
+{
+    u16 now;
+
+    if ((REG_TM3CNT_H & (TIMER_ENABLE | 3)) != (TIMER_ENABLE | TIMER_1024CLK))
+    {
+        REG_TM3CNT_H = 0;
+        REG_TM3CNT_L = 0;
+        REG_TM3CNT_H = TIMER_ENABLE | TIMER_1024CLK;
+        sCoopLastSerialTick = 0;
+    }
+    now = REG_TM3CNT_L;
+    if ((u16)(now - sCoopLastSerialTick) > COOP_BURST_GAP_TICKS)
+    {
+        gLink.sendCmdIndex = 0;
+        gLink.recvCmdIndex = 0;
+        sRecvNonzeroCheck = 0;
+    }
+    sCoopLastSerialTick = now;
+}
+
 void SerialCB(void)
 {
     gLink.localId = SIO_MULTI_CNT->id;
@@ -2173,6 +2202,8 @@ void SerialCB(void)
     {
     case LINK_STATE_CONN_ESTABLISHED:
         gLink.hardwareError = SIO_MULTI_CNT->error;
+        if (gCoopHoldLink && !gLink.isMaster)
+            CoopRealignSlaveBurst();
         DoRecv();
         DoSend();
         SendRecvDone();
