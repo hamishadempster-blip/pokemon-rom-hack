@@ -966,6 +966,8 @@ static void Coop_PollBlocks(void)
                 Coop_HandleInvite(i, (const struct CoopInvite *)gBlockRecvBuffer[i]);
             else if (magic == COOP_MON_MAGIC)
                 Coop_HandleMonBlock(i, (const struct CoopMonBlock *)gBlockRecvBuffer[i]);
+            else
+                continue;
             ResetBlockReceivedFlag(i);
         }
     }
@@ -1329,6 +1331,11 @@ static void Task_CoopSession(u8 taskId)
     if (sLinkState == COOP_LINK_UP)
     {
         SetSuppressLinkErrorMessage(TRUE);
+        // Battle block transfers live in the same buffer. Reading them here
+        // clears the flag, the fight never sees the party, and both screens
+        // stay black while the music plays.
+        if (gMain.inBattle)
+            return;
         Coop_MaintainCallback();
         Coop_UpdateSprite();
         Coop_AnimateTalkNpc();

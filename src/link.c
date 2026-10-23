@@ -2069,11 +2069,15 @@ void LinkVSync(void)
         case LINK_STATE_CONN_ESTABLISHED:
             if (gLink.serialIntrCounter < 9)
             {
-                // A co-op session survives a fast vblank. The burst still in
-                // progress is not a pulled cable. Flagging lag here stops
-                // every later transfer and the battle shows the power-off error.
+                // A burst still running is not a pulled cable. A counter of 0
+                // means nothing is in flight: start one, or the battle's first
+                // block never leaves and both screens stay black.
                 if (gCoopHoldLink)
+                {
+                    if (gLink.serialIntrCounter == 0)
+                        StartTransfer();
                     break;
+                }
                 if (gLink.hardwareError != TRUE)
                 {
                     gLink.lag = LAG_MASTER;
