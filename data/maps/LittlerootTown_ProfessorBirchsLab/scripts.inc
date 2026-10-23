@@ -14,10 +14,11 @@ LittlerootTown_ProfessorBirchsLab_MapScripts::
 
 	@ State descriptions for VAR_BIRCH_LAB_STATE
 	@ 1: Never occurs
-	@ 2: Chose starter
+	@ 2: Just warped in from the rescue. The on-frame script runs once.
 	@ 3: Received starter in lab
 	@ 4: Defeated rival on Route 103
 	@ 5: Received pokedex
+	@ 6: Beacon or nickname still needs Birch. Talk to him. Do not lock from the map script.
 
 LittlerootTown_ProfessorBirchsLab_OnTransition:
 	call Common_EventScript_SetupRivalGfxId
@@ -102,22 +103,25 @@ LittlerootTown_ProfessorBirchsLab_OnFrame:
 	map_script_2 VAR_DEX_UPGRADE_JOHTO_STARTER_STATE, 4, LittlerootTown_ProfessorBirchsLab_EventScript_ChooseJohtoStarter
 	.2byte 0
 
-@ The starter is technically given prior to this on Route 101 by special ChooseStarter
-@ This is just where the game tells you its yours and lets you nickname it
+@ The starters were given on Route 101, before the Poochyena fight.
+@ This script gives the Twin Beacon and nicknames the lead. It leaves
+@ state 2 immediately so a dropped cable cannot lock the player in place.
 LittlerootTown_ProfessorBirchsLab_EventScript_GiveStarterEvent::
 	lockall
+	setvar VAR_BIRCH_LAB_STATE, 6
+	specialvar VAR_RESULT, Coop_PrepareTwinBeacon
+	goto_if_eq VAR_RESULT, 1, LittlerootTown_ProfessorBirchsLab_EventScript_AfterBeacon
+	goto_if_eq VAR_RESULT, 0, LittlerootTown_ProfessorBirchsLab_EventScript_BeaconBagFull
+	goto_if_eq VAR_RESULT, 3, LittlerootTown_ProfessorBirchsLab_EventScript_BeaconBagFull
+	giveitem ITEM_TWIN_BEACON
+	goto_if_eq VAR_RESULT, FALSE, LittlerootTown_ProfessorBirchsLab_EventScript_BeaconBagFull
+	setflag FLAG_RECEIVED_TWIN_BEACON
+	msgbox Coop_Text_BeaconGift, MSGBOX_DEFAULT
+LittlerootTown_ProfessorBirchsLab_EventScript_AfterBeacon::
 	specialvar VAR_RESULT, Coop_CaseChosen
 	goto_if_eq VAR_RESULT, TRUE, LittlerootTown_ProfessorBirchsLab_EventScript_NicknameLead
 	specialvar VAR_RESULT, Coop_PartnerOnSameMap
-	goto_if_eq VAR_RESULT, FALSE, LittlerootTown_ProfessorBirchsLab_EventScript_WaitForPartner
-	specialvar VAR_RESULT, Coop_PrepareTwinBeacon
-	goto_if_eq VAR_RESULT, 1, Coop_EventScript_ChooseCase
-	goto_if_eq VAR_RESULT, 0, LittlerootTown_ProfessorBirchsLab_EventScript_WaitForPartner
-	goto_if_eq VAR_RESULT, 3, LittlerootTown_ProfessorBirchsLab_EventScript_BeaconBagFull
-	giveitem ITEM_TWIN_BEACON
-	goto_if_eq VAR_RESULT, FALSE, LittlerootTown_ProfessorBirchsLab_EventScript_WaitForPartner
-	setflag FLAG_RECEIVED_TWIN_BEACON
-	msgbox Coop_Text_BeaconGift, MSGBOX_DEFAULT
+	goto_if_eq VAR_RESULT, FALSE, LittlerootTown_ProfessorBirchsLab_EventScript_NeedPartnerInLab
 	goto Coop_EventScript_ChooseCase
 
 LittlerootTown_ProfessorBirchsLab_EventScript_BeaconBagFull::
@@ -127,11 +131,18 @@ LittlerootTown_ProfessorBirchsLab_EventScript_BeaconBagFull::
 
 LittlerootTown_ProfessorBirchsLab_Text_BeaconBagFull:
 	.string "The Key Items pocket is full.\n"
-	.string "Make room, and Birch will try again.$"
+	.string "Make room, then talk to Birch.$"
 
-LittlerootTown_ProfessorBirchsLab_EventScript_WaitForPartner::
+LittlerootTown_ProfessorBirchsLab_EventScript_NeedPartnerInLab::
+	msgbox LittlerootTown_ProfessorBirchsLab_Text_NeedPartnerInLab, MSGBOX_DEFAULT
 	releaseall
 	end
+
+LittlerootTown_ProfessorBirchsLab_Text_NeedPartnerInLab:
+	.string "PROF. BIRCH: I need both of you here\n"
+	.string "before we open the case.\p"
+	.string "Talk to me again once your partner\n"
+	.string "is in the lab.$"
 
 LittlerootTown_ProfessorBirchsLab_EventScript_NicknameLead::
 	bufferleadmonspeciesname STR_VAR_1
@@ -491,6 +502,7 @@ LittlerootTown_ProfessorBirchsLab_EventScript_ReceivedJohtoStarter::
 LittlerootTown_ProfessorBirchsLab_EventScript_Birch::
 	lock
 	faceplayer
+	goto_if_eq VAR_BIRCH_LAB_STATE, 6, LittlerootTown_ProfessorBirchsLab_EventScript_GiveStarterEvent
 	goto_if_eq VAR_DEX_UPGRADE_JOHTO_STARTER_STATE, 5, LittlerootTown_ProfessorBirchsLab_EventScript_CanHaveAnyOneOfRarePokemon
 	goto_if_eq VAR_DEX_UPGRADE_JOHTO_STARTER_STATE, 2, LittlerootTown_ProfessorBirchsLab_EventScript_GrassyPatchWaiting
 	goto_if_unset FLAG_HAS_MATCH_CALL, LittlerootTown_ProfessorBirchsLab_EventScript_TryRatePokedexOrRegister

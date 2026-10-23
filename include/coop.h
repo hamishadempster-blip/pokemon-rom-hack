@@ -31,6 +31,12 @@ extern const u8 Coop_EventScript_TalkPartner[];
 #define COOP_KIND_NACK      9
 #define COOP_KIND_WILD      10
 #define COOP_KIND_PAIR      11
+// Birch's Route 101 rescue. Both players already have a starter.
+#define COOP_KIND_RESCUE    12
+
+#define COOP_RESCUE_RETURN_NONE  0
+#define COOP_RESCUE_RETURN_HOST  1
+#define COOP_RESCUE_RETURN_GUEST 2
 
 #define COOP_REFUSE_NONE            0
 #define COOP_REFUSE_SELF_NOT_READY  1
@@ -62,6 +68,9 @@ u16 Coop_ToggleLevelCap(void);
 u16 Coop_ProposeCase(void);
 u16 Coop_ClaimStarter(void);
 u16 Coop_RequestLabWarp(void);
+u16 Coop_StartRescueBattle(void);
+u16 Coop_TakeRescueResult(void);
+u8 Coop_RescueReturn(void);
 u16 Coop_BufferPartnerLocation(void);
 u16 Coop_BufferCapText(void);
 u16 Coop_BufferBeaconStatus(void);

@@ -230,6 +230,14 @@ Route101_EventScript_BirchsBag::
 	applymovement LOCALID_PLAYER, Common_Movement_WalkInPlaceFasterLeft
 	waitmovement 0
 	special ChooseStarter
+	msgbox Route101_Text_TwoPoochyena, MSGBOX_DEFAULT
+Route101_EventScript_RescueTry::
+	special Coop_StartRescueBattle
+	goto_if_eq VAR_RESULT, FALSE, Coop_EventScript_NeedPartner
+	waitstate
+	specialvar VAR_RESULT, Coop_TakeRescueResult
+	goto_if_eq VAR_RESULT, 2, Route101_EventScript_RescueBusy
+	goto_if_eq VAR_RESULT, FALSE, Coop_EventScript_NeedPartner
 	applymovement LOCALID_ROUTE101_BIRCH, Route101_Movement_BirchApproachPlayer
 	waitmovement 0
 	msgbox Route101_Text_YouSavedMe, MSGBOX_DEFAULT
@@ -243,11 +251,14 @@ Route101_EventScript_BirchsBag::
 	checkplayergender
 	call_if_eq VAR_RESULT, MALE, Route101_EventScript_HideMayInBedroom
 	call_if_eq VAR_RESULT, FEMALE, Route101_EventScript_HideBrendanInBedroom
-	special Coop_RequestLabWarp
 	warp MAP_LITTLEROOT_TOWN_PROFESSOR_BIRCHS_LAB, 6, 5
 	waitstate
 	release
 	end
+
+Route101_EventScript_RescueBusy::
+	msgbox Route101_Text_RescueBusy, MSGBOX_DEFAULT
+	goto Route101_EventScript_RescueTry
 
 Route101_EventScript_HideMayInBedroom::
 	setflag FLAG_HIDE_LITTLEROOT_TOWN_MAYS_HOUSE_RIVAL_BEDROOM
@@ -273,6 +284,17 @@ Route101_Text_PleaseHelp:
 Route101_Text_DontLeaveMe:
 	.string "Wh-Where are you going?!\n"
 	.string "Don't leave me like this!$"
+
+Route101_Text_TwoPoochyena:
+	.string "PROF. BIRCH: Two POOCHYENA!\n"
+	.string "You two, send out your POKéMON!\p"
+	.string "Press B if your partner is still\n"
+	.string "in a menu.$"
+
+Route101_Text_RescueBusy:
+	.string "Your partner has to stand on the\n"
+	.string "route with their menu closed.\p"
+	.string "We'll try again.$"
 
 Route101_Text_YouSavedMe:
 	.string "PROF. BIRCH: Whew…\p"

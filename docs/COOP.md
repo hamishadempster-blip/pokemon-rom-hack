@@ -8,7 +8,7 @@ Based off RHH's pokeemerald-expansion 1.17.1
 https://github.com/rh-hideout/pokeemerald-expansion/
 Pinned commit `bb1093a7c72d3961d9a37d8e02ad2abc2c866682`.
 
-Build id baked into the link handshake: `0xC0170120`.
+Build id baked into the link handshake: `0xC0170121`.
 
 ## Clean ROM
 
@@ -55,14 +55,14 @@ No custom server. If the public RetroArch relay is down, try UPnP, then a direct
 1. Both games are the same build. Each copy of the ROM needs its own file name and its own save. In mGBA, open one copy, choose File, New Multiplayer Window, and open the other copy there. RetroArch has to already be in a Gen 3 link lobby. Open the start menu, choose **CO-OP**, and say yes. The question stays on the bedroom. The game then waits on a message that counts how many games the cable can see. It should go from 1 to 2, then say who you linked with. Press B to cancel. A count that stays at 1 means the two mGBA windows are not in the same multiplayer session.
 2. The first exchange compares the build id and the level cap. Either mismatch aborts. Change the cap from CO-OP before linking. The cap is on unless you turn it off.
 3. You can walk different maps. The link stays up when either of you goes through a door. The partner sprite appears only on the same map, and it walks. A door is a new map, so the sprite drops and comes back when you return. The CO-OP menu names their map and says whether the Twin Beacon is on.
-4. Birch gives each of you a Twin Beacon in the lab, before the starter case. It stays in the Key Items pocket. Using it asks the other player. Ordinary trainer battles become co-op only after both agree, and both games switch on that agreed exchange. Either person can ask to turn it off. A request made during a battle or trade waits until that fight or trade is over. Disconnecting turns the Beacon off. The item stays in the bag. Gyms, Soren and Mira, the Elite Four, the champion, and the legendary fights ignore the Beacon and still need both of you on the map.
+4. After the rescue fight, Birch gives each of you a Twin Beacon in the lab. The starter was already chosen on Route 101, so the lab nicknames it. The Beacon stays in the Key Items pocket. Using it asks the other player. Ordinary trainer battles become co-op only after both agree, and both games switch on that agreed exchange. Either person can ask to turn it off. A request made during a battle or trade waits until that fight or trade is over. Disconnecting turns the Beacon off. The item stays in the bag. Gyms, Soren and Mira, the Elite Four, the champion, and the legendary fights ignore the Beacon and still need both of you on the map.
 5. Talk to the sprite to see where they are. From the party screen, while linked, **TRADE** offers one Pokémon. Both sides have to agree. Pulling the cable before both sides commit leaves both parties alone. You cannot trade your last conscious Pokémon.
 6. Disconnect from the CO-OP menu, or from a dropped cable. Parties are not copied across. Reconnect exchanges badges earned together, the rival stage, and who owns Groudon, Kyogre, and Rayquaza. The Twin Beacon is off again until you both accept.
 
 ## Story rules
 
-- Birch on Route 101 waits until both of you are on that map and linked. The lab will not open the cases until both of you are in the lab.
-- One person opens Birch's bag. The other waits. The ball you highlight names the Pokémon who comes with it: Torchic brings Houndour, Mudkip brings Wingull, Treecko brings Shroomish. In the lab you still share that case, and if you both claim the same one the host keeps the claim and the guest gets the other.
+- Birch on Route 101 waits until both of you are on that map and linked. One person opens the bag. The other waits on the route with their menu closed.
+- The ball you highlight names both Pokémon: Torchic brings Houndour, Mudkip brings Wingull, Treecko brings Shroomish. You keep the one you highlighted. Your partner gets the other. Both are level 5. Then both of you fight two level 2 Poochyena. Press B on the wait if your partner is still in a menu. After the fight, both games go to the lab on their own. Birch gives the Twin Beacon and nicknames the lead. A full Key Items pocket lets you walk away, make room, and talk to Birch again. The cable does not have to stay up for that gift.
 - Soren and Mira take the case that beats yours. They show up in the old Brendan and May fights. Both of you have to be there.
 - Gyms are two leaders, three Pokémon each. You cannot start one alone. Ace levels are 16, 22, 28, 34, 40, 46, 52, 58. Rematches are a second pair around level 70.
 - With the Twin Beacon off, ordinary trainers stay single even on the same map. With it on, most trainers lean doubles while you are together on their map. A trainer whose id is divisible by 4 stays a single. Magma and Aqua grunts are a pair. Leaders, the Elite Four, the champion, and rivals (Wally included) always ask for both of you, whether or not the Beacon is on.
@@ -295,7 +295,7 @@ This is the pass to run on two PCs. It was not executed in the environment that 
 1. Patch two copies from the same clean ROM. Put a different `.sav` next to each copy.
 2. mGBA 0.10.5: open both, File, New Multiplayer Window. RetroArch: both sides on gpSP 1.1.0, Link Cable - Pokémon Gen3, relay or UPnP or a direct IP.
 3. Cold boot. CO-OP on both games. Walk to different maps. Confirm no sprite. Meet on Route 101. Confirm the sprite and that the CO-OP menu names that map. Walk through a door. Confirm the sprite vanishes and comes back. The Twin Beacon is off after every reconnect. One player asks, the other says no, and an ordinary trainer stays solo. Both agree, and an ordinary trainer can be a co-op battle. Ask to turn it off during a gym. The gym finishes in the mode it started, then the Beacon clears. The item is still in the bag.
-4. Rescue Birch together. Pick one case. Split the two starters. Fight the first rival pair.
+4. Rescue Birch together. One person opens the bag. Confirm that person gets the highlighted Pokémon and the partner gets the other. Confirm both games enter one double against two Poochyena, each using their new Pokémon. Win, lose, or both press RUN. Confirm both arrive in the lab, each receives a Twin Beacon, and each can walk after the nickname. Fill the Key Items pocket first and confirm Birch asks you to make room instead of freezing you.
 5. Clear Rustboro together. Pull the cable during the gym. Confirm no badge and both parties restored. Reconnect. Clear it. Confirm both saves have the Stone Badge and the TMs stayed with whoever finished the speech.
 6. First three: each player carries six. Start a co-op battle. Confirm only slots 1–3 appear in battle, on the party screen, and in the switch prompt. Faint all three on one side and confirm the partner keeps fighting. Win it. Confirm slots 1–3 kept their damage and PP, slots 4–6 match how they were before, and the CO-OP menu still shows the link. Run a solo battle and confirm all six can switch in. Faint all of one player's first three outside battle, with a healthy fifth slot, and confirm a gym refuses on both games with the right message. Pull the cable mid-battle and confirm all six come back as they were.
 7. Trade one Pokémon from the party screen. Save both games. Reload. Confirm the trade stuck and the parties were not swapped twice.
@@ -312,7 +312,7 @@ This is the pass to run on two PCs. It was not executed in the environment that 
 - The acro bike is the extra bit in the facing nibble. Mach bike and acro bike can both be shown. Surf wins over a bike.
 - After a shared gym or Elite Four win, the guest receives the same story flags and the way forward. The person who talked to the leader still gets the TM. The guest can ask the leader for that TM afterward.
 - A shared champion win sends the guest to the Hall of Fame so their party is recorded too.
-- A partner who is already inside a script can miss the lab warp. Stand on the overworld when the other person opens Birch's bag.
+- The rescue fight waits until your partner is on Route 101 with their menu closed. Press B to back out and try again. After the fight, each game walks itself to the lab.
 - Co-op battles field three Pokémon per player, through the stock link-multi exchange. Slots 4–6 sit out.
 - gimmicks stay off, including primals.
 - Id 865 is unused on purpose. It is the in-game partner id for Steven, and a normal trainer cannot live there.

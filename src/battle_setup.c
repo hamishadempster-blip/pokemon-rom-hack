@@ -80,8 +80,6 @@ static void CB2_EndMarowakBattle(void);
 static void TryUpdateGymLeaderRematchFromWild(void);
 static void TryUpdateGymLeaderRematchFromTrainer(void);
 static void CB2_GiveStarter(void);
-static void CB2_StartFirstBattle(void);
-static void CB2_EndFirstBattle(void);
 static void SaveChangesToPlayerParty(void);
 static void HandleBattleVariantEndParty(void);
 static void CB2_EndTrainerBattle(void);
@@ -720,6 +718,26 @@ static void CB2_EndWildBattle(void)
     if ((gBattleTypeFlags & BATTLE_TYPE_COOP) && Coop_FinishWildBattle())
         return;
 
+    // The rescue fight is the tutorial. Losing it still returns both
+    // players to the Route 101 script instead of a whiteout.
+    {
+        u8 rescueReturn = Coop_RescueReturn();
+
+        if (rescueReturn == COOP_RESCUE_RETURN_HOST)
+        {
+            DowngradeBadPoison();
+            SetMainCallback2(CB2_ReturnToFieldContinueScriptPlayMapMusic);
+            return;
+        }
+        if (rescueReturn == COOP_RESCUE_RETURN_GUEST)
+        {
+            DowngradeBadPoison();
+            gFieldCallback = FieldCB_ReturnToFieldNoScriptCheckMusic;
+            SetMainCallback2(CB2_ReturnToField);
+            return;
+        }
+    }
+
     if (IsNPCFollowerWildBattle())
     {
         RestorePartyAfterFollowerNPCBattle();
@@ -1035,41 +1053,11 @@ void ChooseStarter(void)
 
 static void CB2_GiveStarter(void)
 {
-    u16 starterMon;
-
+    // The bag only records the case. Both players receive a Pokémon,
+    // then the Route 101 script starts the co-op rescue fight.
     *GetVarPointer(VAR_STARTER_MON) = gSpecialVar_Result;
-    starterMon = GetStarterPokemon(gSpecialVar_Result);
-    ScriptGiveMon(starterMon, 5, ITEM_NONE);
     ResetTasks();
-    PlayBattleBGM();
-    SetMainCallback2(CB2_StartFirstBattle);
-    BattleTransition_Start(B_TRANSITION_BLUR);
-}
-
-static void CB2_StartFirstBattle(void)
-{
-    UpdatePaletteFade();
-    RunTasks();
-
-    if (IsBattleTransitionDone() == TRUE)
-    {
-        gBattleTypeFlags = BATTLE_TYPE_FIRST_BATTLE;
-        gMain.savedCallback = CB2_EndFirstBattle;
-        FreeAllWindowBuffers();
-        SetMainCallback2(CB2_InitBattle);
-        RestartWildEncounterImmunitySteps();
-        ClearPoisonStepCounter();
-        IncrementGameStat(GAME_STAT_TOTAL_BATTLES);
-        IncrementGameStat(GAME_STAT_WILD_BATTLES);
-        IncrementDailyWildBattles();
-        TryUpdateGymLeaderRematchFromWild();
-    }
-}
-
-static void CB2_EndFirstBattle(void)
-{
-    Overworld_ClearSavedMusic();
-    DowngradeBadPoison();
+    Coop_ResumeAfterTasksReset();
     SetMainCallback2(CB2_ReturnToFieldContinueScriptPlayMapMusic);
 }
 

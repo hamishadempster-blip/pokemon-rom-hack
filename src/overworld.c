@@ -2623,6 +2623,9 @@ static void ResumeMap(bool32 a1)
         SetUpFieldTasks();
     RunOnResumeMapScript();
     TryStartMirageTowerPulseBlendEffect();
+    // ResetTasks above removed the co-op task in the middle of a door,
+    // a lab warp, and the return from the rescue fight.
+    Coop_ResumeAfterTasksReset();
 }
 
 static void InitObjectEventsLink(void)

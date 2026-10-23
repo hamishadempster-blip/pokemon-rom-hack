@@ -133,7 +133,7 @@ static const u16 sStarterCompanion[STARTER_MON_COUNT] =
 };
 
 static const u8 sText_WithCompanion[] = _("with {STR_VAR_1}");
-static const u8 sText_TakeStarter[] = _("Take {STR_VAR_1}?\n{STR_VAR_2} comes too.");
+static const u8 sText_TakeStarter[] = _("Take {STR_VAR_1}?\nYour partner gets {STR_VAR_2}.");
 
 static const struct BgTemplate sBgTemplates[3] =
 {

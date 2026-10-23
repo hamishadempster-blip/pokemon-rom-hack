@@ -52,6 +52,8 @@
 // guest stops accepting a yes well before the host gives up.
 #define COOP_WILD_TIMEOUT 180
 #define COOP_PAIR_TIMEOUT 1800
+// The rescue waits on a person who may still be closing a menu.
+#define COOP_RESCUE_TIMEOUT 1800
 #define COOP_PAIR_ANSWER_LIMIT 1500
 // The CO-OP menu holds on the waiting text for this long. Both players
 // need time to say yes. 30 seconds at 60 frames.
@@ -106,6 +108,10 @@ static EWRAM_DATA u8 sLinkPlayersSeen = 0;
 static EWRAM_DATA u8 sLinkStatusCount = 0;
 static EWRAM_DATA u8 sLinkErrorStreak = 0;
 static EWRAM_DATA bool8 sBirchBag = FALSE;
+static EWRAM_DATA u8 sRescueField = COOP_RESCUE_RETURN_NONE;
+static EWRAM_DATA u8 sRescueResult = 0;
+static EWRAM_DATA bool8 sRescueGuestFollow = FALSE;
+static EWRAM_DATA u16 sRescueGuestTimer = 0;
 static EWRAM_DATA u8 sTalkNpc = 0;
 static EWRAM_DATA u8 sMerged = FALSE;
 static EWRAM_DATA u8 sSeq = 0;
@@ -190,6 +196,8 @@ static u16 Coop_InviteChecksum(const struct CoopInvite *invite);
 static void Coop_FailWait(void);
 static bool8 Coop_InteractionBusy(void);
 static bool8 Coop_PairBeatenLocally(void);
+static void Coop_GiveRescueStarter(u8 caseId, bool8 opener);
+static bool8 Coop_PartnerInBirchLab(void);
 
 static struct CoopSave *CoopSave(void)
 {
@@ -676,8 +684,14 @@ static void Coop_LaunchBattle(bool8 isGuest)
         BattleSetup_StartLegendaryBattle();
         return;
     }
-    if (sBattleKind == COOP_KIND_WILD)
+    if (sBattleKind == COOP_KIND_WILD || sBattleKind == COOP_KIND_RESCUE)
     {
+        if (sBattleKind == COOP_KIND_RESCUE)
+        {
+            sBirchBag = FALSE;
+            sResumeScript = FALSE;
+            CreateScriptedDoubleWildMon(SPECIES_POOCHYENA, 2, ITEM_NONE, SPECIES_POOCHYENA, 2, ITEM_NONE);
+        }
         BattleSetup_StartCoopWildBattle();
         return;
     }
@@ -710,6 +724,8 @@ static u16 Coop_InviteTimeout(u8 kind)
 {
     if (kind == COOP_KIND_WILD)
         return COOP_WILD_TIMEOUT;
+    if (kind == COOP_KIND_RESCUE)
+        return COOP_RESCUE_TIMEOUT;
     if (kind == COOP_KIND_PAIR)
         return COOP_PAIR_TIMEOUT;
     return COOP_ACK_TIMEOUT;
@@ -746,6 +762,12 @@ static void Coop_HandleInvite(u32 playerId, const struct CoopInvite *invite)
     {
         if (sWaitingAck && invite->seq == sInvite.seq)
         {
+            // The rescue is not optional. A busy partner just means try again.
+            if (sBattleKind == COOP_KIND_RESCUE)
+            {
+                sInviteSent = FALSE;
+                return;
+            }
             sRefusal = COOP_REFUSE_PARTNER_NOT_READY;
             Coop_FailWait();
         }
@@ -762,6 +784,27 @@ static void Coop_HandleInvite(u32 playerId, const struct CoopInvite *invite)
 
     if (sInBattle || gMain.inBattle)
         return;
+
+    if (invite->kind == COOP_KIND_RESCUE)
+    {
+        if (Coop_GuestBusy() || invite->badge > 2)
+        {
+            Coop_SendReply(COOP_KIND_NACK, invite->seq);
+            return;
+        }
+        Coop_GiveRescueStarter(invite->badge, FALSE);
+        CreateScriptedDoubleWildMon(SPECIES_POOCHYENA, 2, ITEM_NONE, SPECIES_POOCHYENA, 2, ITEM_NONE);
+        sBattleKind = COOP_KIND_RESCUE;
+        sBattleBadge = 0;
+        sBattleFlag = 0;
+        sLegendKind = 0;
+        sRivalFightStage = 0xFF;
+        TRAINER_BATTLE_PARAM.opponentA = 0;
+        TRAINER_BATTLE_PARAM.opponentB = 0;
+        Coop_SendReply(COOP_KIND_ACK, invite->seq);
+        Coop_LaunchBattle(TRUE);
+        return;
+    }
 
     if (Coop_IsOptionalKind(invite->kind))
     {
@@ -852,6 +895,16 @@ static void Coop_FailWait(void)
     sWaitKind = 0;
     sRequest = COOP_REQ_NONE;
     gSpecialVar_Result = FALSE;
+    if (kind == COOP_KIND_RESCUE)
+    {
+        sBirchBag = FALSE;
+        sResumeScript = FALSE;
+        sRescueField = COOP_RESCUE_RETURN_NONE;
+        sRescueResult = 2;
+        gSpecialVar_Result = 2;
+        ScriptContext_Enable();
+        return;
+    }
     // Optional fights carry on alone: the first wild Pokémon, or the NPC
     // that was walked into. Nothing is shown, the stock battle just starts.
     if (kind == COOP_KIND_WILD)
@@ -888,6 +941,13 @@ static void Coop_PollInviteTimeout(void)
 {
     if (!sWaitingAck)
         return;
+    // B leaves the rescue wait so a partner stuck in a menu does not
+    // freeze the person who opened the bag.
+    if (sBattleKind == COOP_KIND_RESCUE && JOY_NEW(B_BUTTON))
+    {
+        Coop_FailWait();
+        return;
+    }
     Coop_SendInvite();
     if (++sInviteTimer >= Coop_InviteTimeout(sBattleKind))
         Coop_FailWait();
@@ -1144,6 +1204,11 @@ static void Coop_Drop(const u8 *message)
     // A pending invite would otherwise leave the field frozen or the
     // trainer script waiting on an answer that can't arrive.
     gCoopHoldLink = FALSE;
+    sBirchBag = FALSE;
+    sRescueField = COOP_RESCUE_RETURN_NONE;
+    if (sRescueGuestFollow)
+        message = Coop_EventScript_WarpToLab;
+    sRescueGuestFollow = FALSE;
     sLinkErrorStreak = 0;
     if (sWaitingAck && !gMain.inBattle)
         Coop_FailWait();
@@ -1165,7 +1230,8 @@ static void Coop_Drop(const u8 *message)
     Coop_RemoveSprite();
     CloseLink();
     SetSuppressLinkErrorMessage(TRUE);
-    sPendingMessage = message;
+    if (sPendingMessage != Coop_EventScript_WarpToLab)
+        sPendingMessage = message;
 }
 
 static void Task_CoopSession(u8 taskId)
@@ -1186,6 +1252,19 @@ static void Task_CoopSession(u8 taskId)
         Coop_PollInviteTimeout();
         if (sGuestPairPending && sGuestPairTimer < 0xFFFF)
             sGuestPairTimer++;
+        if (sRescueGuestFollow && !gMain.inBattle)
+        {
+            if (sRescueGuestTimer < 0xFFFF)
+                sRescueGuestTimer++;
+            // Follow the partner into the lab once their speech is done.
+            // If that never arrives, walk there anyway.
+            if (!ScriptContext_IsEnabled() && !ArePlayerFieldControlsLocked() && !Coop_InteractionBusy()
+             && (Coop_PartnerInBirchLab() || sRescueGuestTimer >= COOP_RESCUE_TIMEOUT))
+            {
+                sRescueGuestFollow = FALSE;
+                sPendingMessage = Coop_EventScript_WarpToLab;
+            }
+        }
         Coop_NoteLinkHealth();
     }
     if (sPendingMessage != NULL && !gMain.inBattle && !ScriptContext_IsEnabled() && !ArePlayerFieldControlsLocked())
@@ -1589,6 +1668,79 @@ u16 Coop_ProposeCase(void)
     return TRUE;
 }
 
+static const u16 sRescueSpecies[3][2] = {
+    { SPECIES_TREECKO, SPECIES_SHROOMISH },
+    { SPECIES_TORCHIC, SPECIES_HOUNDOUR },
+    { SPECIES_MUDKIP, SPECIES_WINGULL },
+};
+
+// The player who opened the bag gets the Pokémon they highlighted.
+// The partner gets the one named on that ball.
+static bool8 Coop_PartnerInBirchLab(void)
+{
+    return sPartnerValid
+        && sPartner.mapGroup == MAP_GROUP(MAP_LITTLEROOT_TOWN_PROFESSOR_BIRCHS_LAB)
+        && sPartner.mapNum == MAP_NUM(MAP_LITTLEROOT_TOWN_PROFESSOR_BIRCHS_LAB);
+}
+
+static void Coop_GiveRescueStarter(u8 caseId, bool8 opener)
+{
+    struct CoopSave *save;
+    u8 index;
+
+    if (caseId > 2)
+        caseId = 0;
+    if (GetMonData(&gParties[B_TRAINER_PLAYER][0], MON_DATA_SPECIES) != SPECIES_NONE)
+        return;
+    save = CoopSave();
+    if (save != NULL)
+        save->caseId = caseId;
+    VarSet(VAR_STARTER_MON, caseId);
+    index = opener ? 0 : 1;
+    ScriptGiveMon(sRescueSpecies[caseId][index], 5, ITEM_NONE);
+}
+
+u16 Coop_StartRescueBattle(void)
+{
+    struct CoopSave *save = CoopSave();
+    u16 caseId = VarGet(VAR_STARTER_MON);
+
+    sBirchBag = TRUE;
+    if (GetMonData(&gParties[B_TRAINER_PLAYER][0], MON_DATA_SPECIES) != SPECIES_NONE
+     && save != NULL && save->caseId <= 2)
+        caseId = save->caseId;
+    if (caseId > 2)
+        caseId = 0;
+    if (!Coop_SessionActive() || !Coop_PartnerOnSameMap())
+    {
+        sBirchBag = FALSE;
+        sRescueResult = 0;
+        gSpecialVar_Result = FALSE;
+        return FALSE;
+    }
+    Coop_GiveRescueStarter((u8)caseId, TRUE);
+    CreateScriptedDoubleWildMon(SPECIES_POOCHYENA, 2, ITEM_NONE, SPECIES_POOCHYENA, 2, ITEM_NONE);
+    sRescueResult = 1;
+    sRescueField = COOP_RESCUE_RETURN_NONE;
+    sResumeScript = TRUE;
+    Coop_QueueInvite(COOP_KIND_RESCUE, 0, 0, (u8)caseId, 0);
+    gSpecialVar_Result = TRUE;
+    return TRUE;
+}
+
+u16 Coop_TakeRescueResult(void)
+{
+    return sRescueResult;
+}
+
+u8 Coop_RescueReturn(void)
+{
+    u8 field = sRescueField;
+
+    sRescueField = COOP_RESCUE_RETURN_NONE;
+    return field;
+}
+
 u16 Coop_ClaimStarter(void)
 {
     if (!Coop_PartnerOnSameMap())
@@ -1929,6 +2081,21 @@ bool8 Coop_FinishWildBattle(void)
             HandleSetPokedexFlagFromMon(&gParties[B_TRAINER_OPPONENT_A][i], FLAG_SET_SEEN);
     }
     Coop_DeliverCatches();
+    if (sBattleKind == COOP_KIND_RESCUE)
+    {
+        sRescueResult = 1;
+        sBirchBag = FALSE;
+        if (sIsGuest)
+        {
+            sRescueField = COOP_RESCUE_RETURN_GUEST;
+            sRescueGuestFollow = TRUE;
+            sRescueGuestTimer = 0;
+        }
+        else
+        {
+            sRescueField = COOP_RESCUE_RETURN_HOST;
+        }
+    }
     if (sBattleKind != COOP_KIND_LEGEND)
     {
         sIsGuest = FALSE;
@@ -1953,6 +2120,9 @@ bool8 Coop_FinishWildBattle(void)
 
 static void Coop_CB2_AbortToField(void)
 {
+    bool8 rescue = sBattleKind == COOP_KIND_RESCUE;
+    bool8 rescueGuest = rescue && sIsGuest;
+
     Coop_RestoreParty(TRUE);
     Coop_ClearCatchState();
     sAborting = FALSE;
@@ -1960,10 +2130,29 @@ static void Coop_CB2_AbortToField(void)
     sWaitingAck = FALSE;
     gCoopBattleLaunching = FALSE;
     gCoopArmWild = FALSE;
-    ScriptContext_Init();
+    sBirchBag = FALSE;
     UnlockPlayerFieldControls();
     FlagClear(FLAG_SYS_CTRL_OBJ_DELETE);
-    sPendingMessage = Coop_EventScript_BattleAborted;
+    if (rescue)
+    {
+        // The starters are already given. Both players still go to the lab.
+        sRescueResult = 1;
+        if (rescueGuest)
+        {
+            ScriptContext_Init();
+            sRescueGuestFollow = TRUE;
+            sRescueGuestTimer = COOP_RESCUE_TIMEOUT;
+        }
+        else
+        {
+            ScriptContext_Enable();
+        }
+    }
+    else
+    {
+        ScriptContext_Init();
+        sPendingMessage = Coop_EventScript_BattleAborted;
+    }
     gFieldCallback = FieldCB_ReturnToFieldNoScriptCheckMusic;
     SetMainCallback2(CB2_ReturnToField);
 }
