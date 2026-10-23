@@ -25,7 +25,7 @@ typedef uint32_t u32;
 #include "global.h"
 #endif
 
-#define COOP_BUILD_ID  0xC0170117u
+#define COOP_BUILD_ID  0xC0170118u
 #define COOP_BUILD_XOR ((u16)(((COOP_BUILD_ID) & 0xFFFFu) ^ ((COOP_BUILD_ID) >> 16)))
 #define COOP_LINKCMD   0xC0A1
 #define COOP_HELD_KEYS_CMD 0xCAFE
@@ -38,6 +38,19 @@ typedef uint32_t u32;
 #define COOP_REQ_CANCEL    6
 #define COOP_REQ_CASE      7
 #define COOP_REQ_CLAIM     8
+#define COOP_REQ_BEACON    9
+#define COOP_REQ_BEACON_YES 10
+#define COOP_REQ_BEACON_NO  11
+
+#define COOP_BEACON_IDLE    0
+#define COOP_BEACON_OFFER   1
+#define COOP_BEACON_CONFIRM 2
+#define COOP_BEACON_DECLINE 3
+
+#define COOP_BEACON_EVT_NONE     0
+#define COOP_BEACON_EVT_PROMPT   1
+#define COOP_BEACON_EVT_APPLIED  2
+#define COOP_BEACON_EVT_DECLINED 3
 
 #define COOP_UNPACK_DROP  0
 #define COOP_UNPACK_OK    1
@@ -74,6 +87,16 @@ struct CoopProgress
     u8 rivalStage;
     u8 capOn;
     u8 legend[3];
+};
+
+struct CoopBeaconState
+{
+    u8 phase;
+    u8 on;
+    u8 want;
+    u8 request;
+    u8 slot;
+    u8 event;
 };
 
 static inline u16 CoopProtocol_Checksum(const u16 *words)
@@ -192,6 +215,97 @@ static inline int CoopProtocol_Merge(const struct CoopProgress *local, const str
             return 2;
     }
     return 0;
+}
+
+// Stage 1. The partner sprite exists only while this is true. A door changes
+// the map number or group, so the sprite drops until both players are inside.
+static inline int CoopProtocol_SameMap(u8 groupA, u8 numA, u8 groupB, u8 numB)
+{
+    return groupA == groupB && numA == numB;
+}
+
+static inline void CoopProtocol_BeaconOffer(struct CoopBeaconState *state, u8 want)
+{
+    if (state->phase != COOP_BEACON_IDLE)
+        return;
+    state->want = want ? 1 : 0;
+    state->phase = COOP_BEACON_OFFER;
+    state->request = COOP_REQ_BEACON;
+    state->slot = state->want;
+    state->event = COOP_BEACON_EVT_NONE;
+}
+
+static inline void CoopProtocol_BeaconAnswer(struct CoopBeaconState *state, int yes)
+{
+    if (yes)
+    {
+        state->phase = COOP_BEACON_CONFIRM;
+        state->request = COOP_REQ_BEACON_YES;
+        state->slot = state->want;
+    }
+    else
+    {
+        state->phase = COOP_BEACON_DECLINE;
+        state->request = COOP_REQ_BEACON_NO;
+        state->event = COOP_BEACON_EVT_DECLINED;
+    }
+}
+
+// Beacon flips only after both sides are already sending YES. A local yes,
+// and a yes that has not been echoed yet, leave `on` alone. `busy` freezes
+// the state so a gym or trade finishes under the mode it started with.
+static inline void CoopProtocol_BeaconStep(struct CoopBeaconState *state, u8 partnerRequest, u8 partnerSlot, int busy)
+{
+    state->event = COOP_BEACON_EVT_NONE;
+    if (busy)
+        return;
+
+    if (state->phase == COOP_BEACON_OFFER && partnerRequest == COOP_REQ_BEACON_NO)
+    {
+        state->phase = COOP_BEACON_IDLE;
+        state->request = COOP_REQ_NONE;
+        state->event = COOP_BEACON_EVT_DECLINED;
+        return;
+    }
+    if (state->phase == COOP_BEACON_OFFER
+        && partnerRequest == COOP_REQ_BEACON
+        && partnerSlot != state->want)
+    {
+        state->phase = COOP_BEACON_DECLINE;
+        state->request = COOP_REQ_BEACON_NO;
+        state->event = COOP_BEACON_EVT_DECLINED;
+        return;
+    }
+    if (state->phase == COOP_BEACON_OFFER
+        && ((partnerRequest == COOP_REQ_BEACON && partnerSlot == state->want)
+            || (partnerRequest == COOP_REQ_BEACON_YES && partnerSlot == state->want)))
+    {
+        state->phase = COOP_BEACON_CONFIRM;
+        state->request = COOP_REQ_BEACON_YES;
+        state->slot = state->want;
+        return;
+    }
+    if (state->phase == COOP_BEACON_CONFIRM
+        && partnerRequest == COOP_REQ_BEACON_YES
+        && partnerSlot == state->want)
+    {
+        state->on = state->want;
+        state->phase = COOP_BEACON_IDLE;
+        state->request = COOP_REQ_NONE;
+        state->event = COOP_BEACON_EVT_APPLIED;
+        return;
+    }
+    if (state->phase == COOP_BEACON_DECLINE && partnerRequest != COOP_REQ_BEACON)
+    {
+        state->phase = COOP_BEACON_IDLE;
+        state->request = COOP_REQ_NONE;
+        return;
+    }
+    if (state->phase == COOP_BEACON_IDLE && partnerRequest == COOP_REQ_BEACON)
+    {
+        state->want = partnerSlot ? 1 : 0;
+        state->event = COOP_BEACON_EVT_PROMPT;
+    }
 }
 
 #endif // GUARD_COOP_PROTOCOL_H

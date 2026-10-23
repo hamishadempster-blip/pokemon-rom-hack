@@ -51,7 +51,13 @@ u16 Coop_ClaimStarter(void);
 u16 Coop_RequestLabWarp(void);
 u16 Coop_BufferPartnerLocation(void);
 u16 Coop_BufferCapText(void);
+u16 Coop_BufferBeaconStatus(void);
+u16 Coop_BufferBeaconAsk(void);
+u16 Coop_PrepareTwinBeacon(void);
+u16 Coop_BeaconAnswer(void);
 u16 Coop_TakeGuestFollowup(void);
+const u8 *Coop_UseTwinBeacon(void);
+bool8 Coop_BeaconActive(void);
 bool8 Coop_OfferTrade(u8 slot);
 
 void Coop_OverworldFrame(void);
@@ -80,5 +86,9 @@ extern const u8 Coop_EventScript_BattleAborted[];
 extern const u8 Coop_EventScript_TradeDone[];
 extern const u8 Coop_EventScript_PartnerDeclined[];
 extern const u8 Coop_EventScript_GuestAfterBattle[];
+extern const u8 Coop_EventScript_BeaconAsk[];
+extern const u8 Coop_EventScript_BeaconOn[];
+extern const u8 Coop_EventScript_BeaconOff[];
+extern const u8 Coop_EventScript_BeaconDeclined[];
 
 #endif // GUARD_COOP_H

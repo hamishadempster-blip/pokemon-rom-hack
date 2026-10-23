@@ -110,7 +110,24 @@ LittlerootTown_ProfessorBirchsLab_EventScript_GiveStarterEvent::
 	goto_if_eq VAR_RESULT, TRUE, LittlerootTown_ProfessorBirchsLab_EventScript_NicknameLead
 	specialvar VAR_RESULT, Coop_PartnerOnSameMap
 	goto_if_eq VAR_RESULT, FALSE, LittlerootTown_ProfessorBirchsLab_EventScript_WaitForPartner
+	specialvar VAR_RESULT, Coop_PrepareTwinBeacon
+	goto_if_eq VAR_RESULT, 1, Coop_EventScript_ChooseCase
+	goto_if_eq VAR_RESULT, 0, LittlerootTown_ProfessorBirchsLab_EventScript_WaitForPartner
+	goto_if_eq VAR_RESULT, 3, LittlerootTown_ProfessorBirchsLab_EventScript_BeaconBagFull
+	giveitem ITEM_TWIN_BEACON
+	goto_if_eq VAR_RESULT, FALSE, LittlerootTown_ProfessorBirchsLab_EventScript_WaitForPartner
+	setflag FLAG_RECEIVED_TWIN_BEACON
+	msgbox Coop_Text_BeaconGift, MSGBOX_DEFAULT
 	goto Coop_EventScript_ChooseCase
+
+LittlerootTown_ProfessorBirchsLab_EventScript_BeaconBagFull::
+	msgbox LittlerootTown_ProfessorBirchsLab_Text_BeaconBagFull, MSGBOX_DEFAULT
+	releaseall
+	end
+
+LittlerootTown_ProfessorBirchsLab_Text_BeaconBagFull:
+	.string "The Key Items pocket is full.\n"
+	.string "Make room, and Birch will try again.$"
 
 LittlerootTown_ProfessorBirchsLab_EventScript_WaitForPartner::
 	releaseall

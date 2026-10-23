@@ -8,7 +8,7 @@ Based off RHH's pokeemerald-expansion 1.17.1
 https://github.com/rh-hideout/pokeemerald-expansion/
 Pinned commit `bb1093a7c72d3961d9a37d8e02ad2abc2c866682`.
 
-Build id baked into the link handshake: `0xC0170117`.
+Build id baked into the link handshake: `0xC0170118`.
 
 ## Clean ROM
 
@@ -54,9 +54,10 @@ No custom server. If the public RetroArch relay is down, try UPnP, then a direct
 
 1. Both games are the same build. Open the start menu, choose **CO-OP**, and say yes to the link. The other game does the same. mGBA has to already be in a multiplayer window. RetroArch has to already be in a Gen 3 link lobby.
 2. The first exchange compares the build id and the level cap. Either mismatch aborts. Change the cap from CO-OP before linking. The cap is on unless you turn it off.
-3. You can walk different maps. The partner sprite appears only on the same map, including through doors. The CO-OP menu names their map when they are somewhere else.
-4. Talk to the sprite to see where they are. From the party screen, while linked, **TRADE** offers one Pokémon. Both sides have to agree. Pulling the cable before both sides commit leaves both parties alone. You cannot trade your last conscious Pokémon.
-5. Disconnect from the CO-OP menu, or from a dropped cable. Parties are not copied across. Reconnect exchanges badges earned together, the rival stage, and who owns Groudon, Kyogre, and Rayquaza.
+3. You can walk different maps. The partner sprite appears only on the same map, including through doors. A door is a new map, so the sprite drops and comes back when you return. The CO-OP menu names their map and says whether the Twin Beacon is on.
+4. Birch gives each of you a Twin Beacon in the lab, before the starter case. It stays in the Key Items pocket. Using it asks the other player. Ordinary trainer battles become co-op only after both agree, and both games switch on that agreed exchange. Either person can ask to turn it off. A request made during a battle or trade waits until that fight or trade is over. Disconnecting turns the Beacon off. The item stays in the bag. Gyms, Soren and Mira, the Elite Four, the champion, and the legendary fights ignore the Beacon and still need both of you on the map.
+5. Talk to the sprite to see where they are. From the party screen, while linked, **TRADE** offers one Pokémon. Both sides have to agree. Pulling the cable before both sides commit leaves both parties alone. You cannot trade your last conscious Pokémon.
+6. Disconnect from the CO-OP menu, or from a dropped cable. Parties are not copied across. Reconnect exchanges badges earned together, the rival stage, and who owns Groudon, Kyogre, and Rayquaza. The Twin Beacon is off again until you both accept.
 
 ## Story rules
 
@@ -64,7 +65,7 @@ No custom server. If the public RetroArch relay is down, try UPnP, then a direct
 - One case, then you split the two Pokémon. Cinder is Torchic and Houndour. Tide is Mudkip and Wingull. Thorn is Treecko and Shroomish. If you both claim the same one, the host keeps the claim and the guest gets the other.
 - Soren and Mira take the case that beats yours. They show up in the old Brendan and May fights. Both of you have to be there.
 - Gyms are two leaders, three Pokémon each. You cannot start one alone. Ace levels are 16, 22, 28, 34, 40, 46, 52, 58. Rematches are a second pair around level 70.
-- Most trainers lean doubles while you are together on their map. A trainer whose id is divisible by 4 stays a single. Magma and Aqua grunts are a pair. Leaders, the Elite Four, the champion, and rivals (Wally included) always ask for both of you.
+- With the Twin Beacon off, ordinary trainers stay single even on the same map. With it on, most trainers lean doubles while you are together on their map. A trainer whose id is divisible by 4 stays a single. Magma and Aqua grunts are a pair. Leaders, the Elite Four, the champion, and rivals (Wally included) always ask for both of you, whether or not the Beacon is on.
 - The Elite Four and the champion are the same 3+3 shape. The champion pair is Steven and Wallace. The guest does not watch the Hall of Fame cutscene. Both saves still set the champion flag.
 - Terra Cave and Marine Cave both start Groudon and Kyogre together. Their weather overwrites itself. Sky Pillar is Rayquaza. One catch. The person whose ball lands keeps it. The other person can get it only by the party trade. A KO still clears the story flags.
 
@@ -259,7 +260,7 @@ This is the pass to run on two PCs. It was not executed in the environment that 
 
 1. Patch two copies from the same clean ROM. Put a different `.sav` next to each copy.
 2. mGBA 0.10.5: open both, File, New Multiplayer Window. RetroArch: both sides on gpSP 1.1.0, Link Cable - Pokémon Gen3, relay or UPnP or a direct IP.
-3. Cold boot. CO-OP on both games. Walk to different maps. Confirm no sprite. Meet on Route 101. Confirm the sprite. Walk through a door. Confirm it vanishes and comes back.
+3. Cold boot. CO-OP on both games. Walk to different maps. Confirm no sprite. Meet on Route 101. Confirm the sprite and that the CO-OP menu names that map. Walk through a door. Confirm the sprite vanishes and comes back. The Twin Beacon is off after every reconnect. One player asks, the other says no, and an ordinary trainer stays solo. Both agree, and an ordinary trainer can be a co-op battle. Ask to turn it off during a gym. The gym finishes in the mode it started, then the Beacon clears. The item is still in the bag.
 4. Rescue Birch together. Pick one case. Split the two starters. Fight the first rival pair.
 5. Clear Rustboro together. Pull the cable during the gym. Confirm no badge and both parties restored. Reconnect. Clear it. Confirm both saves have the Stone Badge and the TMs stayed with whoever finished the speech.
 6. Trade one Pokémon from the party screen. Save both games. Reload. Confirm the trade stuck and the parties were not swapped twice.

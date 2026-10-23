@@ -6,6 +6,7 @@
 #include "battle_setup.h"
 #include "caps.h"
 #include "event_data.h"
+#include "item.h"
 #include "event_object_movement.h"
 #include "field_player_avatar.h"
 #include "field_screen_effect.h"
@@ -20,6 +21,7 @@
 #include "string_util.h"
 #include "task.h"
 #include "constants/battle.h"
+#include "constants/items.h"
 #include "constants/event_objects.h"
 #include "constants/flags.h"
 #include "constants/global.h"
@@ -109,12 +111,22 @@ static EWRAM_DATA struct CoopInvite sInvite = {0};
 static EWRAM_DATA const u8 *sPendingMessage = NULL;
 static EWRAM_DATA u8 sGuestFollowup = 0;
 static EWRAM_DATA u8 sLegendConflict = 0;
+static EWRAM_DATA struct CoopBeaconState sBeacon = {0};
+static EWRAM_DATA u8 sBeaconQueued = 0;
+static EWRAM_DATA u8 sBeaconPrompted = 0;
+static EWRAM_DATA u8 sBeaconBagWarned = 0;
+
+static const u8 sText_BeaconNeedLink[] = _("Link from the CO-OP menu first.{PAUSE_UNTIL_PRESS}");
+static const u8 sText_BeaconWaiting[] = _("Still waiting on your partner.{PAUSE_UNTIL_PRESS}");
+static const u8 sText_BeaconQueued[] = _("The request waits until this\nbattle or trade ends.{PAUSE_UNTIL_PRESS}");
+static const u8 sText_BeaconSent[] = _("Asking your partner.\nBoth of you have to agree.{PAUSE_UNTIL_PRESS}");
 
 STATIC_ASSERT(sizeof(struct Pokemon) * 2 <= BLOCK_BUFFER_SIZE, CoopPartyChunkFitsLinkBlock);
 STATIC_ASSERT(sizeof(struct CoopMonBlock) <= BLOCK_BUFFER_SIZE, CoopTradeBlockFitsLinkBlock);
 STATIC_ASSERT(COOP_PARTY_SIZE <= PARTY_SIZE, CoopPartySizeFitsSave);
 
 static void Task_CoopSession(u8 taskId);
+static void Coop_PollBeacon(void);
 static void Coop_Drop(const u8 *message);
 static void Coop_LaunchBattle(bool8 isGuest);
 static void Coop_SendInvite(void);
@@ -173,8 +185,8 @@ u16 Coop_PartnerOnSameMap(void)
 {
     if (!Coop_SessionActive() || !sPartnerValid)
         return FALSE;
-    return sPartner.mapGroup == gSaveBlock1Ptr->location.mapGroup
-        && sPartner.mapNum == gSaveBlock1Ptr->location.mapNum;
+    return CoopProtocol_SameMap(sPartner.mapGroup, sPartner.mapNum,
+        gSaveBlock1Ptr->location.mapGroup, gSaveBlock1Ptr->location.mapNum);
 }
 
 u16 Coop_PartnerOnSameTile(void)
@@ -707,6 +719,9 @@ static void Coop_Drop(const u8 *message)
     sResumeScript = FALSE;
     sRequest = COOP_REQ_NONE;
     sTradeSlot = 0xFF;
+    memset(&sBeacon, 0, sizeof(sBeacon));
+    sBeaconQueued = 0;
+    sBeaconPrompted = 0;
     gLinkCallback = NULL;
     Coop_RemoveSprite();
     CloseLink();
@@ -726,6 +741,7 @@ static void Task_CoopSession(u8 taskId)
         Coop_PollBlocks();
         Coop_PollScriptWaits();
         Coop_PollTrade();
+        Coop_PollBeacon();
         Coop_PollInviteTimeout();
         if (gLinkErrorOccurred || (sMerged && !gReceivedRemoteLinkPlayers))
             Coop_Drop(Coop_EventScript_Disconnected);
@@ -766,6 +782,9 @@ u16 Coop_BeginLink(void)
     sHandshakeSaved = FALSE;
     sMerged = FALSE;
     sPartnerValid = FALSE;
+    memset(&sBeacon, 0, sizeof(sBeacon));
+    sBeaconQueued = 0;
+    sBeaconPrompted = 0;
     Coop_EnsureTask();
     return TRUE;
 }
@@ -819,6 +838,110 @@ u16 Coop_BufferPartnerLocation(void)
     GetMapName(gStringVar1, header->regionMapSectionId, 0);
     if (sLegendConflict < 3)
         StringCopy(gStringVar2, GetSpeciesName(sLegendSpecies[sLegendConflict]));
+    return TRUE;
+}
+
+u16 Coop_BufferBeaconStatus(void)
+{
+    StringCopy(gStringVar2, sBeacon.on ? COMPOUND_STRING("On") : COMPOUND_STRING("Off"));
+    return sBeacon.on ? TRUE : FALSE;
+}
+
+u16 Coop_BufferBeaconAsk(void)
+{
+    StringCopy(gStringVar1, sBeacon.want ? COMPOUND_STRING("on") : COMPOUND_STRING("off"));
+    return TRUE;
+}
+
+bool8 Coop_BeaconActive(void)
+{
+    return sBeacon.on ? TRUE : FALSE;
+}
+
+static bool8 Coop_InteractionBusy(void)
+{
+    return sInBattle || gMain.inBattle || sTradeSlot != 0xFF || sTradeSent || sWaitingAck || sWaitKind != 0;
+}
+
+static void Coop_SyncBeaconRequest(void)
+{
+    if (sBeacon.phase == COOP_BEACON_IDLE)
+    {
+        if (sRequest == COOP_REQ_BEACON || sRequest == COOP_REQ_BEACON_YES || sRequest == COOP_REQ_BEACON_NO)
+            sRequest = COOP_REQ_NONE;
+        return;
+    }
+    sRequest = sBeacon.request;
+    sSlot = sBeacon.slot;
+}
+
+static void Coop_PollBeacon(void)
+{
+    u8 event;
+
+    if (sBeaconQueued != 0 && sBeacon.phase == COOP_BEACON_IDLE && !Coop_InteractionBusy())
+    {
+        CoopProtocol_BeaconOffer(&sBeacon, (u8)(sBeaconQueued - 1));
+        sBeaconQueued = 0;
+        Coop_SyncBeaconRequest();
+    }
+    if (!sPartnerValid)
+        return;
+    CoopProtocol_BeaconStep(&sBeacon, sPartner.request, sPartner.slot, Coop_InteractionBusy());
+    event = sBeacon.event;
+    Coop_SyncBeaconRequest();
+    if (sPartner.request != COOP_REQ_BEACON)
+        sBeaconPrompted = 0;
+    if (event == COOP_BEACON_EVT_PROMPT && !sBeaconPrompted && sPendingMessage == NULL)
+    {
+        sBeaconPrompted = 1;
+        sPendingMessage = Coop_EventScript_BeaconAsk;
+    }
+    else if (event == COOP_BEACON_EVT_APPLIED && sPendingMessage == NULL)
+    {
+        sPendingMessage = sBeacon.on ? Coop_EventScript_BeaconOn : Coop_EventScript_BeaconOff;
+    }
+    else if (event == COOP_BEACON_EVT_DECLINED && sPendingMessage == NULL)
+    {
+        sPendingMessage = Coop_EventScript_BeaconDeclined;
+    }
+}
+
+const u8 *Coop_UseTwinBeacon(void)
+{
+    u8 want;
+
+    if (!Coop_SessionActive())
+        return sText_BeaconNeedLink;
+    if (sBeacon.phase != COOP_BEACON_IDLE)
+        return sText_BeaconWaiting;
+    want = sBeacon.on ? 0 : 1;
+    if (Coop_InteractionBusy())
+    {
+        sBeaconQueued = (u8)(want + 1);
+        return sText_BeaconQueued;
+    }
+    CoopProtocol_BeaconOffer(&sBeacon, want);
+    Coop_SyncBeaconRequest();
+    return sText_BeaconSent;
+}
+
+u16 Coop_PrepareTwinBeacon(void)
+{
+    if (FlagGet(FLAG_RECEIVED_TWIN_BEACON))
+        return 1;
+    if (CheckBagHasSpace(ITEM_TWIN_BEACON, 1))
+        return 2;
+    if (sBeaconBagWarned)
+        return 0;
+    sBeaconBagWarned = 1;
+    return 3;
+}
+
+u16 Coop_BeaconAnswer(void)
+{
+    CoopProtocol_BeaconAnswer(&sBeacon, VarGet(VAR_0x8004) != 0);
+    Coop_SyncBeaconRequest();
     return TRUE;
 }
 
@@ -908,7 +1031,7 @@ bool8 Coop_TryQueueOrdinaryDouble(void)
     bool8 mandatory;
     u16 trainerB;
 
-    if (!Coop_SessionActive() || !Coop_PartnerOnSameMap())
+    if (!Coop_SessionActive() || !Coop_PartnerOnSameMap() || !sBeacon.on)
         return FALSE;
     if (trainerA == TRAINER_NONE || trainerA >= TRAINERS_COUNT || IsSpecialTrainer(trainerA))
         return FALSE;

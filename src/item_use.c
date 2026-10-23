@@ -9,6 +9,7 @@
 #include "berry_powder.h"
 #include "bike.h"
 #include "coins.h"
+#include "coop.h"
 #include "data.h"
 #include "event_data.h"
 #include "event_object_lock.h"
@@ -246,6 +247,16 @@ void ItemUseOutOfBattle_Mail(u8 taskId)
 }
 
 STATIC_ASSERT(I_EXP_SHARE_ITEM < GEN_6 || I_EXP_SHARE_FLAG > TEMP_FLAGS_END, YouNeedToSetAFlagToUseGen6ExpShare);
+
+void ItemUseOutOfBattle_TwinBeacon(u8 taskId)
+{
+    const u8 *message = Coop_UseTwinBeacon();
+
+    if (!gTasks[taskId].data[2])
+        DisplayItemMessageOnField(taskId, message, Task_CloseCantUseKeyItemMessage);
+    else
+        DisplayItemMessage(taskId, FONT_NORMAL, message, CloseItemMessage);
+}
 
 void ItemUseOutOfBattle_ExpShare(u8 taskId)
 {

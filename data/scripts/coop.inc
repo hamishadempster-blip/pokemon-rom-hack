@@ -10,6 +10,10 @@
 	.global Coop_EventScript_Menu
 	.global Coop_EventScript_WarpToLab
 	.global Coop_EventScript_ChooseCase
+	.global Coop_EventScript_BeaconAsk
+	.global Coop_EventScript_BeaconOn
+	.global Coop_EventScript_BeaconOff
+	.global Coop_EventScript_BeaconDeclined
 
 Coop_EventScript_NeedPartner::
 	lockall
@@ -91,6 +95,7 @@ Coop_EventScript_AskToggleCap::
 
 Coop_EventScript_MenuLinked::
 	special Coop_BufferPartnerLocation
+	special Coop_BufferBeaconStatus
 	msgbox Coop_Text_PartnerWhere, MSGBOX_YESNO
 	goto_if_eq VAR_RESULT, NO, Coop_EventScript_MenuEnd
 	special Coop_Disconnect
@@ -162,6 +167,40 @@ Coop_EventScript_CaseMismatch::
 	msgbox Coop_Text_CaseMismatch, MSGBOX_DEFAULT
 	goto Coop_EventScript_ChooseCase
 
+Coop_EventScript_BeaconAsk::
+	lockall
+	special Coop_BufferBeaconAsk
+	msgbox Coop_Text_BeaconAsk, MSGBOX_YESNO
+	goto_if_eq VAR_RESULT, NO, Coop_EventScript_BeaconSayNo
+	setvar VAR_0x8004, 1
+	special Coop_BeaconAnswer
+	releaseall
+	end
+
+Coop_EventScript_BeaconSayNo::
+	setvar VAR_0x8004, 0
+	special Coop_BeaconAnswer
+	releaseall
+	end
+
+Coop_EventScript_BeaconOn::
+	lockall
+	msgbox Coop_Text_BeaconOn, MSGBOX_DEFAULT
+	releaseall
+	end
+
+Coop_EventScript_BeaconOff::
+	lockall
+	msgbox Coop_Text_BeaconOff, MSGBOX_DEFAULT
+	releaseall
+	end
+
+Coop_EventScript_BeaconDeclined::
+	lockall
+	msgbox Coop_Text_BeaconDeclined, MSGBOX_DEFAULT
+	releaseall
+	end
+
 Coop_Text_NeedPartner:
 	.string "You both have to be here.\n"
 	.string "This isn't a fight you take alone.$"
@@ -217,7 +256,27 @@ Coop_Text_CapNow:
 Coop_Text_PartnerWhere:
 	.string "Your partner is on\n"
 	.string "{STR_VAR_1}.\p"
+	.string "Twin Beacon: {STR_VAR_2}.\p"
 	.string "Drop the link?$"
+
+Coop_Text_BeaconGift:
+	.string "Use the Twin Beacon from the bag\n"
+	.string "when you both want to fight together.$"
+
+Coop_Text_BeaconAsk:
+	.string "Turn the Twin Beacon {STR_VAR_1}?$"
+
+Coop_Text_BeaconOn:
+	.string "Twin Beacon is on.\n"
+	.string "Ordinary fights can be together.$"
+
+Coop_Text_BeaconOff:
+	.string "Twin Beacon is off.\n"
+	.string "Ordinary fights stay solo.$"
+
+Coop_Text_BeaconDeclined:
+	.string "Your partner said no.\n"
+	.string "The Twin Beacon stays as it was.$"
 
 Coop_Text_ChooseCase:
 	.string "Three cases. You share one,\n"

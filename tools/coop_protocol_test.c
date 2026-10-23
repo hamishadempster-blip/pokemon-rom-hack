@@ -96,6 +96,88 @@ int main(void)
     Expect(merged.legend[0] == COOP_OWNER_LOCAL, "agreed owner stays local");
     Expect(merged.legend[1] == COOP_OWNER_PARTNER, "remote local becomes partner");
 
+    Expect(CoopProtocol_SameMap(3, 10, 3, 10) == 1, "same map shows the sprite");
+    Expect(CoopProtocol_SameMap(3, 10, 4, 10) == 0, "different map hides the sprite");
+    Expect(CoopProtocol_SameMap(3, 10, 3, 11) == 0, "a door drops the sprite");
+
+    frame.request = COOP_REQ_BEACON;
+    frame.slot = 1;
+    CoopProtocol_Pack(words, &frame, 0);
+    Expect(CoopProtocol_Unpack(words, &out, COOP_BUILD_XOR) == COOP_UNPACK_OK, "beacon request roundtrip");
+    Expect(out.request == COOP_REQ_BEACON && out.slot == 1, "beacon request payload");
+
+    {
+        struct CoopBeaconState a;
+        struct CoopBeaconState b;
+        u8 aReq, aSlot, bReq, bSlot;
+
+        memset(&a, 0, sizeof(a));
+        memset(&b, 0, sizeof(b));
+        CoopProtocol_BeaconOffer(&a, 1);
+        CoopProtocol_BeaconStep(&b, a.request, a.slot, 0);
+        Expect(b.event == COOP_BEACON_EVT_PROMPT && b.on == 0, "partner is asked and beacon stays off");
+        CoopProtocol_BeaconAnswer(&b, 0);
+        aReq = a.request;
+        aSlot = a.slot;
+        bReq = b.request;
+        bSlot = b.slot;
+        CoopProtocol_BeaconStep(&a, bReq, bSlot, 0);
+        CoopProtocol_BeaconStep(&b, aReq, aSlot, 0);
+        Expect(a.on == 0 && a.event == COOP_BEACON_EVT_DECLINED, "a refusal leaves the beacon off");
+
+        memset(&a, 0, sizeof(a));
+        memset(&b, 0, sizeof(b));
+        CoopProtocol_BeaconOffer(&a, 1);
+        CoopProtocol_BeaconStep(&b, a.request, a.slot, 1);
+        Expect(b.event == COOP_BEACON_EVT_NONE && b.on == 0, "a gym freezes the request");
+        CoopProtocol_BeaconStep(&b, a.request, a.slot, 0);
+        CoopProtocol_BeaconAnswer(&b, 1);
+        Expect(b.on == 0, "a local yes does not turn the beacon on");
+        aReq = a.request;
+        aSlot = a.slot;
+        bReq = b.request;
+        bSlot = b.slot;
+        CoopProtocol_BeaconStep(&a, bReq, bSlot, 0);
+        CoopProtocol_BeaconStep(&b, aReq, aSlot, 0);
+        Expect(a.on == 0 && b.on == 0 && a.phase == COOP_BEACON_CONFIRM, "the first yes only echoes");
+        aReq = a.request;
+        aSlot = a.slot;
+        bReq = b.request;
+        bSlot = b.slot;
+        CoopProtocol_BeaconStep(&a, bReq, bSlot, 0);
+        CoopProtocol_BeaconStep(&b, aReq, aSlot, 0);
+        Expect(a.on == 1 && b.on == 1, "both yes packets turn the beacon on");
+        Expect(a.event == COOP_BEACON_EVT_APPLIED && b.event == COOP_BEACON_EVT_APPLIED, "both sides apply together");
+
+        memset(&a, 0, sizeof(a));
+        memset(&b, 0, sizeof(b));
+        a.on = 1;
+        b.on = 1;
+        CoopProtocol_BeaconOffer(&a, 0);
+        CoopProtocol_BeaconOffer(&b, 0);
+        aReq = a.request;
+        aSlot = a.slot;
+        bReq = b.request;
+        bSlot = b.slot;
+        CoopProtocol_BeaconStep(&a, bReq, bSlot, 0);
+        CoopProtocol_BeaconStep(&b, aReq, aSlot, 0);
+        Expect(a.on == 1 && b.on == 1, "an off request waits for the echo");
+        aReq = a.request;
+        aSlot = a.slot;
+        bReq = b.request;
+        bSlot = b.slot;
+        CoopProtocol_BeaconStep(&a, bReq, bSlot, 1);
+        CoopProtocol_BeaconStep(&b, aReq, aSlot, 1);
+        Expect(a.on == 1 && b.on == 1, "the gym keeps the old beacon");
+        aReq = a.request;
+        aSlot = a.slot;
+        bReq = b.request;
+        bSlot = b.slot;
+        CoopProtocol_BeaconStep(&a, bReq, bSlot, 0);
+        CoopProtocol_BeaconStep(&b, aReq, aSlot, 0);
+        Expect(a.on == 0 && b.on == 0, "the beacon clears after the gym");
+    }
+
     if (sFails != 0)
     {
         printf("%d failed\n", sFails);

@@ -16099,6 +16099,23 @@ const struct ItemInfo gItemsInfo[] =
         .iconPic = gItemIcon_PokeshiDoll,
         .iconPalette = gItemIconPalette_PokeshiDoll,
     },
+
+    [ITEM_TWIN_BEACON] =
+    {
+        .name = ITEM_NAME("Twin Beacon"),
+        .price = 0,
+        .description = COMPOUND_STRING(
+            "A paired beacon.\n"
+            "Both trainers must\n"
+            "agree to link fights."),
+        .importance = 1,
+        .pocket = POCKET_KEY_ITEMS,
+        .sortType = ITEM_TYPE_FIELD_USE,
+        .type = ITEM_USE_BAG_MENU,
+        .fieldUseFunc = ItemUseOutOfBattle_TwinBeacon,
+        .iconPic = gItemIcon_DevonScope,
+        .iconPalette = gItemIconPalette_DevonScope,
+    },
 };
 
 #undef ITEM_NAME

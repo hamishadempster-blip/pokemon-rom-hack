@@ -703,7 +703,7 @@
 #define FLAG_ITEM_COOP_ROUTE119_PRISM_SCALE       0x288
 #define FLAG_ITEM_COOP_GRANITE_CAVE_METAL_COAT    0x289
 #define FLAG_ITEM_COOP_ROUTE124_DRAGON_SCALE      0x28A
-#define FLAG_UNUSED_0x28B  0x28B // Unused Flag
+#define FLAG_RECEIVED_TWIN_BEACON  0x28B // Twin Beacon was given. The link itself is not saved.
 #define FLAG_UNUSED_0x28C  0x28C // Unused Flag
 #define FLAG_UNUSED_0x28D  0x28D // Unused Flag
 #define FLAG_UNUSED_0x28E  0x28E // Unused Flag
