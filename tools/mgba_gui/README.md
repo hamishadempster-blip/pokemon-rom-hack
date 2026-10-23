@@ -24,6 +24,16 @@ a link session. Audio sync is off because a failed SDL device stalled the
 second core at 0 fps on this VM. The software display driver is selected
 because a second OpenGL window did not paint.
 
+The two cores do not share a frame rate. mGBA's multiplayer controller calls
+`setSync(false)` on every player except the first, which turns off both audio
+and video frame waits for that core, so it runs as fast as the host allows
+(about 1600 fps here). The first core keeps video sync, and a software window
+that does not have focus is only repainted about once a second, so that core
+drops to about 1 fps. There is no sleep-based cap in the software display.
+Passing `-C videoSync=1` does not override the multiplayer `setSync(false)`.
+Gameplay tests that need both games on the same frame use
+`tools/coop_link_harness`, which steps the two cores in lockstep.
+
 Story regression (doors, the TV scene, the Poochyena fight) stays in the
 headless harness, `tools/coop_link_harness`. This script only proves the
 graphical windows.

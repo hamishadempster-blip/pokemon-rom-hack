@@ -188,10 +188,13 @@ static void dump(struct Player* p, const char* tag) {
 			snprintf(partner, sizeof(partner), "obj%d@(%d,%d)", i, (int16_t)rd16(p, o + 0x10), (int16_t)rd16(p, o + 0x12));
 		}
 	}
+	unsigned remote = coopStatic("sPartner");
 	out("[f%06d p%d %s] cb1=%s cb2=%s map=%d.%d pos=(%d,%d) partner=%s lock=%u script=%u battle=%08x linkErr=%u"
-	    " coop{state=%u req=%u wait=%u slot=%u kind=%u inBattle=%u valid=%u guest=%u hold=%u}\n",
+	    " linkId=%u remote=%u.%u@(%u,%u) coop{state=%u req=%u wait=%u slot=%u kind=%u inBattle=%u valid=%u guest=%u hold=%u}\n",
 	    p->frame, p->id, tag, symName(cb1), symName(cb2), mg, mn, px, py, partner, rd8(p, sLockCtl),
 	    sScriptStatus ? rd8(p, sScriptStatus) : 0, rd32(p, sBattleFlags), rd8(p, sLinkErr),
+	    rd8(p, symAddr("gLink") + 2),
+	    rd8(p, remote + 2), rd8(p, remote + 3), rd8(p, remote + 4), rd8(p, remote + 5),
 	    rd8(p, coopStatic("sLinkState")), rd8(p, coopStatic("sRequest")), rd8(p, coopStatic("sWaitKind")),
 	    rd8(p, coopStatic("sSlot")), rd8(p, coopStatic("sBattleKind")), rd8(p, coopStatic("sInBattle")),
 	    rd8(p, coopStatic("sPartnerValid")), rd8(p, coopStatic("sIsGuest")), rd8(p, symAddr("gCoopHoldLink")));
