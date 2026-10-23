@@ -485,9 +485,10 @@ static void Coop_UpdateSprite(void)
         return;
     }
 
-    // A door or a missed packet can jump more than a couple of tiles.
-    // Anything that far is a place, not a step.
-    if (adx > 2 || ady > 2)
+    // Leaving a house is one tile past the mat, then normal walking.
+    // A gap bigger than one tile is a warp, so place them instead of
+    // stepping out of the doorway they already left.
+    if (adx > 1 || ady > 1)
     {
         MoveObjectEventToMapCoords(obj, tx, ty);
         Coop_ShowPartner(obj);
@@ -648,6 +649,21 @@ static void Coop_AcceptPartner(const struct CoopFrame *frame)
     int merge;
     u8 i;
 
+    // A house exit is a new map. The sprite has to be placed again, not
+    // walked from the indoor doorway.
+    if (sPartnerValid && (sPartner.mapGroup != frame->mapGroup || sPartner.mapNum != frame->mapNum
+                       || sPartner.x != frame->x || sPartner.y != frame->y))
+    {
+        s16 dx = (s16)frame->x - (s16)sPartner.x;
+        s16 dy = (s16)frame->y - (s16)sPartner.y;
+
+        if (dx < 0)
+            dx = -dx;
+        if (dy < 0)
+            dy = -dy;
+        if (sPartner.mapGroup != frame->mapGroup || sPartner.mapNum != frame->mapNum || dx > 1 || dy > 1)
+            sPartnerResettle = TRUE;
+    }
     sPartner = *frame;
     sPartnerValid = TRUE;
     Coop_NoteGoodFrame();

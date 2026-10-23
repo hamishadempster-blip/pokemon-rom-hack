@@ -963,35 +963,28 @@ static void LinkCB_BlockSendEnd(void)
     gLinkCallback = NULL;
 }
 
-// A door or a cutscene can drop one serial burst. The session stays "linked",
-// but every later frame fails its checksum, so the partner sprite never comes
-// back until the cable is joined again. Throw away the broken burst and
-// start clean. Battle blocks own the cable and must not be reset here.
+// Clear a latched error without touching the byte stream. A door runs this
+// on one game only. Wiping that game's queues makes every later position
+// fail its checksum on the other game, so the partner stays on the last
+// tile that arrived: the front door.
 void Link_RecoverCoopCable(void)
 {
     if (gMain.inBattle)
         return;
 
-    gLink.serialIntrCounter = 0;
     gLink.lag = LAG_NONE;
     gLink.badChecksum = FALSE;
     gLink.hardwareError = FALSE;
     gLink.queueFull = 0;
-    gLink.sendCmdIndex = 0;
-    gLink.recvCmdIndex = 0;
-    gLink.checksum = 0;
-    gLink.sendQueue.count = 0;
-    gLink.sendQueue.pos = 0;
-    gLink.recvQueue.count = 0;
-    gLink.recvQueue.pos = 0;
     gLinkErrorOccurred = FALSE;
     sCoopBurstStall = 0;
-    sNumVBlanksWithoutSerialIntr = 0;
-    ResetBlockSend();
     if (gLinkCallback == LinkCB_BlockSendBegin
      || gLinkCallback == LinkCB_BlockSend
      || gLinkCallback == LinkCB_BlockSendEnd)
+    {
+        ResetBlockSend();
         gLinkCallback = NULL;
+    }
 }
 
 static void LinkCB_BerryBlenderSendHeldKeys(void)
@@ -2117,10 +2110,10 @@ void LinkVSync(void)
                     }
                     else if (++sCoopBurstStall >= 3)
                     {
+                        // Kick the hardware only. Zeroing the command indexes
+                        // here realigns this game and not the other one.
                         sCoopBurstStall = 0;
                         gLink.serialIntrCounter = 0;
-                        gLink.sendCmdIndex = 0;
-                        gLink.recvCmdIndex = 0;
                         StartTransfer();
                     }
                     break;
