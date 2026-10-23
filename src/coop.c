@@ -1111,8 +1111,21 @@ static void Coop_NoteLinkHealth(void)
 {
     if (sLinkState != COOP_LINK_UP)
         return;
-    // A door loads the next map across several frames. One bad packet during
-    // that load used to close the cable. A real drop keeps failing.
+    // A co-op fight still needs a real error to reach the battle abort.
+    if (gMain.inBattle && (gBattleTypeFlags & BATTLE_TYPE_COOP))
+        return;
+    // Birch's bag and the rescue battle clear VRAM in one burst, and a door
+    // loads the next map across several frames. Those glitches are not a
+    // pulled cable. Count errors only once both games are back on the field
+    // and nobody is still in that rescue.
+    if (gMain.callback2 != CB2_Overworld || sBirchBag || gMain.inBattle)
+    {
+        Link_ConsumeErrors();
+        sLinkErrorStreak = 0;
+        gCoopHoldLink = TRUE;
+        SetSuppressLinkErrorMessage(TRUE);
+        return;
+    }
     if (EXTRACT_LINK_ERRORS(gLinkStatus) || gLinkErrorOccurred)
     {
         bool8 live = EXTRACT_LINK_ERRORS(gLinkStatus) != 0;

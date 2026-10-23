@@ -574,6 +574,9 @@ static void CB2_InitBattleInternal(void)
     LoadBattleTextboxAndBackground();
     ResetSpriteData();
     ResetTasks();
+    // The rescue battle and every later fight start by wiping tasks.
+    // Put the co-op session back so the cable is still up when the fight ends.
+    Coop_ResumeAfterTasksReset();
     if (B_FAST_INTRO_NO_SLIDE == FALSE && !gTestRunnerHeadless)
         DrawBattleEntryBackground();
     FreeAllSpritePalettes();

@@ -1,5 +1,6 @@
 #include "global.h"
 #include "bg.h"
+#include "coop.h"
 #include "data.h"
 #include "decompress.h"
 #include "event_data.h"
@@ -472,6 +473,9 @@ void CB2_ChooseStarter(void)
     gSprites[spriteId].sBallId = 2;
 
     sStarterLabelWindowId = WINDOW_NONE;
+    // ResetTasks above deleted the co-op task. The cable has to keep
+    // running through this screen or the session ends when the picture loads.
+    Coop_ResumeAfterTasksReset();
 }
 
 static void CB2_StarterChoose(void)
