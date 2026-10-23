@@ -123,6 +123,7 @@ static EWRAM_DATA u8 sSlot = 0;
 static EWRAM_DATA u8 sPartnerValid = FALSE;
 static EWRAM_DATA struct CoopFrame sPartner = {0};
 static EWRAM_DATA u16 sSpriteGfx = OBJ_EVENT_GFX_BRENDAN_NORMAL;
+static EWRAM_DATA u8 sPartnerStepWait = 0;
 static EWRAM_DATA bool8 sIsGuest = FALSE;
 static EWRAM_DATA bool8 sInBattle = FALSE;
 static EWRAM_DATA bool8 sAborting = FALSE;
@@ -293,7 +294,50 @@ static u16 Coop_PartnerGfx(const struct CoopFrame *frame)
 
 static void Coop_RemoveSprite(void)
 {
+    sPartnerStepWait = 0;
     RemoveObjectEventByLocalIdAndMap(OBJ_EVENT_ID_COOP_PARTNER, gSaveBlock1Ptr->location.mapNum, gSaveBlock1Ptr->location.mapGroup);
+}
+
+// Where the partner should be drawn. The link frame can share the player's
+// tile; the sprite then stands one tile south so it stays on screen.
+static void Coop_PartnerTarget(s16 *x, s16 *y)
+{
+    s16 px, py;
+
+    PlayerGetDestCoords(&px, &py);
+    *x = sPartner.x;
+    *y = sPartner.y;
+    CoopProtocol_VisiblePartnerTile(px, py, x, y);
+}
+
+// A cutscene can park a step on top of Mum or the player. That step never
+// finishes, and the old code then ignored every later position.
+static void Coop_ShowPartner(struct ObjectEvent *obj)
+{
+    obj->invisible = FALSE;
+    gSprites[obj->spriteId].invisible = FALSE;
+}
+
+// 0 still stepping, 1 ready for a new step, 2 the last step was abandoned.
+static u8 Coop_PartnerReadyForStep(struct ObjectEvent *obj)
+{
+    struct Sprite *sprite = &gSprites[obj->spriteId];
+
+    if (obj->frozen)
+        UnfreezeObjectEvent(obj);
+    obj->movementType = MOVEMENT_TYPE_NONE;
+    if (obj->heldMovementActive && !obj->heldMovementFinished)
+        sprite->animPaused = FALSE;
+    if (ObjectEventClearHeldMovementIfFinished(obj) != 0)
+    {
+        sPartnerStepWait = 0;
+        return 1;
+    }
+    if (++sPartnerStepWait < 32)
+        return 0;
+    ObjectEventClearHeldMovementIfActive(obj);
+    sPartnerStepWait = 0;
+    return 2;
 }
 
 static enum Direction Coop_StepDir(s16 dx, s16 dy)
@@ -314,8 +358,9 @@ static void Coop_UpdateSprite(void)
 {
     u16 gfx;
     u8 objectId;
-    u8 status;
+    u8 ready;
     s16 dx, dy, adx, ady;
+    s16 tx, ty;
     enum Direction dir;
     struct ObjectEvent *obj;
     struct ObjectEventTemplate template;
@@ -340,32 +385,48 @@ static void Coop_UpdateSprite(void)
         template.graphicsId = gfx;
         template.kind = OBJ_KIND_NORMAL;
         // Spawn adds MAP_OFFSET itself. The link frame already includes it.
-        template.x = (s16)sPartner.x - MAP_OFFSET;
-        template.y = (s16)sPartner.y - MAP_OFFSET;
+        Coop_PartnerTarget(&template.x, &template.y);
+        template.x -= MAP_OFFSET;
+        template.y -= MAP_OFFSET;
         template.elevation = PlayerGetElevation();
-        template.movementType = MOVEMENT_TYPE_FACE_DOWN;
+        template.movementType = MOVEMENT_TYPE_NONE;
         template.trainerType = TRAINER_TYPE_NONE;
         template.script = Coop_EventScript_TalkPartner;
         template.flagId = 0;
         sSpriteGfx = gfx;
         objectId = SpawnSpecialObjectEvent(&template);
-        if (objectId < OBJECT_EVENTS_COUNT && sPartner.facing != DIR_NONE)
-            ObjectEventTurn(&gObjectEvents[objectId], (enum Direction)sPartner.facing);
+        if (objectId < OBJECT_EVENTS_COUNT)
+        {
+            Coop_ShowPartner(&gObjectEvents[objectId]);
+            if (sPartner.facing != DIR_NONE)
+                ObjectEventTurn(&gObjectEvents[objectId], (enum Direction)sPartner.facing);
+        }
         return;
     }
 
     obj = &gObjectEvents[objectId];
-    status = ObjectEventClearHeldMovementIfFinished(obj);
-    if (status == 0)
+    ready = Coop_PartnerReadyForStep(obj);
+    if (ready == 0)
         return;
 
-    dx = (s16)sPartner.x - obj->currentCoords.x;
-    dy = (s16)sPartner.y - obj->currentCoords.y;
+    Coop_PartnerTarget(&tx, &ty);
+    if (ready == 2)
+    {
+        MoveObjectEventToMapCoords(obj, tx, ty);
+        Coop_ShowPartner(obj);
+        if (sPartner.facing != DIR_NONE)
+            ObjectEventTurn(obj, (enum Direction)sPartner.facing);
+        return;
+    }
+    dx = tx - obj->currentCoords.x;
+    dy = ty - obj->currentCoords.y;
     adx = dx < 0 ? -dx : dx;
     ady = dy < 0 ? -dy : dy;
     if (dx == 0 && dy == 0)
     {
         enum Direction face = (enum Direction)sPartner.facing;
+
+        Coop_ShowPartner(obj);
 
         if (face == DIR_NONE)
             face = DIR_SOUTH;
@@ -392,7 +453,8 @@ static void Coop_UpdateSprite(void)
     // Anything that far is a place, not a step.
     if (adx > 2 || ady > 2)
     {
-        MoveObjectEventToMapCoords(obj, sPartner.x, sPartner.y);
+        MoveObjectEventToMapCoords(obj, tx, ty);
+        Coop_ShowPartner(obj);
         if (sPartner.facing != DIR_NONE)
             ObjectEventTurn(obj, (enum Direction)sPartner.facing);
         return;

@@ -138,6 +138,16 @@ int main(void)
     Expect(CoopProtocol_DistinctPartner(30, 30) == 0, "one grunt id is not two grunts");
     Expect(CoopProtocol_DistinctPartner(30, 0) == 0, "a missing partner stays empty");
     Expect(CoopProtocol_DistinctPartner(30, 0xFFFF) == 0, "a follower sentinel is not a second trainer");
+
+    {
+        s16 x = 8, y = 5;
+        CoopProtocol_VisiblePartnerTile(8, 5, &x, &y);
+        Expect(x == 8 && y == 6, "a shared tile draws the partner one step south");
+        x = 4;
+        y = 9;
+        CoopProtocol_VisiblePartnerTile(8, 5, &x, &y);
+        Expect(x == 4 && y == 9, "a different tile stays where they are standing");
+    }
     Expect(CoopProtocol_DistinctPartner(30, 31) == 31, "two different trainers both fight");
 
     Expect(CoopProtocol_SameMap(3, 10, 3, 10) == 1, "same map shows the sprite");

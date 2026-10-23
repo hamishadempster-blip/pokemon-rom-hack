@@ -22,12 +22,13 @@
 #include <stdint.h>
 typedef uint8_t u8;
 typedef uint16_t u16;
+typedef int16_t s16;
 typedef uint32_t u32;
 #else
 #include "global.h"
 #endif
 
-#define COOP_BUILD_ID  0xC0170123u
+#define COOP_BUILD_ID  0xC0170124u
 // gpSP's Pokémon Gen 3 cable (serial_proto.c MAX_FRAME_TIMEOUT) drops a peer
 // after 240 frames with no packet. The overworld uses the same count.
 #define COOP_LINK_QUIET_LIMIT 240
@@ -276,6 +277,14 @@ static inline int CoopProtocol_QueuesCoop(int category, int beaconOn, int sameMa
     if (category == COOP_CAT_OPTIONAL && beaconOn)
         return 1;
     return 0;
+}
+
+// Mum's TV scene walks both players onto one tile. Drawn there, the partner
+// is hidden inside the local player. Step them one tile south instead.
+static inline void CoopProtocol_VisiblePartnerTile(s16 playerX, s16 playerY, s16 *x, s16 *y)
+{
+    if (*x == playerX && *y == playerY)
+        (*y)++;
 }
 
 // One trainer id never stands in for two. A repeated id is dropped.
