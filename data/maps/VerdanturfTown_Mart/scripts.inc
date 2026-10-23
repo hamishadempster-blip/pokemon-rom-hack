@@ -14,8 +14,11 @@ VerdanturfTown_Mart_EventScript_Clerk::
 	.align 2
 VerdanturfTown_Mart_Pokemart:
 	.2byte ITEM_GREAT_BALL
+	.2byte ITEM_ULTRA_BALL
 	.2byte ITEM_NEST_BALL
 	.2byte ITEM_SUPER_POTION
+	.2byte ITEM_LEAF_STONE
+	.2byte ITEM_SUN_STONE
 	.2byte ITEM_ANTIDOTE
 	.2byte ITEM_PARALYZE_HEAL
 	.2byte ITEM_AWAKENING

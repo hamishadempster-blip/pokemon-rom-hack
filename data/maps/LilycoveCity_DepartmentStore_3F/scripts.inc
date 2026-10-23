@@ -42,6 +42,48 @@ LilycoveCity_DepartmentStore_3F_Pokemart_StatBoosters:
 	.2byte ITEM_X_ACCURACY
 	pokemartlistend
 
+LilycoveCity_DepartmentStore_3F_EventScript_EvolutionClerk::
+	lock
+	faceplayer
+	msgbox LilycoveCity_DepartmentStore_3F_Text_EvolutionClerk, MSGBOX_DEFAULT
+	message gText_HowMayIServeYou
+	waitmessage
+	pokemart LilycoveCity_DepartmentStore_3F_Pokemart_Evolution
+	msgbox gText_PleaseComeAgain, MSGBOX_DEFAULT
+	release
+	end
+
+	.align 2
+LilycoveCity_DepartmentStore_3F_Pokemart_Evolution:
+	.2byte ITEM_FIRE_STONE
+	.2byte ITEM_WATER_STONE
+	.2byte ITEM_THUNDER_STONE
+	.2byte ITEM_LEAF_STONE
+	.2byte ITEM_MOON_STONE
+	.2byte ITEM_SUN_STONE
+	.2byte ITEM_ICE_STONE
+	.2byte ITEM_DAWN_STONE
+	.2byte ITEM_DUSK_STONE
+	.2byte ITEM_SHINY_STONE
+	.2byte ITEM_SWEET_APPLE
+	.2byte ITEM_TART_APPLE
+	.2byte ITEM_SYRUPY_APPLE
+	.2byte ITEM_METAL_COAT
+	.2byte ITEM_DRAGON_SCALE
+	.2byte ITEM_PRISM_SCALE
+	.2byte ITEM_REAPER_CLOTH
+	.2byte ITEM_KINGS_ROCK
+	.2byte ITEM_DEEP_SEA_TOOTH
+	.2byte ITEM_DEEP_SEA_SCALE
+	pokemartlistend
+
+LilycoveCity_DepartmentStore_3F_Text_EvolutionClerk:
+	.string "Stones and apples for evolution\n"
+	.string "are on this counter.\p"
+	.string "A Metal Coat, Dragon Scale,\n"
+	.string "Prism Scale, or Reaper Cloth\n"
+	.string "can be used from the bag.$"
+
 LilycoveCity_DepartmentStore_3F_EventScript_TriathleteM::
 	msgbox LilycoveCity_DepartmentStore_3F_Text_ItemsBestForTougheningPokemon, MSGBOX_NPC
 	end

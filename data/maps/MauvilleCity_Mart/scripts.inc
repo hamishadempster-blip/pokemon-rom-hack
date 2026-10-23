@@ -15,7 +15,14 @@ MauvilleCity_Mart_EventScript_Clerk::
 MauvilleCity_Mart_Pokemart:
 	.2byte ITEM_POKE_BALL
 	.2byte ITEM_GREAT_BALL
+	.2byte ITEM_ULTRA_BALL
+	.2byte ITEM_NEST_BALL
+	.2byte ITEM_NET_BALL
+	.2byte ITEM_REPEAT_BALL
+	.2byte ITEM_TIMER_BALL
 	.2byte ITEM_SUPER_POTION
+	.2byte ITEM_THUNDER_STONE
+	.2byte ITEM_MOON_STONE
 	.2byte ITEM_ANTIDOTE
 	.2byte ITEM_PARALYZE_HEAL
 	.2byte ITEM_AWAKENING

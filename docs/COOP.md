@@ -219,7 +219,9 @@ Two people only talk. A girl in Oldale explains the Pokédex map. A scientist in
 
 Fairy is part of the battle rules. The type chart, the summary icons, and the Pokédex search all include it. Clefairy, Jigglypuff, Marill, Ralts, Mawile, and Impidimp are Fairy. Charm and Baby-Doll Eyes are Fairy moves, so an Eevee that knows one can become Sylveon by friendship.
 
-Fire, Water, Thunder, Leaf, Moon, and Sun Stones were already placed in Hoenn. These later evolution items were not. Each one below is a single Poké Ball. Metal Coat, Dragon Scale, Prism Scale, and Reaper Cloth can be used from the bag.
+Fire, Water, Thunder, Leaf, Moon, and Sun Stones were already placed in Hoenn. These later evolution items were not. Each one below is a single Poké Ball. Metal Coat, Dragon Scale, Prism Scale, and Reaper Cloth can be used from the bag. The same stones, apples, and held items are also sold by the evolution clerk on the third floor of the Lilycove Department Store.
+
+Poké Marts sell more balls as you go east. Oldale adds Great Balls once the Pokédex is running. Petalburg and Rustboro add Nest Balls, and Rustboro also adds Net Balls. Mauville adds Ultra, Repeat, and Timer Balls, plus a Thunder Stone and a Moon Stone. Verdanturf sells a Leaf Stone and a Sun Stone. Fallarbor sells a Moon Stone. Lavaridge sells a Fire Stone. Fortree adds Dusk Balls and a Shiny Stone. Lilycove's second floor sells the full ball case, including Dive, Quick, Heal, Luxury, and Premier Balls. Mossdeep adds a Dawn Stone and an Ice Stone. Dewford and Pacifidlog have no mart, so a clerk in each Pokémon Center sells a small stock. Pacifidlog's clerk also sells Dive Balls, a Water Stone, and a Prism Scale.
 
 | Item | Where | What it evolves |
 | --- | --- | --- |

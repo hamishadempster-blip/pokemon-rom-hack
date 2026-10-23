@@ -27,6 +27,37 @@ PacifidlogTown_PokemonCenter_1F_EventScript_OldMan::
 	msgbox PacifidlogTown_PokemonCenter_1F_Text_AncestorsLivedOnBoats, MSGBOX_NPC
 	end
 
+PacifidlogTown_PokemonCenter_1F_EventScript_MartClerk::
+	lock
+	faceplayer
+	msgbox PacifidlogTown_PokemonCenter_1F_Text_MartClerk, MSGBOX_DEFAULT
+	message gText_HowMayIServeYou
+	waitmessage
+	pokemart PacifidlogTown_PokemonCenter_1F_Pokemart
+	msgbox gText_PleaseComeAgain, MSGBOX_DEFAULT
+	release
+	end
+
+	.align 2
+PacifidlogTown_PokemonCenter_1F_Pokemart:
+	.2byte ITEM_ULTRA_BALL
+	.2byte ITEM_NET_BALL
+	.2byte ITEM_DIVE_BALL
+	.2byte ITEM_DUSK_BALL
+	.2byte ITEM_HYPER_POTION
+	.2byte ITEM_FULL_HEAL
+	.2byte ITEM_REVIVE
+	.2byte ITEM_MAX_REPEL
+	.2byte ITEM_WATER_STONE
+	.2byte ITEM_PRISM_SCALE
+	pokemartlistend
+
+PacifidlogTown_PokemonCenter_1F_Text_MartClerk:
+	.string "The rafts never grew a mart,\n"
+	.string "so I brought a case of balls.\p"
+	.string "Dive Balls like POKéMON\n"
+	.string "met under the waves.$"
+
 PacifidlogTown_PokemonCenter_1F_Text_WhatColorTrainerCard:
 	.string "What color is your TRAINER CARD?\n"
 	.string "Mine's copper!$"

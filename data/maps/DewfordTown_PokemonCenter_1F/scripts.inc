@@ -30,6 +30,37 @@ DewfordTown_PokemonCenter_1F_Text_StoneCavern:
 	.string "I've heard you can find rare stones\n"
 	.string "there.$"
 
+DewfordTown_PokemonCenter_1F_EventScript_MartClerk::
+	lock
+	faceplayer
+	msgbox DewfordTown_PokemonCenter_1F_Text_MartClerk, MSGBOX_DEFAULT
+	message gText_HowMayIServeYou
+	waitmessage
+	pokemart DewfordTown_PokemonCenter_1F_Pokemart
+	msgbox gText_PleaseComeAgain, MSGBOX_DEFAULT
+	release
+	end
+
+	.align 2
+DewfordTown_PokemonCenter_1F_Pokemart:
+	.2byte ITEM_POKE_BALL
+	.2byte ITEM_GREAT_BALL
+	.2byte ITEM_NEST_BALL
+	.2byte ITEM_POTION
+	.2byte ITEM_SUPER_POTION
+	.2byte ITEM_ANTIDOTE
+	.2byte ITEM_PARALYZE_HEAL
+	.2byte ITEM_AWAKENING
+	.2byte ITEM_ESCAPE_ROPE
+	.2byte ITEM_REPEL
+	pokemartlistend
+
+DewfordTown_PokemonCenter_1F_Text_MartClerk:
+	.string "Dewford has no POKéMART,\n"
+	.string "so I set a counter up here.\p"
+	.string "Balls and potions, if the\n"
+	.string "cave trip ran you short.$"
+
 DewfordTown_PokemonCenter_1F_Text_FaintedMonCanUseHM:
 	.string "Even if a POKéMON faints and can't\n"
 	.string "battle, it can still use a move learned\l"

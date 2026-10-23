@@ -15,7 +15,12 @@ FortreeCity_Mart_EventScript_Clerk::
 FortreeCity_Mart_Pokemart:
 	.2byte ITEM_GREAT_BALL
 	.2byte ITEM_ULTRA_BALL
+	.2byte ITEM_NEST_BALL
+	.2byte ITEM_NET_BALL
+	.2byte ITEM_DUSK_BALL
+	.2byte ITEM_TIMER_BALL
 	.2byte ITEM_SUPER_POTION
+	.2byte ITEM_SHINY_STONE
 	.2byte ITEM_HYPER_POTION
 	.2byte ITEM_ANTIDOTE
 	.2byte ITEM_PARALYZE_HEAL
