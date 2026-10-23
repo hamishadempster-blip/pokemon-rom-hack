@@ -5485,7 +5485,7 @@ static void Cmd_forcerandomswitch(void)
       && !(gBattleTypeFlags & BATTLE_TYPE_TRAINER)
       && !IsOnPlayerSide(gBattlerAttacker))   // Check opponent's red card activating
     {
-        if (!WILD_DOUBLE_BATTLE)
+        if (!WILD_DOUBLE_BATTLE && !Coop_IsWildBattle())
         {
             // Wild mon with red card will end single battle
             gBattlescriptCurrInstr = BattleScript_RoarSuccessEndBattle;
@@ -7794,6 +7794,8 @@ static void Cmd_snatchsetbattlers(void)
 
 u8 GetCatchingBattler(void)
 {
+    if ((gBattleTypeFlags & BATTLE_TYPE_COOP) && gCoopBallTarget != 0)
+        return gCoopBallTarget - 1;
     if (IsBattlerAlive(GetBattlerAtPosition(B_POSITION_OPPONENT_LEFT)))
         return GetBattlerAtPosition(B_POSITION_OPPONENT_LEFT);
     else
@@ -8260,6 +8262,12 @@ static void Cmd_handleballthrow(void)
         MarkBattlerForControllerExec(gBattlerAttacker);
         gBattlescriptCurrInstr = BattleScript_WallyBallThrow;
     }
+    else if ((gBattleTypeFlags & BATTLE_TYPE_COOP) && !Coop_CanCatchTarget(gBattlerTarget))
+    {
+        // The other human already caught it or it left the field this turn.
+        // The ball was taken from the bag at selection and stays spent.
+        gBattlescriptCurrInstr = BattleScript_CoopBallMissed;
+    }
     else
     {
         SetBallThrowShakes();
@@ -8385,9 +8393,7 @@ static void Cmd_givecaughtmon(void)
                 break;
         }
 
-        if ((gBattleTypeFlags & BATTLE_TYPE_COOP) && !Coop_CommitCatch(caughtMon))
-            gBattleCommunication[MULTISTRING_CHOOSER] = B_MSG_SWAPPED_INTO_PARTY;
-        else if (GiveCapturedMonToPlayer(caughtMon) != MON_GIVEN_TO_PARTY
+        if (GiveCapturedMonToPlayer(caughtMon) != MON_GIVEN_TO_PARTY
          && gBattleCommunication[MULTISTRING_CHOOSER] != B_MSG_SWAPPED_INTO_PARTY)
         {
             if (!ShouldShowBoxWasFullMessage())
@@ -10435,6 +10441,9 @@ void BS_JumpIfRoarFails(void)
         gBattlescriptCurrInstr = cmd->jumpInstr;
     else if (FlagGet(WE_FLAG_NO_RUNNING))
         gBattlescriptCurrInstr = cmd->jumpInstr;
+    // Blowing a co-op wild fight away would end it without both players agreeing.
+    else if (Coop_IsWildBattle())
+        gBattlescriptCurrInstr = cmd->jumpInstr;
     else
         gBattlescriptCurrInstr = cmd->nextInstr;
 }
@@ -10813,6 +10822,35 @@ void BS_PalaceTryEscapeStatus(void)
     if (BattlePalace_TryEscapeStatus(gBattlerAttacker))
         return;
     gBattlescriptCurrInstr = cmd->nextInstr;
+}
+
+// Co-op wild: a catch takes that Pokémon off the field the way a wild
+// Teleport does, and the fight goes on while the other one is still up.
+// Each game already kept its own copy in the ball animation.
+void BS_CoopAfterCatch(void)
+{
+    NATIVE_ARGS(const u8 *battleOverInstr);
+    enum BattlerId target = gBattlerTarget;
+    enum BattlerId partner = GetPartnerBattler(target);
+
+    Coop_ClaimCatch(gBattlerAttacker, target);
+    gAbsentBattlerFlags |= 1u << target;
+    gHitMarker |= HITMARKER_FAINTED(target);
+    gBattleMons[target].hp = 0;
+    SetMonData(GetBattlerMon(target), MON_DATA_HP, &gBattleMons[target].hp);
+    BtlController_EmitSetMonData(target, B_COMM_TO_CONTROLLER, REQUEST_HP_BATTLE, 0, sizeof(gBattleMons[target].hp), &gBattleMons[target].hp);
+    MarkBattlerForControllerExec(target);
+    FaintClearSetData(target);
+
+    if (IsBattlerAlive(partner) && !(gAbsentBattlerFlags & (1u << partner)))
+    {
+        gBattlescriptCurrInstr = cmd->nextInstr;
+    }
+    else
+    {
+        gBattleOutcome = B_OUTCOME_CAUGHT;
+        gBattlescriptCurrInstr = cmd->battleOverInstr;
+    }
 }
 
 void BS_SetTeleportOutcome(void)

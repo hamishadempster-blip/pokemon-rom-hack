@@ -1132,6 +1132,16 @@ void ItemUseOutOfBattle_EvolutionStone(u8 taskId)
 
 static u32 GetBallThrowableState(void)
 {
+    // Co-op wild fights pick a target after the bag, and the room check
+    // counts the whole party from before the battle plus catches so far.
+    if (Coop_IsWildBattle())
+    {
+        if (!Coop_HasCatchRoom())
+            return BALL_THROW_UNABLE_NO_ROOM;
+        if (FlagGet(WE_FLAG_NO_CATCHING))
+            return BALL_THROW_UNABLE_DISABLED_FLAG;
+        return BALL_THROW_ABLE;
+    }
     if (IsBattlerAlive(GetBattlerAtPosition(B_POSITION_OPPONENT_LEFT))
      && IsBattlerAlive(GetBattlerAtPosition(B_POSITION_OPPONENT_RIGHT)))
         return BALL_THROW_UNABLE_TWO_MONS;
@@ -1168,14 +1178,30 @@ static void ItemUseInBattle_ShowPartyMenu(u8 taskId)
     }
 }
 
+static const u8 sText_CoopBallsOnly[] = _("Only POKé BALLS can be used\nin a co-op battle.\p");
+
+// Co-op wild fights only take balls: healing and escape items would run on
+// the link master's copy of the battle.
+static bool32 Coop_RefuseBattleItem(u8 taskId)
+{
+    if (!Coop_IsWildBattle() || GetItemBattleUsage(gSpecialVar_ItemId) == EFFECT_ITEM_THROW_BALL)
+        return FALSE;
+    DisplayItemMessage(taskId, FONT_NORMAL, sText_CoopBallsOnly, CloseItemMessage);
+    return TRUE;
+}
+
 void ItemUseInBattle_PartyMenu(u8 taskId)
 {
+    if (Coop_RefuseBattleItem(taskId))
+        return;
     gItemUseCB = ItemUseCB_BattleScript;
     ItemUseInBattle_ShowPartyMenu(taskId);
 }
 
 void ItemUseInBattle_PartyMenuChooseMove(u8 taskId)
 {
+    if (Coop_RefuseBattleItem(taskId))
+        return;
     gItemUseCB = ItemUseCB_BattleChooseMove;
     ItemUseInBattle_ShowPartyMenu(taskId);
 }
@@ -1338,6 +1364,8 @@ bool32 CannotUseItemsInBattle(enum Item itemId, struct Pokemon *mon)
 
 void ItemUseInBattle_BagMenu(u8 taskId)
 {
+    if (Coop_RefuseBattleItem(taskId))
+        return;
     gPartyMenu.slotId = gBattleStruct->itemPartyIndex[gBattlerInMenuId] = gBattlerPartyIndexes[gBattlerInMenuId];
     if (CannotUseItemsInBattle(gSpecialVar_ItemId, NULL))
     {

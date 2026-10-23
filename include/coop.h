@@ -27,6 +27,8 @@
 #define COOP_KIND_WARP      7
 #define COOP_KIND_ACK       8
 #define COOP_KIND_NACK      9
+#define COOP_KIND_WILD      10
+#define COOP_KIND_PAIR      11
 
 #define COOP_REFUSE_NONE            0
 #define COOP_REFUSE_SELF_NOT_READY  1
@@ -78,7 +80,26 @@ void Coop_OnBattleLaunched(void);
 bool8 Coop_FinishTrainerBattle(void);
 bool8 Coop_FinishWildBattle(void);
 void Coop_AbortBattle(void);
-bool8 Coop_CommitCatch(struct Pokemon *caughtMon);
+
+// Stage 4: one-route wild catch.
+bool8 Coop_WildPairReady(void);
+void Coop_QueueWildPair(void);
+bool8 Coop_IsWildBattle(void);
+bool8 Coop_HasCatchRoom(void);
+bool8 Coop_CanCatchTarget(u32 target);
+void Coop_ClaimCatch(u32 thrower, u32 target);
+void Coop_NoteCatch(u32 thrower, u32 target);
+u16 Coop_NextCaughtNickname(void);
+// 0 means the stock target. Otherwise the chosen battler plus one.
+extern u8 gCoopBallTarget;
+extern u8 gCoopBallTargetFor[];
+extern u16 gCoopLastBall;
+
+// Stage 5: one optional trainer pair.
+bool8 Coop_TryStartTrainerPair(void);
+u16 Coop_PairHostAnswer(void);
+u16 Coop_PairGuestAnswer(void);
+u16 Coop_BufferPairNames(void);
 
 extern const u8 Coop_EventScript_NeedPartner[];
 extern const u8 Coop_EventScript_Menu[];
@@ -98,5 +119,9 @@ extern const u8 Coop_EventScript_BeaconAsk[];
 extern const u8 Coop_EventScript_BeaconOn[];
 extern const u8 Coop_EventScript_BeaconOff[];
 extern const u8 Coop_EventScript_BeaconDeclined[];
+extern const u8 Coop_EventScript_CaughtNickname[];
+extern const u8 Coop_EventScript_PairAskHost[];
+extern const u8 Coop_EventScript_PairAskGuest[];
+extern const u8 Coop_EventScript_PairTooLate[];
 
 #endif // GUARD_COOP_H

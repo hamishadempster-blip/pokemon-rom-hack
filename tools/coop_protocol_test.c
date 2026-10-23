@@ -228,6 +228,74 @@ int main(void)
         Expect(ok, "slots 1-3 keep the fight and slots 4-6 come back as they were");
     }
 
+    {
+        struct CoopCatchLedger ledger;
+        const u8 host = 1, guest = 2;
+
+        CoopProtocol_ClearCatches(&ledger);
+        Expect(CoopProtocol_ClaimCatch(&ledger, 0, host, 1), "the first ball at wild A catches it");
+        Expect(!CoopProtocol_ClaimCatch(&ledger, 0, guest, 1), "a second ball at A in the same turn catches nothing");
+        Expect(ledger.owner[0] == host, "A keeps exactly one owner");
+        Expect(CoopProtocol_CatchCount(&ledger, host) == 1 && CoopProtocol_CatchCount(&ledger, guest) == 0, "only the catcher holds A");
+        Expect(ledger.owner[1] == COOP_THROWER_NONE, "leaving B alone leaves B unowned");
+
+        CoopProtocol_ClearCatches(&ledger);
+        Expect(CoopProtocol_ClaimCatch(&ledger, 0, host, 1) && CoopProtocol_ClaimCatch(&ledger, 1, guest, 1), "different targets are both caught");
+        Expect(CoopProtocol_CatchCount(&ledger, host) == 1 && CoopProtocol_CatchCount(&ledger, guest) == 1, "each human owns the one they caught");
+
+        CoopProtocol_ClearCatches(&ledger);
+        Expect(!CoopProtocol_ClaimCatch(&ledger, 1, guest, 0), "a target that already left the field is not caught");
+        Expect(!CoopProtocol_ClaimCatch(&ledger, 2, guest, 1), "there are only two wild slots");
+        Expect(!CoopProtocol_ClaimCatch(&ledger, 0, COOP_THROWER_NONE, 1), "nobody cannot own a catch");
+
+        CoopProtocol_ClaimCatch(&ledger, 0, guest, 1);
+        CoopProtocol_ClearCatches(&ledger);
+        Expect(ledger.owner[0] == COOP_THROWER_NONE && ledger.owner[1] == COOP_THROWER_NONE, "a dropped cable mid-shake leaves the catch with nobody");
+    }
+
+    {
+        u8 run[2], act[2];
+
+        run[0] = 1; run[1] = 1; act[0] = 1; act[1] = 1;
+        Expect(CoopProtocol_FleeAgreed(run, act, 2), "both chose Run, so the fight ends");
+        run[1] = 0;
+        Expect(!CoopProtocol_FleeAgreed(run, act, 2), "one Run alone does not end the fight");
+        act[1] = 0;
+        Expect(CoopProtocol_FleeAgreed(run, act, 2), "a human with nothing standing does not block the run");
+        act[0] = 0;
+        Expect(!CoopProtocol_FleeAgreed(run, act, 2), "nobody standing is not a run");
+    }
+
+    {
+        Expect(CoopProtocol_CatchRoom(6, 0, 1), "a full party sends the catch to the PC");
+        Expect(!CoopProtocol_CatchRoom(6, 0, 0), "a full party and a full PC refuse the throw");
+        Expect(CoopProtocol_CatchRoom(5, 0, 0), "an open party slot is room");
+        Expect(!CoopProtocol_CatchRoom(5, 1, 0), "an earlier catch this fight holds the last slot");
+        Expect(CoopProtocol_CatchRoom(6, 1, 2), "two PC spaces cover a second catch");
+    }
+
+    {
+        u8 none[2] = {0, 0};
+        u8 left[2] = {1, 0};
+        u8 right[2] = {0, 1};
+        u8 beat[2] = {1, 0};
+        u8 both[2] = {1, 1};
+
+        Expect(CoopProtocol_PairPlan(none, none, 1, 1) == COOP_PAIR_JOINT, "both ids clear on both saves and both said yes");
+        Expect(CoopProtocol_PairPlan(none, none, 1, 0) == COOP_PAIR_SOLO, "a no from either player keeps it solo");
+        Expect(CoopProtocol_PairPlan(none, none, 0, 1) == COOP_PAIR_SOLO, "a busy partner keeps it solo");
+        Expect(CoopProtocol_PairPlan(left, none, 1, 1) == COOP_PAIR_SOLO, "this save beat the left id, so no joint fight");
+        Expect(CoopProtocol_PairPlan(none, right, 1, 1) == COOP_PAIR_SOLO, "the other save beat the right id, so no joint fight");
+
+        CoopProtocol_PairFlagsAfter(beat, both, 0);
+        Expect(beat[0] == 1 && beat[1] == 0, "a loss or a cable pull sets no new flag");
+        CoopProtocol_PairFlagsAfter(none, both, 1);
+        Expect(none[0] == 1 && none[1] == 1, "a joint win marks both fought ids");
+        CoopProtocol_PairFlagsAfter(right, left, 1);
+        Expect(right[0] == 1 && right[1] == 1, "a win marks only the ids that were fought");
+        Expect(COOP_PAIR_LEFT_ID != COOP_PAIR_RIGHT_ID, "the two ids are different");
+    }
+
     if (sFails != 0)
     {
         printf("%d failed\n", sFails);

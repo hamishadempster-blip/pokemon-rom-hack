@@ -328,6 +328,7 @@ void BtlController_EmitTrainerSlide(enum BattlerId battler, u32 bufferId);
 void BtlController_EmitTrainerSlideBack(enum BattlerId battler, u32 bufferId);
 void BtlController_EmitFaintAnimation(enum BattlerId battler, u32 bufferId);
 void BtlController_EmitBallThrowAnim(enum BattlerId battler, u32 bufferId, u8 caseId);
+void BtlController_EmitChosenBall(enum BattlerId battler, u32 bufferId, u16 itemId, enum BattlerId target);
 void BtlController_EmitMoveAnimation(enum BattlerId battler, u32 bufferId, enum Move move, u8 turnOfMove, u16 movePower, s32 dmg, u8 friendship, u8 multihit);
 void BtlController_EmitPrintString(enum BattlerId battler, u32 bufferId, enum StringID stringId);
 void BtlController_EmitPrintSelectionString(enum BattlerId battler, u32 bufferId, enum StringID stringId);

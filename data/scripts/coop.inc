@@ -477,3 +477,70 @@ Coop_EventScript_GuestHallOfFame::
 	waitstate
 	releaseall
 	end
+
+@ Stage 4. Runs once per catch after a clean co-op wild fight, on the
+@ catcher's game only.
+Coop_EventScript_CaughtNickname::
+	lockall
+Coop_EventScript_CaughtNicknameNext::
+	specialvar VAR_RESULT, Coop_NextCaughtNickname
+	goto_if_eq VAR_RESULT, SPECIES_NONE, Coop_EventScript_CaughtNicknameDone
+	msgbox Coop_Text_NicknameCaught, MSGBOX_YESNO
+	goto_if_eq VAR_RESULT, NO, Coop_EventScript_CaughtNicknameNext
+	fadescreen FADE_TO_BLACK
+	special ChangePokemonNickname
+	goto Coop_EventScript_CaughtNicknameNext
+
+Coop_EventScript_CaughtNicknameDone::
+	releaseall
+	end
+
+@ Stage 5. Called from inside the engaged trainer's own battle script, so
+@ it returns there and the stock post-battle text runs after either fight.
+Coop_EventScript_PairAskHost::
+	msgbox Coop_Text_PairAskHost, MSGBOX_YESNO
+	copyvar VAR_0x8004, VAR_RESULT
+	closemessage
+	special Coop_PairHostAnswer
+	waitstate
+	return
+
+@ Coop_PairGuestAnswer: 1 launched the fight, 2 means the ask ran out.
+Coop_EventScript_PairAskGuest::
+	lockall
+	special Coop_BufferPairNames
+	msgbox Coop_Text_PairAskGuest, MSGBOX_YESNO
+	closemessage
+	specialvar VAR_RESULT, Coop_PairGuestAnswer
+	goto_if_eq VAR_RESULT, 1, Coop_EventScript_PairGuestWait
+	goto_if_eq VAR_RESULT, 2, Coop_EventScript_PairTooLate
+	releaseall
+	end
+
+Coop_EventScript_PairGuestWait::
+	waitstate
+	releaseall
+	end
+
+Coop_EventScript_PairTooLate::
+	msgbox Coop_Text_PairTooLate, MSGBOX_DEFAULT
+	releaseall
+	end
+
+Coop_Text_NicknameCaught:
+	.string "Give a nickname to the\n"
+	.string "{STR_VAR_1} you caught?$"
+
+Coop_Text_PairAskHost:
+	.string "{STR_VAR_1} and {STR_VAR_2} could take\n"
+	.string "you both on together.\p"
+	.string "Ask your partner to join?$"
+
+Coop_Text_PairAskGuest:
+	.string "Your partner ran into {STR_VAR_1}\n"
+	.string "and {STR_VAR_2} on this route.\p"
+	.string "Join them for a 2-on-2 battle?$"
+
+Coop_Text_PairTooLate:
+	.string "Your partner couldn't wait,\n"
+	.string "so that fight went ahead without you.$"

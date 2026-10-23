@@ -5096,7 +5096,8 @@ u16 GetBattleBGM(void)
             return MUS_RG_VS_LEGEND;
         }
     }
-    else if (gBattleTypeFlags & (BATTLE_TYPE_LINK | BATTLE_TYPE_RECORDED_LINK))
+    // Co-op fights play the music of the NPC or wild fight they replace.
+    else if (gBattleTypeFlags & (BATTLE_TYPE_LINK | BATTLE_TYPE_RECORDED_LINK) && !(gBattleTypeFlags & BATTLE_TYPE_COOP))
     {
         return MUS_VS_TRAINER;
     }

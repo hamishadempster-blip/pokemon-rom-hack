@@ -658,4 +658,8 @@ gSpecials::
 	def_special Coop_BeaconAnswer
 	def_special Coop_TakeRefusal
 	def_special Coop_TakeGuestFollowup
+	def_special Coop_NextCaughtNickname
+	def_special Coop_PairHostAnswer
+	def_special Coop_PairGuestAnswer
+	def_special Coop_BufferPairNames
 	def_special ScriptGetShownMonSpecies

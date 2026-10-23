@@ -2,6 +2,7 @@
 #include "battle.h"
 #include "battle_anim.h"
 #include "battle_controllers.h"
+#include "battle_gfx_sfx_util.h"
 #include "battle_interface.h"
 #include "decompress.h"
 #include "dma3.h"
@@ -1232,6 +1233,8 @@ static void SpriteCB_Ball_Release(struct Sprite *sprite)
 #define sState data[0]
 #define sTimer data[4]
 
+#define sCaughtBattler data[7]
+
 static void SpriteCB_Ball_Capture(struct Sprite *sprite)
 {
     sprite->animPaused = TRUE;
@@ -1239,12 +1242,16 @@ static void SpriteCB_Ball_Capture(struct Sprite *sprite)
     sprite->data[3] = 0;
     sprite->sTimer = 0;
     sprite->data[5] = 0;
+    // A co-op wild fight keeps going, so a later move animation can change
+    // gBattleAnimTarget before this sprite finishes.
+    sprite->sCaughtBattler = gBattleAnimTarget;
 }
 
 // Fade and unfade ball, create star animations, play sound effects
 static void SpriteCB_Ball_Capture_Step(struct Sprite *sprite)
 {
-    enum BattlerId *battler = &gBattleAnimTarget;
+    enum BattlerId caught = sprite->sCaughtBattler;
+    enum BattlerId *battler = &caught;
 
     sprite->sTimer++;
     if (sprite->sTimer == 40)
@@ -1261,8 +1268,18 @@ static void SpriteCB_Ball_Capture_Step(struct Sprite *sprite)
     {
         gDoingBattleAnim = FALSE;
         UpdateOamPriorityInAllHealthboxes(1, FALSE);
-        m4aMPlayAllStop();
-        PlaySE(MUS_RG_CAUGHT_INTRO);
+        if (gBattleTypeFlags & BATTLE_TYPE_COOP)
+        {
+            // The fight carries on, so the battle music keeps playing.
+            SetHealthboxSpriteInvisible(gHealthboxSpriteIds[*battler]);
+            HideBattlerShadowSprite(*battler);
+            PlaySE(SE_SUCCESS);
+        }
+        else
+        {
+            m4aMPlayAllStop();
+            PlaySE(MUS_RG_CAUGHT_INTRO);
+        }
     }
     else if (sprite->sTimer == 315)
     {
@@ -1274,6 +1291,7 @@ static void SpriteCB_Ball_Capture_Step(struct Sprite *sprite)
     }
 }
 
+#undef sCaughtBattler
 #undef sTimer
 #undef sState
 

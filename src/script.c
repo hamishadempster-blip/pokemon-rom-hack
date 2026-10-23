@@ -333,6 +333,13 @@ void ScriptContext_Enable(void)
     LockPlayerFieldControls();
 }
 
+// Runs a subscript from inside a command that the running global script is
+// executing, then returns to the command after it.
+void ScriptContext_CallScript(const u8 *ptr)
+{
+    ScriptCall(&sGlobalScriptContext, ptr);
+}
+
 void ScriptContext_SetupContextFromStack(struct ScriptStack *stk, struct ScriptContext *ctx)
 {
     const u8 *ptr;

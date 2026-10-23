@@ -77,6 +77,7 @@ void ScriptContext_SetupScript(const u8 *ptr);
 void ScriptContext_ContinueScript(struct ScriptContext *ctx);
 void ScriptContext_Stop(void);
 void ScriptContext_Enable(void);
+void ScriptContext_CallScript(const u8 *ptr);
 void ScriptContext_SetupContextFromStack(struct ScriptStack *stk, struct ScriptContext *ctx);
 void ScriptContext_SetupGlobalContextFromStack(struct ScriptStack *stk);
 void RunScriptImmediately(const u8 *ptr);

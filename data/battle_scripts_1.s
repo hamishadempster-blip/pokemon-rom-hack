@@ -3038,6 +3038,20 @@ BattleScript_WildMonFled::
 	waitmessage B_WAIT_TIME_LONG
 	end
 
+@ Co-op wild fights end on both games through the link teardown.
+BattleScript_CoopWildRan::
+	printstring STRINGID_GOTAWAYSAFELY
+	waitmessage B_WAIT_TIME_LONG
+BattleScript_CoopWildEnd::
+	endlinkbattle
+	waitmessage B_WAIT_TIME_LONG
+	end
+
+BattleScript_CoopRunNeedsBoth::
+	printstring STRINGID_COOPRUNNEEDSBOTH
+	waitmessage B_WAIT_TIME_LONG
+	end
+
 BattleScript_PrintCantRunFromTrainer::
 	printstring STRINGID_NORUNNINGFROMTRAINERS
 	end

@@ -1769,6 +1769,11 @@
 	.byte \battler
 	.endm
 
+	.macro coopaftercatch battleOverInstr:req
+	callnative BS_CoopAfterCatch
+	.4byte \battleOverInstr
+	.endm
+
 	.macro playtrainerdefeatedmusic
 	callnative BS_PlayTrainerDefeatedMusic
 	.endm

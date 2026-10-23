@@ -636,6 +636,8 @@ void HandleAction_UseItem(void)
     ClearVariousBattlerFlags(gBattlerAttacker);
 
     gLastUsedItem = gBattleResources->bufferB[gBattlerAttacker][1] | (gBattleResources->bufferB[gBattlerAttacker][2] << 8);
+    if (gBattleTypeFlags & BATTLE_TYPE_COOP)
+        gCoopBallTarget = gCoopBallTargetFor[gBattlerAttacker];
     if (X_ITEM_FRIENDSHIP_INCREASE > 0
         && GetItemEffectType(gLastUsedItem) == ITEM_EFFECT_X_ITEM
         && !ShouldSkipFriendshipChange())
@@ -746,6 +748,28 @@ bool32 TryRunFromBattle(enum BattlerId battler)
 void HandleAction_Run(void)
 {
     gBattlerAttacker = gBattlerByTurnOrder[gCurrentTurnActionNumber];
+    if (Coop_IsWildBattle() && IsOnPlayerSide(gBattlerAttacker))
+    {
+        u8 choseRun[2], canAct[2];
+        enum BattlerId humans[2] = { GetBattlerAtPosition(B_POSITION_PLAYER_LEFT), GetBattlerAtPosition(B_POSITION_PLAYER_RIGHT) };
+
+        for (u32 i = 0; i < 2; i++)
+        {
+            canAct[i] = IsBattlerAlive(humans[i]) && !(gAbsentBattlerFlags & (1u << humans[i]));
+            choseRun[i] = gChosenActionByBattler[humans[i]] == B_ACTION_RUN;
+        }
+        if (CoopProtocol_FleeAgreed(choseRun, canAct, 2))
+        {
+            gCurrentTurnActionNumber = gBattlersCount;
+            gBattleOutcome = B_OUTCOME_RAN;
+        }
+        else
+        {
+            gBattlescriptCurrInstr = BattleScript_CoopRunNeedsBoth;
+            gCurrentActionFuncId = B_ACTION_EXEC_SCRIPT;
+        }
+        return;
+    }
     if (gBattleTypeFlags & (BATTLE_TYPE_LINK | BATTLE_TYPE_RECORDED_LINK))
     {
         gCurrentTurnActionNumber = gBattlersCount;

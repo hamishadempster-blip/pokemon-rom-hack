@@ -84,6 +84,8 @@ static const u8 sText_PlayerLostToTwo[] = _("You lost to {B_LINK_OPPONENT1_NAME}
 static const u8 sText_PlayerBattledToDrawLinkTrainer[] = _("You battled to a draw against {B_LINK_OPPONENT1_NAME}!");
 static const u8 sText_PlayerBattledToDrawVsTwo[] = _("You battled to a draw against {B_LINK_OPPONENT1_NAME} and {B_LINK_OPPONENT2_NAME}!");
 static const u8 sText_WildFled[] = _("{PLAY_SE SE_FLEE}{B_LINK_OPPONENT1_NAME} fled!"); //not in gen 5+, replaced with match was forfeited text
+static const u8 sText_CoopWildWon[] = _("The wild Pokémon are out of the fight!");
+static const u8 sText_CoopWildLost[] = _("You and your partner are out of usable Pokémon!");
 static const u8 sText_TwoWildFled[] = _("{PLAY_SE SE_FLEE}{B_LINK_OPPONENT1_NAME} and {B_LINK_OPPONENT2_NAME} fled!"); //not in gen 5+, replaced with match was forfeited text
 static const u8 sText_PlayerDefeatedLinkTrainerTrainer1[] = _("You defeated {B_TRAINER1_NAME_WITH_CLASS}!\p");
 static const u8 sText_OpponentMon1Appeared[] = _("{B_OPPONENT_MON1_NAME} appeared!\p");
@@ -904,6 +906,10 @@ const u8 *const gBattleStringsTable[STRINGID_COUNT] =
     [STRINGID_S]                                    = COMPOUND_STRING("s"),
     [STRINGID_LOSTSOMEOFITSHP]                      = COMPOUND_STRING("{B_ATK_NAME_WITH_PREFIX} lost some of its HP!"),
     [STRINGID_BELCHCANTUSE]                         = COMPOUND_STRING("{B_ATK_NAME_WITH_PREFIX} hasn't eaten any held Berries, so it can't possibly belch!\p"),
+    [STRINGID_COOPTHREWBALL]                        = COMPOUND_STRING("{B_ATK_TRAINER_NAME} threw a {B_LAST_ITEM}!"),
+    [STRINGID_COOPGOTCHA]                           = COMPOUND_STRING("Gotcha! {B_ATK_TRAINER_NAME} caught {B_DEF_NAME}!\p"),
+    [STRINGID_COOPBALLMISSED]                       = COMPOUND_STRING("The {B_LAST_ITEM} missed! That Pokémon is already gone."),
+    [STRINGID_COOPRUNNEEDSBOTH]                     = COMPOUND_STRING("{B_ATK_TRAINER_NAME} wants to run. Both players have to pick RUN on the same turn."),
 };
 
 const u16 gTrainerUsedItemStringIds[] =
@@ -2738,7 +2744,14 @@ void BufferStringBattle(enum StringID stringID, enum BattlerId battler)
         stringPtr = sText_AttackerUsedX;
         break;
     case STRINGID_BATTLEEND: // battle end
-        if (gBattleTextBuff1[0] & B_OUTCOME_LINK_BATTLE_RAN)
+        if (gBattleTypeFlags & BATTLE_TYPE_COOP && !(gBattleTypeFlags & BATTLE_TYPE_TRAINER))
+        {
+            if ((gBattleTextBuff1[0] & ~B_OUTCOME_LINK_BATTLE_RAN) == B_OUTCOME_WON)
+                stringPtr = sText_CoopWildWon;
+            else
+                stringPtr = sText_CoopWildLost;
+        }
+        else if (gBattleTextBuff1[0] & B_OUTCOME_LINK_BATTLE_RAN)
         {
             gBattleTextBuff1[0] &= ~(B_OUTCOME_LINK_BATTLE_RAN);
             if (!(BattlerIsPlayer(battler) || BattlerIsPlayer(GetPartnerBattler(battler))) && gBattleTextBuff1[0] != B_OUTCOME_DREW)
@@ -3009,6 +3022,16 @@ static const u8 *BattleStringGetOpponentName(u8 *text, u8 multiplayerId, enum Ba
 static const u8 *BattleStringGetPlayerName(u8 *text, enum BattlerId battler)
 {
     const u8 *toCpy = NULL;
+
+    // Co-op: the link master is always on the left. Link slots 2 and 3 hold
+    // the NPC names, so the second human is slot 1.
+    if (gBattleTypeFlags & BATTLE_TYPE_COOP)
+    {
+        if (GetBattlerPosition(battler) == B_POSITION_PLAYER_LEFT)
+            return gLinkPlayers[0].name;
+        if (GetBattlerPosition(battler) == B_POSITION_PLAYER_RIGHT)
+            return gLinkPlayers[1].name;
+    }
 
     switch (GetBattlerPosition(battler))
     {

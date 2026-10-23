@@ -8,7 +8,7 @@ Based off RHH's pokeemerald-expansion 1.17.1
 https://github.com/rh-hideout/pokeemerald-expansion/
 Pinned commit `bb1093a7c72d3961d9a37d8e02ad2abc2c866682`.
 
-Build id baked into the link handshake: `0xC0170119`.
+Build id baked into the link handshake: `0xC017011A`.
 
 ## Clean ROM
 
@@ -79,6 +79,31 @@ No custom server. If the public RetroArch relay is down, try UPnP, then a direct
 - When one player's three faint and the other player is still standing, the battle carries on. It ends in a loss only when both players' first threes are down.
 - Link battles give no experience in this build, the same as stock link battles. Experience is unchanged by a co-op fight.
 - A co-op battle hands the cable back open, so the session stays linked after the fight.
+
+### Wild Pokémon together (Route 102)
+
+This is the first route with shared wild battles. Other routes keep stock wild battles.
+
+- A grass encounter on Route 102 becomes a co-op wild double when the Twin Beacon is on, both of you are on Route 102, and both of you have a battle-ready first three. The game that rolls the encounter picks two wild Pokémon and sends them to the other game. A partner who is in a menu, a script, or a trade answers no, and the wild battle starts as a stock solo fight for the player who stepped in the grass.
+- The bag takes Poké Balls only. Choose a ball, then press left or right to pick which wild Pokémon it is for, and A to throw. B puts the ball back. If only one wild Pokémon is left, the ball goes to that one.
+- The battle shows who threw. A caught Pokémon leaves the field and the fight goes on against the other one.
+- If both of you throw at the same Pokémon on the same turn, the first ball to land keeps it. The second ball misses and is used up. No copy is made.
+- Throwing at different Pokémon on the same turn can catch both, one each.
+- A catch belongs to the person who threw the ball. It goes into their party, or their PC if the party is full. Only their Pokédex marks it caught, only their save counts the capture, and only they are asked for a nickname. That happens after the battle, back on the field.
+- A full party and a full PC refuse the ball before it is thrown, and the fight continues.
+- Pulling the cable during the shakes, or at any point before the battle ends, gives nobody the Pokémon.
+- Running away needs both of you to choose RUN on the same turn. One player alone gets a message, and that turn is spent. A player whose first three are all down does not need to choose RUN. Roar, Whirlwind, and Red Card do not end the battle early. Your own Teleport switches out. A wild Pokémon can still flee with Teleport.
+- No experience, the same as the other co-op battles.
+
+### Rick and Allen (Route 102)
+
+Rick (`TRAINER_RICK`, 615) and Allen (`TRAINER_ALLEN`, 333) on Route 102 are the optional pair. Rick is the left trainer and Allen is the right.
+
+- Alone, or with the Twin Beacon off, each one is his normal solo fight. Beating one sets only that trainer's flag on your save.
+- Walk into either one while linked, with the Beacon on and your partner on Route 102. If neither save has beaten either of them, you are asked whether to call your partner. Your partner gets a yes or no prompt. If both of you say yes, it is a 2-on-2 against Rick and Allen.
+- A no, a busy partner, a partner who waits too long, or a partner whose save has beaten Rick or Allen turns it into a solo fight against the trainer you walked into.
+- A joint win sets both trainer flags on both saves. A solo win sets only the flag of the trainer you fought. A loss or a pulled cable sets no flag.
+- Flags never copy across the link. Each save checks its own two flags before it says yes.
 
 Megas, Z-Moves, Dynamax, and Terastallization are off, including Primal Reversion.
 
@@ -276,7 +301,9 @@ This is the pass to run on two PCs. It was not executed in the environment that 
 7. Trade one Pokémon from the party screen. Save both games. Reload. Confirm the trade stuck and the parties were not swapped twice.
 8. Turn the cap off on one save, try to link, confirm it refuses. Turn it back on and link.
 9. Build mismatch: one older patch against this one. Confirm the link stops.
-10. Late game, on a second pass: Groudon and Kyogre, pull the link after the ball shakes and before the catch commits, confirm nobody has the Pokémon. Catch it on a retry and confirm only one save owns it.
+10. Route 102 wild, Beacon on, both on the route. Step in grass and confirm both games enter one wild double with the same two Pokémon. Catch the left one and leave the right one, then finish. Confirm only the thrower has it, in the party or the PC, with a nickname prompt and a caught Pokédex entry. Both throw at the same Pokémon on one turn: one owner, the second ball is gone, no copy. Throw at different ones: both are caught, one each. Pull the cable during the shakes: nobody gets it. Fill the party and confirm the catch goes to the PC. Fill the PC as well and confirm the ball refuses and the fight goes on. Choose RUN on one game only and confirm the battle continues. Choose RUN on both and confirm it ends on both. Step in grass on Route 101 and confirm it stays a stock solo battle.
+11. Rick and Allen. Fresh pair of saves. Beat Rick solo on one save with the cable off. Confirm Allen still fights. Link, Beacon on, both on Route 102. Walk into Allen on that save and confirm a solo fight with no partner prompt. On a second pair of fresh saves, walk into Rick, say yes on both, and win. Confirm both saves have both flags. Repeat and pull the cable mid-fight: no flags. Repeat with the partner in a menu: solo fight against the one you walked into.
+12. Late game, on a second pass: Groudon and Kyogre, pull the link after the ball shakes and before the catch commits, confirm nobody has the Pokémon. Catch it on a retry and confirm only one save owns it.
 
 ## Known limits
 

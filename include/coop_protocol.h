@@ -25,7 +25,7 @@ typedef uint32_t u32;
 #include "global.h"
 #endif
 
-#define COOP_BUILD_ID  0xC0170119u
+#define COOP_BUILD_ID  0xC017011Au
 #define COOP_BUILD_XOR ((u16)(((COOP_BUILD_ID) & 0xFFFFu) ^ ((COOP_BUILD_ID) >> 16)))
 #define COOP_LINKCMD   0xC0A1
 #define COOP_HELD_KEYS_CMD 0xCAFE
@@ -340,6 +340,115 @@ static inline int CoopProtocol_RestoreFromSnapshot(u8 slot, int aborted)
     if (slot >= COOP_ROSTER_SLOTS)
         return 0;
     return aborted || slot >= COOP_BATTLE_SLOTS;
+}
+
+// Stage 4. One owner per wild slot. A ball at a slot that already has an
+// owner, or that has left the field, is spent and catches nothing.
+#define COOP_WILD_SLOTS 2
+#define COOP_THROWER_NONE 0
+
+struct CoopCatchLedger
+{
+    u8 owner[COOP_WILD_SLOTS];
+};
+
+static inline void CoopProtocol_ClearCatches(struct CoopCatchLedger *ledger)
+{
+    int i;
+
+    for (i = 0; i < COOP_WILD_SLOTS; i++)
+        ledger->owner[i] = COOP_THROWER_NONE;
+}
+
+static inline int CoopProtocol_CanCatch(const struct CoopCatchLedger *ledger, u8 wildSlot, int targetOnField)
+{
+    if (wildSlot >= COOP_WILD_SLOTS || !targetOnField)
+        return 0;
+    return ledger->owner[wildSlot] == COOP_THROWER_NONE;
+}
+
+// `thrower` is 1 + the thrower's multiplayer id, so 0 stays "nobody".
+static inline int CoopProtocol_ClaimCatch(struct CoopCatchLedger *ledger, u8 wildSlot, u8 thrower, int targetOnField)
+{
+    if (thrower == COOP_THROWER_NONE || !CoopProtocol_CanCatch(ledger, wildSlot, targetOnField))
+        return 0;
+    ledger->owner[wildSlot] = thrower;
+    return 1;
+}
+
+static inline int CoopProtocol_CatchCount(const struct CoopCatchLedger *ledger, u8 thrower)
+{
+    int i, count = 0;
+
+    for (i = 0; i < COOP_WILD_SLOTS; i++)
+    {
+        if (thrower != COOP_THROWER_NONE && ledger->owner[i] == thrower)
+            count++;
+    }
+    return count;
+}
+
+// A co-op wild fight ends by running only when every human who still has
+// a Pokémon up chose Run this turn. One Run alone is spent and the fight goes on.
+static inline int CoopProtocol_FleeAgreed(const u8 *choseRun, const u8 *canAct, int count)
+{
+    int i, acting = 0;
+
+    for (i = 0; i < count; i++)
+    {
+        if (!canAct[i])
+            continue;
+        acting++;
+        if (!choseRun[i])
+            return 0;
+    }
+    return acting != 0;
+}
+
+// The party left the battle at three, so room counts against the full party
+// from before the fight. Catches already made this fight hold their space.
+static inline int CoopProtocol_CatchRoom(u8 partyCount, u8 pendingCatches, u16 storageFree)
+{
+    u32 free = storageFree;
+
+    if (partyCount < COOP_ROSTER_SLOTS)
+        free += (u32)(COOP_ROSTER_SLOTS - partyCount);
+    return pendingCatches < free;
+}
+
+// Stage 5. A trainer pair fights both humans only when neither id is beaten
+// on either save, the partner is free, and both players said yes. Any other
+// case is the stock solo fight against the NPC that was walked into.
+#define COOP_PAIR_SOLO  0
+#define COOP_PAIR_JOINT 1
+
+// Route 102: Rick stands on the left of the pair and Allen on the right.
+// coop.c checks these against the trainer constants.
+#define COOP_PAIR_LEFT_ID  615
+#define COOP_PAIR_RIGHT_ID 333
+
+static inline int CoopProtocol_PairPlan(const u8 localBeat[2], const u8 remoteBeat[2], int partnerFree, int bothAccept)
+{
+    if (localBeat[0] || localBeat[1] || remoteBeat[0] || remoteBeat[1])
+        return COOP_PAIR_SOLO;
+    if (!partnerFree || !bothAccept)
+        return COOP_PAIR_SOLO;
+    return COOP_PAIR_JOINT;
+}
+
+// The flags a finished pair fight leaves on one save. Only a win marks the
+// ids that were in the fight; a loss or a dropped cable marks nothing.
+static inline void CoopProtocol_PairFlagsAfter(u8 beat[2], const u8 fought[2], int won)
+{
+    int i;
+
+    if (!won)
+        return;
+    for (i = 0; i < 2; i++)
+    {
+        if (fought[i])
+            beat[i] = 1;
+    }
 }
 
 #endif // GUARD_COOP_PROTOCOL_H

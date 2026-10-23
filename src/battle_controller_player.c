@@ -11,6 +11,7 @@
 #include "battle_z_move.h"
 #include "battle_gimmick.h"
 #include "bg.h"
+#include "coop.h"
 #include "data.h"
 #include "item.h"
 #include "item_menu.h"
@@ -1607,10 +1608,71 @@ static void OpenBagAndChooseItem(enum BattlerId battler)
     }
 }
 
+static bool32 CoopBallTargetValid(enum BattlerId target)
+{
+    return target < gBattlersCount && GetMonData(GetBattlerMon(target), MON_DATA_HP) != 0;
+}
+
+static void CoopEndBallTargetCursor(void)
+{
+    gSprites[gBattlerSpriteIds[gMultiUsePlayerCursor]].callback = SpriteCB_HideAsMoveTarget;
+    EndBounceEffect(gMultiUsePlayerCursor, BOUNCE_HEALTHBOX);
+}
+
+// Co-op wild only: pick which of the two wild Pokémon the ball is for.
+static void HandleInputChooseBallTarget(enum BattlerId battler)
+{
+    DoBounceEffect(gMultiUsePlayerCursor, BOUNCE_HEALTHBOX, 15, 1);
+    if (JOY_NEW(A_BUTTON))
+    {
+        PlaySE(SE_SELECT);
+        CoopEndBallTargetCursor();
+        BtlController_EmitChosenBall(battler, B_COMM_TO_ENGINE, gSpecialVar_ItemId, gMultiUsePlayerCursor);
+        BtlController_Complete(battler);
+    }
+    else if (JOY_NEW(B_BUTTON))
+    {
+        // The bag already took the ball; backing out puts it back.
+        PlaySE(SE_SELECT);
+        CoopEndBallTargetCursor();
+        AddBagItem(gSpecialVar_ItemId, 1);
+        BtlController_EmitOneReturnValue(battler, B_COMM_TO_ENGINE, ITEM_NONE);
+        BtlController_Complete(battler);
+    }
+    else if (JOY_NEW(DPAD_ANY))
+    {
+        enum BattlerId other = GetBattlerAtPosition(GetBattlerPosition(gMultiUsePlayerCursor) ^ BIT_FLANK);
+
+        if (CoopBallTargetValid(other))
+        {
+            PlaySE(SE_SELECT);
+            CoopEndBallTargetCursor();
+            gMultiUsePlayerCursor = other;
+            gSprites[gBattlerSpriteIds[gMultiUsePlayerCursor]].callback = SpriteCB_ShowAsMoveTarget;
+        }
+    }
+}
+
 static void CompleteWhenChoseItem(enum BattlerId battler)
 {
     if (gMain.callback2 == BattleMainCB2 && !gPaletteFade.active)
     {
+        if (Coop_IsWildBattle() && gSpecialVar_ItemId != ITEM_NONE && GetItemPocket(gSpecialVar_ItemId) == POCKET_POKE_BALLS)
+        {
+            enum BattlerId left = GetBattlerAtPosition(B_POSITION_OPPONENT_LEFT);
+            enum BattlerId right = GetBattlerAtPosition(B_POSITION_OPPONENT_RIGHT);
+
+            if (CoopBallTargetValid(left) && CoopBallTargetValid(right))
+            {
+                gMultiUsePlayerCursor = left;
+                gSprites[gBattlerSpriteIds[left]].callback = SpriteCB_ShowAsMoveTarget;
+                gBattlerControllerFuncs[battler] = HandleInputChooseBallTarget;
+                return;
+            }
+            BtlController_EmitChosenBall(battler, B_COMM_TO_ENGINE, gSpecialVar_ItemId, CoopBallTargetValid(left) ? left : right);
+            BtlController_Complete(battler);
+            return;
+        }
         BtlController_EmitOneReturnValue(battler, B_COMM_TO_ENGINE, gSpecialVar_ItemId);
         BtlController_Complete(battler);
     }

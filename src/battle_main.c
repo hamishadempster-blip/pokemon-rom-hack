@@ -126,6 +126,7 @@ static void HandleEndTurn_BattleLost(void);
 static void HandleEndTurn_RanFromBattle(void);
 static void HandleEndTurn_MonFled(void);
 static void HandleEndTurn_FinishBattle(void);
+static void HandleEndTurn_CoopWildEnd(void);
 
 EWRAM_DATA u16 gBattle_BG0_X = 0;
 EWRAM_DATA u16 gBattle_BG0_Y = 0;
@@ -1907,7 +1908,8 @@ void CB2_InitEndLinkBattle(void)
     SetVBlankCallback(NULL);
     gBattleTypeFlags &= ~BATTLE_TYPE_LINK_IN_BATTLE;
 
-    if (gBattleTypeFlags & BATTLE_TYPE_FRONTIER)
+    // A co-op wild fight has no trainers to show on the closing Vs screen.
+    if (gBattleTypeFlags & BATTLE_TYPE_FRONTIER || Coop_IsWildBattle())
     {
         SetMainCallback2(gMain.savedCallback);
         FreeBattleResources();
@@ -3947,7 +3949,8 @@ static void HandleTurnActionSelectionState(void)
                                             | BATTLE_TYPE_FRONTIER_NO_PYRAMID
                                             | BATTLE_TYPE_EREADER_TRAINER
                                             | BATTLE_TYPE_RECORDED_LINK))
-                                            && !gTestRunnerEnabled)
+                                            && !gTestRunnerEnabled
+                                            && !Coop_IsWildBattle())
                                             // Or if currently held by Sky Drop
                                             || gBattleMons[battler].volatiles.semiInvulnerable == STATE_SKY_DROP_TARGET)
                     {
@@ -4178,6 +4181,8 @@ static void HandleTurnActionSelectionState(void)
                         gLastUsedItem = (gBattleResources->bufferB[battler][1] | (gBattleResources->bufferB[battler][2] << 8));
                         if (GetItemPocket(gLastUsedItem) == POCKET_POKE_BALLS)
                             gBattleStruct->throwingPokeBall = TRUE;
+                        if (gBattleTypeFlags & BATTLE_TYPE_COOP)
+                            gCoopBallTargetFor[battler] = gBattleResources->bufferB[battler][3];
                         gBattleCommunication[battler]++;
                     }
                     break;
@@ -5075,7 +5080,19 @@ static void RunTurnActionsFunctions(void)
     sTurnActionsFuncsTable[gCurrentActionFuncId]();
 
     if (gCurrentTurnActionNumber >= gBattlersCount) // everyone did their actions, turn finished
+    {
         gBattleMainFunc = sEndTurnFuncsTable[gBattleOutcome & 0x7F];
+        // Every other co-op ending already runs endlinkbattle in its script.
+        if (Coop_IsWildBattle() && gBattleMainFunc == HandleEndTurn_FinishBattle)
+            gBattleMainFunc = HandleEndTurn_CoopWildEnd;
+    }
+}
+
+static void HandleEndTurn_CoopWildEnd(void)
+{
+    gCurrentActionFuncId = 0;
+    gBattlescriptCurrInstr = BattleScript_CoopWildEnd;
+    gBattleMainFunc = HandleEndTurn_FinishBattle;
 }
 
 static void HandleEndTurn_BattleWon(void)
@@ -5188,7 +5205,11 @@ static void HandleEndTurn_RanFromBattle(void)
 {
     gCurrentActionFuncId = 0;
 
-    if (gBattleTypeFlags & BATTLE_TYPE_FRONTIER && gBattleTypeFlags & BATTLE_TYPE_TRAINER)
+    if (Coop_IsWildBattle())
+    {
+        gBattlescriptCurrInstr = BattleScript_CoopWildRan;
+    }
+    else if (gBattleTypeFlags & BATTLE_TYPE_FRONTIER && gBattleTypeFlags & BATTLE_TYPE_TRAINER)
     {
         gBattlescriptCurrInstr = BattleScript_PrintPlayerForfeited;
         gBattleOutcome = B_OUTCOME_FORFEITED;
@@ -5228,7 +5249,7 @@ static void HandleEndTurn_MonFled(void)
     gCurrentActionFuncId = 0;
 
     PREPARE_MON_NICK_BUFFER(gBattleTextBuff1, gBattlerAttacker, gBattlerPartyIndexes[gBattlerAttacker]);
-    gBattlescriptCurrInstr = BattleScript_WildMonFled;
+    gBattlescriptCurrInstr = Coop_IsWildBattle() ? BattleScript_CoopWildEnd : BattleScript_WildMonFled;
 
     gBattleMainFunc = HandleEndTurn_FinishBattle;
 }

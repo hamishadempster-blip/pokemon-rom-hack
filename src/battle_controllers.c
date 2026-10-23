@@ -11,6 +11,7 @@
 #include "battle_setup.h"
 #include "battle_tv.h"
 #include "cable_club.h"
+#include "coop.h"
 #include "event_data.h"
 #include "event_object_movement.h"
 #include "item.h"
@@ -966,7 +967,20 @@ void BtlController_EmitBallThrowAnim(enum BattlerId battler, u32 bufferId, u8 ca
 {
     gBattleResources->transferBuffer[0] = CONTROLLER_BALLTHROWANIM;
     gBattleResources->transferBuffer[1] = caseId;
-    PrepareBufferDataTransfer(battler, bufferId, gBattleResources->transferBuffer, 2);
+    // Co-op: the other game has no engine state, so it needs the target and ball.
+    gBattleResources->transferBuffer[2] = gBattlerTarget;
+    gBattleResources->transferBuffer[3] = gLastUsedItem;
+    gBattleResources->transferBuffer[4] = (gLastUsedItem & 0xFF00) >> 8;
+    PrepareBufferDataTransfer(battler, bufferId, gBattleResources->transferBuffer, 5);
+}
+
+void BtlController_EmitChosenBall(enum BattlerId battler, u32 bufferId, u16 itemId, enum BattlerId target)
+{
+    gBattleResources->transferBuffer[0] = CONTROLLER_ONERETURNVALUE;
+    gBattleResources->transferBuffer[1] = itemId;
+    gBattleResources->transferBuffer[2] = (itemId & 0xFF00) >> 8;
+    gBattleResources->transferBuffer[3] = target + 1;
+    PrepareBufferDataTransfer(battler, bufferId, gBattleResources->transferBuffer, 4);
 }
 
 static void UNUSED BtlController_EmitPause(enum BattlerId battler, u32 bufferId, u8 toWait, void *data)
@@ -2622,7 +2636,18 @@ void BtlController_HandleBallThrowAnim(enum BattlerId battler)
     u32 animId = B_ANIM_BALL_THROW;
     enum BattlerId target = GetBattlerAtPosition(B_POSITION_OPPONENT_LEFT);
 
-    if (BattlerIsPlayer(battler))
+    if (gBattleTypeFlags & BATTLE_TYPE_COOP)
+    {
+        u16 ball = gBattleResources->bufferA[battler][3] | (gBattleResources->bufferA[battler][4] << 8);
+
+        allowCriticalCapture = BattlerIsPlayer(battler);
+        target = gBattleResources->bufferA[battler][2];
+        gLastUsedItem = ball;
+        gCoopLastBall = ball;
+        if (gBattleResources->bufferA[battler][1] == BALL_3_SHAKES_SUCCESS)
+            Coop_NoteCatch(battler, target);
+    }
+    else if (BattlerIsPlayer(battler))
     {
         allowCriticalCapture = TRUE;
         target = gBattlerTarget;

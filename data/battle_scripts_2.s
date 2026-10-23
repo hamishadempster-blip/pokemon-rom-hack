@@ -170,8 +170,29 @@ BattleScript_ItemRestorePP::
 
 BattleScript_BallThrow::
 	jumpifword CMP_COMMON_BITS, gBattleTypeFlags, BATTLE_TYPE_CATCH_TUTORIAL, BattleScript_BallThrowByWally
+	jumpifword CMP_COMMON_BITS, gBattleTypeFlags, BATTLE_TYPE_COOP, BattleScript_CoopBallThrow
 	printstring STRINGID_PLAYERUSEDITEM
 	handleballthrow
+
+BattleScript_CoopBallThrow::
+	printstring STRINGID_COOPTHREWBALL
+	handleballthrow
+
+BattleScript_CoopBallMissed::
+	printstring STRINGID_COOPBALLMISSED
+	waitmessage B_WAIT_TIME_LONG
+	finishaction
+
+@ Co-op: the dex entry, nickname, and party or PC placement all happen on
+@ the catcher's own save after the fight ends cleanly.
+BattleScript_CoopSuccessBallThrow::
+	printstring STRINGID_COOPGOTCHA
+	waitmessage B_WAIT_TIME_LONG
+	coopaftercatch BattleScript_CoopLastCatch
+	finishaction
+
+BattleScript_CoopLastCatch::
+	finishturn
 
 BattleScript_BallThrowByWally::
 	printstring STRINGID_TRAINER1USEDITEM
@@ -183,6 +204,7 @@ BattleScript_SafariBallThrow::
 	handleballthrow
 
 BattleScript_SuccessBallThrow::
+	jumpifword CMP_COMMON_BITS, gBattleTypeFlags, BATTLE_TYPE_COOP, BattleScript_CoopSuccessBallThrow
 	setbyte sMON_CAUGHT, TRUE
 	incrementgamestat GAME_STAT_POKEMON_CAPTURES
 	printstring STRINGID_GOTCHAPKMNCAUGHTPLAYER

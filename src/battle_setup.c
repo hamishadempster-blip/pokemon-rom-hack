@@ -530,6 +530,22 @@ void StartOldManTutorialBattle(void)
     CreateBattleStartTask(B_TRANSITION_SLICE, 0);
 }
 
+void BattleSetup_StartCoopWildBattle(void)
+{
+    LockPlayerFieldControls();
+    FreezeObjectEvents();
+    StopPlayerAvatar();
+    gMain.savedCallback = CB2_EndWildBattle;
+    TRAINER_BATTLE_PARAM.opponentA = 0;
+    TRAINER_BATTLE_PARAM.opponentB = 0;
+    gBattleTypeFlags = BATTLE_TYPE_DOUBLE | BATTLE_TYPE_LINK | BATTLE_TYPE_MULTI | BATTLE_TYPE_COOP;
+    Coop_OnBattleLaunched();
+    CreateBattleStartTask(GetWildBattleTransition(), 0);
+    IncrementGameStat(GAME_STAT_TOTAL_BATTLES);
+    IncrementGameStat(GAME_STAT_WILD_BATTLES);
+    IncrementDailyWildBattles();
+}
+
 void BattleSetup_StartScriptedWildBattle(void)
 {
     LockPlayerFieldControls();
@@ -700,6 +716,9 @@ static void CB2_EndWildBattle(void)
 {
     CpuFill16(0, (void *)(BG_PLTT), BG_PLTT_SIZE);
     ResetOamRange(0, 128);
+
+    if ((gBattleTypeFlags & BATTLE_TYPE_COOP) && Coop_FinishWildBattle())
+        return;
 
     if (IsNPCFollowerWildBattle())
     {
@@ -1546,6 +1565,10 @@ void BattleSetup_StartTrainerBattle(void)
             gBattleTypeFlags |= BATTLE_TYPE_TWO_OPPONENTS;
         Coop_OnBattleLaunched();
     }
+    else if (Coop_TryStartTrainerPair())
+    {
+        return;
+    }
     else if (Coop_TryQueueOrdinaryDouble())
     {
         ScriptContext_Stop();
@@ -1557,6 +1580,19 @@ void BattleSetup_StartTrainerBattle(void)
     else
         DoTrainerBattle();
 
+    ScriptContext_Stop();
+}
+
+// The co-op ask or invite stopped short, so the NPC that was walked into
+// fights this player alone, picking up where the stock trainer path left off.
+void BattleSetup_ResumeSoloTrainerBattle(void)
+{
+    gBattleTypeFlags = BATTLE_TYPE_TRAINER;
+    if (GetTrainerBattleType(TRAINER_BATTLE_PARAM.opponentA) == TRAINER_BATTLE_TYPE_DOUBLES)
+        gBattleTypeFlags |= BATTLE_TYPE_DOUBLE;
+    TRAINER_BATTLE_PARAM.opponentB = 0;
+    gMain.savedCallback = CB2_EndTrainerBattle;
+    DoTrainerBattle();
     ScriptContext_Stop();
 }
 
