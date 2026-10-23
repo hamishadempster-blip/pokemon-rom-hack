@@ -80,9 +80,10 @@ LilycoveCity_DepartmentStore_3F_Pokemart_Evolution:
 LilycoveCity_DepartmentStore_3F_Text_EvolutionClerk:
 	.string "Stones and apples for evolution\n"
 	.string "are on this counter.\p"
-	.string "A Metal Coat, Dragon Scale,\n"
-	.string "Prism Scale, or Reaper Cloth\n"
-	.string "can be used from the bag.$"
+	.string "Metal Coat, Dragon Scale,\n"
+	.string "Prism Scale, and Reaper Cloth\p"
+	.string "can be used straight from\n"
+	.string "the bag.$"
 
 LilycoveCity_DepartmentStore_3F_EventScript_TriathleteM::
 	msgbox LilycoveCity_DepartmentStore_3F_Text_ItemsBestForTougheningPokemon, MSGBOX_NPC

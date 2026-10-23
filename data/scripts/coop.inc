@@ -242,3 +242,146 @@ Coop_Text_TakeFirst:
 Coop_Text_CaseMismatch:
 	.string "You picked different cases.\n"
 	.string "Choose again.$"
+
+@ The guest does not stay inside the leader's script. This applies the
+@ story steps that script would have set, then opens a door or leaves
+@ for the Hall of Fame when the room would otherwise trap them.
+Coop_EventScript_GuestAfterBattle::
+	lockall
+	specialvar VAR_RESULT, Coop_TakeGuestFollowup
+	switch VAR_RESULT
+	case 1, Coop_EventScript_GuestRustboro
+	case 2, Coop_EventScript_GuestDewford
+	case 3, Coop_EventScript_GuestMauville
+	case 4, Coop_EventScript_GuestLavaridge
+	case 5, Coop_EventScript_GuestPetalburg
+	case 6, Coop_EventScript_GuestFortree
+	case 7, Coop_EventScript_GuestMossdeep
+	case 8, Coop_EventScript_GuestSootopolis
+	case 9, Coop_EventScript_GuestEliteFour
+	case 10, Coop_EventScript_GuestHallOfFame
+	releaseall
+	end
+
+Coop_EventScript_GuestCountBadge::
+	goto_if_ge VAR_PETALBURG_GYM_STATE, 7, Coop_EventScript_GuestCountBadgeDone
+	addvar VAR_PETALBURG_GYM_STATE, 1
+	goto_if_eq VAR_PETALBURG_GYM_STATE, 6, Coop_EventScript_GuestReadyNorman
+Coop_EventScript_GuestCountBadgeDone::
+	return
+
+Coop_EventScript_GuestReadyNorman::
+	clearflag FLAG_HIDE_PETALBURG_GYM_GREETER
+	setflag FLAG_PETALBURG_MART_EXPANDED_ITEMS
+	return
+
+Coop_EventScript_GuestRustboro::
+	call Coop_EventScript_GuestCountBadge
+	goto_if_ge VAR_RUSTBORO_CITY_STATE, 1, Coop_EventScript_GuestRustboroTrainers
+	setvar VAR_RUSTBORO_CITY_STATE, 1
+Coop_EventScript_GuestRustboroTrainers::
+	setvar VAR_0x8008, 1
+	call Common_EventScript_SetGymTrainers
+	releaseall
+	end
+
+Coop_EventScript_GuestDewford::
+	call Coop_EventScript_GuestCountBadge
+	setvar VAR_0x8008, 2
+	call Common_EventScript_SetGymTrainers
+	setflag FLAG_ENABLE_BRAWLY_MATCH_CALL
+	setflag FLAG_ENABLE_ROXANNE_FIRST_CALL
+	setvar VAR_ROXANNE_CALL_STEP_COUNTER, 0
+	releaseall
+	end
+
+Coop_EventScript_GuestMauville::
+	call Coop_EventScript_GuestCountBadge
+	goto_if_ge VAR_SLATEPORT_OUTSIDE_MUSEUM_STATE, 3, Coop_EventScript_GuestMauvillePuzzle
+	setvar VAR_SLATEPORT_OUTSIDE_MUSEUM_STATE, 3
+Coop_EventScript_GuestMauvillePuzzle::
+	clearflag FLAG_HIDE_VERDANTURF_TOWN_SCOTT
+	setvar VAR_0x8008, 3
+	call Common_EventScript_SetGymTrainers
+	special MauvilleGymDeactivatePuzzle
+	special DrawWholeMapView
+	releaseall
+	end
+
+Coop_EventScript_GuestLavaridge::
+	call Coop_EventScript_GuestCountBadge
+	setflag FLAG_WHITEOUT_TO_LAVARIDGE
+	setflag FLAG_HIDE_VERDANTURF_TOWN_WANDAS_HOUSE_WALLY
+	goto_if_ge VAR_LAVARIDGE_TOWN_STATE, 1, Coop_EventScript_GuestLavaridgeTrainers
+	setvar VAR_LAVARIDGE_TOWN_STATE, 1
+Coop_EventScript_GuestLavaridgeTrainers::
+	setvar VAR_0x8008, 4
+	call Common_EventScript_SetGymTrainers
+	releaseall
+	end
+
+Coop_EventScript_GuestPetalburg::
+	setvar VAR_PETALBURG_GYM_STATE, 7
+	special ResetHealLocationFromDewford
+	call EventScript_HideMrBriney
+	setflag FLAG_HIDE_MAUVILLE_GYM_WATTSON
+	clearflag FLAG_HIDE_MAUVILLE_CITY_WATTSON
+	clearflag FLAG_HIDE_DEWFORD_HALL_SLUDGE_BOMB_MAN
+	setvar VAR_0x8008, 5
+	call Common_EventScript_SetGymTrainers
+	call PetalburgCity_Gym_EventScript_UnlockAllDoors
+	special DrawWholeMapView
+	releaseall
+	end
+
+Coop_EventScript_GuestFortree::
+	setvar VAR_0x8008, 6
+	call Common_EventScript_SetGymTrainers
+	setflag FLAG_ENABLE_WINONA_MATCH_CALL
+	setvar VAR_SCOTT_FORTREE_CALL_STEP_COUNTER, 0
+	setflag FLAG_SCOTT_CALL_FORTREE_GYM
+	releaseall
+	end
+
+Coop_EventScript_GuestMossdeep::
+	setflag FLAG_HIDE_AQUA_HIDEOUT_GRUNTS
+	clearflag FLAG_HIDE_SLATEPORT_CITY_STERNS_SHIPYARD_MR_BRINEY
+	clearflag FLAG_HIDE_SLATEPORT_CITY_HARBOR_PATRONS
+	clearflag FLAG_HIDE_MOSSDEEP_CITY_TEAM_MAGMA
+	clearflag FLAG_HIDE_MOSSDEEP_CITY_SPACE_CENTER_1F_TEAM_MAGMA
+	clearflag FLAG_HIDE_MOSSDEEP_CITY_SPACE_CENTER_2F_TEAM_MAGMA
+	clearflag FLAG_HIDE_MOSSDEEP_CITY_SPACE_CENTER_2F_STEVEN
+	setflag FLAG_HIDE_MOSSDEEP_CITY_SPACE_CENTER_1F_STEVEN
+	goto_if_ge VAR_MOSSDEEP_CITY_STATE, 1, Coop_EventScript_GuestMossdeepTrainers
+	setvar VAR_MOSSDEEP_CITY_STATE, 1
+	setvar VAR_MOSSDEEP_SPACE_CENTER_STATE, 1
+Coop_EventScript_GuestMossdeepTrainers::
+	setvar VAR_0x8008, 7
+	call Common_EventScript_SetGymTrainers
+	releaseall
+	end
+
+Coop_EventScript_GuestSootopolis::
+	setflag FLAG_HIDE_SOOTOPOLIS_CITY_RESIDENTS
+	setflag FLAG_HIDE_SOOTOPOLIS_CITY_STEVEN
+	setflag FLAG_HIDE_SOOTOPOLIS_CITY_WALLACE
+	clearflag FLAG_HIDE_SOOTOPOLIS_CITY_MAN_1
+	goto_if_ge VAR_SOOTOPOLIS_CITY_STATE, 6, Coop_EventScript_GuestSootopolisTrainers
+	setvar VAR_SOOTOPOLIS_CITY_STATE, 6
+Coop_EventScript_GuestSootopolisTrainers::
+	setvar VAR_0x8008, 8
+	call Common_EventScript_SetGymTrainers
+	releaseall
+	end
+
+Coop_EventScript_GuestEliteFour::
+	call PokemonLeague_EliteFour_EventScript_ResetAdvanceToNextRoom
+	special DrawWholeMapView
+	releaseall
+	end
+
+Coop_EventScript_GuestHallOfFame::
+	warp MAP_EVER_GRANDE_CITY_HALL_OF_FAME, 7, 16
+	waitstate
+	releaseall
+	end

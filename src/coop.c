@@ -107,6 +107,7 @@ static EWRAM_DATA struct Pokemon sTradeMon = {0};
 static EWRAM_DATA struct Pokemon sPartySnap[PARTY_SIZE] = {0};
 static EWRAM_DATA struct CoopInvite sInvite = {0};
 static EWRAM_DATA const u8 *sPendingMessage = NULL;
+static EWRAM_DATA u8 sGuestFollowup = 0;
 static EWRAM_DATA u8 sLegendConflict = 0;
 
 STATIC_ASSERT(sizeof(struct Pokemon) * 2 <= BLOCK_BUFFER_SIZE, CoopPartyChunkFitsLinkBlock);
@@ -1055,15 +1056,50 @@ static void Coop_GiveJointWin(void)
         save->rivalStage = sRivalFightStage + 1;
 }
 
+static void Coop_QueueGuestFollowup(void)
+{
+    if (sBattleKind == COOP_KIND_E4)
+    {
+        // Stop the room's walk-in from playing again before the door opens.
+        VarSet(VAR_ELITE_4_STATE, 1);
+        sGuestFollowup = 9;
+    }
+    else if (sBattleKind == COOP_KIND_CHAMPION)
+    {
+        VarSet(VAR_TEMP_1, 1);
+        sGuestFollowup = 10;
+    }
+    else if (sBattleKind == COOP_KIND_GYM && sBattleBadge >= 1 && sBattleBadge <= 8)
+    {
+        sGuestFollowup = sBattleBadge;
+    }
+    else
+    {
+        return;
+    }
+    sPendingMessage = Coop_EventScript_GuestAfterBattle;
+}
+
+u16 Coop_TakeGuestFollowup(void)
+{
+    u16 followup = sGuestFollowup;
+
+    sGuestFollowup = 0;
+    return followup;
+}
+
 bool8 Coop_FinishTrainerBattle(void)
 {
     bool8 won = gBattleOutcome == B_OUTCOME_WON || gBattleOutcome == B_OUTCOME_CAUGHT;
+    bool8 firstClear = sBattleFlag == 0 || !FlagGet(sBattleFlag);
 
     sInBattle = FALSE;
     sHasSnapshot = FALSE;
     if (won)
         Coop_GiveJointWin();
     gSpecialVar_Result = won ? TRUE : FALSE;
+    if (sIsGuest && !Coop_PlayerLost() && won && firstClear)
+        Coop_QueueGuestFollowup();
     if (sIsGuest && !Coop_PlayerLost())
     {
         ScriptContext_Init();

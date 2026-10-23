@@ -51,6 +51,7 @@ u16 Coop_ClaimStarter(void);
 u16 Coop_RequestLabWarp(void);
 u16 Coop_BufferPartnerLocation(void);
 u16 Coop_BufferCapText(void);
+u16 Coop_TakeGuestFollowup(void);
 bool8 Coop_OfferTrade(u8 slot);
 
 void Coop_OverworldFrame(void);
@@ -78,5 +79,6 @@ extern const u8 Coop_EventScript_LegendConflict[];
 extern const u8 Coop_EventScript_BattleAborted[];
 extern const u8 Coop_EventScript_TradeDone[];
 extern const u8 Coop_EventScript_PartnerDeclined[];
+extern const u8 Coop_EventScript_GuestAfterBattle[];
 
 #endif // GUARD_COOP_H

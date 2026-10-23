@@ -272,8 +272,8 @@ This is the pass to run on two PCs. It was not executed in the environment that 
 - Route 101 across the internet was not proven here. The RetroArch steps above are the test, not a result.
 - Coordinates in the link frame are 8-bit. A map wider than 255 tiles wraps the partner sprite.
 - The acro bike is the extra bit in the facing nibble. Mach bike and acro bike can both be shown. Surf wins over a bike.
-- The guest in the champion room misses the Hall of Fame scene.
-- TMs and items stay with the person who talks to the leader after the win.
+- After a shared gym or Elite Four win, the guest receives the same story flags and the way forward. The person who talked to the leader still gets the TM. The guest can ask the leader for that TM afterward.
+- A shared champion win sends the guest to the Hall of Fame so their party is recorded too.
 - A partner who is already inside a script can miss the lab warp. Stand on the overworld when the other person opens Birch's bag.
 - Six Pokémon per player is the path this tree builds. It is the risky part of link battles.
 - gimmicks stay off, including primals.
