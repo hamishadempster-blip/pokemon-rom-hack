@@ -97,6 +97,8 @@ bool8 Coop_OfferTrade(u8 slot);
 
 void Coop_OverworldFrame(void);
 void Coop_ResumeAfterTasksReset(void);
+void Coop_YieldLinkToBattle(void);
+void Coop_SettlePartner(void);
 void Coop_LinkCallback(void);
 void Coop_OnRecv(u32 playerId);
 bool8 Coop_TryParseHeldKeys(u32 playerId);

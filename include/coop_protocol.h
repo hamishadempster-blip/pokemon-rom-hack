@@ -28,7 +28,7 @@ typedef uint32_t u32;
 #include "global.h"
 #endif
 
-#define COOP_BUILD_ID  0xC0170124u
+#define COOP_BUILD_ID  0xC0170125u
 // gpSP's Pokémon Gen 3 cable (serial_proto.c MAX_FRAME_TIMEOUT) drops a peer
 // after 240 frames with no packet. The overworld uses the same count.
 #define COOP_LINK_QUIET_LIMIT 240
@@ -277,6 +277,17 @@ static inline int CoopProtocol_QueuesCoop(int category, int beaconOn, int sameMa
     if (category == COOP_CAT_OPTIONAL && beaconOn)
         return 1;
     return 0;
+}
+
+// Stock link setup stamps BATTLE_TYPE_TRAINER onto every link battle.
+// A co-op wild fight must stay a wild fight, or the two games disagree
+// about catches, parties, and who the opponents are.
+static inline u32 CoopProtocol_KeepWildBattle(u32 flagsBefore, u32 flagsAfter)
+{
+    // Bit 14 is BATTLE_TYPE_COOP. Bit 3 is BATTLE_TYPE_TRAINER.
+    if ((flagsBefore & (1u << 14)) && !(flagsBefore & (1u << 3)))
+        return flagsAfter & ~(1u << 3);
+    return flagsAfter;
 }
 
 // Mum's TV scene walks both players onto one tile. Drawn there, the partner

@@ -48,6 +48,7 @@
 #include "rotating_tile_puzzle.h"
 #include "rtc.h"
 #include "script.h"
+#include "coop.h"
 #include "script_menu.h"
 #include "script_movement.h"
 #include "script_pokemon_util.h"
@@ -1655,6 +1656,7 @@ bool8 ScrCmd_releaseall(struct ScriptContext *ctx)
     ObjectEventClearHeldMovementIfFinished(&gObjectEvents[playerObjectId]);
     ScriptMovement_UnfreezeObjectEvents();
     UnfreezeObjectEvents();
+    Coop_SettlePartner();
     gMsgBoxIsCancelable = FALSE;
     return FALSE;
 }
@@ -1676,6 +1678,7 @@ bool8 ScrCmd_release(struct ScriptContext *ctx)
     ObjectEventClearHeldMovementIfFinished(&gObjectEvents[playerObjectId]);
     ScriptMovement_UnfreezeObjectEvents();
     UnfreezeObjectEvents();
+    Coop_SettlePartner();
     gMsgBoxIsCancelable = FALSE;
     return FALSE;
 }

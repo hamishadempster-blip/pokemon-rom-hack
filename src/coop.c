@@ -124,6 +124,7 @@ static EWRAM_DATA u8 sPartnerValid = FALSE;
 static EWRAM_DATA struct CoopFrame sPartner = {0};
 static EWRAM_DATA u16 sSpriteGfx = OBJ_EVENT_GFX_BRENDAN_NORMAL;
 static EWRAM_DATA u8 sPartnerStepWait = 0;
+static EWRAM_DATA bool8 sPartnerResettle = FALSE;
 static EWRAM_DATA bool8 sIsGuest = FALSE;
 static EWRAM_DATA bool8 sInBattle = FALSE;
 static EWRAM_DATA bool8 sAborting = FALSE;
@@ -405,7 +406,16 @@ static void Coop_UpdateSprite(void)
     }
 
     obj = &gObjectEvents[objectId];
-    ready = Coop_PartnerReadyForStep(obj);
+    if (sPartnerResettle)
+    {
+        sPartnerResettle = FALSE;
+        ObjectEventClearHeldMovementIfActive(obj);
+        ready = 2;
+    }
+    else
+    {
+        ready = Coop_PartnerReadyForStep(obj);
+    }
     if (ready == 0)
         return;
 
@@ -1157,11 +1167,9 @@ static void Coop_PollHandshake(void)
         Coop_RefreshLinkText();
         if (GetLinkPlayerCount_2() >= 2)
         {
-            if (!sHandshakeSaved)
-            {
-                SaveLinkPlayers(2);
-                sHandshakeSaved = TRUE;
-            }
+            // The count arrives before the names and trainer ids. Saving here
+            // stored two empty players, and the first link battle then closed
+            // the cable as a communication error.
             sLinkPhaseTimer = 0;
             sLinkPhase = IsLinkMaster() ? 1 : 2;
         }
@@ -1176,6 +1184,11 @@ static void Coop_PollHandshake(void)
     case 2:
         if (gReceivedRemoteLinkPlayers && IsLinkPlayerDataExchangeComplete())
         {
+            if (!sHandshakeSaved && GetLinkPlayerCount_2() >= 2)
+            {
+                SaveLinkPlayers(GetLinkPlayerCount_2());
+                sHandshakeSaved = TRUE;
+            }
             sLinkState = COOP_LINK_UP;
             gCoopHoldLink = TRUE;
             sLinkErrorStreak = 0;
@@ -1364,10 +1377,29 @@ void Coop_ResumeAfterTasksReset(void)
         return;
     gCoopHoldLink = TRUE;
     SetSuppressLinkErrorMessage(TRUE);
-    if (gLinkCallback == NULL && gReceivedRemoteLinkPlayers)
+    if (gLinkCallback == NULL && gReceivedRemoteLinkPlayers && !gMain.inBattle)
         gLinkCallback = Coop_LinkCallback;
     sTaskId = TASK_NONE;
     Coop_EnsureTask();
+}
+
+// The battle's block transfers own the cable until the fight returns.
+void Coop_YieldLinkToBattle(void)
+{
+    gCoopHoldLink = TRUE;
+    SetSuppressLinkErrorMessage(TRUE);
+    if (gLinkCallback == Coop_LinkCallback)
+        gLinkCallback = NULL;
+}
+
+// A script that walked the player has released. Place the partner again
+// instead of leaving the last cutscene step running.
+void Coop_SettlePartner(void)
+{
+    if (sLinkState != COOP_LINK_UP)
+        return;
+    sPartnerResettle = TRUE;
+    sPartnerStepWait = 0;
 }
 
 void Coop_OverworldFrame(void)

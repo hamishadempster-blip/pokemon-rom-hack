@@ -133,6 +133,16 @@ void HandleLinkBattleSetup(void)
     {
         if (gWirelessCommType)
             SetWirelessCommType1();
+        // Co-op is already connected. The cable-club wait compares the saved
+        // lobby and, on a mismatch, closes the link and shows the
+        // "turn the power OFF and ON" screen. That fired on the first
+        // Poochyena fight.
+        if ((gBattleTypeFlags & BATTLE_TYPE_COOP) && gReceivedRemoteLinkPlayers)
+        {
+            Coop_YieldLinkToBattle();
+            CreateTasksForSendRecvLinkBuffers();
+            return;
+        }
         if (!gReceivedRemoteLinkPlayers)
             OpenLink();
         CreateTask(Task_WaitForLinkPlayerConnection, 0);

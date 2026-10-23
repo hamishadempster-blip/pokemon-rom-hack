@@ -148,6 +148,13 @@ int main(void)
         CoopProtocol_VisiblePartnerTile(8, 5, &x, &y);
         Expect(x == 4 && y == 9, "a different tile stays where they are standing");
     }
+
+    Expect(CoopProtocol_KeepWildBattle((1u << 14) | (1u << 0), (1u << 14) | (1u << 0) | (1u << 3) | (1u << 2))
+        == ((1u << 14) | (1u << 0) | (1u << 2)),
+        "a co-op wild fight stays wild");
+    Expect(CoopProtocol_KeepWildBattle((1u << 14) | (1u << 3), (1u << 14) | (1u << 3) | (1u << 2))
+        == ((1u << 14) | (1u << 3) | (1u << 2)),
+        "a co-op trainer fight stays a trainer fight");
     Expect(CoopProtocol_DistinctPartner(30, 31) == 31, "two different trainers both fight");
 
     Expect(CoopProtocol_SameMap(3, 10, 3, 10) == 1, "same map shows the sprite");

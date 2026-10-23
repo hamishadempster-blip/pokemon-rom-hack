@@ -1150,7 +1150,12 @@ static void CB2_HandleStartMultiPartnerBattle(void)
             u8 taskId;
 
             ResetBlockReceivedFlags();
-            FindLinkBattleMaster(2, playerMultiplayerId);
+            {
+                u32 flagsBefore = gBattleTypeFlags;
+
+                FindLinkBattleMaster(2, playerMultiplayerId);
+                gBattleTypeFlags = CoopProtocol_KeepWildBattle(flagsBefore, gBattleTypeFlags);
+            }
             SetAllPlayersBerryData();
             taskId = CreateTask(InitLinkBattleVsScreen, 0);
             gTasks[taskId].data[1] = 0x10E;
