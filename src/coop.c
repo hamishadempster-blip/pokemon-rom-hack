@@ -105,6 +105,8 @@ static EWRAM_DATA u16 sLinkWaitTimer = 0;
 static EWRAM_DATA u8 sLinkPlayersSeen = 0;
 static EWRAM_DATA u8 sLinkStatusCount = 0;
 static EWRAM_DATA u8 sLinkErrorStreak = 0;
+static EWRAM_DATA bool8 sBirchBag = FALSE;
+static EWRAM_DATA u8 sTalkNpc = 0;
 static EWRAM_DATA u8 sMerged = FALSE;
 static EWRAM_DATA u8 sSeq = 0;
 static EWRAM_DATA u8 sRequest = 0;
@@ -352,11 +354,25 @@ static void Coop_UpdateSprite(void)
     ady = dy < 0 ? -dy : dy;
     if (dx == 0 && dy == 0)
     {
-        if (sPartner.facing != DIR_NONE && obj->facingDirection != sPartner.facing)
+        enum Direction face = (enum Direction)sPartner.facing;
+
+        if (face == DIR_NONE)
+            face = DIR_SOUTH;
+        // Standing still while talking: bob in place. Otherwise just turn.
+        if (sPartner.talkLocalId != 0 && sPartner.talkLocalId != 0xFF)
+        {
+            if (ObjectEventClearHeldMovementIfFinished(obj) != 0)
+            {
+                obj->singleMovementActive = FALSE;
+                ObjectEventClearHeldMovementIfActive(obj);
+                ObjectEventSetHeldMovement(obj, GetWalkInPlaceNormalMovementAction(face));
+            }
+        }
+        else if (obj->facingDirection != face)
         {
             obj->singleMovementActive = FALSE;
             ObjectEventClearHeldMovementIfActive(obj);
-            ObjectEventSetHeldMovement(obj, GetFaceDirectionMovementAction(sPartner.facing));
+            ObjectEventSetHeldMovement(obj, GetFaceDirectionMovementAction(face));
         }
         return;
     }
@@ -381,6 +397,67 @@ static void Coop_UpdateSprite(void)
         : GetWalkNormalMovementAction(dir));
 }
 
+static void Coop_ReleaseTalkNpc(void)
+{
+    u8 objectId;
+
+    if (sTalkNpc == 0)
+        return;
+    objectId = GetObjectEventIdByLocalIdAndMap(sTalkNpc, gSaveBlock1Ptr->location.mapNum, gSaveBlock1Ptr->location.mapGroup);
+    if (objectId < OBJECT_EVENTS_COUNT)
+        ObjectEventClearHeldMovementIfActive(&gObjectEvents[objectId]);
+    sTalkNpc = 0;
+}
+
+// The NPC your partner is talking to turns toward them and does the
+// little talk bob, instead of standing in whatever pose the map left them.
+static void Coop_AnimateTalkNpc(void)
+{
+    u8 localId = sPartner.talkLocalId;
+    u8 objectId;
+    s16 dx, dy, adx, ady;
+    enum Direction face;
+    struct ObjectEvent *npc;
+
+    if (gMain.callback2 != CB2_Overworld || !Coop_PartnerOnSameMap()
+     || localId == 0 || localId == 0xFF || localId == OBJ_EVENT_ID_COOP_PARTNER)
+    {
+        Coop_ReleaseTalkNpc();
+        return;
+    }
+    if (localId != sTalkNpc)
+        Coop_ReleaseTalkNpc();
+
+    objectId = GetObjectEventIdByLocalIdAndMap(localId, gSaveBlock1Ptr->location.mapNum, gSaveBlock1Ptr->location.mapGroup);
+    if (objectId >= OBJECT_EVENTS_COUNT)
+        return;
+
+    npc = &gObjectEvents[objectId];
+    if (ObjectEventClearHeldMovementIfFinished(npc) == 0)
+    {
+        sTalkNpc = localId;
+        return;
+    }
+
+    dx = (s16)sPartner.x - npc->currentCoords.x;
+    dy = (s16)sPartner.y - npc->currentCoords.y;
+    adx = dx < 0 ? -dx : dx;
+    ady = dy < 0 ? -dy : dy;
+    if (dx == 0 && dy == 0)
+        face = (enum Direction)sPartner.facing;
+    else if (adx > ady)
+        face = dx > 0 ? DIR_EAST : DIR_WEST;
+    else
+        face = dy > 0 ? DIR_SOUTH : DIR_NORTH;
+    if (face == DIR_NONE)
+        face = DIR_SOUTH;
+
+    npc->singleMovementActive = FALSE;
+    ObjectEventClearHeldMovementIfActive(npc);
+    ObjectEventSetHeldMovement(npc, GetWalkInPlaceNormalMovementAction(face));
+    sTalkNpc = localId;
+}
+
 static void Coop_FillFrame(struct CoopFrame *frame)
 {
     s16 x, y;
@@ -403,6 +480,13 @@ static void Coop_FillFrame(struct CoopFrame *frame)
     frame->surf = TestPlayerAvatarFlags(PLAYER_AVATAR_FLAG_SURFING) ? 1 : 0;
     frame->slot = sSlot;
     frame->seq = sSeq++;
+    frame->talkLocalId = 0;
+    if (sBirchBag)
+        frame->talkLocalId = 0xFF;
+    else if (ScriptContext_IsEnabled()
+          && gSpecialVar_LastTalked != 0
+          && gSpecialVar_LastTalked != OBJ_EVENT_ID_COOP_PARTNER)
+        frame->talkLocalId = gSpecialVar_LastTalked;
     if (save != NULL)
     {
         frame->badges = save->jointBadges;
@@ -1084,6 +1168,7 @@ static void Task_CoopSession(u8 taskId)
         SetSuppressLinkErrorMessage(TRUE);
         Coop_MaintainCallback();
         Coop_UpdateSprite();
+        Coop_AnimateTalkNpc();
         Coop_PollBlocks();
         Coop_PollScriptWaits();
         Coop_PollTrade();
@@ -1511,8 +1596,17 @@ u16 Coop_ClaimStarter(void)
     return TRUE;
 }
 
+u16 Coop_BirchBagFree(void)
+{
+    if (sPartnerValid && sPartner.talkLocalId == 0xFF)
+        return FALSE;
+    sBirchBag = TRUE;
+    return TRUE;
+}
+
 u16 Coop_RequestLabWarp(void)
 {
+    sBirchBag = FALSE;
     if (!Coop_SessionActive())
         return FALSE;
     sResumeScript = FALSE;

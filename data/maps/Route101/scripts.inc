@@ -220,6 +220,8 @@ Route101_EventScript_BirchsBag::
 	faceplayer
 	specialvar VAR_RESULT, Coop_PartnerOnSameMap
 	goto_if_eq VAR_RESULT, FALSE, Coop_EventScript_NeedPartner
+	specialvar VAR_RESULT, Coop_BirchBagFree
+	goto_if_eq VAR_RESULT, FALSE, Coop_EventScript_PartnerChoosing
 	setflag FLAG_SYS_POKEMON_GET
 	setflag FLAG_RESCUED_BIRCH
 	fadescreen FADE_TO_BLACK

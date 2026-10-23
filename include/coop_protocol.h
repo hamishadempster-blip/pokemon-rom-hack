@@ -12,8 +12,10 @@
 // Word 4: facing (bits 0-2), acro bike (bit 3), level cap (bit 4),
 //         request (bits 5-8), gender (bit 9), bike (bit 10), surf (bit 11),
 //         slot (bits 12-15).
-// Word 5: joint badges in the low byte, rival stage in bits 8-11.
-// Word 6: sequence in the low byte, three 2-bit legendary owners in bits 8-13.
+// Word 5: joint badges in the low byte, rival stage in bits 8-11,
+//         sequence in bits 12-15.
+// Word 6: the NPC being talked to in the low byte (0xFF means the Birch bag
+//         screen), three 2-bit legendary owners in bits 8-13.
 // Word 7: checksum of words 1-6.
 
 #ifdef COOP_HOST_TEST
@@ -25,7 +27,7 @@ typedef uint32_t u32;
 #include "global.h"
 #endif
 
-#define COOP_BUILD_ID  0xC017011Du
+#define COOP_BUILD_ID  0xC017011Eu
 #define COOP_BUILD_XOR ((u16)(((COOP_BUILD_ID) & 0xFFFFu) ^ ((COOP_BUILD_ID) >> 16)))
 #define COOP_LINKCMD   0xC0A1
 #define COOP_HELD_KEYS_CMD 0xCAFE
@@ -81,6 +83,7 @@ struct CoopFrame
     u8 badges;
     u8 rivalStage;
     u8 seq;
+    u8 talkLocalId;
     u8 legend[3];
 };
 
@@ -147,8 +150,8 @@ static inline void CoopProtocol_Pack(u16 out[8], const struct CoopFrame *frame, 
     out[2] = (u16)((frame->mapGroup << 8) | frame->mapNum);
     out[3] = (u16)((frame->x << 8) | frame->y);
     out[4] = flags;
-    out[5] = (u16)(frame->badges | ((frame->rivalStage & 0xF) << 8));
-    out[6] = (u16)(frame->seq | (legend << 8));
+    out[5] = (u16)(frame->badges | ((frame->rivalStage & 0xF) << 8) | ((frame->seq & 0xF) << 12));
+    out[6] = (u16)(frame->talkLocalId | (legend << 8));
     out[7] = CoopProtocol_Checksum(out);
 }
 
@@ -186,7 +189,8 @@ static inline int CoopProtocol_Unpack(const u16 in[8], struct CoopFrame *frame, 
     frame->slot = (u8)((flags >> 12) & 0xF);
     frame->badges = (u8)(in[5] & 0xFF);
     frame->rivalStage = (u8)((in[5] >> 8) & 0xF);
-    frame->seq = (u8)(in[6] & 0xFF);
+    frame->seq = (u8)((in[5] >> 12) & 0xF);
+    frame->talkLocalId = (u8)(in[6] & 0xFF);
     legend = (u16)(in[6] >> 8);
     frame->legend[0] = (u8)(legend & 3);
     frame->legend[1] = (u8)((legend >> 2) & 3);

@@ -8,7 +8,7 @@ Based off RHH's pokeemerald-expansion 1.17.1
 https://github.com/rh-hideout/pokeemerald-expansion/
 Pinned commit `bb1093a7c72d3961d9a37d8e02ad2abc2c866682`.
 
-Build id baked into the link handshake: `0xC017011D`.
+Build id baked into the link handshake: `0xC017011E`.
 
 ## Clean ROM
 
@@ -62,7 +62,7 @@ No custom server. If the public RetroArch relay is down, try UPnP, then a direct
 ## Story rules
 
 - Birch on Route 101 waits until both of you are on that map and linked. The lab will not open the cases until both of you are in the lab.
-- One case, then you split the two Pokémon. Cinder is Torchic and Houndour. Tide is Mudkip and Wingull. Thorn is Treecko and Shroomish. If you both claim the same one, the host keeps the claim and the guest gets the other.
+- One person opens Birch's bag. The other waits. The ball you highlight names the Pokémon who comes with it: Torchic brings Houndour, Mudkip brings Wingull, Treecko brings Shroomish. In the lab you still share that case, and if you both claim the same one the host keeps the claim and the guest gets the other.
 - Soren and Mira take the case that beats yours. They show up in the old Brendan and May fights. Both of you have to be there.
 - Gyms are two leaders, three Pokémon each. You cannot start one alone. Ace levels are 16, 22, 28, 34, 40, 46, 52, 58. Rematches are a second pair around level 70.
 - With the Twin Beacon off, ordinary trainers stay single even on the same map. With it on, most trainers lean doubles while you are together on their map. A trainer whose id is divisible by 4 stays a single. Magma and Aqua grunts are a pair. Leaders, the Elite Four, the champion, and rivals (Wally included) always ask for both of you, whether or not the Beacon is on.

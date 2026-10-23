@@ -150,6 +150,11 @@ Coop_EventScript_MenuEnd::
 	releaseall
 	end
 
+Coop_EventScript_PartnerChoosing::
+	msgbox Coop_Text_PartnerChoosing, MSGBOX_DEFAULT
+	releaseall
+	end
+
 Coop_EventScript_WarpToLab::
 	lockall
 	setflag FLAG_SYS_POKEMON_GET
@@ -343,6 +348,10 @@ Coop_Text_BeaconOff:
 Coop_Text_BeaconDeclined:
 	.string "Your partner said no.\n"
 	.string "The Twin Beacon stays as it was.$"
+
+Coop_Text_PartnerChoosing:
+	.string "Your partner is already choosing\n"
+	.string "a POKéMON from the bag.$"
 
 Coop_Text_ChooseCase:
 	.string "Three cases. You share one,\n"

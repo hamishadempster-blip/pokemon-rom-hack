@@ -646,6 +646,7 @@ gSpecials::
 	def_special Coop_StartLegendaryBattle, 0, 1
 	def_special Coop_BeginLink
 	def_special Coop_ArmLinkWait
+	def_special Coop_BirchBagFree
 	def_special Coop_Disconnect
 	def_special Coop_ToggleLevelCap
 	def_special Coop_ProposeCase, 0, 1

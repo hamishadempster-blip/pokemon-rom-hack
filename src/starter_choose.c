@@ -14,6 +14,7 @@
 #include "sound.h"
 #include "sprite.h"
 #include "starter_choose.h"
+#include "string_util.h"
 #include "strings.h"
 #include "task.h"
 #include "text.h"
@@ -120,6 +121,18 @@ static const u16 sStarterMon[STARTER_MON_COUNT] =
     FIRE_STARTER,
     WATER_STARTER,
 };
+
+// The second Pokémon in each case. Grass brings Shroomish, fire brings
+// Houndour, water brings Wingull.
+static const u16 sStarterCompanion[STARTER_MON_COUNT] =
+{
+    SPECIES_SHROOMISH,
+    SPECIES_HOUNDOUR,
+    SPECIES_WINGULL,
+};
+
+static const u8 sText_WithCompanion[] = _("with {STR_VAR_1}");
+static const u8 sText_TakeStarter[] = _("Take {STR_VAR_1}?\n{STR_VAR_2} comes too.");
 
 static const struct BgTemplate sBgTemplates[3] =
 {
@@ -526,9 +539,15 @@ static void Task_WaitForStarterSprite(u8 taskId)
 
 static void Task_AskConfirmStarter(u8 taskId)
 {
-    PlayCry_Normal(GetStarterPokemon(gTasks[taskId].tStarterSelection), 0);
+    u8 text[64];
+    u8 selection = gTasks[taskId].tStarterSelection;
+
+    PlayCry_Normal(GetStarterPokemon(selection), 0);
+    StringCopy(gStringVar1, GetSpeciesName(GetStarterPokemon(selection)));
+    StringCopy(gStringVar2, GetSpeciesName(sStarterCompanion[selection]));
+    StringExpandPlaceholders(text, sText_TakeStarter);
     FillWindowPixelBuffer(0, PIXEL_FILL(1));
-    AddTextPrinterParameterized(0, FONT_NORMAL, gText_ConfirmStarterChoice, 0, 1, 0, NULL);
+    AddTextPrinterParameterized(0, FONT_NORMAL, text, 0, 1, 0, NULL);
     ScheduleBgCopyTilemapToVram(0);
     CreateYesNoMenu(&sWindowTemplate_ConfirmStarter, 0x2A8, 0xD, 0);
     gTasks[taskId].func = Task_HandleConfirmStarterInput;
@@ -568,15 +587,18 @@ static void Task_DeclineStarter(u8 taskId)
 
 static void CreateStarterPokemonLabel(u8 selection)
 {
-    u8 categoryText[32];
     struct WindowTemplate winTemplate;
     const u8 *speciesName;
     s32 width;
     u8 labelLeft, labelRight, labelTop, labelBottom;
 
     enum Species species = GetStarterPokemon(selection);
-    CopyMonCategoryText(species, categoryText);
+    enum Species companion = sStarterCompanion[selection];
+    u8 withText[24];
+
     speciesName = GetSpeciesName(species);
+    StringCopy(gStringVar1, GetSpeciesName(companion));
+    StringExpandPlaceholders(withText, sText_WithCompanion);
 
     winTemplate = sWindowTemplate_StarterLabel;
     winTemplate.tilemapLeft = sStarterLabelCoords[selection][0];
@@ -585,8 +607,8 @@ static void CreateStarterPokemonLabel(u8 selection)
     sStarterLabelWindowId = AddWindow(&winTemplate);
     FillWindowPixelBuffer(sStarterLabelWindowId, PIXEL_FILL(0));
 
-    width = GetStringCenterAlignXOffset(FONT_NARROW, categoryText, 0x68);
-    AddTextPrinterParameterized3(sStarterLabelWindowId, FONT_NARROW, width, 1, sTextColors, 0, categoryText);
+    width = GetStringCenterAlignXOffset(FONT_NARROW, withText, 0x68);
+    AddTextPrinterParameterized3(sStarterLabelWindowId, FONT_NARROW, width, 1, sTextColors, 0, withText);
 
     width = GetStringCenterAlignXOffset(FONT_NORMAL, speciesName, 0x68);
     AddTextPrinterParameterized3(sStarterLabelWindowId, FONT_NORMAL, width, 17, sTextColors, 0, speciesName);
