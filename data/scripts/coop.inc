@@ -101,7 +101,22 @@ Coop_EventScript_Menu::
 	msgbox Coop_Text_AskLink, MSGBOX_YESNO
 	goto_if_eq VAR_RESULT, NO, Coop_EventScript_AskToggleCap
 	special Coop_BeginLink
-	msgbox Coop_Text_WaitingLink, MSGBOX_DEFAULT
+	message Coop_Text_WaitingLink
+	waitmessage
+	specialvar VAR_RESULT, Coop_ArmLinkWait
+	goto_if_eq VAR_RESULT, 1, Coop_EventScript_LinkReady
+	goto_if_eq VAR_RESULT, 2, Coop_EventScript_MenuEnd
+	goto_if_eq VAR_RESULT, 0, Coop_EventScript_LinkFailed
+	waitstate
+	goto_if_eq VAR_RESULT, 1, Coop_EventScript_LinkReady
+	goto_if_eq VAR_RESULT, 2, Coop_EventScript_MenuEnd
+Coop_EventScript_LinkFailed::
+	msgbox Coop_Text_LinkFailed, MSGBOX_DEFAULT
+	releaseall
+	end
+
+Coop_EventScript_LinkReady::
+	msgbox Coop_Text_LinkReady, MSGBOX_DEFAULT
 	releaseall
 	end
 
@@ -277,7 +292,14 @@ Coop_Text_AskLink:
 
 Coop_Text_WaitingLink:
 	.string "Waiting for the other game.\n"
-	.string "Open CO-OP there too.$"
+	.string "Press B to cancel.$"
+
+Coop_Text_LinkReady:
+	.string "Linked with {STR_VAR_1}.$"
+
+Coop_Text_LinkFailed:
+	.string "The games didn't link.\n"
+	.string "Say yes on both, then try again.$"
 
 Coop_Text_AskToggleCap:
 	.string "Change the level cap?\n"

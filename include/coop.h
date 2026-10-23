@@ -51,6 +51,7 @@ u16 Coop_CaseChosen(void);
 u16 Coop_StartGymBattle(void);
 u16 Coop_StartLegendaryBattle(void);
 u16 Coop_BeginLink(void);
+u16 Coop_ArmLinkWait(void);
 u16 Coop_Disconnect(void);
 u16 Coop_ToggleLevelCap(void);
 u16 Coop_ProposeCase(void);

@@ -8,7 +8,7 @@ Based off RHH's pokeemerald-expansion 1.17.1
 https://github.com/rh-hideout/pokeemerald-expansion/
 Pinned commit `bb1093a7c72d3961d9a37d8e02ad2abc2c866682`.
 
-Build id baked into the link handshake: `0xC017011A`.
+Build id baked into the link handshake: `0xC017011B`.
 
 ## Clean ROM
 
@@ -52,7 +52,7 @@ No custom server. If the public RetroArch relay is down, try UPnP, then a direct
 
 ## How a session works
 
-1. Both games are the same build. Open the start menu, choose **CO-OP**, and say yes to the link. The other game does the same. mGBA has to already be in a multiplayer window. RetroArch has to already be in a Gen 3 link lobby.
+1. Both games are the same build. Each copy of the ROM needs its own file name and its own save. In mGBA, open one copy, choose File, New Multiplayer Window, and open the other copy there. RetroArch has to already be in a Gen 3 link lobby. Open the start menu, choose **CO-OP**, and say yes. The question stays on the bedroom. The game then waits, and it stays on that message until the other game has said yes too. Press B to cancel. When it connects, it says who you linked with.
 2. The first exchange compares the build id and the level cap. Either mismatch aborts. Change the cap from CO-OP before linking. The cap is on unless you turn it off.
 3. You can walk different maps. The partner sprite appears only on the same map, including through doors. A door is a new map, so the sprite drops and comes back when you return. The CO-OP menu names their map and says whether the Twin Beacon is on.
 4. Birch gives each of you a Twin Beacon in the lab, before the starter case. It stays in the Key Items pocket. Using it asks the other player. Ordinary trainer battles become co-op only after both agree, and both games switch on that agreed exchange. Either person can ask to turn it off. A request made during a battle or trade waits until that fight or trade is over. Disconnecting turns the Beacon off. The item stays in the bag. Gyms, Soren and Mira, the Elite Four, the champion, and the legendary fights ignore the Beacon and still need both of you on the map.

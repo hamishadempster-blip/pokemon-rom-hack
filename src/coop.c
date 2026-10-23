@@ -48,6 +48,9 @@
 #define COOP_WILD_TIMEOUT 180
 #define COOP_PAIR_TIMEOUT 1800
 #define COOP_PAIR_ANSWER_LIMIT 1500
+// The CO-OP menu holds on the waiting text for this long. Both players
+// need time to say yes. 30 seconds at 60 frames.
+#define COOP_LINK_WAIT_LIMIT 1800
 #define COOP_CASE_NONE    0xFF
 
 // Rival ids sit in a contiguous block: stage * 6 + person * 3 + type.
@@ -89,6 +92,10 @@ EWRAM_DATA bool8 gCoopArmWild = FALSE;
 static EWRAM_DATA u8 sLinkState = COOP_LINK_IDLE;
 static EWRAM_DATA u8 sTaskId = 0;
 static EWRAM_DATA u8 sHandshakeSaved = FALSE;
+static EWRAM_DATA u8 sLinkPhase = 0;
+static EWRAM_DATA u16 sLinkPhaseTimer = 0;
+static EWRAM_DATA bool8 sLinkWait = FALSE;
+static EWRAM_DATA u16 sLinkWaitTimer = 0;
 static EWRAM_DATA u8 sMerged = FALSE;
 static EWRAM_DATA u8 sSeq = 0;
 static EWRAM_DATA u8 sRequest = 0;
@@ -808,30 +815,87 @@ static void Coop_MaintainCallback(void)
         gLinkCallback = Coop_LinkCallback;
 }
 
+static void Coop_FinishLinkWait(u16 result)
+{
+    sLinkWait = FALSE;
+    gSpecialVar_Result = result;
+    ScriptContext_Enable();
+}
+
+// Stock cable-club reconnect: wait until both GBAs are on the wire, let the
+// master send one handshake pulse, then wait for the player exchange.
+// Pulsing every frame skips the master/slave check and the link never comes up.
 static void Coop_PollHandshake(void)
 {
-    if (GetLinkPlayerCount_2() >= 2)
-    {
-        if (!sHandshakeSaved)
-        {
-            SaveLinkPlayers(2);
-            sHandshakeSaved = TRUE;
-        }
-        if (IsLinkMaster())
-            CheckShouldAdvanceLinkState();
-    }
-    if (gReceivedRemoteLinkPlayers && IsLinkPlayerDataExchangeComplete())
-    {
-        sLinkState = COOP_LINK_UP;
-        sTradeSlot = 0xFF;
-        sRivalFightStage = 0xFF;
-        sProposedCase = COOP_CASE_NONE;
-        sClaim = COOP_CASE_NONE;
-        gLinkCallback = Coop_LinkCallback;
-        SetSuppressLinkErrorMessage(TRUE);
-    }
+    if (sLinkState != COOP_LINK_CONNECTING)
+        return;
     if (gLinkErrorOccurred)
-        Coop_Drop(Coop_EventScript_Disconnected);
+    {
+        Coop_Drop(sLinkWait ? NULL : Coop_EventScript_Disconnected);
+        return;
+    }
+    switch (sLinkPhase)
+    {
+    case 0:
+        if (GetLinkPlayerCount_2() >= 2)
+        {
+            if (!sHandshakeSaved)
+            {
+                SaveLinkPlayers(2);
+                sHandshakeSaved = TRUE;
+            }
+            sLinkPhaseTimer = 0;
+            sLinkPhase = IsLinkMaster() ? 1 : 2;
+        }
+        break;
+    case 1:
+        if (++sLinkPhaseTimer > 30)
+        {
+            CheckShouldAdvanceLinkState();
+            sLinkPhase = 2;
+        }
+        break;
+    case 2:
+        if (gReceivedRemoteLinkPlayers && IsLinkPlayerDataExchangeComplete())
+        {
+            sLinkState = COOP_LINK_UP;
+            sTradeSlot = 0xFF;
+            sRivalFightStage = 0xFF;
+            sProposedCase = COOP_CASE_NONE;
+            sClaim = COOP_CASE_NONE;
+            gLinkCallback = Coop_LinkCallback;
+            SetSuppressLinkErrorMessage(TRUE);
+        }
+        break;
+    }
+}
+
+static void Coop_PollLinkWait(void)
+{
+    if (!sLinkWait)
+        return;
+    if (sPendingMessage != NULL)
+    {
+        Coop_FinishLinkWait(2);
+        return;
+    }
+    if (sLinkState == COOP_LINK_UP && sPartnerValid)
+    {
+        StringCopy(gStringVar1, gLinkPlayers[GetMultiplayerId() ^ 1].name);
+        Coop_FinishLinkWait(1);
+        return;
+    }
+    if (sLinkState == COOP_LINK_IDLE)
+    {
+        Coop_FinishLinkWait(0);
+        return;
+    }
+    if (JOY_NEW(B_BUTTON) || ++sLinkWaitTimer >= COOP_LINK_WAIT_LIMIT)
+    {
+        if (sLinkState == COOP_LINK_CONNECTING)
+            Coop_Drop(NULL);
+        Coop_FinishLinkWait(0);
+    }
 }
 
 static bool8 Coop_PlayerLost(void)
@@ -861,6 +925,8 @@ static void Coop_Drop(const u8 *message)
         Coop_FailWait();
     sGuestPairPending = FALSE;
     sLinkState = COOP_LINK_IDLE;
+    sLinkPhase = 0;
+    sLinkPhaseTimer = 0;
     sHandshakeSaved = FALSE;
     sMerged = FALSE;
     sPartnerValid = FALSE;
@@ -882,6 +948,7 @@ static void Task_CoopSession(u8 taskId)
 {
     if (sLinkState == COOP_LINK_CONNECTING)
         Coop_PollHandshake();
+    Coop_PollLinkWait();
     if (sLinkState == COOP_LINK_UP)
     {
         SetSuppressLinkErrorMessage(TRUE);
@@ -930,6 +997,9 @@ u16 Coop_BeginLink(void)
     ResetLinkPlayers();
     ResetLinkPlayerCount();
     sLinkState = COOP_LINK_CONNECTING;
+    sLinkPhase = 0;
+    sLinkPhaseTimer = 0;
+    sLinkWait = FALSE;
     sHandshakeSaved = FALSE;
     sMerged = FALSE;
     sPartnerValid = FALSE;
@@ -938,6 +1008,24 @@ u16 Coop_BeginLink(void)
     sBeaconPrompted = 0;
     Coop_EnsureTask();
     return TRUE;
+}
+
+// 1 already linked, 2 a reason is waiting to be shown, 0 failed,
+// 0xFF still waiting. The menu script waitstates on 0xFF.
+u16 Coop_ArmLinkWait(void)
+{
+    sLinkWaitTimer = 0;
+    if (sPendingMessage != NULL)
+        return 2;
+    if (sLinkState == COOP_LINK_UP && sPartnerValid)
+    {
+        StringCopy(gStringVar1, gLinkPlayers[GetMultiplayerId() ^ 1].name);
+        return 1;
+    }
+    if (sLinkState != COOP_LINK_CONNECTING)
+        return 0;
+    sLinkWait = TRUE;
+    return 0xFF;
 }
 
 u16 Coop_Disconnect(void)

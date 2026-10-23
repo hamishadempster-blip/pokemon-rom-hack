@@ -658,9 +658,12 @@ static bool8 HandleStartMenuInput(void)
 
         gMenuCallback = sStartMenuItems[sCurrentStartMenuActions[sStartMenuCursorPos]].func.u8_void;
 
+        // CO-OP stays on the overworld. Fading here hid the yes/no prompt
+        // and left the screen black while the cable was still connecting.
         if (gMenuCallback != StartMenuSaveCallback
             && gMenuCallback != StartMenuExitCallback
             && gMenuCallback != StartMenuDebugCallback
+            && gMenuCallback != StartMenuCoopCallback
             && gMenuCallback != StartMenuSafariZoneRetireCallback
             && gMenuCallback != StartMenuBattlePyramidRetireCallback)
         {
