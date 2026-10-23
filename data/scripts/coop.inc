@@ -107,11 +107,18 @@ Coop_EventScript_Menu::
 	goto_if_eq VAR_RESULT, 1, Coop_EventScript_LinkReady
 	goto_if_eq VAR_RESULT, 2, Coop_EventScript_MenuEnd
 	goto_if_eq VAR_RESULT, 0, Coop_EventScript_LinkFailed
+	goto_if_eq VAR_RESULT, 3, Coop_EventScript_LinkFailedExchange
 	waitstate
 	goto_if_eq VAR_RESULT, 1, Coop_EventScript_LinkReady
 	goto_if_eq VAR_RESULT, 2, Coop_EventScript_MenuEnd
+	goto_if_eq VAR_RESULT, 3, Coop_EventScript_LinkFailedExchange
 Coop_EventScript_LinkFailed::
 	msgbox Coop_Text_LinkFailed, MSGBOX_DEFAULT
+	releaseall
+	end
+
+Coop_EventScript_LinkFailedExchange::
+	msgbox Coop_Text_LinkFailedExchange, MSGBOX_DEFAULT
 	releaseall
 	end
 
@@ -298,8 +305,12 @@ Coop_Text_LinkReady:
 	.string "Linked with {STR_VAR_1}.$"
 
 Coop_Text_LinkFailed:
-	.string "The games didn't link.\n"
-	.string "Say yes on both, then try again.$"
+	.string "The cable only saw this game.\n"
+	.string "Use File, New Multiplayer Window.$"
+
+Coop_Text_LinkFailedExchange:
+	.string "Both games were on the cable,\n"
+	.string "but the link didn't finish.$"
 
 Coop_Text_AskToggleCap:
 	.string "Change the level cap?\n"

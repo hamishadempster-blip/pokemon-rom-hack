@@ -22,7 +22,11 @@
 #include "script.h"
 #include "script_pokemon_util.h"
 #include "string_util.h"
+#include "gpu_regs.h"
+#include "menu.h"
 #include "task.h"
+#include "text.h"
+#include "window.h"
 #include "constants/battle.h"
 #include "constants/items.h"
 #include "constants/event_objects.h"
@@ -96,6 +100,8 @@ static EWRAM_DATA u8 sLinkPhase = 0;
 static EWRAM_DATA u16 sLinkPhaseTimer = 0;
 static EWRAM_DATA bool8 sLinkWait = FALSE;
 static EWRAM_DATA u16 sLinkWaitTimer = 0;
+static EWRAM_DATA u8 sLinkPlayersSeen = 0;
+static EWRAM_DATA u8 sLinkStatusCount = 0;
 static EWRAM_DATA u8 sMerged = FALSE;
 static EWRAM_DATA u8 sSeq = 0;
 static EWRAM_DATA u8 sRequest = 0;
@@ -822,6 +828,35 @@ static void Coop_FinishLinkWait(u16 result)
     ScriptContext_Enable();
 }
 
+static void Coop_ForceScreenOn(void)
+{
+    gPaletteFade.active = FALSE;
+    gPaletteFade.y = 0;
+    gPaletteFade.targetY = 0;
+    gPaletteFade.yDec = FALSE;
+    UnfadePlttBuffer(PALETTES_ALL);
+    if ((REG_DISPCNT & DISPCNT_BG_ALL_ON) == 0)
+        SetGpuRegBits(REG_OFFSET_DISPCNT, DISPCNT_MODE_0 | DISPCNT_OBJ_1D_MAP | DISPCNT_BG_ALL_ON | DISPCNT_OBJ_ON);
+}
+
+static const u8 sText_LinkStatus[] = _("Cable players: {STR_VAR_1}.\nPress B to cancel.$");
+
+static void Coop_RefreshLinkText(void)
+{
+    u8 count = GetLinkPlayerCount_2();
+
+    if (count > sLinkPlayersSeen)
+        sLinkPlayersSeen = count;
+    if (count == sLinkStatusCount)
+        return;
+    sLinkStatusCount = count;
+    Coop_ForceScreenOn();
+    ConvertIntToDecimalStringN(gStringVar1, count, STR_CONV_MODE_LEFT_ALIGN, 1);
+    StringExpandPlaceholders(gStringVar4, sText_LinkStatus);
+    DrawDialogueFrame(0, TRUE);
+    AddTextPrinterParameterized(0, FONT_NORMAL, gStringVar4, 0, 1, 0, NULL);
+}
+
 // Stock cable-club reconnect: wait until both GBAs are on the wire, let the
 // master send one handshake pulse, then wait for the player exchange.
 // Pulsing every frame skips the master/slave check and the link never comes up.
@@ -837,6 +872,7 @@ static void Coop_PollHandshake(void)
     switch (sLinkPhase)
     {
     case 0:
+        Coop_RefreshLinkText();
         if (GetLinkPlayerCount_2() >= 2)
         {
             if (!sHandshakeSaved)
@@ -874,6 +910,8 @@ static void Coop_PollLinkWait(void)
 {
     if (!sLinkWait)
         return;
+    Coop_ForceScreenOn();
+    Coop_RefreshLinkText();
     if (sPendingMessage != NULL)
     {
         Coop_FinishLinkWait(2);
@@ -892,9 +930,11 @@ static void Coop_PollLinkWait(void)
     }
     if (JOY_NEW(B_BUTTON) || ++sLinkWaitTimer >= COOP_LINK_WAIT_LIMIT)
     {
+        u16 result = sLinkPlayersSeen >= 2 ? 3 : 0;
+
         if (sLinkState == COOP_LINK_CONNECTING)
             Coop_Drop(NULL);
-        Coop_FinishLinkWait(0);
+        Coop_FinishLinkWait(result);
     }
 }
 
@@ -1000,6 +1040,8 @@ u16 Coop_BeginLink(void)
     sLinkPhase = 0;
     sLinkPhaseTimer = 0;
     sLinkWait = FALSE;
+    sLinkPlayersSeen = 0;
+    sLinkStatusCount = 0xFF;
     sHandshakeSaved = FALSE;
     sMerged = FALSE;
     sPartnerValid = FALSE;

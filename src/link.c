@@ -585,7 +585,9 @@ static void ProcessRecvCmds(u8 unused)
                         if (strcmp(block->magic1, sASCIIGameFreakInc) != 0
                             || strcmp(block->magic2, sASCIIGameFreakInc) != 0)
                         {
-                            SetMainCallback2(CB2_LinkError);
+                            gLinkErrorOccurred = TRUE;
+                            if (!gSuppressLinkErrorMessage)
+                                SetMainCallback2(CB2_LinkError);
                         }
                         else
                         {
@@ -1319,7 +1321,8 @@ void CheckLinkPlayersMatchSaved(void)
         {
             gLinkErrorOccurred = TRUE;
             CloseLink();
-            SetMainCallback2(CB2_LinkError);
+            if (!gSuppressLinkErrorMessage)
+                SetMainCallback2(CB2_LinkError);
         }
     }
 }
@@ -1733,7 +1736,11 @@ void LinkPlayerFromBlock(u32 who)
 
     if (strcmp(block->magic1, sASCIIGameFreakInc) != 0
      || strcmp(block->magic2, sASCIIGameFreakInc) != 0)
-        SetMainCallback2(CB2_LinkError);
+    {
+        gLinkErrorOccurred = TRUE;
+        if (!gSuppressLinkErrorMessage)
+            SetMainCallback2(CB2_LinkError);
+    }
 }
 
 // When this function returns TRUE the callbacks are skipped
