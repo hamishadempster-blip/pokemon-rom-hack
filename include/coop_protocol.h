@@ -25,7 +25,7 @@ typedef uint32_t u32;
 #include "global.h"
 #endif
 
-#define COOP_BUILD_ID  0xC0170118u
+#define COOP_BUILD_ID  0xC0170119u
 #define COOP_BUILD_XOR ((u16)(((COOP_BUILD_ID) & 0xFFFFu) ^ ((COOP_BUILD_ID) >> 16)))
 #define COOP_LINKCMD   0xC0A1
 #define COOP_HELD_KEYS_CMD 0xCAFE
@@ -55,6 +55,9 @@ typedef uint32_t u32;
 #define COOP_UNPACK_DROP  0
 #define COOP_UNPACK_OK    1
 #define COOP_UNPACK_BUILD 2
+
+#define COOP_BATTLE_SLOTS  3
+#define COOP_ROSTER_SLOTS  6
 
 #define COOP_OWNER_NONE    0
 #define COOP_OWNER_LOCAL   1
@@ -87,6 +90,13 @@ struct CoopProgress
     u8 rivalStage;
     u8 capOn;
     u8 legend[3];
+};
+
+struct CoopMonState
+{
+    u16 species;
+    u16 hp;
+    u8 isEgg;
 };
 
 struct CoopBeaconState
@@ -306,6 +316,30 @@ static inline void CoopProtocol_BeaconStep(struct CoopBeaconState *state, u8 par
         state->want = partnerSlot ? 1 : 0;
         state->event = COOP_BEACON_EVT_PROMPT;
     }
+}
+
+// Stage 3. A co-op battle needs one conscious, hatched Pokémon in slots 1-3.
+// A healthy fourth to sixth slot does not count; it never reaches the field.
+static inline int CoopProtocol_LeadReady(const struct CoopMonState *party)
+{
+    int i;
+
+    for (i = 0; i < COOP_BATTLE_SLOTS; i++)
+    {
+        if (party[i].species != 0 && !party[i].isEgg && party[i].hp != 0)
+            return 1;
+    }
+    return 0;
+}
+
+// A finished battle keeps the outcome for slots 1-3 and puts the pre-battle
+// copy back in slots 4-6. An aborted battle puts the pre-battle copy back
+// everywhere.
+static inline int CoopProtocol_RestoreFromSnapshot(u8 slot, int aborted)
+{
+    if (slot >= COOP_ROSTER_SLOTS)
+        return 0;
+    return aborted || slot >= COOP_BATTLE_SLOTS;
 }
 
 #endif // GUARD_COOP_PROTOCOL_H

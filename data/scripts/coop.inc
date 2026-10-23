@@ -1,5 +1,6 @@
 .global Coop_EventScript_NeedPartner
 	.global Coop_EventScript_PartnerDeclined
+	.global Coop_EventScript_NotReady
 	.global Coop_EventScript_Disconnected
 	.global Coop_EventScript_BuildMismatch
 	.global Coop_EventScript_CapMismatch
@@ -15,15 +16,35 @@
 	.global Coop_EventScript_BeaconOff
 	.global Coop_EventScript_BeaconDeclined
 
+@ Coop_TakeRefusal: 1 means this player's first three are down,
+@ 2 means the partner's are. 0 falls through to the usual message.
 Coop_EventScript_NeedPartner::
 	lockall
+	specialvar VAR_RESULT, Coop_TakeRefusal
+	goto_if_eq VAR_RESULT, 1, Coop_EventScript_ShowNotReady
+	goto_if_eq VAR_RESULT, 2, Coop_EventScript_ShowPartnerNotReady
 	msgbox Coop_Text_NeedPartner, MSGBOX_DEFAULT
 	releaseall
 	end
 
 Coop_EventScript_PartnerDeclined::
 	lockall
+	specialvar VAR_RESULT, Coop_TakeRefusal
+	goto_if_eq VAR_RESULT, 1, Coop_EventScript_ShowNotReady
+	goto_if_eq VAR_RESULT, 2, Coop_EventScript_ShowPartnerNotReady
 	msgbox Coop_Text_PartnerDeclined, MSGBOX_DEFAULT
+	releaseall
+	end
+
+Coop_EventScript_NotReady::
+	lockall
+Coop_EventScript_ShowNotReady::
+	msgbox Coop_Text_NotReady, MSGBOX_DEFAULT
+	releaseall
+	end
+
+Coop_EventScript_ShowPartnerNotReady::
+	msgbox Coop_Text_PartnerNotReady, MSGBOX_DEFAULT
 	releaseall
 	end
 
@@ -208,6 +229,18 @@ Coop_Text_NeedPartner:
 Coop_Text_PartnerDeclined:
 	.string "The link didn't hold.\n"
 	.string "Nothing was won or lost.$"
+
+Coop_Text_NotReady:
+	.string "Only your first three POKéMON\n"
+	.string "go into a co-op battle.\p"
+	.string "None of them can fight right now.\n"
+	.string "Heal one or move one up.$"
+
+Coop_Text_PartnerNotReady:
+	.string "Your partner's first three\n"
+	.string "POKéMON can't battle right now.\p"
+	.string "Nothing started.\n"
+	.string "Try again once they've healed.$"
 
 Coop_Text_Disconnected:
 	.string "The link dropped.\n"

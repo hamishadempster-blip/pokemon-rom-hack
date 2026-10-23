@@ -8,7 +8,7 @@ Based off RHH's pokeemerald-expansion 1.17.1
 https://github.com/rh-hideout/pokeemerald-expansion/
 Pinned commit `bb1093a7c72d3961d9a37d8e02ad2abc2c866682`.
 
-Build id baked into the link handshake: `0xC0170118`.
+Build id baked into the link handshake: `0xC0170119`.
 
 ## Clean ROM
 
@@ -69,7 +69,16 @@ No custom server. If the public RetroArch relay is down, try UPnP, then a direct
 - The Elite Four and the champion are the same 3+3 shape. The champion pair is Steven and Wallace. The guest does not watch the Hall of Fame cutscene. Both saves still set the champion flag.
 - Terra Cave and Marine Cave both start Groudon and Kyogre together. Their weather overwrites itself. Sky Pillar is Rayquaza. One catch. The person whose ball lands keeps it. The other person can get it only by the party trade. A KO still clears the story flags.
 
-Each player brings a party of 6 (`COOP_PARTY_SIZE` in `include/coop.h`). Enemy gyms are 6 either way. If a link battle desyncs on the extra Pokémon, set `COOP_PARTY_SIZE` to 3 and rebuild. That fallback is a decision, not a silent cut. This tree still sends 6.
+### Party in co-op battles
+
+- A co-op battle fields party slots 1–3 from each player, through the stock link-multi exchange (`COOP_BATTLE_SLOTS` in `include/coop_protocol.h`). Solo battles use all six. Enemy trainers keep their full teams.
+- Slots 4–6 leave the party for the length of the battle. They cannot be switched in, they do not keep a fight going, and they never count toward a whiteout.
+- When the battle finishes, slots 1–3 keep what happened: HP, PP, status, held items. Slots 4–6 come back exactly as they were. A Pokémon that joins during the battle goes into the next free party slot, or the PC if the party is full.
+- A dropped cable mid-battle puts all six back the way they were when the battle started. No badge, no prize.
+- If your first three are all fainted or eggs, a gym, rival, Elite Four, champion, or legendary fight refuses to start and tells you to heal or move one up. If your partner's first three are down, it refuses with a message about your partner. An ordinary trainer with the Twin Beacon on stays a solo fight for whoever's first three are down.
+- When one player's three faint and the other player is still standing, the battle carries on. It ends in a loss only when both players' first threes are down.
+- Link battles give no experience in this build, the same as stock link battles. Experience is unchanged by a co-op fight.
+- A co-op battle hands the cable back open, so the session stays linked after the fight.
 
 Megas, Z-Moves, Dynamax, and Terastallization are off, including Primal Reversion.
 
@@ -263,10 +272,11 @@ This is the pass to run on two PCs. It was not executed in the environment that 
 3. Cold boot. CO-OP on both games. Walk to different maps. Confirm no sprite. Meet on Route 101. Confirm the sprite and that the CO-OP menu names that map. Walk through a door. Confirm the sprite vanishes and comes back. The Twin Beacon is off after every reconnect. One player asks, the other says no, and an ordinary trainer stays solo. Both agree, and an ordinary trainer can be a co-op battle. Ask to turn it off during a gym. The gym finishes in the mode it started, then the Beacon clears. The item is still in the bag.
 4. Rescue Birch together. Pick one case. Split the two starters. Fight the first rival pair.
 5. Clear Rustboro together. Pull the cable during the gym. Confirm no badge and both parties restored. Reconnect. Clear it. Confirm both saves have the Stone Badge and the TMs stayed with whoever finished the speech.
-6. Trade one Pokémon from the party screen. Save both games. Reload. Confirm the trade stuck and the parties were not swapped twice.
-7. Turn the cap off on one save, try to link, confirm it refuses. Turn it back on and link.
-8. Build mismatch: one older patch against this one. Confirm the link stops.
-9. Late game, on a second pass: Groudon and Kyogre, pull the link after the ball shakes and before the catch commits, confirm nobody has the Pokémon. Catch it on a retry and confirm only one save owns it.
+6. First three: each player carries six. Start a co-op battle. Confirm only slots 1–3 appear in battle, on the party screen, and in the switch prompt. Faint all three on one side and confirm the partner keeps fighting. Win it. Confirm slots 1–3 kept their damage and PP, slots 4–6 match how they were before, and the CO-OP menu still shows the link. Run a solo battle and confirm all six can switch in. Faint all of one player's first three outside battle, with a healthy fifth slot, and confirm a gym refuses on both games with the right message. Pull the cable mid-battle and confirm all six come back as they were.
+7. Trade one Pokémon from the party screen. Save both games. Reload. Confirm the trade stuck and the parties were not swapped twice.
+8. Turn the cap off on one save, try to link, confirm it refuses. Turn it back on and link.
+9. Build mismatch: one older patch against this one. Confirm the link stops.
+10. Late game, on a second pass: Groudon and Kyogre, pull the link after the ball shakes and before the catch commits, confirm nobody has the Pokémon. Catch it on a retry and confirm only one save owns it.
 
 ## Known limits
 
@@ -276,7 +286,7 @@ This is the pass to run on two PCs. It was not executed in the environment that 
 - After a shared gym or Elite Four win, the guest receives the same story flags and the way forward. The person who talked to the leader still gets the TM. The guest can ask the leader for that TM afterward.
 - A shared champion win sends the guest to the Hall of Fame so their party is recorded too.
 - A partner who is already inside a script can miss the lab warp. Stand on the overworld when the other person opens Birch's bag.
-- Six Pokémon per player is the path this tree builds. It is the risky part of link battles.
+- Co-op battles field three Pokémon per player, through the stock link-multi exchange. Slots 4–6 sit out.
 - gimmicks stay off, including primals.
 - Id 865 is unused on purpose. It is the in-game partner id for Steven, and a normal trainer cannot live there.
 - Invalid link frames are dropped. One bad packet does not disconnect you.

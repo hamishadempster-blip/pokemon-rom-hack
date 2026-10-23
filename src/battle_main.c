@@ -1060,8 +1060,6 @@ static void CB2_HandleStartBattle(void)
     }
 }
 
-static u8 sCoopPartyChunk;
-
 static void CB2_HandleStartMultiPartnerBattle(void)
 {
     u8 playerMultiplayerId;
@@ -1152,8 +1150,6 @@ static void CB2_HandleStartMultiPartnerBattle(void)
         // Link battle, send/receive party Pokémon in groups
         if (IsLinkTaskFinished())
         {
-            if (gBattleTypeFlags & BATTLE_TYPE_COOP)
-                sCoopPartyChunk = 0;
             // Send Pokémon 1-2
             SendBlock(BitmaskAllOtherLinkPlayers(), gParties[B_TRAINER_PLAYER], sizeof(struct Pokemon) * 2);
             gBattleCommunication[MULTIUSE_STATE]++;
@@ -1172,16 +1168,7 @@ static void CB2_HandleStartMultiPartnerBattle(void)
     case 5:
         if (IsLinkTaskFinished())
         {
-            if (gBattleTypeFlags & BATTLE_TYPE_COOP)
-            {
-                // Two chunks cover party slots 2-3 and 4-5. Stock multis send only slot 2.
-                u8 offset = 2 + sCoopPartyChunk * 2;
-                SendBlock(BitmaskAllOtherLinkPlayers(), &gParties[B_TRAINER_PLAYER][offset], sizeof(struct Pokemon) * 2);
-            }
-            else
-            {
-                SendBlock(BitmaskAllOtherLinkPlayers(), &gParties[B_TRAINER_PLAYER][2], sizeof(struct Pokemon));
-            }
+            SendBlock(BitmaskAllOtherLinkPlayers(), &gParties[B_TRAINER_PLAYER][2], sizeof(struct Pokemon));
             gBattleCommunication[MULTIUSE_STATE]++;
         }
         break;
@@ -1189,22 +1176,15 @@ static void CB2_HandleStartMultiPartnerBattle(void)
         if ((GetBlockReceivedStatus() & 3) == 3)
         {
             ResetBlockReceivedFlags();
+            memcpy(&gParties[B_TRAINER_PLAYER][2], gBlockRecvBuffer[playerMultiplayerId], sizeof(struct Pokemon));
+            memcpy(&gParties[B_TRAINER_PARTNER][2], gBlockRecvBuffer[partnerMultiplayerId], sizeof(struct Pokemon));
             if (gBattleTypeFlags & BATTLE_TYPE_COOP)
             {
-                u8 offset = 2 + sCoopPartyChunk * 2;
-                memcpy(&gParties[B_TRAINER_PLAYER][offset], gBlockRecvBuffer[playerMultiplayerId], sizeof(struct Pokemon) * 2);
-                memcpy(&gParties[B_TRAINER_PARTNER][offset], gBlockRecvBuffer[partnerMultiplayerId], sizeof(struct Pokemon) * 2);
-                if (sCoopPartyChunk == 0)
-                {
-                    sCoopPartyChunk = 1;
-                    gBattleCommunication[MULTIUSE_STATE] = 5;
-                    break;
-                }
-            }
-            else
-            {
-                memcpy(&gParties[B_TRAINER_PLAYER][2], gBlockRecvBuffer[playerMultiplayerId], sizeof(struct Pokemon));
-                memcpy(&gParties[B_TRAINER_PARTNER][2], gBlockRecvBuffer[partnerMultiplayerId], sizeof(struct Pokemon));
+                // Co-op fields only the first three; stale partner data in 3-5 would count as reserves.
+                for (u32 i = MULTI_PARTY_SIZE; i < PARTY_SIZE; i++)
+                    ZeroMonData(&gParties[B_TRAINER_PARTNER][i]);
+                CalculatePlayerPartyCount();
+                CalculatePartnerPartyCount();
             }
             gBattleCommunication[MULTIUSE_STATE]++;
         }
@@ -2028,7 +2008,7 @@ static void EndLinkBattleInSteps(void)
 
             for (i = 0; i < battlerCount && (gLinkPlayers[i].version & 0xFF) == VERSION_EMERALD; i++);
 
-            if (!gSaveBlock2Ptr->frontier.disableRecordBattle && i == battlerCount)
+            if (!gSaveBlock2Ptr->frontier.disableRecordBattle && i == battlerCount && !(gBattleTypeFlags & BATTLE_TYPE_COOP))
             {
                 if (FlagGet(FLAG_SYS_FRONTIER_PASS))
                 {

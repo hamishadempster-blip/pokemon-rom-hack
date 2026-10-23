@@ -2,15 +2,15 @@
 #define GUARD_COOP_H
 
 #include "global.h"
+#include "coop_protocol.h"
 
 // Megas, Z-Moves, Dynamax, and Terastallization (including Primal Reversion)
 // are turned off at the Can* checks. Species tables stay intact.
 #define COOP_GIMMICKS_OFF 1
 
-// Each human brings a party of 6. Stock link multis send 3. The battle start
-// path sends the extra Pokémon in two-Pokémon blocks. If that path has to be
-// reverted, set this to 3. Enemy gyms stay 6 either way.
-#define COOP_PARTY_SIZE 6
+// Each human fields party slots 1-3 (COOP_BATTLE_SLOTS) in a co-op battle,
+// through the stock link multi exchange. Slots 4-6 leave the party for the
+// battle and come back untouched. Solo battles and enemy parties keep six.
 
 // 0 sends LINKCMD_COOP. 1 packs the same payload into LINKCMD_SEND_HELD_KEYS
 // for a core that drops unknown commands. Both layouts are accepted.
@@ -26,6 +26,11 @@
 #define COOP_KIND_TRAINER   6
 #define COOP_KIND_WARP      7
 #define COOP_KIND_ACK       8
+#define COOP_KIND_NACK      9
+
+#define COOP_REFUSE_NONE            0
+#define COOP_REFUSE_SELF_NOT_READY  1
+#define COOP_REFUSE_PARTNER_NOT_READY 2
 
 #define COOP_LEGEND_DUO 0
 #define COOP_LEGEND_RAY 1
@@ -56,6 +61,8 @@ u16 Coop_BufferBeaconAsk(void);
 u16 Coop_PrepareTwinBeacon(void);
 u16 Coop_BeaconAnswer(void);
 u16 Coop_TakeGuestFollowup(void);
+u16 Coop_TakeRefusal(void);
+bool8 Coop_HasBattleReadyLead(void);
 const u8 *Coop_UseTwinBeacon(void);
 bool8 Coop_BeaconActive(void);
 bool8 Coop_OfferTrade(u8 slot);
@@ -85,6 +92,7 @@ extern const u8 Coop_EventScript_LegendConflict[];
 extern const u8 Coop_EventScript_BattleAborted[];
 extern const u8 Coop_EventScript_TradeDone[];
 extern const u8 Coop_EventScript_PartnerDeclined[];
+extern const u8 Coop_EventScript_NotReady[];
 extern const u8 Coop_EventScript_GuestAfterBattle[];
 extern const u8 Coop_EventScript_BeaconAsk[];
 extern const u8 Coop_EventScript_BeaconOn[];

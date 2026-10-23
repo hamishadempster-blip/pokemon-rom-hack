@@ -15,6 +15,7 @@
 #include "overworld.h"
 #include "palette.h"
 #include "pokemon.h"
+#include "pokemon_storage_system.h"
 #include "region_map.h"
 #include "script.h"
 #include "script_pokemon_util.h"
@@ -115,15 +116,16 @@ static EWRAM_DATA struct CoopBeaconState sBeacon = {0};
 static EWRAM_DATA u8 sBeaconQueued = 0;
 static EWRAM_DATA u8 sBeaconPrompted = 0;
 static EWRAM_DATA u8 sBeaconBagWarned = 0;
+static EWRAM_DATA u8 sRefusal = COOP_REFUSE_NONE;
 
 static const u8 sText_BeaconNeedLink[] = _("Link from the CO-OP menu first.{PAUSE_UNTIL_PRESS}");
 static const u8 sText_BeaconWaiting[] = _("Still waiting on your partner.{PAUSE_UNTIL_PRESS}");
 static const u8 sText_BeaconQueued[] = _("The request waits until this\nbattle or trade ends.{PAUSE_UNTIL_PRESS}");
 static const u8 sText_BeaconSent[] = _("Asking your partner.\nBoth of you have to agree.{PAUSE_UNTIL_PRESS}");
 
-STATIC_ASSERT(sizeof(struct Pokemon) * 2 <= BLOCK_BUFFER_SIZE, CoopPartyChunkFitsLinkBlock);
 STATIC_ASSERT(sizeof(struct CoopMonBlock) <= BLOCK_BUFFER_SIZE, CoopTradeBlockFitsLinkBlock);
-STATIC_ASSERT(COOP_PARTY_SIZE <= PARTY_SIZE, CoopPartySizeFitsSave);
+STATIC_ASSERT(COOP_BATTLE_SLOTS == MULTI_PARTY_SIZE, CoopFieldsTheStockMultiHalf);
+STATIC_ASSERT(COOP_ROSTER_SLOTS == PARTY_SIZE, CoopSnapshotCoversWholeParty);
 
 static void Task_CoopSession(u8 taskId);
 static void Coop_PollBeacon(void);
@@ -131,6 +133,7 @@ static void Coop_Drop(const u8 *message);
 static void Coop_LaunchBattle(bool8 isGuest);
 static void Coop_SendInvite(void);
 static u16 Coop_InviteChecksum(const struct CoopInvite *invite);
+static void Coop_FailWait(void);
 
 static struct CoopSave *CoopSave(void)
 {
@@ -447,6 +450,7 @@ static void Coop_QueueInvite(u8 kind, u16 trainerA, u16 trainerB, u8 badge, u16 
     sInvite.trainerB = trainerB;
     sInvite.aux = aux;
     sInvite.seq = ++sInviteSeq;
+    sRefusal = COOP_REFUSE_NONE;
     sWaitingAck = TRUE;
     sInviteSent = FALSE;
     sInviteTimer = 0;
@@ -476,6 +480,19 @@ static void Coop_LaunchBattle(bool8 isGuest)
     BattleSetup_StartTrainerBattle();
 }
 
+static void Coop_SendReply(u8 kind, u16 seq)
+{
+    struct CoopInvite reply;
+
+    memset(&reply, 0, sizeof(reply));
+    reply.magic = COOP_INVITE_MAGIC;
+    reply.kind = kind;
+    reply.seq = seq;
+    reply.checksum = Coop_InviteChecksum(&reply);
+    if (!gLinkTransferringData)
+        SendBlock(BitmaskAllOtherLinkPlayers(), &reply, sizeof(reply));
+}
+
 static void Coop_HandleInvite(u32 playerId, const struct CoopInvite *invite)
 {
     if (playerId == GetMultiplayerId())
@@ -490,24 +507,33 @@ static void Coop_HandleInvite(u32 playerId, const struct CoopInvite *invite)
         return;
     }
 
+    if (invite->kind == COOP_KIND_NACK)
+    {
+        if (sWaitingAck && invite->seq == sInvite.seq)
+        {
+            sRefusal = COOP_REFUSE_PARTNER_NOT_READY;
+            Coop_FailWait();
+        }
+        return;
+    }
+
     if (invite->kind == COOP_KIND_WARP)
     {
-        struct CoopInvite ack;
-
         if (!ScriptContext_IsEnabled())
             sPendingMessage = Coop_EventScript_WarpToLab;
-        memset(&ack, 0, sizeof(ack));
-        ack.magic = COOP_INVITE_MAGIC;
-        ack.kind = COOP_KIND_ACK;
-        ack.seq = invite->seq;
-        ack.checksum = Coop_InviteChecksum(&ack);
-        if (!gLinkTransferringData)
-            SendBlock(BitmaskAllOtherLinkPlayers(), &ack, sizeof(ack));
+        Coop_SendReply(COOP_KIND_ACK, invite->seq);
         return;
     }
 
     if (sInBattle || gMain.inBattle)
         return;
+
+    if (!Coop_HasBattleReadyLead())
+    {
+        Coop_SendReply(COOP_KIND_NACK, invite->seq);
+        sPendingMessage = Coop_EventScript_NotReady;
+        return;
+    }
 
     sBattleKind = invite->kind;
     sBattleBadge = invite->badge;
@@ -517,16 +543,7 @@ static void Coop_HandleInvite(u32 playerId, const struct CoopInvite *invite)
     TRAINER_BATTLE_PARAM.opponentA = invite->trainerA;
     TRAINER_BATTLE_PARAM.opponentB = invite->trainerB;
 
-    {
-        struct CoopInvite ack;
-        memset(&ack, 0, sizeof(ack));
-        ack.magic = COOP_INVITE_MAGIC;
-        ack.kind = COOP_KIND_ACK;
-        ack.seq = invite->seq;
-        ack.checksum = Coop_InviteChecksum(&ack);
-        if (!gLinkTransferringData)
-            SendBlock(BitmaskAllOtherLinkPlayers(), &ack, sizeof(ack));
-    }
+    Coop_SendReply(COOP_KIND_ACK, invite->seq);
     Coop_LaunchBattle(TRUE);
 }
 
@@ -1033,6 +1050,9 @@ bool8 Coop_TryQueueOrdinaryDouble(void)
 
     if (!Coop_SessionActive() || !Coop_PartnerOnSameMap() || !sBeacon.on)
         return FALSE;
+    // Ordinary fights are optional, so a fainted front three just means this one stays solo.
+    if (!Coop_HasBattleReadyLead())
+        return FALSE;
     if (trainerA == TRAINER_NONE || trainerA >= TRAINERS_COUNT || IsSpecialTrainer(trainerA))
         return FALSE;
     if (Coop_RivalStageFromId(trainerA) != 0xFF)
@@ -1048,14 +1068,23 @@ bool8 Coop_TryQueueOrdinaryDouble(void)
     return TRUE;
 }
 
-u16 Coop_StartGymBattle(void)
+static bool8 Coop_RefuseMandatory(void)
 {
     if (!Coop_PartnerOnSameMap())
-    {
-        gSpecialVar_Result = FALSE;
-        CreateTask(Task_CoopEnableScript, 0);
+        sRefusal = COOP_REFUSE_NONE;
+    else if (!Coop_HasBattleReadyLead())
+        sRefusal = COOP_REFUSE_SELF_NOT_READY;
+    else
         return FALSE;
-    }
+    gSpecialVar_Result = FALSE;
+    CreateTask(Task_CoopEnableScript, 0);
+    return TRUE;
+}
+
+u16 Coop_StartGymBattle(void)
+{
+    if (Coop_RefuseMandatory())
+        return FALSE;
     sResumeScript = TRUE;
     sLegendKind = 0;
     Coop_QueueInvite((u8)VarGet(VAR_0x8008), VarGet(VAR_0x8004), VarGet(VAR_0x8005), (u8)VarGet(VAR_0x8006), VarGet(VAR_0x8007));
@@ -1065,12 +1094,8 @@ u16 Coop_StartGymBattle(void)
 
 u16 Coop_StartLegendaryBattle(void)
 {
-    if (!Coop_PartnerOnSameMap())
-    {
-        gSpecialVar_Result = FALSE;
-        CreateTask(Task_CoopEnableScript, 0);
+    if (Coop_RefuseMandatory())
         return FALSE;
-    }
     sResumeScript = TRUE;
     sLegendKind = VarGet(VAR_0x8004) == COOP_LEGEND_RAY ? COOP_LEGEND_RAY : COOP_LEGEND_DUO;
     Coop_QueueInvite(COOP_KIND_LEGEND, 0, 0, 0, sLegendKind);
@@ -1152,13 +1177,79 @@ bool8 Coop_OfferTrade(u8 slot)
     return TRUE;
 }
 
+bool8 Coop_HasBattleReadyLead(void)
+{
+    struct CoopMonState party[COOP_BATTLE_SLOTS];
+    u32 i;
+
+    for (i = 0; i < COOP_BATTLE_SLOTS; i++)
+    {
+        struct Pokemon *mon = &gParties[B_TRAINER_PLAYER][i];
+
+        party[i].species = GetMonData(mon, MON_DATA_SPECIES);
+        party[i].hp = GetMonData(mon, MON_DATA_HP);
+        party[i].isEgg = GetMonData(mon, MON_DATA_IS_EGG);
+    }
+    return CoopProtocol_LeadReady(party);
+}
+
+u16 Coop_TakeRefusal(void)
+{
+    u16 refusal = sRefusal;
+
+    sRefusal = COOP_REFUSE_NONE;
+    return refusal;
+}
+
+// Slots 4-6 leave the party for the battle so every engine count, switch
+// prompt, and whiteout check sees exactly the three that were sent.
 void Coop_OnBattleLaunched(void)
 {
+    u32 i;
+
     memcpy(sPartySnap, gParties[B_TRAINER_PLAYER], sizeof(sPartySnap));
+    for (i = COOP_BATTLE_SLOTS; i < PARTY_SIZE; i++)
+        ZeroMonData(&gParties[B_TRAINER_PLAYER][i]);
+    CalculatePlayerPartyCount();
     sHasSnapshot = TRUE;
     sAborting = FALSE;
     sInBattle = TRUE;
     gCoopBattleLaunching = FALSE;
+}
+
+static void Coop_RestoreParty(bool8 aborted)
+{
+    struct Pokemon arrivals[PARTY_SIZE - COOP_BATTLE_SLOTS];
+    u32 i, count = 0;
+
+    if (!sHasSnapshot)
+        return;
+    // Anything sitting in 4-6 now joined during the battle, such as a catch.
+    if (!aborted)
+    {
+        for (i = COOP_BATTLE_SLOTS; i < PARTY_SIZE; i++)
+        {
+            if (GetMonData(&gParties[B_TRAINER_PLAYER][i], MON_DATA_SPECIES) != SPECIES_NONE)
+                arrivals[count++] = gParties[B_TRAINER_PLAYER][i];
+        }
+    }
+    for (i = 0; i < PARTY_SIZE; i++)
+    {
+        if (CoopProtocol_RestoreFromSnapshot(i, aborted))
+            gParties[B_TRAINER_PLAYER][i] = sPartySnap[i];
+    }
+    CompactPartySlots();
+    for (i = 0; i < count; i++)
+    {
+        u32 slot = CalculatePlayerPartyCount();
+
+        if (slot < PARTY_SIZE)
+            gParties[B_TRAINER_PLAYER][slot] = arrivals[i];
+        else
+            CopyMonToPC(&arrivals[i]);
+    }
+    CalculatePlayerPartyCount();
+    sHasSnapshot = FALSE;
 }
 
 static void Coop_GiveJointWin(void)
@@ -1216,8 +1307,8 @@ bool8 Coop_FinishTrainerBattle(void)
     bool8 won = gBattleOutcome == B_OUTCOME_WON || gBattleOutcome == B_OUTCOME_CAUGHT;
     bool8 firstClear = sBattleFlag == 0 || !FlagGet(sBattleFlag);
 
+    Coop_RestoreParty(FALSE);
     sInBattle = FALSE;
-    sHasSnapshot = FALSE;
     if (won)
         Coop_GiveJointWin();
     gSpecialVar_Result = won ? TRUE : FALSE;
@@ -1239,8 +1330,8 @@ bool8 Coop_FinishWildBattle(void)
 {
     bool8 won = gBattleOutcome == B_OUTCOME_WON || gBattleOutcome == B_OUTCOME_CAUGHT;
 
+    Coop_RestoreParty(FALSE);
     sInBattle = FALSE;
-    sHasSnapshot = FALSE;
     if (won)
     {
         if (sLegendKind == COOP_LEGEND_RAY)
@@ -1269,9 +1360,7 @@ bool8 Coop_FinishWildBattle(void)
 
 static void Coop_CB2_AbortToField(void)
 {
-    if (sHasSnapshot)
-        memcpy(gParties[B_TRAINER_PLAYER], sPartySnap, sizeof(sPartySnap));
-    sHasSnapshot = FALSE;
+    Coop_RestoreParty(TRUE);
     sAborting = FALSE;
     sInBattle = FALSE;
     sWaitingAck = FALSE;
@@ -1345,6 +1434,11 @@ bool8 Coop_InterceptRival(u16 trainerId)
     if (!Coop_PartnerOnSameMap())
     {
         ScriptContext_SetupScript(Coop_EventScript_NeedPartner);
+        return TRUE;
+    }
+    if (!Coop_HasBattleReadyLead())
+    {
+        ScriptContext_SetupScript(Coop_EventScript_NotReady);
         return TRUE;
     }
     Coop_QueueRival(stage);

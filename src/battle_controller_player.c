@@ -1192,7 +1192,7 @@ void HandleMoveSwitching(enum BattlerId battler)
 
 static void SetLinkBattleEndCallbacks(enum BattlerId battler)
 {
-    if (gWirelessCommType == 0)
+    if (gWirelessCommType == 0 && !(gBattleTypeFlags & BATTLE_TYPE_COOP))
     {
         if (!gReceivedRemoteLinkPlayers)
         {
@@ -1229,7 +1229,8 @@ void SetBattleEndCallbacks(enum BattlerId battler)
         {
             if (IsLinkTaskFinished())
             {
-                if (gWirelessCommType == 0)
+                // The co-op session owns the cable, so a co-op battle hands it back open.
+                if (gWirelessCommType == 0 && !(gBattleTypeFlags & BATTLE_TYPE_COOP))
                     SetCloseLinkCallback();
                 else
                     SetLinkStandbyCallback();

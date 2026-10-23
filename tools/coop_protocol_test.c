@@ -178,6 +178,56 @@ int main(void)
         Expect(a.on == 0 && b.on == 0, "the beacon clears after the gym");
     }
 
+    {
+        struct CoopMonState party[COOP_ROSTER_SLOTS];
+        struct CoopMonState snap[COOP_ROSTER_SLOTS];
+        struct CoopMonState live[COOP_ROSTER_SLOTS];
+        int i, ok;
+
+        memset(party, 0, sizeof(party));
+        for (i = 0; i < COOP_ROSTER_SLOTS; i++)
+        {
+            party[i].species = (u16)(100 + i);
+            party[i].hp = 0;
+        }
+        party[4].hp = 50;
+        Expect(!CoopProtocol_LeadReady(party), "a healthy fifth slot does not make the lead ready");
+        party[2].hp = 1;
+        Expect(CoopProtocol_LeadReady(party), "one conscious mon in the first three is enough");
+        party[2].isEgg = 1;
+        Expect(!CoopProtocol_LeadReady(party), "an egg in the first three cannot battle");
+        memset(party, 0, sizeof(party));
+        party[0].species = 25;
+        party[0].hp = 20;
+        Expect(CoopProtocol_LeadReady(party), "a one-mon party can join");
+
+        Expect(!CoopProtocol_RestoreFromSnapshot(0, 0) && !CoopProtocol_RestoreFromSnapshot(2, 0), "a finished battle keeps slots 1-3");
+        Expect(CoopProtocol_RestoreFromSnapshot(3, 0) && CoopProtocol_RestoreFromSnapshot(5, 0), "a finished battle restores slots 4-6");
+        Expect(CoopProtocol_RestoreFromSnapshot(0, 1) && CoopProtocol_RestoreFromSnapshot(5, 1), "an abort restores all six");
+        Expect(!CoopProtocol_RestoreFromSnapshot(6, 1), "nothing past slot 6");
+
+        for (i = 0; i < COOP_ROSTER_SLOTS; i++)
+        {
+            snap[i].species = (u16)(200 + i);
+            snap[i].hp = (u16)(40 + i);
+            snap[i].isEgg = 0;
+        }
+        memcpy(live, snap, sizeof(live));
+        for (i = COOP_BATTLE_SLOTS; i < COOP_ROSTER_SLOTS; i++)
+            memset(&live[i], 0, sizeof(live[i]));
+        live[0].hp = 0;
+        live[1].hp = 7;
+        for (i = 0; i < COOP_ROSTER_SLOTS; i++)
+        {
+            if (CoopProtocol_RestoreFromSnapshot((u8)i, 0))
+                live[i] = snap[i];
+        }
+        ok = live[0].hp == 0 && live[1].hp == 7 && live[2].hp == 42;
+        for (i = COOP_BATTLE_SLOTS; i < COOP_ROSTER_SLOTS; i++)
+            ok = ok && live[i].species == snap[i].species && live[i].hp == snap[i].hp;
+        Expect(ok, "slots 1-3 keep the fight and slots 4-6 come back as they were");
+    }
+
     if (sFails != 0)
     {
         printf("%d failed\n", sFails);

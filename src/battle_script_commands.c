@@ -2490,6 +2490,9 @@ static u32 DoesPartyHaveBattleReadyMons(enum BattleTrainer trainer)
 
 static bool32 WillPlayerWhiteOutIfPartnerWinsAlone()
 {
+    // Co-op keeps the saved fourth to sixth slots off the field, so they never count as reserves.
+    if (gBattleTypeFlags & BATTLE_TYPE_COOP)
+        return FALSE;
     if (GetConfig(B_MULTI_BATTLE_WHITEOUT) <= GEN_3)
         return TRUE;
     if (AreMultiPartiesFullTeams())
