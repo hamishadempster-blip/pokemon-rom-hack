@@ -1114,27 +1114,24 @@ static void Coop_NoteLinkHealth(void)
     // A co-op fight still needs a real error to reach the battle abort.
     if (gMain.inBattle && (gBattleTypeFlags & BATTLE_TYPE_COOP))
         return;
-    // Birch's bag and the rescue battle clear VRAM in one burst, and a door
-    // loads the next map across several frames. Those glitches are not a
-    // pulled cable. Count errors only once both games are back on the field
-    // and nobody is still in that rescue.
-    if (gMain.callback2 != CB2_Overworld || sBirchBag || gMain.inBattle)
+
+    // Checksums and a full send queue show up whenever a message box, a
+    // door, or Birch's bag copies a lot of tiles. That is not the cable
+    // coming out. Forget those blips. The session ends only when the other
+    // game is actually gone.
+    Link_ConsumeErrors();
+    gCoopHoldLink = TRUE;
+    SetSuppressLinkErrorMessage(TRUE);
+
+    if (ScriptContext_IsEnabled() || sBirchBag || gMain.inBattle || gMain.callback2 != CB2_Overworld)
     {
-        Link_ConsumeErrors();
         sLinkErrorStreak = 0;
-        gCoopHoldLink = TRUE;
-        SetSuppressLinkErrorMessage(TRUE);
         return;
     }
-    if (EXTRACT_LINK_ERRORS(gLinkStatus) || gLinkErrorOccurred)
+    if (!gReceivedRemoteLinkPlayers || EXTRACT_RECEIVED_NOTHING(gLinkStatus))
     {
-        bool8 live = EXTRACT_LINK_ERRORS(gLinkStatus) != 0;
-
-        Link_ConsumeErrors();
-        if (live && ++sLinkErrorStreak >= 120)
+        if (++sLinkErrorStreak >= 180)
             Coop_Drop(Coop_EventScript_Disconnected);
-        else if (!live)
-            sLinkErrorStreak = 0;
     }
     else
     {
@@ -1190,8 +1187,6 @@ static void Task_CoopSession(u8 taskId)
         if (sGuestPairPending && sGuestPairTimer < 0xFFFF)
             sGuestPairTimer++;
         Coop_NoteLinkHealth();
-        if (sLinkState == COOP_LINK_UP && sMerged && !gReceivedRemoteLinkPlayers)
-            Coop_Drop(Coop_EventScript_Disconnected);
     }
     if (sPendingMessage != NULL && !gMain.inBattle && !ScriptContext_IsEnabled() && !ArePlayerFieldControlsLocked())
     {

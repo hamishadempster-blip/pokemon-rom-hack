@@ -1522,8 +1522,11 @@ static void TrySetLinkErrorBuffer(void)
     // Check if a link error has occurred
     if (sLinkOpen && EXTRACT_LINK_ERRORS(gLinkStatus))
     {
-        // Link error has occurred, handle message details if
-        // necessary, then stop the link.
+        // A co-op session owns the cable. A checksum or a full queue during
+        // a message box or a door must not hang it up.
+        if (gCoopHoldLink)
+            return;
+
         gLinkErrorOccurred = TRUE;
         if (!gSuppressLinkErrorMessage)
         {
@@ -1531,12 +1534,8 @@ static void TrySetLinkErrorBuffer(void)
             sLinkErrorBuffer.lastRecvQueueCount = gLastRecvQueueCount;
             sLinkErrorBuffer.lastSendQueueCount = gLastSendQueueCount;
             SetMainCallback2(CB2_LinkError);
-            CloseLink();
         }
-        else if (!gCoopHoldLink)
-        {
-            CloseLink();
-        }
+        CloseLink();
     }
 }
 
