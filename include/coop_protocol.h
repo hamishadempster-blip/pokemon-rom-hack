@@ -28,7 +28,7 @@ typedef uint32_t u32;
 #include "global.h"
 #endif
 
-#define COOP_BUILD_ID  0xC0170128u
+#define COOP_BUILD_ID  0xC0170129u
 // gpSP's Pokémon Gen 3 cable (serial_proto.c MAX_FRAME_TIMEOUT) drops a peer
 // after 240 frames with no packet. The overworld uses the same count.
 #define COOP_LINK_QUIET_LIMIT 240
@@ -51,6 +51,7 @@ typedef uint32_t u32;
 #define COOP_REQ_BEACON    9
 #define COOP_REQ_BEACON_YES 10
 #define COOP_REQ_BEACON_NO  11
+#define COOP_REQ_RESCUE     12
 
 #define COOP_BEACON_IDLE    0
 #define COOP_BEACON_OFFER   1

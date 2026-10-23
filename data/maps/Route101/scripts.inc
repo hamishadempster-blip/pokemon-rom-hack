@@ -288,12 +288,12 @@ Route101_Text_DontLeaveMe:
 Route101_Text_TwoPoochyena:
 	.string "PROF. BIRCH: Two POOCHYENA!\n"
 	.string "You two, send out your POKéMON!\p"
-	.string "Press B if your partner is still\n"
-	.string "in a menu.$"
+	.string "Your partner just needs to be standing\n"
+	.string "here. Press B to cancel.$"
 
 Route101_Text_RescueBusy:
-	.string "Your partner has to stand on the\n"
-	.string "route with their menu closed.\p"
+	.string "Your partner has to be standing on\n"
+	.string "the route, not in a fade or a battle.\p"
 	.string "We'll try again.$"
 
 Route101_Text_YouSavedMe:

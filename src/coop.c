@@ -143,6 +143,7 @@ static EWRAM_DATA u8 sRivalFightStage = 0;
 static EWRAM_DATA u8 sProposedCase = 0;
 static EWRAM_DATA u8 sClaim = 0;
 static EWRAM_DATA u8 sWaitKind = 0;
+static EWRAM_DATA u8 sRescueEcho = 0;
 static EWRAM_DATA u8 sTradeSlot = 0;
 static EWRAM_DATA u8 sTradeSent = FALSE;
 static EWRAM_DATA u8 sTradeGot = FALSE;
@@ -1033,6 +1034,7 @@ static void Coop_FailWait(void)
 
     sWaitingAck = FALSE;
     sWaitKind = 0;
+    sRescueEcho = 0;
     sRequest = COOP_REQ_NONE;
     gSpecialVar_Result = FALSE;
     if (kind == COOP_KIND_RESCUE)
@@ -1091,6 +1093,56 @@ static void Coop_PollInviteTimeout(void)
     Coop_SendInvite();
     if (++sInviteTimer >= Coop_InviteTimeout(sBattleKind))
         Coop_FailWait();
+}
+
+// The rescue used to travel as a link block, then the other game refused
+// it while any script or text box was open. That looked like "still in a
+// menu" after the bag had already closed. The position frame is enough:
+// the partner echoes the case once they are standing on the route.
+static void Coop_PollRescue(void)
+{
+    if (gMain.inBattle || sInBattle || !sPartnerValid)
+        return;
+
+    if (sWaitKind == COOP_REQ_RESCUE)
+    {
+        if (JOY_NEW(B_BUTTON) || ++sInviteTimer >= COOP_RESCUE_TIMEOUT)
+        {
+            Coop_FailWait();
+            return;
+        }
+        if (sPartner.request == COOP_REQ_RESCUE && sPartner.slot == sSlot)
+            Coop_LaunchBattle(FALSE);
+        return;
+    }
+
+    if (sPartner.request != COOP_REQ_RESCUE || sPartner.slot > 2)
+    {
+        sRescueEcho = 0;
+        return;
+    }
+    // This game is the one still in the bag, or a fade is up. Wait.
+    if (sBirchBag || gMain.callback2 != CB2_Overworld)
+        return;
+    if (ScriptContext_IsEnabled() || ArePlayerFieldControlsLocked())
+        return;
+
+    sRequest = COOP_REQ_RESCUE;
+    sSlot = sPartner.slot;
+    // Give the echo a few frames to reach the other game before this
+    // one leaves the overworld and stops sending.
+    if (++sRescueEcho < 8)
+        return;
+
+    Coop_GiveRescueStarter(sPartner.slot, FALSE);
+    sBattleKind = COOP_KIND_RESCUE;
+    sBattleBadge = 0;
+    sBattleFlag = 0;
+    sLegendKind = 0;
+    sRivalFightStage = 0xFF;
+    sBirchBag = FALSE;
+    sRescueEcho = 0;
+    Coop_LaunchBattle(TRUE);
 }
 
 static void Coop_PollScriptWaits(void)
@@ -1356,8 +1408,9 @@ static void Coop_Drop(const u8 *message)
     sRescueGuestFollow = FALSE;
     sLinkErrorStreak = 0;
     sBadFrameStreak = 0;
-    if (sWaitingAck && !gMain.inBattle)
+    if ((sWaitingAck || sWaitKind == COOP_REQ_RESCUE) && !gMain.inBattle)
         Coop_FailWait();
+    sRescueEcho = 0;
     sGuestPairPending = FALSE;
     sLinkState = COOP_LINK_IDLE;
     sLinkPhase = 0;
@@ -1397,6 +1450,7 @@ static void Task_CoopSession(u8 taskId)
         Coop_UpdateSprite();
         Coop_AnimateTalkNpc();
         Coop_PollBlocks();
+        Coop_PollRescue();
         Coop_PollScriptWaits();
         Coop_PollTrade();
         Coop_PollBeacon();
@@ -1961,7 +2015,7 @@ u16 Coop_StartRescueBattle(void)
     struct CoopSave *save = CoopSave();
     u16 caseId = VarGet(VAR_STARTER_MON);
 
-    sBirchBag = TRUE;
+    sBirchBag = FALSE;
     if (GetMonData(&gParties[B_TRAINER_PLAYER][0], MON_DATA_SPECIES) != SPECIES_NONE
      && save != NULL && save->caseId <= 2)
         caseId = save->caseId;
@@ -1969,7 +2023,6 @@ u16 Coop_StartRescueBattle(void)
         caseId = 0;
     if (!Coop_SessionActive() || !Coop_PartnerOnSameMap())
     {
-        sBirchBag = FALSE;
         sRescueResult = 0;
         gSpecialVar_Result = FALSE;
         return FALSE;
@@ -1979,7 +2032,12 @@ u16 Coop_StartRescueBattle(void)
     sRescueResult = 1;
     sRescueField = COOP_RESCUE_RETURN_NONE;
     sResumeScript = TRUE;
-    Coop_QueueInvite(COOP_KIND_RESCUE, 0, 0, (u8)caseId, 0);
+    sBattleKind = COOP_KIND_RESCUE;
+    sRequest = COOP_REQ_RESCUE;
+    sSlot = (u8)caseId;
+    sWaitKind = COOP_REQ_RESCUE;
+    sRescueEcho = 0;
+    sInviteTimer = 0;
     gSpecialVar_Result = TRUE;
     return TRUE;
 }
