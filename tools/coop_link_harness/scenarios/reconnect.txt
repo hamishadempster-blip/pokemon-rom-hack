@@ -1,16 +1,42 @@
-# Continue the lab saves, link again, and check the starter was not duplicated.
-b wait 500
+# Continue the lab saves. The cursor is reset on boot. With a starter
+# and no Pokédex the list is POKEMON, BAG, name, SAVE, OPTION, CO-OP.
+b wait 1100
 b press START 2
 b wait 300
 b press A 2
-b wait 200
+b wait 250
 b press A 2
 b mash_field 4000
 b until_field 5000
 b expect gSaveCounter:4 1
 b expect_nz gParties:2
 b expect gParties+100:2 0
+b hex gParties 2
 b dump continued
-include link.inc
+b press START 2
+b wait 50
+b press DOWN 8
+b wait 25
+b press DOWN 8
+b wait 25
+b press DOWN 8
+b wait 25
+b press DOWN 8
+b wait 25
+b press DOWN 8
+b wait 25
+b press A 2
+b wait 50
+b press A 2
+b until_mem coop.sLinkState 2 3000
+b mash_field 1500
 b expect_partner reconnected
 b dump relinked
+0 press DOWN 200
+0 until_field 1000
+b expect_no_partner p0-left-lab
+b dump p0-left
+1 press DOWN 200
+1 until_field 1000
+b expect_partner both-outside
+b dump both-outside

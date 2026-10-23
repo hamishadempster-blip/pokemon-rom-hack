@@ -34,6 +34,12 @@ Passing `-C videoSync=1` does not override the multiplayer `setSync(false)`.
 Gameplay tests that need both games on the same frame use
 `tools/coop_link_harness`, which steps the two cores in lockstep.
 
+A passing lockstep run is not two-PC or two-window play. To check those by
+hand, open the same ROM in one mGBA process (File, New multiplayer window),
+use a separate save for each window, link from the CO-OP menu, and walk the
+opening: Mum's TV, the doors, the starter, the Poochyena fight, then SAVE on
+each window and load those saves.
+
 Story regression (doors, the TV scene, the Poochyena fight) stays in the
 headless harness, `tools/coop_link_harness`. This script only proves the
 graphical windows.

@@ -5,18 +5,15 @@ b mash_field 8000
 b until_field 5000
 b dump before-save
 b hex gSaveCounter 4
+# The bedroom CO-OP choice left the cursor on index 4. Getting a
+# Pokémon inserts an item above that, so index 4 is now OPTION and
+# SAVE is index 3. One Up from the remembered cursor lands on SAVE.
 b press START 2
 b wait 60
-b shot save-menu
-b press DOWN 8
-b wait 30
-b press DOWN 8
-b wait 30
-b press DOWN 8
-b wait 30
-b press DOWN 8
-b wait 30
-b shot on-save
+b hex start_menu.sStartMenuCursorPos 1
+b press UP 8
+b wait 20
+b hex start_menu.sStartMenuCursorPos 1
 b press A 2
 b wait 50
 b press A 2

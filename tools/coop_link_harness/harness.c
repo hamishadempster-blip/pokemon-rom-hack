@@ -255,8 +255,32 @@ static void checkBattle(struct Player* p, int moves) {
 		else
 			out("[p%d] ok battle roster own=%u partner=%u foe=%u linkId=%u\n", p->id, own, partner, foe, linkId);
 	} else {
-		if (linkId != 0) {
+		if (moves == 2 && linkId != 0) {
+			out("[p%d] ok hp compared on the link master\n", p->id);
+		} else if (linkId != 0) {
 			out("[p%d] ok move record is on the link master\n", p->id);
+		} else if (moves == 2) {
+			unsigned mons = symAddr("gBattleMons");
+			struct Player* o = &P[1];
+			static const int guestOfMaster[] = { 2, 3, 0, 1 };
+			int differ = 0;
+			char detail[96] = "";
+			for (int i = 0; i < 4; i++) {
+				int g = guestOfMaster[i];
+				unsigned hp = rd16(p, mons + i * 140 + 42);
+				unsigned pp = rd8(p, mons + i * 140 + 37);
+				unsigned ohp = rd16(o, mons + g * 140 + 42);
+				unsigned opp = rd8(o, mons + g * 140 + 37);
+				if (hp != ohp || pp != opp) {
+					differ = 1;
+					snprintf(detail, sizeof(detail), "master %d hp %u pp %u vs guest %d hp %u pp %u", i, hp, pp, g, ohp, opp);
+					break;
+				}
+			}
+			if (differ)
+				snprintf(why, sizeof(why), "%s", detail);
+			else
+				out("[p%d] ok both games match on hp and pp\n", p->id);
 		} else {
 			unsigned mons = symAddr("gBattleMons");
 			unsigned move0 = rd16(p, symAddr("gChosenMoveByBattler"));
@@ -635,7 +659,7 @@ static void loadScript(const char* path, int depth) {
 			snprintf(c.text, sizeof(c.text), "%s != 0", a);
 		} else if (!strcmp(cmd, "expect_battle")) {
 			c.kind = C_BATTLE;
-			c.value = n >= 3 && !strcmp(a, "moves");
+			c.value = n >= 3 && !strcmp(a, "moves") ? 1 : n >= 3 && !strcmp(a, "hp") ? 2 : 0;
 			snprintf(c.text, sizeof(c.text), "battle %s", c.value ? "moves" : "roster");
 		} else if (!strcmp(cmd, "until_mem") || !strcmp(cmd, "expect")) {
 			// until_mem SYM[+off]:size value [timeout]
