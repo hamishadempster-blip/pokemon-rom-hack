@@ -1,0 +1,33 @@
+# Finish the rescue, reach field control, and save from the start menu.
+# Menu with a starter and no Pokedex: POKEMON, BAG, name, OPTION, SAVE.
+include rescue.txt
+b mash_field 8000
+b until_field 5000
+b dump before-save
+b hex gSaveCounter 4
+b press START 2
+b wait 60
+b shot save-menu
+b press DOWN 8
+b wait 30
+b press DOWN 8
+b wait 30
+b press DOWN 8
+b wait 30
+b press DOWN 8
+b wait 30
+b shot on-save
+b press A 2
+b wait 50
+b press A 2
+b wait 250
+b press A 2
+b wait 40
+b press B 2
+b wait 20
+b until_mem gSaveCounter:4 1 3000
+b until_field 3000
+b dump saved
+b expect_nz gParties:2
+b expect gParties+100:2 0
+b expect_partner saved

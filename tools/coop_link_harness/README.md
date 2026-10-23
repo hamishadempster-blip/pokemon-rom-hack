@@ -49,7 +49,9 @@ for both players to reach it.
 | `until_mem SYM[+off][:size] VALUE [timeout]` | Wait for a RAM value |
 | `expect SYM[+off][:size] VALUE` | Check a RAM value now |
 | `dump [tag]` | Print callbacks, map, position, partner sprite, co-op state, and CPU pc/lr (plus battle and link state in a battle) |
-| `expect_partner [tag]` | The sprite for the other player is drawn on their real tile (same map only) |
+| `expect_partner [tag]` | Partner sprite is on the other player's tile. A shared tile is drawn one step south, the same rule as `CoopProtocol_VisiblePartnerTile` |
+| `expect_battle [moves]` | Co-op wild battle roster (or, with `moves`, that the two players chose different moves and each game recorded the other's choice) |
+| `expect_nz SYM[:size]` | The value is not zero |
 | `expect_no_partner [tag]` | No partner sprite (other map) |
 | `hex SYM [len] [off]` | Print raw bytes |
 | `shot NAME` | Write `NAME_p0.png` and `NAME_p1.png` |

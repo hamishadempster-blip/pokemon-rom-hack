@@ -1,0 +1,23 @@
+# Same opening as Littleroot, but the two players take the front door
+# at different times. One outside and one inside must hide the sprite.
+include boot.inc
+include link.inc
+include tv.inc
+b expect_no_partner still-inside
+0 goto 8 7
+0 press DOWN 50
+0 until_field 800
+b wait 30
+b expect_no_partner only-p0-outside
+1 goto 2 7
+1 press DOWN 50
+1 until_field 800
+b wait 40
+b expect_partner both-outside
+b dump outside-tiles
+0 goto 5 8
+0 press UP 40
+0 until_field 900
+b wait 30
+b expect_no_partner p0-back-inside
+b dump p0-inside

@@ -108,7 +108,36 @@ b press A 2
 b wait 200
 b shot m3
 b dump battle2
-b wait 2500
+0 until_mem gBattlerControllerFuncs:4 HandleInputChooseAction 12000
+1 until_mem gBattlerControllerFuncs+8:4 HandleInputChooseAction 12000
+b expect_battle roster
+0 press A 2
+1 press A 2
+0 until_mem gBattlerControllerFuncs:4 HandleInputChooseMove 2000
+1 until_mem gBattlerControllerFuncs+8:4 HandleInputChooseMove 2000
+0 press A 2
+1 press RIGHT 2
+b wait 20
+1 press A 2
+b wait 30
+b press A 2
+b wait 60
+b press A 2
+b wait 60
+0 until_nz gChosenMoveByBattler:2 A
+0 until_nz gChosenMoveByBattler+4:2 A
+1 press A 2
+1 wait 20
+1 press A 2
+1 wait 20
+1 press A 2
+1 wait 20
+1 press A 2
+1 wait 20
+1 press A 2
+1 wait 20
+1 press A 2
+b expect_battle moves
 b mash_field 20000
 b dump afterBattle
 b shot ab

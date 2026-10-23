@@ -3,9 +3,11 @@
 #include <mgba/core/thread.h>
 #include <mgba/core/log.h>
 #include <mgba/internal/gba/gba.h>
+#include <mgba/internal/gba/savedata.h>
 #include <mgba/internal/gba/sio/lockstep.h>
 #include <mgba-util/vfs.h>
 
+#include <ctype.h>
 #include <pthread.h>
 #include <stdarg.h>
 #include <stdio.h>
@@ -20,7 +22,7 @@
 #define MAX_CMDS 4096
 #define MAX_SYMS 500000
 
-enum { C_PARTNER, C_GOTO, C_HEX, C_PRESS, C_WAIT, C_SHOT, C_DUMP, C_BARRIER, C_UNTIL_CB2, C_UNTIL_FIELD, C_EXPECT, C_UNTIL_MEM };
+enum { C_PARTNER, C_GOTO, C_HEX, C_PRESS, C_WAIT, C_SHOT, C_DUMP, C_BARRIER, C_UNTIL_CB2, C_UNTIL_FIELD, C_EXPECT, C_UNTIL_MEM, C_BATTLE };
 
 struct Cmd {
 	int kind;
@@ -86,6 +88,24 @@ static void loadSyms(const char* path) {
 		}
 	}
 	fclose(f);
+}
+
+static unsigned symValue(const char* name) {
+	char* end = NULL;
+	unsigned v = strtoul(name, &end, 0);
+	if (end != name && *end == '\0') return v;
+	int best = -1;
+	for (int i = 0; i < sNumSyms; i++) {
+		if (strcmp(sSyms[i].name, name)) continue;
+		if (best < 0 || sSyms[i].size > sSyms[best].size) best = i;
+	}
+	if (best < 0) {
+		fprintf(stderr, "unknown value %s\n", name);
+		exit(1);
+	}
+	unsigned addr = sSyms[best].addr;
+	if (sSyms[best].type == 't' || sSyms[best].type == 'T') addr |= 1u;
+	return addr;
 }
 
 static unsigned symAddr(const char* name) {
@@ -172,6 +192,98 @@ static unsigned coopStatic(const char* name) {
 	char full[80];
 	snprintf(full, sizeof(full), "coop.%s", name);
 	return symAddr(full);
+}
+
+static void dump(struct Player* p, const char* tag);
+
+static unsigned partyMon(int trainer, int slot) {
+	return symAddr("gParties") + ((trainer * 6) + slot) * 100u;
+}
+
+static void checkBattle(struct Player* p, int moves) {
+	unsigned flags = rd32(p, sBattleFlags);
+	unsigned linkId = rd8(p, symAddr("gLink") + 2);
+	unsigned err = rd8(p, sLinkErr);
+	const unsigned need = (1u << 0) | (1u << 1) | (1u << 5) | (1u << 6) | (1u << 14);
+	char why[180] = "";
+	if ((rd32(p, sMain + 4) & ~1u) != symAddr("BattleMainCB2"))
+		snprintf(why, sizeof(why), "not in battle");
+	else if ((flags & need) != need || (flags & (1u << 3)))
+		snprintf(why, sizeof(why), "flags %08x", flags);
+	else if (((flags & (1u << 2)) != 0) != (linkId == 0))
+		snprintf(why, sizeof(why), "master bit %08x linkId %u", flags, linkId);
+	else if (err)
+		snprintf(why, sizeof(why), "link error %u", err);
+	else if (rd8(p, symAddr("gBattlersCount")) != 4)
+		snprintf(why, sizeof(why), "battlers %u", rd8(p, symAddr("gBattlersCount")));
+	else if (!moves) {
+		unsigned own = rd16(p, partyMon(0, 0));
+		unsigned partner = rd16(p, partyMon(2, 0));
+		unsigned mons = symAddr("gBattleMons");
+		unsigned foe = 0, foeCount = 0, hpOk = 1;
+		unsigned localBattler = linkId == 0 ? 0 : 2;
+		unsigned ppOk = rd8(p, mons + localBattler * 140 + 37) != 0 && rd16(p, mons + localBattler * 140 + 42) != 0;
+		for (int i = 0; i < 4; i++) {
+			unsigned sp = rd16(p, mons + i * 140);
+			unsigned lv = rd8(p, mons + i * 140 + 44);
+			if (lv == 2 && sp) {
+				if (foe && foe != sp) foe = 0xFFFF;
+				else foe = sp;
+				foeCount++;
+			}
+			if (lv == 2 && !rd16(p, mons + i * 140 + 42)) hpOk = 0;
+		}
+		struct Player* o = &P[1 - p->id];
+		unsigned otherFoe = 0, otherCount = 0;
+		for (int i = 0; i < 4; i++) {
+			unsigned sp = rd16(o, mons + i * 140);
+			if (rd8(o, mons + i * 140 + 44) == 2 && sp) {
+				otherFoe = sp;
+				otherCount++;
+			}
+		}
+		if (!own || rd16(p, partyMon(0, 1)) || !partner || rd16(p, partyMon(2, 1)) || own == partner)
+			snprintf(why, sizeof(why), "roster own %u partner %u", own, partner);
+		else if (rd8(p, partyMon(0, 0) + 84) != 5 || rd8(p, partyMon(2, 0) + 84) != 5)
+			snprintf(why, sizeof(why), "starter levels %u %u", rd8(p, partyMon(0, 0) + 84), rd8(p, partyMon(2, 0) + 84));
+		else if (linkId == 0 && (!ppOk || !hpOk))
+			snprintf(why, sizeof(why), "zero hp or pp");
+		else if (linkId == 0 && (foeCount != 2 || foe == 0xFFFF))
+			snprintf(why, sizeof(why), "expected two level-2 foes, saw %u", foeCount);
+		else if (foeCount && otherCount && foe != otherFoe)
+			snprintf(why, sizeof(why), "foe %u vs %u", foe, otherFoe);
+		else
+			out("[p%d] ok battle roster own=%u partner=%u foe=%u linkId=%u\n", p->id, own, partner, foe, linkId);
+	} else {
+		if (linkId != 0) {
+			out("[p%d] ok move record is on the link master\n", p->id);
+		} else {
+			unsigned mons = symAddr("gBattleMons");
+			unsigned move0 = rd16(p, symAddr("gChosenMoveByBattler"));
+			unsigned move2 = rd16(p, symAddr("gChosenMoveByBattler") + 4);
+			int slot0 = -1, slot2 = -1;
+			for (int i = 0; i < 4; i++) {
+				if (rd16(p, mons + 12 + i * 2) == move0) slot0 = i;
+				if (rd16(p, mons + 2 * 140 + 12 + i * 2) == move2) slot2 = i;
+			}
+			unsigned bs = rd32(p, symAddr("gBattleStruct"));
+			unsigned target0 = rd8(p, bs + 288);
+			unsigned target2 = rd8(p, bs + 290);
+			if (!move0 || !move2 || move0 == move2 || slot0 < 0 || slot2 < 0)
+				snprintf(why, sizeof(why), "moves %u/%u slots %d/%d", move0, move2, slot0, slot2);
+			else if (slot0 == slot2)
+				snprintf(why, sizeof(why), "both used slot %d (moves %u and %u)", slot0, move0, move2);
+			else if (target0 > 3 || target2 > 3)
+				snprintf(why, sizeof(why), "targets %u and %u", target0, target2);
+			else
+				out("[p%d] ok slots %d,%d moves %u,%u targets %u,%u\n", p->id, slot0, slot2, move0, move2, target0, target2);
+		}
+	}
+	if (why[0]) {
+		out("[p%d] FAIL battle: %s\n", p->id, why);
+		dump(p, "fail");
+		sFailures++;
+	}
 }
 
 static void dump(struct Player* p, const char* tag) {
@@ -275,7 +387,7 @@ static void frameCallback(struct mCoreThread* t) {
 			}
 			char why[160] = "";
 			if (c->value == 0) {
-				if (found >= 0) snprintf(why, sizeof(why), "partner sprite shown on another map");
+				if (found >= 0) snprintf(why, sizeof(why), "partner sprite still shown");
 			} else if (!want) {
 				snprintf(why, sizeof(why), "players not on the same map (%d.%d vs %d.%d)", mg, mn, omg, omn);
 			} else if (found < 0) {
@@ -283,12 +395,17 @@ static void frameCallback(struct mCoreThread* t) {
 			} else {
 				unsigned ob = sObjEvents + found * 0x24;
 				unsigned spr = symAddr("gSprites") + rd8(p, ob + 0x23) * 0x44;
+				unsigned pobj = sObjEvents + rd8(p, sAvatar + 5) * 0x24;
+				int lx = (int16_t)rd16(p, pobj + 0x10), ly = (int16_t)rd16(p, pobj + 0x12);
 				int sx = (int16_t)rd16(p, ob + 0x10), sy = (int16_t)rd16(p, ob + 0x12);
 				unsigned objFlags = rd16(p, ob), sprFlags = rd16(p, spr + 0x3E);
-				int dist = abs(sx - ox) + abs(sy - oy);
+				// CoopProtocol_VisiblePartnerTile: a shared tile is drawn one step south.
+				int expectX = ox, expectY = oy;
+				if (ox == lx && oy == ly) expectY++;
 				if (objFlags & (1u << 13)) snprintf(why, sizeof(why), "partner object invisible");
 				else if (!(sprFlags & 1) || ((sprFlags & 4) && !(objFlags & (1u << 14)))) snprintf(why, sizeof(why), "partner sprite hidden (flags %04x)", sprFlags);
-				else if (dist > 1) snprintf(why, sizeof(why), "partner drawn at (%d,%d), really at (%d,%d)", sx - 7, sy - 7, ox - 7, oy - 7);
+				else if (sx != expectX || sy != expectY)
+					snprintf(why, sizeof(why), "partner at (%d,%d), expected (%d,%d)", sx, sy, expectX, expectY);
 			}
 			if (why[0]) {
 				out("[p%d] FAIL %s: %s\n", p->id, c->text, why);
@@ -348,9 +465,14 @@ static void frameCallback(struct mCoreThread* t) {
 		case C_UNTIL_CB2:
 		case C_UNTIL_FIELD:
 		case C_UNTIL_MEM: {
+			int nbytes = c->size < 0 ? -c->size : c->size;
+			unsigned got = c->kind == C_UNTIL_MEM ? rdN(p, c->addr, nbytes) : 0;
+			unsigned want = c->value;
+			if ((want & 1u) && nbytes == 4) { got &= ~1u; want &= ~1u; }
 			bool ok = c->kind == C_UNTIL_CB2 ? (rd32(p, sMain + 4) & ~1u) == c->addr
 			        : c->kind == C_UNTIL_FIELD ? inField(p)
-			        : rdN(p, c->addr, c->size) == c->value;
+			        : c->size < 0 ? got != 0
+			        : got == want;
 			if (c->kind == C_UNTIL_FIELD) {
 				p->stable = ok ? p->stable + 1 : 0;
 				ok = p->stable >= 20;
@@ -367,10 +489,28 @@ static void frameCallback(struct mCoreThread* t) {
 			}
 			break;
 		}
+		case C_BATTLE:
+			checkBattle(p, c->value);
+			advance = true;
+			break;
 		case C_EXPECT: {
-			unsigned v = rdN(p, c->addr, c->size);
-			if (v != c->value) {
-				out("[p%d] FAIL expect %s: got %u want %u\n", p->id, c->text, v, c->value);
+			int nbytes = c->size < 0 ? -c->size : c->size;
+			unsigned v = rdN(p, c->addr, nbytes);
+			if ((c->value & 1u) && nbytes == 4) v &= ~1u;
+			unsigned expect = (c->value & 1u) && nbytes == 4 ? c->value & ~1u : c->value;
+			if (c->size < 0) {
+				if (!v) {
+					out("[p%d] FAIL expect %s: got 0\n", p->id, c->text);
+					dump(p, "fail");
+					sFailures++;
+				} else {
+					out("[p%d] ok %s (%u)\n", p->id, c->text, v);
+				}
+				advance = true;
+				break;
+			}
+			if (v != expect) {
+				out("[p%d] FAIL expect %s: got %u want %u\n", p->id, c->text, v, expect);
 				dump(p, "fail");
 				sFailures++;
 			} else {
@@ -479,6 +619,24 @@ static void loadScript(const char* path, int depth) {
 			c.kind = C_UNTIL_FIELD; c.frames = n >= 3 ? atoi(a) : 3000;
 			if (cmd[0] == 'm') c.keys = n >= 4 ? parseKeys(b) : 1;
 			strcpy(c.text, "field control");
+		} else if (!strcmp(cmd, "until_nz") || !strcmp(cmd, "expect_nz")) {
+			char sym[96]; unsigned off = 0; int size = 1;
+			strncpy(sym, a, sizeof(sym) - 1);
+			char* colon = strchr(sym, ':');
+			if (colon) { size = atoi(colon + 1); *colon = 0; }
+			char* plus = strchr(sym, '+');
+			if (plus) { off = strtoul(plus + 1, NULL, 0); *plus = 0; }
+			c.kind = cmd[0] == 'u' ? C_UNTIL_MEM : C_EXPECT;
+			c.addr = symAddr(sym) + off;
+			c.size = -size;
+			c.frames = 4000;
+			if (n >= 4 && isdigit((unsigned char)b[0])) c.frames = atoi(b);
+			else if (n >= 4) c.keys = parseKeys(b);
+			snprintf(c.text, sizeof(c.text), "%s != 0", a);
+		} else if (!strcmp(cmd, "expect_battle")) {
+			c.kind = C_BATTLE;
+			c.value = n >= 3 && !strcmp(a, "moves");
+			snprintf(c.text, sizeof(c.text), "battle %s", c.value ? "moves" : "roster");
 		} else if (!strcmp(cmd, "until_mem") || !strcmp(cmd, "expect")) {
 			// until_mem SYM[+off]:size value [timeout]
 			char sym[96]; unsigned off = 0; int size = 1;
@@ -490,7 +648,7 @@ static void loadScript(const char* path, int depth) {
 			c.kind = !strcmp(cmd, "expect") ? C_EXPECT : C_UNTIL_MEM;
 			c.addr = (!strncmp(sym, "coop.", 5) ? symAddr(sym) : symAddr(sym)) + off;
 			c.size = size;
-			c.value = strtoul(b, NULL, 0);
+			c.value = symValue(b);
 			c.frames = n >= 5 ? atoi(d) : 3000;
 			snprintf(c.text, sizeof(c.text), "%s == %s", a, b);
 		} else {
@@ -645,8 +803,13 @@ int main(int argc, char** argv) {
 			break;
 		}
 	}
-	// Tearing down a live lockstep pair can deadlock, so flush the saves and leave.
-	for (int i = 0; i < 2; i++) mCoreThreadInterrupt(&P[i].thread);
+	// Tearing down a live lockstep pair can deadlock. Write any dirty
+	// save sectors first; exiting here skips the normal core shutdown.
+	for (int i = 0; i < 2; i++) {
+		struct GBA* gba = P[i].core->board;
+		GBASavedataClean(&gba->memory.savedata, 0);
+		mCoreThreadInterrupt(&P[i].thread);
+	}
 	out("frames p0=%d p1=%d failures=%d\n", P[0].frame, P[1].frame, sFailures);
 	_exit(sFailures ? 1 : 0);
 }

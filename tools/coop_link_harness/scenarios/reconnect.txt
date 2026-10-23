@@ -1,0 +1,16 @@
+# Continue the lab saves, link again, and check the starter was not duplicated.
+b wait 500
+b press START 2
+b wait 300
+b press A 2
+b wait 200
+b press A 2
+b mash_field 4000
+b until_field 5000
+b expect gSaveCounter:4 1
+b expect_nz gParties:2
+b expect gParties+100:2 0
+b dump continued
+include link.inc
+b expect_partner reconnected
+b dump relinked
