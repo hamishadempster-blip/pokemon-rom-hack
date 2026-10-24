@@ -264,7 +264,12 @@ struct CoopSave
     u8 legendaryOwner[3];
     u8 pendingLegendary;
     u8 caseId;
-    u8 reserved;
+    u8 layout;          // 0 on saves from before the fields below existed
+    u16 storyDone;      // COOP_STORY_* milestones this save has
+    u16 storyApplied;   // milestones whose story state is written here
+    u8 rivalId;         // COOP_RIVAL_*: the twin who answers this player's case
+    u8 sharedItems;     // shared progression items already received
+    u8 unused[2];
 };
 
 struct SaveBlock3

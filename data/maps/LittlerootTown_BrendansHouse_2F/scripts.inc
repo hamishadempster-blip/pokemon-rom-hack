@@ -77,6 +77,9 @@ LittlerootTown_BrendansHouse_2F_EventScript_RivalsPokeBall::
 	end
 
 LittlerootTown_BrendansHouse_2F_EventScript_MeetBrendan::
+	@ A partner in this room who has not met the twins joins from their save.
+	setvar VAR_0x8004, COOP_SCENE_RIVAL_INTRO
+	special Coop_AnnounceScene
 	delay 10
 	addobject LOCALID_RIVALS_HOUSE_2F_RIVAL
 	applymovement LOCALID_RIVALS_HOUSE_2F_RIVAL, LittlerootTown_BrendansHouse_2F_Movement_BrendanEnters

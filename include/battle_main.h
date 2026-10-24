@@ -134,4 +134,6 @@ extern const u8 gStatusConditionString_LoveJpn[8];
 
 extern const u8 *const gStatusConditionStringsTable[7][2];
 
+bool32 Coop_BattlePartnerReady(enum BattlerId partner);
+
 #endif // GUARD_BATTLE_MAIN_H

@@ -15,6 +15,10 @@
 	.global Coop_EventScript_BeaconOn
 	.global Coop_EventScript_BeaconOff
 	.global Coop_EventScript_BeaconDeclined
+	.global Coop_EventScript_JoinRivalIntro
+	.global Coop_EventScript_TalkTwin
+	.global Coop_EventScript_RivalTaunt
+	.global Coop_EventScript_JoinAskGuest
 
 @ Coop_TakeRefusal: 1 means this player's first three are down,
 @ 2 means the partner's are. 0 falls through to the usual message.
@@ -136,13 +140,38 @@ Coop_EventScript_AskToggleCap::
 	releaseall
 	end
 
+@ Linked: a short list. Where the partner is, the Beacon, and your rival
+@ are in the start menu's status window just before. B or BACK returns to
+@ the start menu, like the other entries.
 Coop_EventScript_MenuLinked::
-	special Coop_BufferPartnerLocation
-	special Coop_BufferBeaconStatus
-	msgbox Coop_Text_PartnerWhere, MSGBOX_YESNO
-	goto_if_eq VAR_RESULT, NO, Coop_EventScript_MenuEnd
+	dynmultichoice 21, 1, FALSE, 3, 0, DYN_MULTICHOICE_CB_NONE, Coop_Text_OptBeacon, Coop_Text_OptUnlink, Coop_Text_OptBack
+	switch VAR_RESULT
+	case 0, Coop_EventScript_MenuBeacon
+	case 1, Coop_EventScript_MenuUnlink
+	goto Coop_EventScript_MenuBack
+
+Coop_EventScript_MenuBeacon::
+	specialvar VAR_RESULT, Coop_MenuUseBeacon
+	goto_if_eq VAR_RESULT, FALSE, Coop_EventScript_MenuNoBeacon
+	msgbox gStringVar4, MSGBOX_DEFAULT
+	releaseall
+	end
+
+Coop_EventScript_MenuNoBeacon::
+	msgbox Coop_Text_NoBeaconYet, MSGBOX_DEFAULT
+	goto Coop_EventScript_MenuBack
+
+Coop_EventScript_MenuUnlink::
+	msgbox Coop_Text_AskUnlink, MSGBOX_YESNO
+	goto_if_eq VAR_RESULT, NO, Coop_EventScript_MenuBack
 	special Coop_Disconnect
 	msgbox Coop_Text_Disconnected, MSGBOX_DEFAULT
+	releaseall
+	end
+
+Coop_EventScript_MenuBack::
+	closemessage
+	special Coop_ReopenStartMenu
 	releaseall
 	end
 
@@ -262,6 +291,23 @@ Coop_Text_PartnerNotReady:
 	.string "POKéMON can't battle right now.\p"
 	.string "Nothing started.\n"
 	.string "Try again once they've healed.$"
+
+Coop_Text_OptBeacon:
+	.string "BEACON$"
+
+Coop_Text_OptUnlink:
+	.string "UNLINK$"
+
+Coop_Text_OptBack:
+	.string "BACK$"
+
+Coop_Text_AskUnlink:
+	.string "Drop the link?\n"
+	.string "The Twin Beacon turns off.$"
+
+Coop_Text_NoBeaconYet:
+	.string "PROF. BIRCH gives each of you a\n"
+	.string "TWIN BEACON after the rescue.$"
 
 Coop_Text_Disconnected:
 	.string "The link dropped.\n"
@@ -409,6 +455,7 @@ Coop_EventScript_GuestCatchUp::
 	specialvar VAR_RESULT, Coop_ApplyGuestStory
 	goto_if_eq VAR_RESULT, 1, Common_EventScript_ShowBagIsFull
 	goto_if_eq VAR_RESULT, 2, Coop_EventScript_GuestRoute128
+	goto_if_eq VAR_RESULT, 3, Coop_EventScript_SharedItemWaiting
 	releaseall
 	end
 
@@ -547,9 +594,15 @@ Coop_EventScript_GuestHallOfFame::
 @ catcher's game only.
 Coop_EventScript_CaughtNickname::
 	lockall
+Coop_EventScript_PartnerCatchNext::
+	specialvar VAR_RESULT, Coop_NextPartnerCatch
+	goto_if_eq VAR_RESULT, SPECIES_NONE, Coop_EventScript_CaughtNicknameNext
+	msgbox Coop_Text_PartnerCaught, MSGBOX_DEFAULT
+	goto Coop_EventScript_PartnerCatchNext
 Coop_EventScript_CaughtNicknameNext::
 	specialvar VAR_RESULT, Coop_NextCaughtNickname
 	goto_if_eq VAR_RESULT, SPECIES_NONE, Coop_EventScript_CaughtNicknameDone
+	msgbox Coop_Text_YouCaught, MSGBOX_DEFAULT
 	msgbox Coop_Text_NicknameCaught, MSGBOX_YESNO
 	goto_if_eq VAR_RESULT, NO, Coop_EventScript_CaughtNicknameNext
 	fadescreen FADE_TO_BLACK
@@ -592,6 +645,14 @@ Coop_EventScript_PairTooLate::
 	releaseall
 	end
 
+Coop_Text_PartnerCaught:
+	.string "Your partner's ball caught the\n"
+	.string "{STR_VAR_1}. It belongs to them.$"
+
+Coop_Text_YouCaught:
+	.string "Your ball caught the {STR_VAR_1}.\n"
+	.string "It's yours to keep.$"
+
 Coop_Text_NicknameCaught:
 	.string "Give a nickname to the\n"
 	.string "{STR_VAR_1} you caught?$"
@@ -627,3 +688,210 @@ Coop_EventScript_ProgressionEvolution::
 	special Coop_StartProgressionEvolution
 	waitstate
 	goto Coop_EventScript_ProgressionNext
+
+@ The partner is meeting the rival in this bedroom, or just has. This save
+@ has not met the twins yet, so the rival turns to this player as well and
+@ the introduction is not replayed later. The rival stands at the PC, the
+@ spot the full scene ends on, so the stairs and the partner's path stay clear.
+Coop_EventScript_JoinRivalIntro::
+	lockall
+	goto_if_ne VAR_LITTLEROOT_RIVAL_STATE, 2, Coop_EventScript_JoinRivalEnd
+	special Coop_PrepareRivalJoin
+	setobjectxyperm LOCALID_RIVALS_HOUSE_2F_RIVAL, VAR_0x8005, VAR_0x8006
+	setobjectmovementtype LOCALID_RIVALS_HOUSE_2F_RIVAL, MOVEMENT_TYPE_FACE_UP
+	addobject LOCALID_RIVALS_HOUSE_2F_RIVAL
+	applymovement LOCALID_RIVALS_HOUSE_2F_RIVAL, Common_Movement_FacePlayer
+	waitmovement 0
+	playse SE_PIN
+	applymovement LOCALID_RIVALS_HOUSE_2F_RIVAL, Common_Movement_ExclamationMark
+	waitmovement 0
+	checkplayergender
+	call_if_eq VAR_RESULT, MALE, Coop_EventScript_JoinMira
+	call_if_eq VAR_RESULT, FEMALE, Coop_EventScript_JoinSoren
+	closemessage
+	applymovement LOCALID_RIVALS_HOUSE_2F_RIVAL, Common_Movement_FaceUp
+	waitmovement 0
+	setvar VAR_LITTLEROOT_RIVAL_STATE, 3
+	setvar VAR_LITTLEROOT_TOWN_STATE, 1
+Coop_EventScript_JoinRivalEnd::
+	releaseall
+	end
+
+Coop_EventScript_JoinMira::
+	msgbox Coop_Text_JoinMira, MSGBOX_DEFAULT
+	setflag FLAG_HIDE_LITTLEROOT_TOWN_MAYS_HOUSE_2F_POKE_BALL
+	clearflag FLAG_HIDE_LITTLEROOT_TOWN_MAYS_HOUSE_RIVAL_BEDROOM
+	return
+
+Coop_EventScript_JoinSoren::
+	msgbox Coop_Text_JoinSoren, MSGBOX_DEFAULT
+	setflag FLAG_HIDE_LITTLEROOT_TOWN_BRENDANS_HOUSE_2F_POKE_BALL
+	clearflag FLAG_HIDE_LITTLEROOT_TOWN_BRENDANS_HOUSE_RIVAL_BEDROOM
+	return
+
+Coop_Text_JoinMira:
+	.string "MIRA: Oh! There are two of you?\p"
+	.string "You must be {PLAYER}{KUN}.\n"
+	.string "Dad said our new neighbors were\l"
+	.string "moving in today.\p"
+	.string "I'm MIRA. My twin brother SOREN\n"
+	.string "is around here somewhere, too.\p"
+	.string "I hope we can all be friends…\n"
+	.string "and POKéMON friends, too!\p"
+	.string "Oh, no! I was supposed to help Dad\n"
+	.string "catch some wild POKéMON!\p"
+	.string "I'll catch you both later!$"
+
+Coop_Text_JoinSoren:
+	.string "SOREN: Whoa, two new neighbors?\p"
+	.string "You're {PLAYER}, right?\n"
+	.string "Dad, PROF. BIRCH, said someone was\l"
+	.string "moving in next door today.\p"
+	.string "I'm SOREN. My twin sister MIRA's\n"
+	.string "around here somewhere.\p"
+	.string "Aw, darn, I'm supposed to be out\n"
+	.string "helping Dad catch wild POKéMON.\p"
+	.string "Catch you two later, okay?$"
+
+@ The second twin beside the story's rival. Soren is brash and keen to
+@ win; Mira is warm and curious. Their sibling is the one with the plan.
+Coop_EventScript_TalkTwin::
+	lock
+	faceplayer
+	specialvar VAR_RESULT, Coop_TwinIdentity
+	goto_if_eq VAR_RESULT, COOP_RIVAL_SOREN, Coop_EventScript_TalkSoren
+	msgbox Coop_Text_TalkMira, MSGBOX_DEFAULT
+	release
+	end
+
+Coop_EventScript_TalkSoren::
+	msgbox Coop_Text_TalkSoren, MSGBOX_DEFAULT
+	release
+	end
+
+@ Before the first rival fight the twin who answers this player's case
+@ names their counter-pick. The other twin introduces themselves when the
+@ player only met their sibling at home.
+Coop_EventScript_RivalTaunt::
+	specialvar VAR_RESULT, Coop_BufferRivalTaunt
+	switch VAR_RESULT
+	case 1, Coop_EventScript_TauntSorenIntro
+	case 2, Coop_EventScript_TauntMiraIntro
+	case 3, Coop_EventScript_TauntSorenHome
+	case 4, Coop_EventScript_TauntMiraHome
+	return
+
+Coop_EventScript_TauntSorenIntro::
+	msgbox Coop_Text_TauntSorenIntro, MSGBOX_DEFAULT
+	return
+
+Coop_EventScript_TauntMiraIntro::
+	msgbox Coop_Text_TauntMiraIntro, MSGBOX_DEFAULT
+	return
+
+Coop_EventScript_TauntSorenHome::
+	msgbox Coop_Text_MiraHello, MSGBOX_DEFAULT
+	msgbox Coop_Text_TauntSoren, MSGBOX_DEFAULT
+	return
+
+Coop_EventScript_TauntMiraHome::
+	msgbox Coop_Text_SorenHello, MSGBOX_DEFAULT
+	msgbox Coop_Text_TauntMira, MSGBOX_DEFAULT
+	return
+
+Coop_Text_TalkSoren:
+	.string "SOREN: Heh, {PLAYER}!\n"
+	.string "MIRA does the planning.\p"
+	.string "I do the winning!$"
+
+Coop_Text_TalkMira:
+	.string "MIRA: Hi, {PLAYER}{KUN}!\n"
+	.string "SOREN gets so excited…\p"
+	.string "Go on, he has something to say!$"
+
+Coop_Text_TauntSorenIntro:
+	.string "SOREN: And I'm SOREN, MIRA's twin!\p"
+	.string "Dad let me take {STR_VAR_1}.\n"
+	.string "It's got the edge on your\l"
+	.string "{STR_VAR_2}, {PLAYER}!\p"
+	.string "Heh, try to keep up!$"
+
+Coop_Text_TauntMiraIntro:
+	.string "MIRA: And I'm MIRA, SOREN's twin!\p"
+	.string "Dad let me take {STR_VAR_1}.\n"
+	.string "I want to see how it does against\l"
+	.string "your {STR_VAR_2}, {PLAYER}{KUN}!\p"
+	.string "Let's both do our best!$"
+
+Coop_Text_MiraHello:
+	.string "MIRA: I'm MIRA, SOREN's twin.\n"
+	.string "Nice to meet you, {PLAYER}{KUN}!$"
+
+Coop_Text_SorenHello:
+	.string "SOREN: I'm SOREN, MIRA's twin.\n"
+	.string "Good to meet you, {PLAYER}!$"
+
+Coop_Text_TauntSoren:
+	.string "SOREN: Dad let me take {STR_VAR_1}.\n"
+	.string "It's got the edge on your\l"
+	.string "{STR_VAR_2}, {PLAYER}!\p"
+	.string "Heh, try to keep up!$"
+
+Coop_Text_TauntMira:
+	.string "MIRA: Dad let me take {STR_VAR_1}.\n"
+	.string "I want to see how it does against\l"
+	.string "your {STR_VAR_2}, {PLAYER}{KUN}!\p"
+	.string "Let's both do our best!$"
+
+@ A shared story item that did not fit. The save keeps it for later.
+Coop_EventScript_SharedItemWaiting::
+	msgbox Coop_Text_SharedItemWaiting, MSGBOX_DEFAULT
+	releaseall
+	end
+
+Coop_EventScript_SharedItemArrived::
+	lockall
+	playfanfare MUS_OBTAIN_ITEM
+	msgbox Coop_Text_SharedItemArrived, MSGBOX_DEFAULT
+	waitfanfare
+	releaseall
+	end
+
+Coop_Text_SharedItemWaiting:
+	.string "Your partner's win earned you\n"
+	.string "the {STR_VAR_1}, but the BAG is full.\p"
+	.string "It will arrive once there's room.$"
+
+Coop_Text_SharedItemArrived:
+	.string "Your share from the shared win\n"
+	.string "arrived: the {STR_VAR_1}!$"
+
+@ The partner ran into a wild POKéMON or a TRAINER nearby. Joining is
+@ optional and has to be answered in time; a NO, B, or a late YES leaves
+@ the partner to fight alone. Coop_PairGuestAnswer: 1 launched, 2 too late.
+Coop_EventScript_JoinAskGuest::
+	lockall
+	specialvar VAR_RESULT, Coop_BufferJoinAsk
+	goto_if_eq VAR_RESULT, COOP_KIND_WILD_VALUE, Coop_EventScript_JoinAskWild
+	msgbox Coop_Text_JoinAskTrainer, MSGBOX_YESNO
+	goto Coop_EventScript_JoinAskAnswer
+
+Coop_EventScript_JoinAskWild::
+	msgbox Coop_Text_JoinAskWild, MSGBOX_YESNO
+Coop_EventScript_JoinAskAnswer::
+	closemessage
+	specialvar VAR_RESULT, Coop_PairGuestAnswer
+	goto_if_eq VAR_RESULT, 1, Coop_EventScript_PairGuestWait
+	goto_if_eq VAR_RESULT, 2, Coop_EventScript_PairTooLate
+	@ 3: a wild fight, launched once this script has ended, from the
+	@ same idle field state the old automatic answer started it from.
+	releaseall
+	end
+
+Coop_Text_JoinAskWild:
+	.string "Your partner ran into a wild\n"
+	.string "{STR_VAR_1} nearby. Join the battle?$"
+
+Coop_Text_JoinAskTrainer:
+	.string "{STR_VAR_1} challenged your partner\n"
+	.string "nearby. Join the battle?$"

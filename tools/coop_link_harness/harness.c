@@ -22,7 +22,7 @@
 #define MAX_CMDS 4096
 #define MAX_SYMS 500000
 
-enum { C_PARTNER, C_GOTO, C_HEX, C_PRESS, C_WAIT, C_SHOT, C_DUMP, C_BARRIER, C_UNTIL_CB2, C_UNTIL_FIELD, C_EXPECT, C_UNTIL_MEM, C_BATTLE, C_MENU, C_PARTY, C_FIXTURE, C_WRITE, C_LEAD, C_MOVE, C_SIX, C_VAR, C_FLAG, C_VS, C_EXPECT_FLAG, C_EXPECT_VAR, C_NO_OBJECT, C_MAP, C_OBJECT, C_TEXT_SPEED };
+enum { C_PARTNER, C_GOTO, C_HEX, C_PRESS, C_WAIT, C_SHOT, C_DUMP, C_BARRIER, C_UNTIL_CB2, C_UNTIL_FIELD, C_EXPECT, C_UNTIL_MEM, C_BATTLE, C_MENU, C_PARTY, C_FIXTURE, C_WRITE, C_LEAD, C_MOVE, C_SIX, C_VAR, C_FLAG, C_VS, C_EXPECT_FLAG, C_EXPECT_VAR, C_NO_OBJECT, C_MAP, C_OBJECT, C_TEXT_SPEED, C_PACE };
 
 struct Cmd {
 	int kind;
@@ -624,11 +624,15 @@ static void frameCallback(struct mCoreThread* t) {
 				int lx = (int16_t)rd16(p, pobj + 0x10), ly = (int16_t)rd16(p, pobj + 0x12);
 				int sx = (int16_t)rd16(p, ob + 0x10), sy = (int16_t)rd16(p, ob + 0x12);
 				unsigned objFlags = rd16(p, ob), sprFlags = rd16(p, spr + 0x3E);
-				// CoopProtocol_VisiblePartnerTile: a shared tile is drawn one step south.
+				// Coop_PartnerTarget: a shared tile is drawn on a free neighbouring tile.
 				int expectX = ox, expectY = oy;
-				if (ox == lx && oy == ly) expectY++;
+				// A shared tile is drawn on a free neighbour, south first.
+				int shared = ox == lx && oy == ly;
+				if (shared) expectY++;
 				if (objFlags & (1u << 13)) snprintf(why, sizeof(why), "partner object invisible");
 				else if (!(sprFlags & 1) || ((sprFlags & 4) && !(objFlags & (1u << 14)))) snprintf(why, sizeof(why), "partner sprite hidden (flags %04x)", sprFlags);
+				else if (shared && (sx - lx) * (sx - lx) + (sy - ly) * (sy - ly) == 1)
+					;
 				else if (sx != expectX || sy != expectY)
 					snprintf(why, sizeof(why), "partner at (%d,%d), expected (%d,%d)", sx, sy, expectX, expectY);
 			}
@@ -736,6 +740,17 @@ static void frameCallback(struct mCoreThread* t) {
             advance = true;
             break;
         }
+        case C_PACE: {
+            if ((rd32(p, sMain + 4) & ~1u) == (symAddr("BattleMainCB2") & ~1u)) { advance = true; break; }
+            keys = ((p->step / 24) & 1) ? (1u << 7) : (1u << 6);
+            if (++p->step >= c->frames) {
+                out("[p%d] FAIL no battle while pacing\n", p->id);
+                dump(p, "fail");
+                sFailures++;
+                p->done = 1;
+            }
+            break;
+        }
         case C_TEXT_SPEED: {
             unsigned addr = rd32(p, symAddr("gSaveBlock2Ptr")) + 0x14;
             p->core->busWrite16(p->core, addr, (rd16(p, addr) & ~7u) | (c->value & 7u));
@@ -766,7 +781,8 @@ static void frameCallback(struct mCoreThread* t) {
                     fy = (int16_t)rd16(p, obj + 0x12) - 7;
                 }
             }
-            if (!found || fx != (int)c->addr || fy != c->size) {
+            int anywhere = c->addr == 0xFFFF;
+            if (!found || (!anywhere && (fx != (int)c->addr || fy != c->size))) {
                 out("[p%d] FAIL object %u at (%d,%d) found=%d, expected (%u,%d)\n", p->id, c->value, fx, fy, found, c->addr, c->size);
                 sFailures++;
             } else out("[p%d] ok object %u at (%d,%d)\n", p->id, c->value, fx, fy);
@@ -1017,6 +1033,10 @@ static void loadScript(const char* path, int depth) {
         } else if (!strcmp(cmd, "expect_no_object")) {
             c.kind = C_NO_OBJECT;
             c.value = strtoul(a, NULL, 0);
+        } else if (!strcmp(cmd, "pace_until_battle")) {
+            // Walk up and down in place (grass) until a battle starts.
+            c.kind = C_PACE;
+            c.frames = n >= 3 ? atoi(a) : 6000;
         } else if (!strcmp(cmd, "text_speed")) {
             // 0 slow, 1 mid, 2 fast. A player setting, not story state.
             c.kind = C_TEXT_SPEED;
@@ -1031,6 +1051,12 @@ static void loadScript(const char* path, int depth) {
             c.value = strtoul(a, NULL, 0);
             c.addr = strtoul(b, NULL, 0);
             c.size = atoi(d);
+        } else if (!strcmp(cmd, "expect_any_object")) {
+            // LOCAL_ID present somewhere on the current map.
+            c.kind = C_OBJECT;
+            c.value = strtoul(a, NULL, 0);
+            c.addr = 0xFFFF;
+            c.size = -1;
         } else if (!strcmp(cmd, "expect_vs_party") || !strcmp(cmd, "expect_flag") || !strcmp(cmd, "expect_var")) {
             c.kind = !strcmp(cmd, "expect_vs_party") ? C_VS : !strcmp(cmd, "expect_flag") ? C_EXPECT_FLAG : C_EXPECT_VAR;
             c.addr = strtoul(a, NULL, 0);

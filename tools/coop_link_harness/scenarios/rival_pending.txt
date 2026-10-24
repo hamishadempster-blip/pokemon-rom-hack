@@ -1,0 +1,8 @@
+# Player 0 meets May while player 1 waits downstairs. Player 1 then goes
+# up and receives the finished introduction instead of replaying it.
+include boys_to_rival_house.inc
+b sync
+include p0_meets_may.inc
+b sync
+1 expect_var 0x408D 0
+include p1_enters_bedroom_after.inc

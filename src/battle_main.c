@@ -3849,6 +3849,18 @@ enum
     STATE_SELECTION_SCRIPT_MAY_RUN
 };
 
+// Co-op, on the link master only: the partner's human has finished
+// choosing this turn and is waiting on the local player.
+bool32 Coop_BattlePartnerReady(enum BattlerId partner)
+{
+    if (!(gBattleTypeFlags & BATTLE_TYPE_COOP) || !(gBattleTypeFlags & BATTLE_TYPE_IS_MASTER))
+        return FALSE;
+    if (partner >= gBattlersCount || gBattleMainFunc != HandleTurnActionSelectionState)
+        return FALSE;
+    return gBattleCommunication[partner] == STATE_WAIT_ACTION_CONFIRMED_STANDBY
+        || gBattleCommunication[partner] == STATE_WAIT_ACTION_CONFIRMED;
+}
+
 static void HandleTurnActionSelectionState(void)
 {
     s32 i;

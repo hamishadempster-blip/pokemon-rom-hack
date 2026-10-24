@@ -39,6 +39,7 @@ static void Fill(struct CoopFrame *frame)
     frame->legend[0] = COOP_OWNER_LOCAL;
     frame->legend[1] = COOP_OWNER_PARTNER;
     frame->legend[2] = COOP_OWNER_NONE;
+    frame->activity = COOP_ACT_MENU;
 }
 
 int main(void)
@@ -57,6 +58,7 @@ int main(void)
     Expect(out.request == COOP_REQ_CASE && out.slot == 3 && out.badges == 0x15, "request and badges");
     Expect(out.legend[0] == COOP_OWNER_LOCAL && out.legend[1] == COOP_OWNER_PARTNER, "legend owners");
     Expect(out.rivalStage == 2 && out.gender == 1 && out.bike == 1 && out.surf == 0, "rival and movement");
+    Expect(out.activity == COOP_ACT_MENU && out.legend[2] == COOP_OWNER_NONE, "activity beside the legend owners");
 
     words[7] ^= 1;
     Expect(CoopProtocol_Unpack(words, &out, COOP_BUILD_XOR) == COOP_UNPACK_DROP, "bad checksum");
@@ -356,6 +358,55 @@ int main(void)
         Expect(right[0] == 1 && right[1] == 1, "a win marks only the ids that were fought");
         Expect(COOP_PAIR_LEFT_ID != COOP_PAIR_RIGHT_ID, "the two ids are different");
     }
+
+    // Shared-tile staging: the first free neighbour, south first.
+    {
+        s16 x = 4, y = 6;
+        CoopProtocol_PickPartnerTile(4, 6, &x, &y, COOP_TILE_SOUTH | COOP_TILE_EAST);
+        Expect(x == 4 && y == 7, "shared tile prefers south");
+        x = 4; y = 6;
+        CoopProtocol_PickPartnerTile(4, 6, &x, &y, COOP_TILE_WEST | COOP_TILE_EAST);
+        Expect(x == 3 && y == 6, "blocked south and north fall back to west");
+        x = 4; y = 6;
+        CoopProtocol_PickPartnerTile(4, 6, &x, &y, COOP_TILE_NORTH);
+        Expect(x == 4 && y == 5, "only north free");
+        x = 5; y = 6;
+        CoopProtocol_PickPartnerTile(4, 6, &x, &y, COOP_TILE_SOUTH);
+        Expect(x == 5 && y == 6, "a separate tile is left alone");
+        x = 4; y = 6;
+        CoopProtocol_PickPartnerTile(4, 6, &x, &y, 0);
+        Expect(x == 4 && y == 6, "no free side keeps the tile");
+    }
+
+    // Story ledger: only ever adds, ignores unknown bits, and dedupes.
+    {
+        struct CoopStoryMsg msg;
+        u16 merged = CoopProtocol_MergeStory(0, 1 << COOP_STORY_RIVAL_MET);
+        Expect(merged == (1 << COOP_STORY_RIVAL_MET), "a partner milestone is added");
+        Expect(CoopProtocol_MergeStory(merged, 0) == merged, "an empty ledger removes nothing");
+        Expect(CoopProtocol_MergeStory(0, 0x8000) == 0, "a future milestone is not stored");
+        Expect(CoopProtocol_StoryPending(merged, 0) == merged, "a new milestone is pending");
+        Expect(CoopProtocol_StoryPending(merged, merged) == 0, "an applied milestone is not pending");
+        Expect(CoopProtocol_SeqIsNew(5, 6) && !CoopProtocol_SeqIsNew(6, 6) && !CoopProtocol_SeqIsNew(6, 5), "sequence dedupe");
+        Expect(CoopProtocol_SeqIsNew(0xFFFF, 0), "sequence wraps");
+        memset(&msg, 0, sizeof(msg));
+        msg.magic = COOP_STORY_MAGIC;
+        msg.kind = COOP_STORY_MSG_SCENE;
+        msg.scene = COOP_SCENE_RIVAL_INTRO;
+        msg.ledger = 1;
+        msg.mapGroup = 1;
+        msg.mapNum = 3;
+        msg.seq = 7;
+        msg.checksum = CoopProtocol_StoryChecksum(&msg);
+        Expect(msg.checksum == CoopProtocol_StoryChecksum(&msg), "story checksum is stable");
+        msg.mapNum = 2;
+        Expect(msg.checksum != CoopProtocol_StoryChecksum(&msg), "story checksum covers the map");
+        Expect(sizeof(struct CoopStoryMsg) <= 256, "story message fits a link block");
+    }
+
+    // The case decides the rival: starter holder faces Soren.
+    Expect(CoopProtocol_RivalForSlot(0) == COOP_RIVAL_SOREN, "starter holder faces Soren");
+    Expect(CoopProtocol_RivalForSlot(1) == COOP_RIVAL_MIRA, "companion holder faces Mira");
 
     if (sFails != 0)
     {

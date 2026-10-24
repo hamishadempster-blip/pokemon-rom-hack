@@ -16,8 +16,9 @@ const u8 gText_ExpandedPlaceholder_Archie[] = _("ARCHIE");
 const u8 gText_ExpandedPlaceholder_Maxie[] = _("MAXIE");
 const u8 gText_ExpandedPlaceholder_Kyogre[] = _("KYOGRE");
 const u8 gText_ExpandedPlaceholder_Groudon[] = _("GROUDON");
-const u8 gText_ExpandedPlaceholder_Brendan[] = _("BRENDAN");
-const u8 gText_ExpandedPlaceholder_May[] = _("MAY");
+// Co-op: the rival twins. Brendan's look is SOREN and May's look is MIRA.
+const u8 gText_ExpandedPlaceholder_Brendan[] = _("SOREN");
+const u8 gText_ExpandedPlaceholder_May[] = _("MIRA");
 const u8 gText_ExpandedPlaceholder_Red[] = _("RED");
 const u8 gText_ExpandedPlaceholder_Green[] = _("GREEN");
 const u8 gText_EggNickname[POKEMON_NAME_LENGTH + 1] = _("EGG");

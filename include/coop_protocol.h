@@ -15,7 +15,8 @@
 // Word 5: joint badges in the low byte, rival stage in bits 8-11,
 //         sequence in bits 12-15.
 // Word 6: the NPC being talked to in the low byte (0xFF means the Birch bag
-//         screen), three 2-bit legendary owners in bits 8-13.
+//         screen), three 2-bit legendary owners in bits 8-13, and what the
+//         player is doing (COOP_ACT_*) in bits 14-15.
 // Word 7: checksum of words 1-6.
 
 #ifdef COOP_HOST_TEST
@@ -27,8 +28,9 @@ typedef uint32_t u32;
 #else
 #include "global.h"
 #endif
+#include "constants/coop.h"
 
-#define COOP_BUILD_ID  0xC017012Bu
+#define COOP_BUILD_ID  0xC017012Cu
 // gpSP's Pokémon Gen 3 cable (serial_proto.c MAX_FRAME_TIMEOUT) drops a peer
 // after 240 frames with no packet. The overworld uses the same count.
 #define COOP_LINK_QUIET_LIMIT 240
@@ -70,6 +72,12 @@ typedef uint32_t u32;
 #define COOP_BATTLE_SLOTS  3
 #define COOP_ROSTER_SLOTS  6
 
+// What a player is doing, for the partner's status line.
+#define COOP_ACT_EXPLORING 0
+#define COOP_ACT_TALKING   1
+#define COOP_ACT_MENU      2
+#define COOP_ACT_BUSY      3
+
 #define COOP_OWNER_NONE    0
 #define COOP_OWNER_LOCAL   1
 #define COOP_OWNER_PARTNER 2
@@ -94,6 +102,7 @@ struct CoopFrame
     u8 seq;
     u8 talkLocalId;
     u8 legend[3];
+    u8 activity;
 };
 
 struct CoopProgress
@@ -153,6 +162,7 @@ static inline void CoopProtocol_Pack(u16 out[8], const struct CoopFrame *frame, 
     legend |= (u16)(frame->legend[0] & 3);
     legend |= (u16)(frame->legend[1] & 3) << 2;
     legend |= (u16)(frame->legend[2] & 3) << 4;
+    legend |= (u16)(frame->activity & 3) << 6;
 
     out[0] = asHeldKeys ? COOP_HELD_KEYS_CMD : COOP_LINKCMD;
     out[1] = frame->buildXor;
@@ -204,6 +214,7 @@ static inline int CoopProtocol_Unpack(const u16 in[8], struct CoopFrame *frame, 
     frame->legend[0] = (u8)(legend & 3);
     frame->legend[1] = (u8)((legend >> 2) & 3);
     frame->legend[2] = (u8)((legend >> 4) & 3);
+    frame->activity = (u8)((legend >> 6) & 3);
 
     if (!CoopProtocol_MapOk(frame->mapGroup, frame->mapNum))
         return COOP_UNPACK_DROP;
@@ -297,6 +308,85 @@ static inline void CoopProtocol_VisiblePartnerTile(s16 playerX, s16 playerY, s16
 {
     if (*x == playerX && *y == playerY)
         (*y)++;
+}
+
+// The shared-tile rule above can land on a wall, a warp, or an NPC. `freeMask`
+// marks which neighbours of the player are drawable (bit 0 south, 1 north,
+// 2 west, 3 east). The first free one wins, in that order. With none free
+// the partner stays on the player's tile rather than inside a wall.
+#define COOP_TILE_SOUTH 1
+#define COOP_TILE_NORTH 2
+#define COOP_TILE_WEST  4
+#define COOP_TILE_EAST  8
+
+static inline void CoopProtocol_PickPartnerTile(s16 playerX, s16 playerY, s16 *x, s16 *y, u8 freeMask)
+{
+    static const signed char dx[4] = { 0, 0, -1, 1 };
+    static const signed char dy[4] = { 1, -1, 0, 0 };
+    int i;
+
+    if (*x != playerX || *y != playerY)
+        return;
+    for (i = 0; i < 4; i++)
+    {
+        if (freeMask & (1 << i))
+        {
+            *x = (s16)(playerX + dx[i]);
+            *y = (s16)(playerY + dy[i]);
+            return;
+        }
+    }
+}
+
+// Story ledger. Each save keeps the milestones it has (done) and the ones
+// whose story state it has already written (applied). The cable only ever
+// adds milestones, so a lost or repeated message cannot undo anything.
+#define COOP_STORY_MAGIC      0xC0B5
+#define COOP_STORY_MSG_LEDGER 1
+#define COOP_STORY_MSG_SCENE  2
+
+struct CoopStoryMsg
+{
+    u16 magic;
+    u8 kind;
+    u8 scene;
+    u16 ledger;
+    u8 mapGroup;
+    u8 mapNum;
+    u16 seq;
+    u16 checksum;
+};
+
+static inline u16 CoopProtocol_StoryChecksum(const struct CoopStoryMsg *msg)
+{
+    return (u16)(msg->magic ^ ((u16)msg->kind << 8) ^ msg->scene ^ msg->ledger
+               ^ (u16)((msg->mapGroup << 8) | msg->mapNum) ^ (u16)(msg->seq * 31u) ^ 0x5A17);
+}
+
+// Bits from a newer build are ignored rather than stored.
+static inline u16 CoopProtocol_MergeStory(u16 local, u16 remote)
+{
+    return (u16)(local | (remote & COOP_STORY_KNOWN_MASK));
+}
+
+static inline u16 CoopProtocol_StoryPending(u16 done, u16 applied)
+{
+    return (u16)(done & ~applied & COOP_STORY_KNOWN_MASK);
+}
+
+// A sequence number that moved forward. A repeat or an old message is a
+// duplicate. 16-bit wrap is handled.
+static inline int CoopProtocol_SeqIsNew(u16 last, u16 seq)
+{
+    return (u16)(seq - last) != 0 && (u16)(seq - last) < 0x8000u;
+}
+
+// The rival is decided by the case, not by gender or cable role: whoever
+// holds the case starter faces Soren, whose lead beats it, and whoever holds
+// the companion faces Mira.
+static inline u8 CoopProtocol_RivalForSlot(u8 caseSlot)
+{
+    return caseSlot == 0 ? COOP_RIVAL_SOREN : COOP_RIVAL_MIRA;
 }
 
 // One trainer id never stands in for two. A repeated id is dropped.

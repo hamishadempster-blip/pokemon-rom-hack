@@ -665,9 +665,19 @@ gSpecials::
 	def_special Coop_TakeRefusal
 	def_special Coop_TakeGuestFollowup
 	def_special Coop_NextCaughtNickname
+	def_special Coop_NextPartnerCatch
 	def_special Coop_PairHostAnswer
 	def_special Coop_PairGuestAnswer
 	def_special Coop_BufferPairNames
+	def_special Coop_AnnounceScene
+	def_special Coop_PrepareRivalJoin
+	def_special Coop_BufferRival
+	def_special Coop_TwinIdentity
+	def_special Coop_BufferRivalTaunt
+	def_special Coop_BufferMenuStatus
+	def_special Coop_MenuUseBeacon
+	def_special Coop_ReopenStartMenu
+	def_special Coop_BufferJoinAsk
 	def_special ScriptGetShownMonSpecies
 
 	def_special Coop_NextProgression

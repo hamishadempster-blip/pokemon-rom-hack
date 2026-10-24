@@ -1,0 +1,16 @@
+# Nearby wild invitation, refused. Player 1 is asked and answers NO; player 0
+# fights the wild Pokemon alone, the link stays up, and nobody is stuck.
+include route102_reconnect_start.inc
+include wild_steps.inc
+1 until_mem coop.sGuestPairPending 1 6000
+1 wait 150
+1 shot invite-question
+1 press B 2
+0 until_cb2 BattleMainCB2 3000
+0 expect gBattlersCount 2
+0 expect coop.sInBattle 0
+1 until_field 600
+1 expect coop.sGuestPairPending 0
+0 mash_field 25000
+b expect coop.sLinkState 2
+b until_field 600

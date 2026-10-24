@@ -16,6 +16,7 @@
 #include "fieldmap.h"
 #include "field_player_avatar.h"
 #include "field_screen_effect.h"
+#include "field_message_box.h"
 #include "link.h"
 #include "main.h"
 #include "overworld.h"
@@ -25,6 +26,7 @@
 #include "pokemon_storage_system.h"
 #include "region_map.h"
 #include "script.h"
+#include "start_menu.h"
 #include "script_pokemon_util.h"
 #include "string_util.h"
 #include "gpu_regs.h"
@@ -45,6 +47,8 @@
 #include "constants/trainers.h"
 #include "constants/trainer_types.h"
 #include "constants/vars.h"
+#include "constants/coop.h"
+#include "constants/maps.h"
 #include "data.h"
 
 #define COOP_INVITE_MAGIC 0xC0A1
@@ -54,7 +58,13 @@
 // A wild encounter has the screen frozen while it waits, and the guest
 // answers it without a prompt. The pair prompt waits on a human, so the
 // guest stops accepting a yes well before the host gives up.
-#define COOP_WILD_TIMEOUT 180
+// Wild and ordinary-trainer invites now wait on a person: the partner sees
+// a YES/NO. The partner's answer must arrive before the inviter gives up.
+#define COOP_WILD_TIMEOUT 600
+#define COOP_JOIN_ANSWER_LIMIT 480
+// A partner further than this many tiles away is not "nearby" and is not
+// asked; the encounter is the inviter's alone.
+#define COOP_NEARBY_TILES 10
 #define COOP_PAIR_TIMEOUT 1800
 // The rescue waits on a person who may still be closing a menu.
 #define COOP_RESCUE_TIMEOUT 1800
@@ -63,6 +73,9 @@
 // need time to say yes. 30 seconds at 60 frames.
 #define COOP_LINK_WAIT_LIMIT 1800
 #define COOP_CASE_NONE    0xFF
+#define COOP_SAVE_LAYOUT  1
+// A ledger is re-sent this often while linked, so a dropped block heals.
+#define COOP_STORY_RESEND 300
 
 // Rival ids sit in a contiguous block: stage * 6 + person * 3 + type.
 // Type order is fire, water, grass. Starter var order is grass, fire, water,
@@ -175,6 +188,17 @@ static EWRAM_DATA u8 sBeaconQueued = 0;
 static EWRAM_DATA u8 sBeaconPrompted = 0;
 static EWRAM_DATA u8 sBeaconBagWarned = 0;
 static EWRAM_DATA u8 sRefusal = COOP_REFUSE_NONE;
+static EWRAM_DATA u16 sStorySeq = 0;
+static EWRAM_DATA u16 sStoryLastSeq = 0;
+static EWRAM_DATA bool8 sStorySeqKnown = FALSE;
+static EWRAM_DATA u16 sStoryTimer = 0;
+static EWRAM_DATA u16 sStorySent = 0;
+static EWRAM_DATA bool8 sStorySentValid = FALSE;
+static EWRAM_DATA u16 sStoryPartner = 0;
+static EWRAM_DATA u8 sSceneAnnounce = COOP_SCENE_NONE;
+static EWRAM_DATA u8 sSceneJoin = COOP_SCENE_NONE;
+static EWRAM_DATA u8 sSceneJoinGroup = 0;
+static EWRAM_DATA u8 sSceneJoinNum = 0;
 
 struct CoopNickTarget
 {
@@ -195,15 +219,22 @@ static EWRAM_DATA u8 sPartnerLegendMask = 0;
 static EWRAM_DATA struct CoopNickTarget sNickTargets[COOP_WILD_SLOTS] = {0};
 static EWRAM_DATA u8 sNickCount = 0;
 static EWRAM_DATA u8 sNickIndex = 0;
+// What the partner's balls caught this fight, to tell this player after.
+static EWRAM_DATA u16 sPartnerCaught[COOP_WILD_SLOTS] = {0};
+static EWRAM_DATA u8 sPartnerCaughtCount = 0;
 static EWRAM_DATA u16 sPairEngaged = 0;
 static EWRAM_DATA bool8 sGuestPairPending = FALSE;
 static EWRAM_DATA u16 sGuestPairTimer = 0;
 static EWRAM_DATA struct CoopInvite sGuestPairInvite = {0};
+// A joined wild fight starts once the question's script has ended: a wild
+// battle never resumes a script, so one left waiting would stay stuck.
+static EWRAM_DATA bool8 sJoinLaunchPending = FALSE;
 
 static const u8 sText_BeaconNeedLink[] = _("Link from the CO-OP menu first.{PAUSE_UNTIL_PRESS}");
 static const u8 sText_BeaconWaiting[] = _("Still waiting on your partner.{PAUSE_UNTIL_PRESS}");
 static const u8 sText_BeaconQueued[] = _("The request waits until this\nbattle or trade ends.{PAUSE_UNTIL_PRESS}");
 static const u8 sText_BeaconSent[] = _("Asking your partner.\nBoth of you have to agree.{PAUSE_UNTIL_PRESS}");
+static const u8 sText_CallingPartner[] = _("Calling your partner over…\nB: battle alone.");
 
 STATIC_ASSERT(sizeof(struct CoopMonBlock) <= BLOCK_BUFFER_SIZE, CoopTradeBlockFitsLinkBlock);
 STATIC_ASSERT(COOP_BATTLE_SLOTS == MULTI_PARTY_SIZE, CoopFieldsTheStockMultiHalf);
@@ -223,6 +254,11 @@ static void Coop_RaiseVar(u16 varId, u16 floor);
 static bool8 Coop_PairBeatenLocally(void);
 static void Coop_GiveRescueStarter(u8 caseId, bool8 opener);
 static bool8 Coop_PartnerInBirchLab(void);
+static void Coop_HandleStoryMsg(u32 playerId, const struct CoopStoryMsg *msg);
+static void Coop_PollSharedItems(void);
+static u8 Coop_RivalId(void);
+static void Coop_PollStory(void);
+static bool8 Coop_GuestBusy(void);
 
 static struct CoopSave *CoopSave(void)
 {
@@ -242,7 +278,19 @@ static struct CoopSave *CoopSave(void)
         save->legendaryOwner[2] = COOP_OWNER_NONE;
         save->pendingLegendary = 0;
         save->caseId = COOP_CASE_NONE;
-        save->reserved = 0;
+        save->layout = 0;
+    }
+    // Saves from before the story ledger kept a zero here and arbitrary
+    // bytes after it. Start the new fields clean.
+    if (save->layout < COOP_SAVE_LAYOUT)
+    {
+        save->layout = COOP_SAVE_LAYOUT;
+        save->storyDone = 0;
+        save->storyApplied = 0;
+        save->rivalId = COOP_RIVAL_NONE;
+        save->sharedItems = 0;
+        save->unused[0] = 0;
+        save->unused[1] = 0;
     }
     return save;
 }
@@ -298,6 +346,23 @@ u16 Coop_PartnerOnSameTile(void)
     return sPartner.x == (u8)x && sPartner.y == (u8)y;
 }
 
+// Same map and within a screen or so, on any tile.
+static bool8 Coop_PartnerNearby(void)
+{
+    s16 x, y, dx, dy;
+
+    if (!Coop_PartnerOnSameMap())
+        return FALSE;
+    PlayerGetDestCoords(&x, &y);
+    dx = (s16)sPartner.x - x;
+    dy = (s16)sPartner.y - y;
+    if (dx < 0)
+        dx = -dx;
+    if (dy < 0)
+        dy = -dy;
+    return dx <= COOP_NEARBY_TILES && dy <= COOP_NEARBY_TILES;
+}
+
 u16 Coop_CaseChosen(void)
 {
     struct CoopSave *save = CoopSave();
@@ -328,14 +393,41 @@ static void Coop_RemoveSprite(void)
 
 // Where the partner should be drawn. The link frame can share the player's
 // tile; the sprite then stands one tile south so it stays on screen.
+static bool8 Coop_PartnerTileFree(s16 x, s16 y)
+{
+    u8 objectId;
+
+    if (MapGridGetCollisionAt(x, y))
+        return FALSE;
+    objectId = GetObjectEventIdByXY(x, y);
+    return objectId >= OBJECT_EVENTS_COUNT || gObjectEvents[objectId].localId == OBJ_EVENT_ID_COOP_PARTNER;
+}
+
+// The shared tile is drawn beside the player on the first free side, south
+// first as before. A wall, a counter, or an NPC there would hide the partner
+// inside it, so those sides are skipped.
 static void Coop_PartnerTarget(s16 *x, s16 *y)
 {
     s16 px, py;
+    u8 freeMask = 0;
 
     PlayerGetDestCoords(&px, &py);
     *x = sPartner.x;
     *y = sPartner.y;
-    CoopProtocol_VisiblePartnerTile(px, py, x, y);
+    if (*x != px || *y != py)
+        return;
+    if (Coop_PartnerTileFree(px, py + 1))
+        freeMask |= COOP_TILE_SOUTH;
+    if (Coop_PartnerTileFree(px, py - 1))
+        freeMask |= COOP_TILE_NORTH;
+    if (Coop_PartnerTileFree(px - 1, py))
+        freeMask |= COOP_TILE_WEST;
+    if (Coop_PartnerTileFree(px + 1, py))
+        freeMask |= COOP_TILE_EAST;
+    // Nothing free: keep the old south rule so the sprite is never lost.
+    if (freeMask == 0)
+        freeMask = COOP_TILE_SOUTH;
+    CoopProtocol_PickPartnerTile(px, py, x, y, freeMask);
 }
 
 // A cutscene can park a step on top of Mum or the player. That step never
@@ -458,6 +550,16 @@ static void Coop_UpdateSprite(void)
     }
 
     obj = &gObjectEvents[objectId];
+    Coop_PartnerTarget(&tx, &ty);
+    // A released script only needs a resettle when the sprite is off its
+    // tile or stuck mid-step. Re-placing a partner who is already standing
+    // there made every closed message box snap and flicker the sprite.
+    if (sPartnerResettle && obj->currentCoords.x == tx && obj->currentCoords.y == ty
+     && !obj->heldMovementActive && !obj->frozen)
+    {
+        sPartnerResettle = FALSE;
+        Coop_ShowPartner(obj);
+    }
     if (sPartnerResettle)
     {
         sPartnerResettle = FALSE;
@@ -471,7 +573,6 @@ static void Coop_UpdateSprite(void)
     if (ready == 0)
         return;
 
-    Coop_PartnerTarget(&tx, &ty);
     if (ready == 2)
     {
         MoveObjectEventToMapCoords(obj, tx, ty);
@@ -573,6 +674,20 @@ static void Coop_AnimateTalkNpc(void)
     ObjectEventTurn(npc, face);
 }
 
+static u8 Coop_LocalActivity(void)
+{
+    if (gMain.inBattle || sInBattle || gCoopBattleLaunching || Coop_InteractionBusy() || gPaletteFade.active)
+        return COOP_ACT_BUSY;
+    if (gMain.callback2 != CB2_Overworld)
+        return COOP_ACT_MENU;
+    if (ScriptContext_IsEnabled())
+        return COOP_ACT_TALKING;
+    // The start menu and other field windows lock the controls without a script.
+    if (ArePlayerFieldControlsLocked())
+        return COOP_ACT_MENU;
+    return COOP_ACT_EXPLORING;
+}
+
 static void Coop_FillFrame(struct CoopFrame *frame)
 {
     s16 x, y;
@@ -609,6 +724,56 @@ static void Coop_FillFrame(struct CoopFrame *frame)
         for (i = 0; i < 3; i++)
             frame->legend[i] = save->legendaryOwner[i];
     }
+    frame->activity = Coop_LocalActivity();
+}
+
+// Three short lines for the start menu: the link and Beacon, where the
+// partner is, and what they are doing. Read fresh each time the menu opens.
+void Coop_FormatStatus(u8 *dest)
+{
+    static const u8 *const sActivity[] = {
+        [COOP_ACT_EXPLORING] = COMPOUND_STRING("Exploring"),
+        [COOP_ACT_TALKING]   = COMPOUND_STRING("Talking"),
+        [COOP_ACT_MENU]      = COMPOUND_STRING("In a menu"),
+        [COOP_ACT_BUSY]      = COMPOUND_STRING("Busy"),
+    };
+    u8 *end;
+
+    if (sLinkState != COOP_LINK_UP)
+    {
+        StringCopy(dest, COMPOUND_STRING("CO-OP: not linked"));
+        return;
+    }
+    end = StringCopy(dest, sBeacon.on ? COMPOUND_STRING("LINKED · BEACON ON") : COMPOUND_STRING("LINKED · BEACON OFF"));
+    *end++ = CHAR_NEWLINE;
+    if (!sPartnerValid)
+    {
+        StringCopy(end, COMPOUND_STRING("Partner: joining…"));
+        return;
+    }
+    if (Coop_PartnerOnSameMap())
+    {
+        end = StringCopy(end, COMPOUND_STRING("Partner: here"));
+    }
+    else
+    {
+        const struct MapHeader *header = Overworld_GetMapHeaderByGroupAndId(sPartner.mapGroup, sPartner.mapNum);
+
+        if (header != NULL)
+            end = GetMapName(end, header->regionMapSectionId, 0);
+        else
+            end = StringCopy(end, COMPOUND_STRING("Partner: away"));
+    }
+    *end++ = CHAR_NEWLINE;
+    end = StringCopy(end, sActivity[sPartner.activity & 3]);
+    *end++ = CHAR_NEWLINE;
+    end = StringCopy(end, COMPOUND_STRING("Your rival: "));
+    if (Coop_RivalId() == COOP_RIVAL_SOREN)
+        StringCopy(end, COMPOUND_STRING("SOREN"));
+    else if (Coop_RivalId() == COOP_RIVAL_MIRA)
+        StringCopy(end, COMPOUND_STRING("MIRA"));
+    else
+        StringCopy(end, COMPOUND_STRING("not yet"));
 }
 
 void Coop_LinkCallback(void)
@@ -802,8 +967,16 @@ static void Coop_QueueInvite(u8 kind, u16 trainerA, u16 trainerB, u8 badge, u16 
     TRAINER_BATTLE_PARAM.opponentB = trainerB;
 }
 
+static void Coop_HideCallingMessage(void)
+{
+    if ((sBattleKind == COOP_KIND_WILD || sBattleKind == COOP_KIND_TRAINER) && !IsFieldMessageBoxHidden())
+        HideFieldMessageBox();
+}
+
 static void Coop_LaunchBattle(bool8 isGuest)
 {
+    if (!isGuest)
+        Coop_HideCallingMessage();
     sWaitingAck = FALSE;
     sIsGuest = isGuest;
     sInBattle = TRUE;
@@ -871,17 +1044,37 @@ static u16 Coop_InviteTimeout(u8 kind)
     return COOP_ACK_TIMEOUT;
 }
 
-static void Coop_SendReply(u8 kind, u16 seq)
+// A reply that meets a block already on the cable used to be dropped, and
+// the inviter then sat out its whole timeout. Replies now wait their turn.
+static EWRAM_DATA u8 sReplyKind = 0;
+static EWRAM_DATA u16 sReplySeq = 0;
+
+static bool8 Coop_TrySendReply(u8 kind, u16 seq)
 {
     struct CoopInvite reply;
 
+    if (gLinkTransferringData)
+        return FALSE;
     memset(&reply, 0, sizeof(reply));
     reply.magic = COOP_INVITE_MAGIC;
     reply.kind = kind;
     reply.seq = seq;
     reply.checksum = Coop_InviteChecksum(&reply);
-    if (!gLinkTransferringData)
-        SendBlock(BitmaskAllOtherLinkPlayers(), &reply, sizeof(reply));
+    return SendBlock(BitmaskAllOtherLinkPlayers(), &reply, sizeof(reply));
+}
+
+static void Coop_SendReply(u8 kind, u16 seq)
+{
+    if (Coop_TrySendReply(kind, seq))
+        return;
+    sReplyKind = kind;
+    sReplySeq = seq;
+}
+
+static void Coop_FlushReply(void)
+{
+    if (sReplyKind != 0 && Coop_TrySendReply(sReplyKind, sReplySeq))
+        sReplyKind = 0;
 }
 
 static void Coop_HandleInvite(u32 playerId, const struct CoopInvite *invite)
@@ -895,6 +1088,14 @@ static void Coop_HandleInvite(u32 playerId, const struct CoopInvite *invite)
     {
         if (sWaitingAck && invite->seq == sInvite.seq)
             Coop_LaunchBattle(FALSE);
+        return;
+    }
+
+    if (invite->kind == COOP_KIND_WITHDRAW)
+    {
+        // The inviter stopped waiting; the open question becomes too late.
+        if (sGuestPairPending && invite->seq == sGuestPairInvite.seq)
+            sGuestPairTimer = 0xFFFF;
         return;
     }
 
@@ -949,10 +1150,13 @@ static void Coop_HandleInvite(u32 playerId, const struct CoopInvite *invite)
         return;
     }
 
+    // Optional fights ask the partner first. Only a partner who is idle on
+    // the field, nearby on the same map, and battle-ready is asked; anyone
+    // else is a quiet no and the inviter fights alone.
     if (Coop_IsOptionalKind(invite->kind))
     {
-        if (Coop_GuestBusy() || !Coop_HasBattleReadyLead()
-         || ((invite->kind == COOP_KIND_WILD || invite->kind == COOP_KIND_PAIR) && (!sBeacon.on || !Coop_PartnerOnSameMap()))
+        if (Coop_GuestBusy() || !Coop_HasBattleReadyLead() || sGuestPairPending
+         || !sBeacon.on || !Coop_PartnerNearby()
          || (invite->kind == COOP_KIND_PAIR && Coop_PairBeatenLocally())
          || (invite->kind == COOP_KIND_WILD && (invite->trainerA == SPECIES_NONE || invite->trainerA >= NUM_SPECIES
                                              || invite->trainerB == SPECIES_NONE || invite->trainerB >= NUM_SPECIES)))
@@ -960,28 +1164,11 @@ static void Coop_HandleInvite(u32 playerId, const struct CoopInvite *invite)
             Coop_SendReply(COOP_KIND_NACK, invite->seq);
             return;
         }
-        if (invite->kind == COOP_KIND_PAIR)
-        {
-            sGuestPairInvite = *invite;
-            sGuestPairPending = TRUE;
-            sGuestPairTimer = 0;
-            ScriptContext_SetupScript(Coop_EventScript_PairAskGuest);
-            return;
-        }
-        if (invite->kind == COOP_KIND_WILD)
-        {
-            sBattleKind = COOP_KIND_WILD;
-            sBattleBadge = 0;
-            sBattleFlag = 0;
-            sLegendKind = 0;
-            sRivalFightStage = 0xFF;
-            TRAINER_BATTLE_PARAM.opponentA = 0;
-            TRAINER_BATTLE_PARAM.opponentB = 0;
-            CreateScriptedDoubleWildMon(invite->trainerA, invite->badge, ITEM_NONE, invite->trainerB, (u8)invite->aux, ITEM_NONE);
-            Coop_SendReply(COOP_KIND_ACK, invite->seq);
-            Coop_LaunchBattle(TRUE);
-            return;
-        }
+        sGuestPairInvite = *invite;
+        sGuestPairPending = TRUE;
+        sGuestPairTimer = 0;
+        ScriptContext_SetupScript(invite->kind == COOP_KIND_PAIR ? Coop_EventScript_PairAskGuest : Coop_EventScript_JoinAskGuest);
+        return;
     }
 
     if (!Coop_HasBattleReadyLead())
@@ -1025,6 +1212,8 @@ static void Coop_PollBlocks(void)
                 Coop_HandleInvite(i, (const struct CoopInvite *)gBlockRecvBuffer[i]);
             else if (magic == COOP_MON_MAGIC)
                 Coop_HandleMonBlock(i, (const struct CoopMonBlock *)gBlockRecvBuffer[i]);
+            else if (magic == COOP_STORY_MAGIC)
+                Coop_HandleStoryMsg(i, (const struct CoopStoryMsg *)gBlockRecvBuffer[i]);
             else
                 continue;
             ResetBlockReceivedFlag(i);
@@ -1036,6 +1225,11 @@ static void Coop_FailWait(void)
 {
     u8 kind = sBattleKind;
 
+    Coop_HideCallingMessage();
+    // Withdraw an optional question the partner may still be reading, so a
+    // late YES gets "too late" instead of a fight that is not coming.
+    if (sWaitingAck && Coop_IsOptionalKind(kind) && sInviteSent)
+        Coop_SendReply(COOP_KIND_WITHDRAW, sInvite.seq);
     sWaitingAck = FALSE;
     sWaitKind = 0;
     sRescueEcho = 0;
@@ -1088,12 +1282,17 @@ static void Coop_PollInviteTimeout(void)
     if (!sWaitingAck)
         return;
     // B leaves the rescue wait so a partner stuck in a menu does not
-    // freeze the person who opened the bag.
-    if (sBattleKind == COOP_KIND_RESCUE && JOY_NEW(B_BUTTON))
+    // freeze the person who opened the bag. For an optional fight it means
+    // "fight alone now" instead of waiting out the partner's answer.
+    if ((sBattleKind == COOP_KIND_RESCUE || sBattleKind == COOP_KIND_WILD || sBattleKind == COOP_KIND_TRAINER)
+     && JOY_NEW(B_BUTTON))
     {
         Coop_FailWait();
         return;
     }
+    // Say why the field stopped while the partner decides.
+    if ((sBattleKind == COOP_KIND_WILD || sBattleKind == COOP_KIND_TRAINER) && sInviteTimer == 20)
+        ShowFieldMessage(sText_CallingPartner);
     Coop_SendInvite();
     if (++sInviteTimer >= Coop_InviteTimeout(sBattleKind))
         Coop_FailWait();
@@ -1194,6 +1393,8 @@ static void Coop_PollScriptWaits(void)
             caseId = sProposedCase <= 2 ? sProposedCase : 0;
         ZeroPlayerPartyMons();
         ScriptGiveMon(species[caseId][index & 1], 5, ITEM_NONE);
+        if (save != NULL)
+            save->rivalId = CoopProtocol_RivalForSlot(index & 1);
         VarSet(VAR_STARTER_MON, caseId);
         if (save != NULL)
             save->caseId = caseId;
@@ -1447,6 +1648,16 @@ static void Coop_Drop(const u8 *message)
     memset(&sBeacon, 0, sizeof(sBeacon));
     sBeaconQueued = 0;
     sBeaconPrompted = 0;
+    // The next session may be a rebooted partner whose numbers start over.
+    sStorySeqKnown = FALSE;
+    sStorySentValid = FALSE;
+    sSceneAnnounce = COOP_SCENE_NONE;
+    sSceneJoin = COOP_SCENE_NONE;
+    if (sJoinLaunchPending)
+    {
+        sJoinLaunchPending = FALSE;
+        sInBattle = FALSE;
+    }
     gLinkCallback = NULL;
     Coop_RemoveSprite();
     CloseLink();
@@ -1469,6 +1680,7 @@ static void Task_CoopSession(u8 taskId)
         if (gMain.inBattle)
             return;
         Coop_MaintainCallback();
+        Coop_FlushReply();
         Coop_UpdateSprite();
         Coop_AnimateTalkNpc();
         Coop_PollBlocks();
@@ -1477,6 +1689,7 @@ static void Task_CoopSession(u8 taskId)
         Coop_PollTrade();
         Coop_PollBeacon();
         Coop_PollInviteTimeout();
+        Coop_PollStory();
         if (sGuestPairPending && sGuestPairTimer < 0xFFFF)
             sGuestPairTimer++;
         if (sRescueGuestFollow && !gMain.inBattle)
@@ -1499,6 +1712,12 @@ static void Task_CoopSession(u8 taskId)
     {
         sProgressPending = FALSE;
         ScriptContext_SetupScript(Coop_EventScript_Progression);
+    }
+    if (sJoinLaunchPending && !ScriptContext_IsEnabled())
+    {
+        sJoinLaunchPending = FALSE;
+        Coop_LaunchBattle(TRUE);
+        return;
     }
     if (sPendingMessage != NULL && !gMain.inBattle && !ScriptContext_IsEnabled() && !ArePlayerFieldControlsLocked())
     {
@@ -1557,6 +1776,7 @@ void Coop_SettlePartner(void)
 
 void Coop_OverworldFrame(void)
 {
+    Coop_PollSharedItems();
     if (sLinkState != COOP_LINK_IDLE || sPendingMessage != NULL)
         Coop_EnsureTask();
 }
@@ -1584,6 +1804,12 @@ u16 Coop_BeginLink(void)
     memset(&sBeacon, 0, sizeof(sBeacon));
     sBeaconQueued = 0;
     sBeaconPrompted = 0;
+    sStorySeqKnown = FALSE;
+    sStorySentValid = FALSE;
+    sStoryPartner = 0;
+    sReplyKind = 0;
+    sSceneAnnounce = COOP_SCENE_NONE;
+    sSceneJoin = COOP_SCENE_NONE;
     Coop_EnsureTask();
     return TRUE;
 }
@@ -1656,6 +1882,54 @@ u16 Coop_BufferPartnerLocation(void)
     if (sLegendConflict < 3)
         StringCopy(gStringVar2, GetSpeciesName(sLegendSpecies[sLegendConflict]));
     return TRUE;
+}
+
+// STR_VAR_1 where the partner is, STR_VAR_2 the Beacon, STR_VAR_3 the rival.
+u16 Coop_BufferMenuStatus(void)
+{
+    u8 rival = Coop_RivalId();
+
+    if (Coop_PartnerOnSameMap())
+        StringCopy(gStringVar1, COMPOUND_STRING("right here"));
+    else
+        Coop_BufferPartnerLocation();
+    if (!CheckBagHasItem(ITEM_TWIN_BEACON, 1))
+        StringCopy(gStringVar2, COMPOUND_STRING("not yet"));
+    else
+        StringCopy(gStringVar2, sBeacon.on ? COMPOUND_STRING("on") : COMPOUND_STRING("off"));
+    if (rival == COOP_RIVAL_SOREN)
+        StringCopy(gStringVar3, COMPOUND_STRING("SOREN"));
+    else if (rival == COOP_RIVAL_MIRA)
+        StringCopy(gStringVar3, COMPOUND_STRING("MIRA"));
+    else
+        StringCopy(gStringVar3, COMPOUND_STRING("?"));
+    return TRUE;
+}
+
+// The Twin Beacon from the CO-OP menu, the same request as using the item.
+// FALSE when this save has no Beacon yet. The answer text is in gStringVar4.
+u16 Coop_MenuUseBeacon(void)
+{
+    if (!CheckBagHasItem(ITEM_TWIN_BEACON, 1))
+        return FALSE;
+    StringExpandPlaceholders(gStringVar4, Coop_UseTwinBeacon());
+    return TRUE;
+}
+
+static void Task_CoopReopenStartMenu(u8 taskId)
+{
+    if (ScriptContext_IsEnabled() || ArePlayerFieldControlsLocked())
+        return;
+    DestroyTask(taskId);
+    ShowStartMenu();
+}
+
+// BACK and B in the CO-OP menu go back to the start menu, as the other
+// start menu entries do.
+u16 Coop_ReopenStartMenu(void)
+{
+    CreateTask(Task_CoopReopenStartMenu, 80);
+    return 0;
 }
 
 u16 Coop_BufferBeaconStatus(void)
@@ -2035,6 +2309,8 @@ static void Coop_GiveRescueStarter(u8 caseId, bool8 opener)
         save->caseId = caseId;
     VarSet(VAR_STARTER_MON, caseId);
     index = opener ? 0 : 1;
+    if (save != NULL)
+        save->rivalId = CoopProtocol_RivalForSlot(index);
     ScriptGiveMon(sRescueSpecies[caseId][index], 5, ITEM_NONE);
 }
 
@@ -2174,6 +2450,8 @@ u16 Coop_TakeRefusal(void)
 // prompt, and whiteout check sees exactly the three that were sent.
 static void Coop_ClearCatchState(void)
 {
+    sPartnerCaughtCount = 0;
+    memset(sPartnerCaught, 0, sizeof(sPartnerCaught));
     CoopProtocol_ClearCatches(&sLedger);
     memset(sCatches, 0, sizeof(sCatches));
     memset(gCoopBallTargetFor, 0, sizeof(gCoopBallTargetFor));
@@ -2333,6 +2611,359 @@ static void Coop_RaiseVar(u16 varId, u16 floor)
     VarSet(varId, CoopProtocol_RaiseVar(current, floor));
 }
 
+// ---------------------------------------------------------------------------
+// Shared story ledger.
+//
+// A milestone is story state both saves should agree on. Each save keeps the
+// milestones it has (storyDone) and the ones it has written (storyApplied).
+// Local progress is read back from the save's own vars, so a scene finished
+// alone, on an older build, or before linking still counts. The partner's
+// ledger only ever adds bits. Pending bits are written at a map transition,
+// before objects load, so nobody is pulled into a scene or a cutscene.
+// ---------------------------------------------------------------------------
+
+static bool8 Coop_InRivalBedroom(void)
+{
+    u8 group = gSaveBlock1Ptr->location.mapGroup;
+    u8 num = gSaveBlock1Ptr->location.mapNum;
+
+    if (gSaveBlock2Ptr->playerGender == MALE)
+        return group == MAP_GROUP(MAP_LITTLEROOT_TOWN_MAYS_HOUSE_2F) && num == MAP_NUM(MAP_LITTLEROOT_TOWN_MAYS_HOUSE_2F);
+    return group == MAP_GROUP(MAP_LITTLEROOT_TOWN_BRENDANS_HOUSE_2F) && num == MAP_NUM(MAP_LITTLEROOT_TOWN_BRENDANS_HOUSE_2F);
+}
+
+static u16 Coop_LocalStory(void)
+{
+    u16 done = 0;
+
+    if (VarGet(VAR_LITTLEROOT_RIVAL_STATE) >= 3)
+        done |= 1 << COOP_STORY_RIVAL_MET;
+    return done;
+}
+
+static void Coop_RefreshLocalStory(void)
+{
+    struct CoopSave *save = CoopSave();
+    u16 local;
+
+    if (save == NULL)
+        return;
+    local = Coop_LocalStory();
+    save->storyDone |= local;
+    save->storyApplied |= local;
+}
+
+// The bedroom introduction, written without playing it. The rival stays in
+// the bedroom only until Birch is rescued, as in the scene itself.
+static bool8 Coop_ApplyRivalMet(void)
+{
+    // The opening still has to tell this player to go next door.
+    if (VarGet(VAR_LITTLEROOT_INTRO_STATE) < 7)
+        return FALSE;
+    Coop_RaiseVar(VAR_LITTLEROOT_RIVAL_STATE, 3);
+    Coop_RaiseVar(VAR_LITTLEROOT_TOWN_STATE, 1);
+    if (gSaveBlock2Ptr->playerGender == MALE)
+    {
+        FlagSet(FLAG_HIDE_LITTLEROOT_TOWN_MAYS_HOUSE_2F_POKE_BALL);
+        FlagSet(FLAG_HIDE_LITTLEROOT_TOWN_MAYS_HOUSE_MAY);
+        if (FlagGet(FLAG_RESCUED_BIRCH))
+            FlagSet(FLAG_HIDE_LITTLEROOT_TOWN_MAYS_HOUSE_RIVAL_BEDROOM);
+        else
+            FlagClear(FLAG_HIDE_LITTLEROOT_TOWN_MAYS_HOUSE_RIVAL_BEDROOM);
+    }
+    else
+    {
+        FlagSet(FLAG_HIDE_LITTLEROOT_TOWN_BRENDANS_HOUSE_2F_POKE_BALL);
+        FlagSet(FLAG_HIDE_LITTLEROOT_TOWN_BRENDANS_HOUSE_BRENDAN);
+        if (FlagGet(FLAG_RESCUED_BIRCH))
+            FlagSet(FLAG_HIDE_LITTLEROOT_TOWN_BRENDANS_HOUSE_RIVAL_BEDROOM);
+        else
+            FlagClear(FLAG_HIDE_LITTLEROOT_TOWN_BRENDANS_HOUSE_RIVAL_BEDROOM);
+    }
+    return TRUE;
+}
+
+// Called from map loading before the transition script runs.
+void Coop_ApplyPendingStory(void)
+{
+    struct CoopSave *save = CoopSave();
+    u16 pending;
+
+    if (save == NULL)
+        return;
+    Coop_RefreshLocalStory();
+    pending = CoopProtocol_StoryPending(save->storyDone, save->storyApplied);
+    if ((pending & (1 << COOP_STORY_RIVAL_MET)) && Coop_ApplyRivalMet())
+        save->storyApplied |= 1 << COOP_STORY_RIVAL_MET;
+}
+
+static void Coop_SendStory(u8 kind, u8 scene)
+{
+    struct CoopSave *save = CoopSave();
+    struct CoopStoryMsg msg;
+
+    memset(&msg, 0, sizeof(msg));
+    msg.magic = COOP_STORY_MAGIC;
+    msg.kind = kind;
+    msg.scene = scene;
+    msg.ledger = save != NULL ? (save->storyDone & COOP_STORY_KNOWN_MASK) : 0;
+    msg.mapGroup = gSaveBlock1Ptr->location.mapGroup;
+    msg.mapNum = gSaveBlock1Ptr->location.mapNum;
+    msg.seq = ++sStorySeq;
+    msg.checksum = CoopProtocol_StoryChecksum(&msg);
+    if (SendBlock(BitmaskAllOtherLinkPlayers(), &msg, sizeof(msg)) && kind == COOP_STORY_MSG_LEDGER)
+    {
+        sStorySent = msg.ledger;
+        sStorySentValid = TRUE;
+    }
+}
+
+// A scene this game just started. A partner standing in the same room who
+// still needs it joins from their own save instead of replaying it later.
+u16 Coop_AnnounceScene(void)
+{
+    if (Coop_SessionActive() && Coop_PartnerOnSameMap())
+        sSceneAnnounce = (u8)VarGet(VAR_0x8004);
+    return 0;
+}
+
+static bool8 Coop_CanJoinScene(u8 scene, u8 mapGroup, u8 mapNum)
+{
+    if (mapGroup != gSaveBlock1Ptr->location.mapGroup || mapNum != gSaveBlock1Ptr->location.mapNum)
+        return FALSE;
+    switch (scene)
+    {
+    case COOP_SCENE_RIVAL_INTRO:
+        return Coop_InRivalBedroom() && VarGet(VAR_LITTLEROOT_RIVAL_STATE) == 2;
+    default:
+        return FALSE;
+    }
+}
+
+static void Coop_HandleStoryMsg(u32 playerId, const struct CoopStoryMsg *msg)
+{
+    struct CoopSave *save = CoopSave();
+
+    if (playerId == GetMultiplayerId() || msg->checksum != CoopProtocol_StoryChecksum(msg))
+        return;
+    if (sStorySeqKnown && !CoopProtocol_SeqIsNew(sStoryLastSeq, msg->seq))
+        return;
+    sStorySeqKnown = TRUE;
+    sStoryLastSeq = msg->seq;
+    sStoryPartner = msg->ledger;
+    if (save != NULL)
+        save->storyDone = CoopProtocol_MergeStory(save->storyDone, msg->ledger);
+    if (msg->kind == COOP_STORY_MSG_SCENE && Coop_CanJoinScene(msg->scene, msg->mapGroup, msg->mapNum))
+    {
+        sSceneJoin = msg->scene;
+        sSceneJoinGroup = msg->mapGroup;
+        sSceneJoinNum = msg->mapNum;
+    }
+}
+
+extern const u8 Coop_EventScript_JoinRivalIntro[];
+
+// Runs from the session task while linked, outside battle.
+static void Coop_PollStory(void)
+{
+    struct CoopSave *save = CoopSave();
+    bool8 idle;
+
+    if (save == NULL)
+        return;
+    Coop_RefreshLocalStory();
+    idle = !Coop_GuestBusy() && !sInBattle && !gCoopBattleLaunching;
+
+    // Join now, or late: the partner finished the introduction while this
+    // player was still in the bedroom with a menu or message open.
+    if (idle && sSceneJoin == COOP_SCENE_NONE
+     && (CoopProtocol_StoryPending(save->storyDone, save->storyApplied) & (1 << COOP_STORY_RIVAL_MET))
+     && Coop_InRivalBedroom() && VarGet(VAR_LITTLEROOT_RIVAL_STATE) == 2)
+    {
+        sSceneJoin = COOP_SCENE_RIVAL_INTRO;
+        sSceneJoinGroup = gSaveBlock1Ptr->location.mapGroup;
+        sSceneJoinNum = gSaveBlock1Ptr->location.mapNum;
+    }
+    if (sSceneJoin != COOP_SCENE_NONE && idle)
+    {
+        u8 scene = sSceneJoin;
+
+        sSceneJoin = COOP_SCENE_NONE;
+        if (scene == COOP_SCENE_RIVAL_INTRO && Coop_CanJoinScene(scene, sSceneJoinGroup, sSceneJoinNum))
+            ScriptContext_SetupScript(Coop_EventScript_JoinRivalIntro);
+    }
+
+    if (gLinkTransferringData || sWaitingAck || gCoopBattleLaunching || gMain.callback2 != CB2_Overworld)
+        return;
+    if (sSceneAnnounce != COOP_SCENE_NONE)
+    {
+        Coop_SendStory(COOP_STORY_MSG_SCENE, sSceneAnnounce);
+        sSceneAnnounce = COOP_SCENE_NONE;
+        sStoryTimer = 0;
+        return;
+    }
+    // Send when the ledger changed; otherwise repeat slowly, and only while
+    // the partner is not yet known to hold everything this save has.
+    if (!sStorySentValid || (save->storyDone & COOP_STORY_KNOWN_MASK) != sStorySent
+     || (++sStoryTimer >= COOP_STORY_RESEND && (save->storyDone & ~sStoryPartner & COOP_STORY_KNOWN_MASK) != 0))
+    {
+        sStoryTimer = 0;
+        Coop_SendStory(COOP_STORY_MSG_LEDGER, COOP_SCENE_NONE);
+    }
+}
+
+// Where the partner rival should stand in the joining player's bedroom: the
+// PC, or the tile beside it when this player is standing there.
+u16 Coop_PrepareRivalJoin(void)
+{
+    s16 x, y;
+
+    PlayerGetDestCoords(&x, &y);
+    x -= MAP_OFFSET;
+    y -= MAP_OFFSET;
+    gSpecialVar_0x8005 = 8;
+    gSpecialVar_0x8006 = 2;
+    if (x == 8 && y == 2)
+        gSpecialVar_0x8005 = 7;
+    return 0;
+}
+
+// The rival who answers this player's case. Set when the starter is handed
+// out; older saves work it out from the party once.
+static u8 Coop_RivalId(void)
+{
+    struct CoopSave *save = CoopSave();
+    u8 i, slot;
+
+    if (save == NULL)
+        return COOP_RIVAL_NONE;
+    if (save->rivalId != COOP_RIVAL_NONE || save->caseId > 2)
+        return save->rivalId;
+    for (i = 0; i < PARTY_SIZE; i++)
+    {
+        u16 species = GetMonData(&gParties[B_TRAINER_PLAYER][i], MON_DATA_SPECIES);
+
+        while (species != SPECIES_NONE && GetSpeciesPreEvolution(species) != SPECIES_NONE)
+            species = GetSpeciesPreEvolution(species);
+        for (slot = 0; slot < 2; slot++)
+        {
+            if (species != SPECIES_NONE && species == sRescueSpecies[save->caseId][slot])
+            {
+                save->rivalId = CoopProtocol_RivalForSlot(slot);
+                return save->rivalId;
+            }
+        }
+    }
+    return COOP_RIVAL_NONE;
+}
+
+// Route 103: the twin who answers this player's case speaks up before the
+// first fight. STR_VAR_1 is that twin's lead, STR_VAR_2 the player's lead.
+// VAR_RESULT: 0 nothing to say (no case yet), 1 Soren, 2 Mira, plus 2 when
+// that twin is the one this save already met at home, so the other twin
+// introduces themselves instead.
+u16 Coop_BufferRivalTaunt(void)
+{
+    // Rival type order is fire, water, grass; case order is grass, fire, water.
+    static const u16 sRivalLead[2][3] = {
+        { SPECIES_TORCHIC, SPECIES_MUDKIP, SPECIES_TREECKO },
+        { SPECIES_HOUNDOUR, SPECIES_WINGULL, SPECIES_SHROOMISH },
+    };
+    struct CoopSave *save = CoopSave();
+    u8 rival = Coop_RivalId();
+    u8 home = gSaveBlock2Ptr->playerGender == MALE ? COOP_RIVAL_MIRA : COOP_RIVAL_SOREN;
+    u8 type;
+
+    if (save == NULL || rival == COOP_RIVAL_NONE || save->caseId > 2)
+        return 0;
+    type = save->caseId;
+    StringCopy(gStringVar1, GetSpeciesName(sRivalLead[rival == COOP_RIVAL_SOREN ? 0 : 1][type]));
+    GetMonData(&gParties[B_TRAINER_PLAYER][0], MON_DATA_NICKNAME, gStringVar2);
+    StringGet_Nickname(gStringVar2);
+    return rival + (rival == home ? 2 : 0);
+}
+
+// VAR_RESULT: COOP_RIVAL_* for this player. STR_VAR_1: that rival's name.
+u16 Coop_BufferRival(void)
+{
+    static const u8 sText_Soren[] = _("SOREN");
+    static const u8 sText_Mira[] = _("MIRA");
+    u8 rival = Coop_RivalId();
+
+    StringCopy(gStringVar1, rival == COOP_RIVAL_SOREN ? sText_Soren : sText_Mira);
+    return rival;
+}
+
+// Shared progression items the partner's win hands this save. Each is
+// delivered once: the save remembers a pending one until the bag has room,
+// and an item already owned (or the HM flag) counts as delivered.
+static const struct { u16 item; u16 flag; } sSharedItems[] = {
+    [COOP_SHARED_DOWSING] = { ITEM_DOWSING_MACHINE, 0 },
+    [COOP_SHARED_HM_FLY]  = { ITEM_HM_FLY, FLAG_RECEIVED_HM_FLY },
+};
+
+static bool8 Coop_SharedItemOwned(u8 id)
+{
+    if (sSharedItems[id].flag != 0 && FlagGet(sSharedItems[id].flag))
+        return TRUE;
+    return CheckBagHasItem(sSharedItems[id].item, 1);
+}
+
+// TRUE when the item is in the bag now. FALSE leaves it pending.
+static bool8 Coop_GiveSharedItem(u8 id)
+{
+    struct CoopSave *save = CoopSave();
+
+    if (Coop_SharedItemOwned(id) || AddBagItem(sSharedItems[id].item, 1))
+    {
+        if (sSharedItems[id].flag != 0)
+            FlagSet(sSharedItems[id].flag);
+        if (save != NULL)
+            save->sharedItems &= ~(1 << id);
+        return TRUE;
+    }
+    if (save != NULL)
+        save->sharedItems |= 1 << id;
+    StringCopy(gStringVar1, GetItemName(sSharedItems[id].item));
+    return FALSE;
+}
+
+extern const u8 Coop_EventScript_SharedItemArrived[];
+
+// A pending shared item arrives at a quiet moment on the field.
+static void Coop_PollSharedItems(void)
+{
+    static EWRAM_DATA u8 sSharedItemTimer = 0;
+    struct CoopSave *save = CoopSave();
+    u8 id;
+
+    if (save == NULL || save->sharedItems == 0 || gMain.callback2 != CB2_Overworld
+     || ScriptContext_IsEnabled() || ArePlayerFieldControlsLocked() || gMain.inBattle)
+        return;
+    if (++sSharedItemTimer < 60)
+        return;
+    sSharedItemTimer = 0;
+    for (id = 0; id < ARRAY_COUNT(sSharedItems); id++)
+    {
+        if (!(save->sharedItems & (1 << id)))
+            continue;
+        if (Coop_SharedItemOwned(id))
+        {
+            save->sharedItems &= ~(1 << id);
+            continue;
+        }
+        if (!CheckBagHasSpace(sSharedItems[id].item, 1))
+            continue;
+        AddBagItem(sSharedItems[id].item, 1);
+        if (sSharedItems[id].flag != 0)
+            FlagSet(sSharedItems[id].flag);
+        save->sharedItems &= ~(1 << id);
+        StringCopy(gStringVar1, GetItemName(sSharedItems[id].item));
+        ScriptContext_SetupScript(Coop_EventScript_SharedItemArrived);
+        return;
+    }
+}
+
 static u16 Coop_GiveStoryItem(u16 item)
 {
     if (CheckBagHasItem(item, 1))
@@ -2350,26 +2981,40 @@ static u16 Coop_ApplyGuestStoryProgress(void)
     switch (VarGet(VAR_0x8004))
     {
     case 11:
+        // The same state Route103_EventScript_RivalEnd writes for the talker.
+        // Without the lab state Birch never handed the guest a Pokedex.
         FlagSet(FLAG_DEFEATED_RIVAL_ROUTE103);
         FlagSet(FLAG_HIDE_ROUTE_103_RIVAL);
-        Coop_RaiseVar(VAR_OLDALE_RIVAL_STATE, 1);
+        if (VarGet(VAR_BIRCH_LAB_STATE) < 4)
+        {
+            VarSet(VAR_BIRCH_LAB_STATE, 4);
+            FlagClear(FLAG_HIDE_LITTLEROOT_TOWN_BIRCHS_LAB_RIVAL);
+        }
+        if (VarGet(VAR_OLDALE_RIVAL_STATE) < 1)
+        {
+            VarSet(VAR_OLDALE_RIVAL_STATE, 1);
+            FlagClear(FLAG_HIDE_OLDALE_TOWN_RIVAL);
+        }
         return 0;
     case 12:
+        // The talker met the rival and registered them before the fight.
         FlagSet(FLAG_DEFEATED_RIVAL_RUSTBORO);
         FlagSet(FLAG_HIDE_RUSTBORO_CITY_RIVAL);
+        FlagSet(FLAG_MET_RIVAL_RUSTBORO);
+        FlagSet(FLAG_ENABLE_RIVAL_MATCH_CALL);
+        if (VarGet(VAR_RUSTBORO_CITY_STATE) >= 7)
+            Coop_RaiseVar(VAR_RUSTBORO_CITY_STATE, 8);
+        if (VarGet(VAR_ROUTE104_STATE) >= 1)
+            Coop_RaiseVar(VAR_ROUTE104_STATE, 2);
         return 0;
     case 13:
-        if (Coop_GiveStoryItem(ITEM_DOWSING_MACHINE))
-            return 1;
+        // The story moves on even when the bag is full; the item waits in
+        // the save and arrives once there is room (Coop_PollSharedItems).
         FlagSet(FLAG_HIDE_ROUTE_110_RIVAL);
         FlagSet(FLAG_HIDE_ROUTE_110_RIVAL_ON_BIKE);
         Coop_RaiseVar(VAR_ROUTE110_STATE, 1);
-        return 0;
+        return Coop_GiveSharedItem(COOP_SHARED_DOWSING) ? 0 : 3;
     case 14:
-        if (!FlagGet(FLAG_RECEIVED_HM_FLY) && Coop_GiveStoryItem(ITEM_HM_FLY))
-            return 1;
-        if (!FlagGet(FLAG_RECEIVED_HM_FLY))
-            FlagSet(FLAG_RECEIVED_HM_FLY);
         FlagSet(FLAG_HIDE_ROUTE_119_RIVAL);
         FlagSet(FLAG_HIDE_ROUTE_119_RIVAL_ON_BIKE);
         if (VarGet(VAR_ROUTE119_STATE) < 1)
@@ -2377,8 +3022,22 @@ static u16 Coop_ApplyGuestStoryProgress(void)
             VarSet(VAR_ROUTE119_STATE, 1);
             VarSet(VAR_SCOTT_STATE, VarGet(VAR_SCOTT_STATE) + 1);
         }
-        return 0;
+        return Coop_GiveSharedItem(COOP_SHARED_HM_FLY) ? 0 : 3;
     case 15:
+        // After Lilycove the rival is home again, as on the talker's save.
+        if (!FlagGet(FLAG_MET_RIVAL_LILYCOVE))
+        {
+            if (gSaveBlock2Ptr->playerGender == MALE)
+            {
+                FlagClear(FLAG_HIDE_LITTLEROOT_TOWN_MAYS_HOUSE_RIVAL_BEDROOM);
+                FlagClear(FLAG_HIDE_LITTLEROOT_TOWN_MAYS_HOUSE_2F_PICHU_DOLL);
+            }
+            else
+            {
+                FlagClear(FLAG_HIDE_LITTLEROOT_TOWN_BRENDANS_HOUSE_RIVAL_BEDROOM);
+                FlagClear(FLAG_HIDE_LITTLEROOT_TOWN_BRENDANS_HOUSE_2F_SWABLU_DOLL);
+            }
+        }
         FlagSet(FLAG_MET_RIVAL_LILYCOVE);
         FlagSet(FLAG_HIDE_LILYCOVE_CITY_RIVAL);
         return 0;
@@ -2598,7 +3257,9 @@ static void Coop_DeliverCatches(void)
     }
     sCatchCount = 0;
     memset(sCatches, 0, sizeof(sCatches));
-    if (sNickCount != 0)
+    // Each screen says who owns what: the partner's catches first, then
+    // this player's own catches with their nickname prompts.
+    if (sNickCount != 0 || sPartnerCaughtCount != 0)
         sPendingMessage = Coop_EventScript_CaughtNickname;
 }
 
@@ -2823,10 +3484,29 @@ void Coop_NoteCatch(u32 thrower, u32 target)
         if (index != 0xFF)
             sLocalLegendMask |= 1 << index;
     }
-    else if (index != 0xFF)
+    else
     {
-        sPartnerLegendMask |= 1 << index;
+        if (sPartnerCaughtCount < COOP_WILD_SLOTS)
+            sPartnerCaught[sPartnerCaughtCount++] = GetMonData(mon, MON_DATA_SPECIES);
+        if (index != 0xFF)
+            sPartnerLegendMask |= 1 << index;
     }
+}
+
+// After a co-op wild fight: the partner's catches, one per call.
+// VAR_RESULT is the species (STR_VAR_1 its name), or SPECIES_NONE when done.
+u16 Coop_NextPartnerCatch(void)
+{
+    u16 species;
+
+    if (sPartnerCaughtCount == 0)
+        return SPECIES_NONE;
+    species = sPartnerCaught[--sPartnerCaughtCount];
+    sPartnerCaught[sPartnerCaughtCount] = SPECIES_NONE;
+    if (species == SPECIES_NONE || species >= NUM_SPECIES)
+        return SPECIES_NONE;
+    StringCopy(gStringVar1, GetSpeciesName(species));
+    return species;
 }
 
 u16 Coop_NextCaughtNickname(void)
@@ -2928,29 +3608,62 @@ u16 Coop_PairGuestAnswer(void)
     bool8 accepted = gSpecialVar_Result != 0;
     u16 seq = sGuestPairInvite.seq;
 
+    u8 kind = sGuestPairInvite.kind;
+
     if (!sGuestPairPending)
         return 2;
     sGuestPairPending = FALSE;
-    if (sGuestPairTimer >= COOP_PAIR_ANSWER_LIMIT || !Coop_SessionActive())
+    if (sGuestPairTimer >= (kind == COOP_KIND_PAIR ? COOP_PAIR_ANSWER_LIMIT : COOP_JOIN_ANSWER_LIMIT)
+     || !Coop_SessionActive())
     {
         Coop_SendReply(COOP_KIND_NACK, seq);
         return 2;
     }
-    if (!Coop_HasBattleReadyLead() || Coop_PairPlanFromHere(TRUE, accepted) != COOP_PAIR_JOINT)
+    if (!accepted || !Coop_HasBattleReadyLead()
+     || (kind == COOP_KIND_PAIR && Coop_PairPlanFromHere(TRUE, accepted) != COOP_PAIR_JOINT))
     {
         Coop_SendReply(COOP_KIND_NACK, seq);
         return 0;
     }
-    sBattleKind = COOP_KIND_PAIR;
+    sBattleKind = kind;
     sBattleBadge = 0;
     sBattleFlag = 0;
     sLegendKind = 0;
     sRivalFightStage = 0xFF;
-    TRAINER_BATTLE_PARAM.opponentA = sGuestPairInvite.trainerA;
-    TRAINER_BATTLE_PARAM.opponentB = sGuestPairInvite.trainerB;
+    if (kind == COOP_KIND_WILD)
+    {
+        TRAINER_BATTLE_PARAM.opponentA = 0;
+        TRAINER_BATTLE_PARAM.opponentB = 0;
+        CreateScriptedDoubleWildMon(sGuestPairInvite.trainerA, sGuestPairInvite.badge, ITEM_NONE,
+                                    sGuestPairInvite.trainerB, (u8)sGuestPairInvite.aux, ITEM_NONE);
+        Coop_SendReply(COOP_KIND_ACK, seq);
+        sJoinLaunchPending = TRUE;
+        sInBattle = TRUE;
+        return 3;
+    }
+    else
+    {
+        sBattleBadge = sGuestPairInvite.badge;
+        sBattleFlag = kind == COOP_KIND_PAIR ? 0 : sGuestPairInvite.aux;
+        TRAINER_BATTLE_PARAM.opponentA = sGuestPairInvite.trainerA;
+        TRAINER_BATTLE_PARAM.opponentB = sGuestPairInvite.trainerB;
+    }
     Coop_SendReply(COOP_KIND_ACK, seq);
     Coop_LaunchBattle(TRUE);
     return 1;
+}
+
+// STR_VAR_1: what the partner ran into, for the join question.
+u16 Coop_BufferJoinAsk(void)
+{
+    if (sGuestPairInvite.kind == COOP_KIND_WILD && sGuestPairInvite.trainerA < NUM_SPECIES)
+    {
+        StringCopy(gStringVar1, GetSpeciesName(sGuestPairInvite.trainerA));
+        return COOP_KIND_WILD;
+    }
+    if (sGuestPairInvite.trainerA < TRAINERS_COUNT)
+        StringCopy(gStringVar1, GetTrainerNameFromId(sGuestPairInvite.trainerA));
+    return COOP_KIND_TRAINER;
 }
 
 // Called from BattleSetup when the rival script has already started a battle.

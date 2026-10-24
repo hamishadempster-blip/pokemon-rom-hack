@@ -20,6 +20,9 @@ b goto 5 6 2500
 b goto 5 4 2500
 0 goto 10 4 2000
 1 goto 11 4 2000
+# Both twins stand on the route on both screens before the fight.
+b expect_any_object 246
+b shot rival-pair-before
 0 press UP 2
 0 press A 2
 b until_cb2 BattleMainCB2 12000 A
@@ -33,3 +36,9 @@ b expect_flag 0x2d3 1
 b expect coop.sLinkState 2
 b shot rival-story-finished
 b expect_no_object 2
+b expect_no_object 246
+# The guest gets the same follow-on state as the talker: Birch's Pokedex
+# scene in the lab (lab state 4) and the rival waiting there.
+b expect_var 0x4084 4
+b expect_flag 0x2D3 1
+b expect_flag 0x379 0

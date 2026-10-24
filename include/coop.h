@@ -3,6 +3,7 @@
 
 #include "global.h"
 #include "coop_protocol.h"
+#include "constants/coop.h"
 
 // Megas, Z-Moves, Dynamax, and Terastallization (including Primal Reversion)
 // are turned off at the Can* checks. Species tables stay intact.
@@ -17,6 +18,8 @@
 #define COOP_SEND_AS_HELD_KEYS 0
 
 #define OBJ_EVENT_ID_COOP_PARTNER 0xFC
+// The rival twin standing beside the story's rival. Spawned in code.
+#define OBJ_EVENT_ID_COOP_TWIN 0xF6
 
 extern const u8 Coop_EventScript_TalkPartner[];
 
@@ -29,12 +32,15 @@ extern const u8 Coop_EventScript_TalkPartner[];
 #define COOP_KIND_WARP      7
 #define COOP_KIND_ACK       8
 #define COOP_KIND_NACK      9
-#define COOP_KIND_WILD      10
+#define COOP_KIND_WILD      COOP_KIND_WILD_VALUE
 #define COOP_KIND_PAIR      11
 // Birch's Route 101 rescue. Both players already have a starter.
 #define COOP_KIND_RESCUE    12
 // Story bosses. The badge byte is the gate, not a gym number.
 #define COOP_KIND_STORY     13
+// The inviter gave up on an optional invite; the partner's open question
+// for that sequence number becomes too late.
+#define COOP_KIND_WITHDRAW  14
 
 #define COOP_GATE_CHIMNEY  1
 #define COOP_GATE_MAGMA    2
@@ -101,6 +107,18 @@ bool8 Coop_BeaconActive(void);
 bool8 Coop_OfferTrade(u8 slot);
 
 void Coop_OverworldFrame(void);
+void Coop_ApplyPendingStory(void);
+u16 Coop_AnnounceScene(void);
+u16 Coop_PrepareRivalJoin(void);
+u16 Coop_BufferRival(void);
+void Coop_UpdateRivalTwin(void);
+void Coop_FormatStatus(u8 *dest);
+u16 Coop_BufferMenuStatus(void);
+u16 Coop_MenuUseBeacon(void);
+u16 Coop_ReopenStartMenu(void);
+u16 Coop_TwinIdentity(void);
+u16 Coop_BufferRivalTaunt(void);
+extern const u8 Coop_EventScript_TalkTwin[];
 void Coop_ResumeAfterTasksReset(void);
 void Coop_YieldLinkToBattle(void);
 void Coop_SettlePartner(void);
@@ -126,6 +144,7 @@ bool8 Coop_CanCatchTarget(u32 target);
 void Coop_ClaimCatch(u32 thrower, u32 target);
 void Coop_NoteCatch(u32 thrower, u32 target);
 u16 Coop_NextCaughtNickname(void);
+u16 Coop_NextPartnerCatch(void);
 // 0 means the stock target. Otherwise the chosen battler plus one.
 extern u8 gCoopBallTarget;
 extern u8 gCoopBallTargetFor[];
@@ -135,6 +154,7 @@ extern u16 gCoopLastBall;
 bool8 Coop_TryStartTrainerPair(void);
 u16 Coop_PairHostAnswer(void);
 u16 Coop_PairGuestAnswer(void);
+u16 Coop_BufferJoinAsk(void);
 u16 Coop_BufferPairNames(void);
 
 extern const u8 Coop_EventScript_NeedPartner[];
@@ -158,6 +178,7 @@ extern const u8 Coop_EventScript_BeaconDeclined[];
 extern const u8 Coop_EventScript_CaughtNickname[];
 extern const u8 Coop_EventScript_PairAskHost[];
 extern const u8 Coop_EventScript_PairAskGuest[];
+extern const u8 Coop_EventScript_JoinAskGuest[];
 extern const u8 Coop_EventScript_PairTooLate[];
 
 #endif // GUARD_COOP_H

@@ -88,6 +88,8 @@ COMMON_DATA bool8 (*gMenuCallback)(void) = NULL;
 // EWRAM
 EWRAM_DATA static u8 sSafariBallsWindowId = 0;
 EWRAM_DATA static u8 sBattlePyramidFloorWindowId = 0;
+EWRAM_DATA static u8 sCoopStatusWindowId = 0;
+EWRAM_DATA static bool8 sCoopStatusShown = FALSE;
 EWRAM_DATA static u8 sStartMenuCursorPos = 0;
 EWRAM_DATA static u8 sNumStartMenuActions = 0;
 EWRAM_DATA static u8 sCurrentStartMenuActions[9] = {0};
@@ -154,6 +156,18 @@ static const struct WindowTemplate sWindowTemplate_SafariBalls = {
     .tilemapTop = 1,
     .width = 9,
     .height = 4,
+    .paletteNum = 15,
+    .baseBlock = 0x8
+};
+
+// The co-op status sits where the Safari count would. The two never show
+// together: the Safari and the Pyramid keep their own window.
+static const struct WindowTemplate sWindowTemplate_CoopStatus = {
+    .bg = 0,
+    .tilemapLeft = 1,
+    .tilemapTop = 1,
+    .width = 14,
+    .height = 8,
     .paletteNum = 15,
     .baseBlock = 0x8
 };
@@ -471,8 +485,28 @@ static void ShowPyramidFloorWindow(void)
     CopyWindowToVram(sBattlePyramidFloorWindowId, COPYWIN_GFX);
 }
 
+static void ShowCoopStatusWindow(void)
+{
+    sCoopStatusWindowId = AddWindow(&sWindowTemplate_CoopStatus);
+    if (sCoopStatusWindowId == WINDOW_NONE)
+        return;
+    sCoopStatusShown = TRUE;
+    PutWindowTilemap(sCoopStatusWindowId);
+    DrawStdWindowFrame(sCoopStatusWindowId, FALSE);
+    Coop_FormatStatus(gStringVar4);
+    AddTextPrinterParameterized(sCoopStatusWindowId, FONT_NARROW, gStringVar4, 0, 1, TEXT_SKIP_DRAW, NULL);
+    CopyWindowToVram(sCoopStatusWindowId, COPYWIN_GFX);
+}
+
 static void RemoveExtraStartMenuWindows(void)
 {
+    if (sCoopStatusShown)
+    {
+        ClearStdWindowAndFrameToTransparent(sCoopStatusWindowId, FALSE);
+        CopyWindowToVram(sCoopStatusWindowId, COPYWIN_GFX);
+        RemoveWindow(sCoopStatusWindowId);
+        sCoopStatusShown = FALSE;
+    }
     if (GetSafariZoneFlag())
     {
         ClearStdWindowAndFrameToTransparent(sSafariBallsWindowId, FALSE);
@@ -541,6 +575,8 @@ static bool32 InitStartMenuStep(void)
             ShowSafariBallsWindow();
         if (CurrentBattlePyramidLocation() != PYRAMID_LOCATION_NONE)
             ShowPyramidFloorWindow();
+        else if (!GetSafariZoneFlag() && Coop_CableUp())
+            ShowCoopStatusWindow();
         sInitStartMenuData[0]++;
         break;
     case 4:

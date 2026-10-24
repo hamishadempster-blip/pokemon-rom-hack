@@ -49,6 +49,9 @@
 #include "type_icons.h"
 #include "pokedex.h"
 #include "test/battle.h"
+#include "battle_main.h"
+
+static bool32 CoopPrintActionPrompt(enum BattlerId battler, bool32 force);
 
 static void PlayerHandleLoadMonSprite(enum BattlerId battler);
 static void PlayerHandleDrawTrainerPic(enum BattlerId battler);
@@ -238,6 +241,7 @@ static void HandleInputChooseAction(enum BattlerId battler)
 
     DoBounceEffect(battler, BOUNCE_HEALTHBOX, 7, 1);
     DoBounceEffect(battler, BOUNCE_MON, 7, 1);
+    CoopPrintActionPrompt(battler, FALSE);
 
     if (JOY_REPEAT(DPAD_ANY) && gSaveBlock2Ptr->optionsButtonMode == OPTIONS_BUTTON_MODE_L_EQUALS_A)
         gPlayerDpadHoldFrames++;
@@ -461,6 +465,7 @@ static void MoveSelectionShowTarget(enum BattlerId battler)
 static void MoveSelectionShowSpreadTargets(enum BattlerId battler, enum Move move, enum MoveTarget kind)
 {
     const u8 *label = COMPOUND_STRING("Both foes");
+    const u8 *name = GetMoveName(move);
     if (kind == TARGET_USER_AND_ALLY)
         label = COMPOUND_STRING("Your team");
     else if (kind == TARGET_FOES_AND_ALLY)
@@ -469,7 +474,12 @@ static void MoveSelectionShowSpreadTargets(enum BattlerId battler, enum Move mov
         label = COMPOUND_STRING("Everyone");
     else if (kind == TARGET_FIELD)
         label = COMPOUND_STRING("The field");
-    MoveSelectionDrawTargetPrompt(battler, label, GetMoveName(move));
+    // Earthquake, Surf, Discharge and friends land on the partner as well.
+    // Say so where the move name would be, while the partner is up.
+    if ((kind == TARGET_FOES_AND_ALLY || kind == TARGET_ALL_BATTLERS)
+     && IsBattlerAlive(GetPartnerBattler(battler)) && GetMovePower(move) != 0)
+        name = COMPOUND_STRING("Hits partner!");
+    MoveSelectionDrawTargetPrompt(battler, label, name);
 }
 
 static void MoveSelectionRestoreMoves(enum BattlerId battler)
@@ -2059,6 +2069,30 @@ static void HandleChooseActionAfterDma3(enum BattlerId battler)
     }
 }
 
+static EWRAM_DATA u8 sCoopPartnerPrompt[MAX_BATTLERS_COUNT] = {0};
+
+// The action prompt in a co-op battle names the partner's progress where
+// this game can know it: the link master runs the engine and sees the
+// partner's choice arrive. The other game keeps the stock prompt.
+static bool32 CoopPrintActionPrompt(enum BattlerId battler, bool32 force)
+{
+    enum BattlerId partner = GetPartnerBattler(battler);
+    u8 state;
+
+    if (!(gBattleTypeFlags & BATTLE_TYPE_COOP) || !(gBattleTypeFlags & BATTLE_TYPE_IS_MASTER)
+     || partner >= gBattlersCount || !IsBattlerAlive(partner))
+        return FALSE;
+    state = Coop_BattlePartnerReady(partner) ? 2 : 1;
+    if (!force && sCoopPartnerPrompt[battler] == state)
+        return TRUE;
+    sCoopPartnerPrompt[battler] = state;
+    BattleStringExpandPlaceholdersToDisplayedString(state == 2
+        ? COMPOUND_STRING("Partner ready.\nWhat will {B_BUFF1} do?")
+        : COMPOUND_STRING("Partner choosing…\nWhat will {B_BUFF1} do?"));
+    BattlePutTextOnWindow(gDisplayedStringBattle, B_WIN_ACTION_PROMPT);
+    return TRUE;
+}
+
 static void PlayerHandleChooseAction(enum BattlerId battler)
 {
     s32 i;
@@ -2111,7 +2145,7 @@ static void PlayerHandleChooseAction(enum BattlerId battler)
         }
         BattlePutTextOnWindow(gStringVar1, B_WIN_ACTION_PROMPT);
     }
-    else
+    else if (!CoopPrintActionPrompt(battler, TRUE))
     {
         BattlePutTextOnWindow(gDisplayedStringBattle, B_WIN_ACTION_PROMPT);
     }

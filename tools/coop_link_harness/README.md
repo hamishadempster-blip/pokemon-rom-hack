@@ -157,3 +157,39 @@ trade, or internet-netplay path.
 `expect_no_object LOCAL_ID` checks that a completed story NPC is gone from
 the current map. The `oldale_reconnect.inc` and `route102_reconnect_start.inc`
 files share setup without duplicating the opening route traversal.
+
+## Doorway, scene, rival, and invitation regressions (build 0xC017012C)
+
+`run_all.sh` runs every scenario below in dependency order and writes
+`summary.txt` (`ROM`, `HARNESS_OUT`, `OUT`, `ONLY`, and `AFFECTED` select the
+image, the harness build, the output folder, a subset, and an affected-save
+folder for the recovery check).
+
+| Scenario | What it checks |
+| --- | --- |
+| `mays_house_doorway.txt` | The reported bug from legitimate play: two boys, opening fight, Twin Beacon, then May's bedroom. Player 0 opens the bag. Both saves keep the rival away; both players take the stairs down and back twice, unlink, repeat, relink, repeat, and save in the bedroom. No flag or variable is edited. |
+| `mays_house_doorway_p1bag.txt` | The same with player 1 opening the bag, and player 0 reading text at slow speed against player 1 at fast speed from the rival meeting on. |
+| `bedroom_reload.txt` | Continue the two bedroom saves from `mays_house_doorway.txt`; rival still away, story values unchanged, stairs both ways, relink. |
+| `mays_house_recovery.txt` | Continue a pair of saves made by the **pre-fix** build at the moment of the bug (the guest saved in the bedroom with May on the stair warp). The rival is gone on load, the story values are unchanged, and both players can use the stairs and relink. |
+| `rival_join.txt` | Player 0 starts the bedroom introduction; player 1, idle in the room, joins from their own save. |
+| `rival_latejoin.txt` | Player 1 has the start menu open during player 0's introduction; nothing interrupts it, and player 1 joins when the menu closes. |
+| `rival_pending.txt` | Player 1 is downstairs; on entering the bedroom the finished introduction is applied at the transition: rival at the PC, short line, no replay. |
+| `rival_simultaneous.txt` | Both press A on the Poké Ball on the same frame; each save plays its own introduction once, no join, no lock, both leave by the stairs. |
+| `rival_reconnect.txt` | Player 0 meets the rival while unlinked; after relinking the ledger reaches player 1, who does not replay the introduction. |
+| `rival_story.txt` | (extended) Both twins stand on Route 103 on both screens before the fight; the second twin leaves with the rival; the guest also gets lab state 4 and the lab rival. |
+| `invite_refuse.txt` | Nearby wild invitation answered NO: the inviter fights alone, the link stays up. |
+| `invite_busy.txt` | Wild invitation while the partner has the start menu open: no prompt, the menu stays usable, the inviter fights alone. |
+| `coop_menu.txt` | Start menu status window, partner activity in the frame, the CO-OP list with B back to the start menu, and the Beacon turned off from the menu once both agree. |
+
+`route102_reconnect.txt` now has player 1 answer the join question with A.
+
+Commands added for these: `expect_map G N`, `expect_object ID X Y`,
+`expect_any_object ID`, and `text_speed N` (0 slow, 1 mid, 2 fast, a
+player option, not story state). The shared-tile partner check accepts any
+free neighbouring tile.
+
+Fixture scope: `rival_story.txt`, `invite_*.txt`, and `coop_menu.txt` start
+from `save_lab.txt` saves and the Oldale adventure fixture described above.
+The bedroom and rival-introduction scenarios use only legitimate play.
+The recovery scenario uses saves the old build produced, not a save from a
+player's own game.

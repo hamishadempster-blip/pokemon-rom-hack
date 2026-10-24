@@ -1,0 +1,20 @@
+# Nearby wild invitation while the partner has the start menu open. The
+# partner is not interrupted, the menu stays usable, and player 0 fights
+# alone straight away.
+include route102_reconnect_start.inc
+1 press START 2
+1 wait 40
+include wild_steps.inc
+0 until_cb2 BattleMainCB2 3000
+0 expect gBattlersCount 2
+0 expect coop.sInBattle 0
+# Player 1 keeps the menu open until player 0's solo fight has begun.
+b sync
+1 expect coop.sGuestPairPending 0
+1 expect start_menu.sCoopStatusShown 1
+1 shot partner-menu-untouched
+1 press B 2
+1 until_field 600
+0 mash_field 25000
+b expect coop.sLinkState 2
+b until_field 600

@@ -18,7 +18,9 @@ include route102_reconnect_start.inc
 0 press DOWN 48
 0 press UP 32
 0 press DOWN 48
-b until_cb2 BattleMainCB2 6000
+# The partner is asked first now; player 1 answers YES with A.
+0 until_cb2 BattleMainCB2 6000
+1 until_cb2 BattleMainCB2 6000 A
 b expect gBattlersCount 4
 b expect coop.sInBattle 1
 b mash_field 25000

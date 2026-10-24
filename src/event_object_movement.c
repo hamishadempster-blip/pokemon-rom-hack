@@ -3665,6 +3665,8 @@ static const u8 *GetObjectEventScriptPointerByLocalIdAndMap(u8 localId, u8 mapNu
     // Looking one up returns NULL, and pressing A ran whatever bytes live at address 0.
     if (localId == OBJ_EVENT_ID_COOP_PARTNER)
         return Coop_EventScript_TalkPartner;
+    if (localId == OBJ_EVENT_ID_COOP_TWIN)
+        return Coop_EventScript_TalkTwin;
 
     obj = GetObjectEventTemplateByLocalIdAndMap(localId, mapNum, mapGroup);
     if (obj == NULL)
@@ -6557,6 +6559,7 @@ u32 GetObjectObjectCollidesWith(struct ObjectEvent *objectEvent, s16 x, s16 y, b
         if (curObject->active && (curObject->movementType != MOVEMENT_TYPE_FOLLOW_PLAYER || objectEvent != &gObjectEvents[gPlayerAvatar.objectEventId]) && curObject != objectEvent
          && !FollowerNPC_IsCollisionExempt(curObject, objectEvent)
          && curObject->localId != OBJ_EVENT_ID_COOP_PARTNER
+         && curObject->localId != OBJ_EVENT_ID_COOP_TWIN
          )
         {
             // check for collision if curObject is active, not the object in question, and not exempt from collisions

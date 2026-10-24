@@ -1,0 +1,13 @@
+# Player 0 meets May while the cable is down. After relinking, player 1
+# receives the introduction through the ledger and does not replay it.
+include boys_to_rival_house.inc
+include unlink.inc
+b expect coop.sLinkState 0
+include p0_meets_may.inc
+b sync
+1 expect_var 0x408D 0
+include relink.inc
+b expect coop.sLinkState 2
+b wait 120
+1 expect_var 0x408D 0
+include p1_enters_bedroom_after.inc

@@ -1,0 +1,40 @@
+# Start menu status and the CO-OP menu, from the lab saves with the Beacon
+# on. The status window names the link, the Beacon, and what the partner
+# is doing. CO-OP lists BEACON, UNLINK, BACK; B goes back to the start
+# menu; BEACON asks the partner and turns it off once both agree.
+include beacon_battle.txt
+b mash_field 2000 B
+b sync
+1 press START 2
+1 wait 40
+0 until_mem coop.sPartner+21:1 2 300
+0 press START 2
+0 wait 40
+0 expect start_menu.sCoopStatusShown 1
+0 shot status-window
+b sync
+1 press B 2
+1 until_field 600
+0 menu_to COOP
+0 press A 2
+0 wait 60
+0 shot coop-menu
+0 press B 2
+0 until_mem start_menu.sCoopStatusShown 1 300
+0 wait 40
+0 shot back-to-start-menu
+0 press B 2
+0 until_field 600
+0 until_mem coop.sPartner+21:1 0 300
+b sync
+0 press START 2
+0 wait 40
+0 menu_to COOP
+0 press A 2
+0 wait 60
+0 press A 2
+1 until_mem coop.sBeacon+1:1 0 3000 A
+0 mash_field 1200
+b until_mem coop.sBeacon+1:1 0 1200
+b mash_field 1500 B
+b expect coop.sLinkState 2
