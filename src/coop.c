@@ -62,9 +62,6 @@
 // a YES/NO. The partner's answer must arrive before the inviter gives up.
 #define COOP_WILD_TIMEOUT 600
 #define COOP_JOIN_ANSWER_LIMIT 480
-// A partner further than this many tiles away is not "nearby" and is not
-// asked; the encounter is the inviter's alone.
-#define COOP_NEARBY_TILES 10
 #define COOP_PAIR_TIMEOUT 1800
 // The rescue waits on a person who may still be closing a menu.
 #define COOP_RESCUE_TIMEOUT 1800
@@ -346,21 +343,12 @@ u16 Coop_PartnerOnSameTile(void)
     return sPartner.x == (u8)x && sPartner.y == (u8)y;
 }
 
-// Same map and within a screen or so, on any tile.
+// Eligible to be asked: the same map, on any tile. Co-op already needs the
+// partner on the map; a distance limit only turned a partner across the
+// route into a solo fight they never heard about.
 static bool8 Coop_PartnerNearby(void)
 {
-    s16 x, y, dx, dy;
-
-    if (!Coop_PartnerOnSameMap())
-        return FALSE;
-    PlayerGetDestCoords(&x, &y);
-    dx = (s16)sPartner.x - x;
-    dy = (s16)sPartner.y - y;
-    if (dx < 0)
-        dx = -dx;
-    if (dy < 0)
-        dy = -dy;
-    return dx <= COOP_NEARBY_TILES && dy <= COOP_NEARBY_TILES;
+    return Coop_PartnerOnSameMap();
 }
 
 u16 Coop_CaseChosen(void)
