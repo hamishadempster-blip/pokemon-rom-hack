@@ -48,6 +48,22 @@ rival graphic outside the two Littleroot houses. Its own dialogue is the
 Route 103 introduction and its talk line; later scenes still speak through
 the scene's rival.
 
+## Test results
+
+Host protocol tests pass. `tools/coop_link_harness/run_all.sh` on two linked
+mGBA 0.10.2 cores: 27 scenarios pass (see the harness README for the one
+Route 102 rerun after making its pacing deterministic). A 12-scenario set,
+covering the doorway in both roles, reload and recovery, the rival join,
+Route 103, the Route 102 wild double, a refused invitation, the CO-OP menu,
+and the Calvin co-op fight, passes on mGBA 0.10.3 cores. The doorway scenario
+fails on the pre-fix build exactly as reported.
+
+Fixtures: the rival introduction and doorway checks use legitimate play
+only. Route 103, the invitations, and the menu start from `save_lab.txt`
+saves with the documented Oldale gate fixture. Recovery used saves that the
+pre-fix build produced at the moment of the bug, not a save from a player's
+own game.
+
 ## Known gaps and remaining work
 
 - Later rival scenes (lab, Rustboro, Route 110/119, Lilycove) were not run in the harness; they need late-game fixtures or a long play-through.

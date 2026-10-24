@@ -193,3 +193,23 @@ from `save_lab.txt` saves and the Oldale adventure fixture described above.
 The bedroom and rival-introduction scenarios use only legitimate play.
 The recovery scenario uses saves the old build produced, not a save from a
 player's own game.
+
+## Verified 2026-10-24 (build 0xC017012C)
+
+ROM build, host protocol tests (`tools/coop_protocol_test.c`), and
+`run_all.sh` on two linked mGBA 0.10.2 cores: 27 scenarios, all passing,
+including `mays_house_recovery.txt` on saves the pre-fix build produced.
+`route102_reconnect.txt` first failed once because no wild Pokémon rolled
+during its fixed pacing (neither game left the field); it now paces until a
+battle starts and passed four further runs (two per emulator version).
+On two mGBA 0.10.3 cores: both doorway roles, bedroom reload, recovery, rival
+join and simultaneous press, the lab save, Route 103 rivals, the Route 102 wild
+double, the refused invitation, the CO-OP menu, and the Calvin co-op fight,
+all passing.
+
+The same doorway scenario fails on the pre-fix build exactly as reported:
+the guest's save has May on the stair warp and the guest cannot go down.
+
+Not run here: internet netplay, late-game rival scenes (lab Pokédex scene,
+Rustboro, Routes 110/119, Lilycove), a real affected save from a player's
+own game, and a cable pull during the new prompts.
