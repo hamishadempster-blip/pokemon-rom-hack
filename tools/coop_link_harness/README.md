@@ -50,7 +50,8 @@ for both players to reach it.
 | `expect SYM[+off][:size] VALUE` | Check a RAM value now |
 | `dump [tag]` | Print callbacks, map, position, partner sprite, co-op state, and CPU pc/lr (plus battle and link state in a battle) |
 | `expect_partner [tag]` | Partner sprite is on the other player's tile. A shared tile is drawn one step south, the same rule as `CoopProtocol_VisiblePartnerTile` |
-| `expect_battle [moves]` | Co-op wild battle roster (or, with `moves`, that the two players chose different moves and each game recorded the other's choice) |
+| `expect_battle [moves|hp]` | Roster, distinct move slots, or mirrored party HP. The guest does not run the battle engine, so `gBattleMons` is only filled on the link master |
+| `menu_to SAVE\|COOP` | Move the start-menu cursor onto that entry, whatever the current list is |
 | `expect_nz SYM[:size]` | The value is not zero |
 | `expect_no_partner [tag]` | No partner sprite (other map) |
 | `hex SYM [len] [off]` | Print raw bytes |

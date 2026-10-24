@@ -2108,6 +2108,10 @@ static bool32 BattleTypeAllowsExp(void)
 {
     if (RECORDED_WILD_BATTLE)
         return TRUE;
+    // Co-op is marked as a link battle so the cable can carry it, but the
+    // Pokémon that fought are the players' own and should still gain experience.
+    else if (gBattleTypeFlags & BATTLE_TYPE_COOP)
+        return TRUE;
     else if (gBattleTypeFlags &
               ( BATTLE_TYPE_LINK
               | BATTLE_TYPE_RECORDED_LINK

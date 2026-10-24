@@ -22,7 +22,7 @@
 #define MAX_CMDS 4096
 #define MAX_SYMS 500000
 
-enum { C_PARTNER, C_GOTO, C_HEX, C_PRESS, C_WAIT, C_SHOT, C_DUMP, C_BARRIER, C_UNTIL_CB2, C_UNTIL_FIELD, C_EXPECT, C_UNTIL_MEM, C_BATTLE, C_MENU };
+enum { C_PARTNER, C_GOTO, C_HEX, C_PRESS, C_WAIT, C_SHOT, C_DUMP, C_BARRIER, C_UNTIL_CB2, C_UNTIL_FIELD, C_EXPECT, C_UNTIL_MEM, C_BATTLE, C_MENU, C_PARTY };
 
 struct Cmd {
 	int kind;
@@ -195,6 +195,57 @@ static unsigned coopStatic(const char* name) {
 }
 
 static void dump(struct Player* p, const char* tag);
+
+static unsigned partyMon(int trainer, int slot);
+static const unsigned char sSub0[24] = {0, 0, 0, 0, 0, 0, 1, 1, 2, 3, 2, 3, 1, 1, 2, 3, 2, 3, 1, 1, 2, 3, 2, 3};
+
+static void readLead(struct Player* p, unsigned* species, unsigned* exp, unsigned* held) {
+	unsigned mon = partyMon(0, 0);
+	unsigned personality = rd32(p, mon);
+	unsigned ot = rd32(p, mon + 4);
+	unsigned key = personality ^ ot;
+	unsigned words[12];
+	for (int i = 0; i < 12; i++)
+		words[i] = rd32(p, mon + 32 + i * 4) ^ key;
+	unsigned sub = sSub0[personality % 24] * 3;
+	*species = words[sub] & 0x7FF;
+	*held = (words[sub] >> 16) & 0x3FF;
+	*exp = words[sub + 1] & 0x1FFFFF;
+}
+
+static int bagHas(struct Player* p, unsigned item) {
+	unsigned pockets = symAddr("gBagPockets");
+	unsigned slots = rd32(p, pockets + 4 * 8);
+	if (slots < 0x02000000) return 0;
+	for (int i = 0; i < 30; i++) {
+		unsigned id = rd16(p, slots + i * 4);
+		if (id == item) return rd16(p, slots + i * 4 + 2);
+		if (id == 0) break;
+	}
+	return 0;
+}
+
+static void showParty(struct Player* p) {
+	unsigned species, exp, held;
+	readLead(p, &species, &exp, &held);
+	unsigned hp = rd16(p, partyMon(0, 0) + 86);
+	unsigned maxhp = rd16(p, partyMon(0, 0) + 88);
+	unsigned lv = rd8(p, partyMon(0, 0) + 84);
+	unsigned pid = rd32(p, partyMon(0, 0));
+	unsigned slots = rd32(p, symAddr("gBagPockets") + 4 * 8);
+	char keys[80];
+	int o = 0;
+	keys[0] = 0;
+	for (int i = 0; i < 6 && o < 70; i++) {
+		unsigned id = rd16(p, slots + i * 4);
+		unsigned qty = rd16(p, slots + i * 4 + 2);
+		if (!id) break;
+		o += snprintf(keys + o, sizeof(keys) - o, "%u x%u ", id, qty);
+	}
+	out("[p%d] lead species=%u lv=%u hp=%u/%u exp=%u item=%u pid=%08x keys=[%s] raw=%04x %04x %04x %04x\n",
+	    p->id, species, lv, hp, maxhp, exp, held, pid, keys,
+	    rd16(p, slots), rd16(p, slots + 2), rd16(p, slots + 4), rd16(p, slots + 6));
+}
 
 static unsigned partyMon(int trainer, int slot) {
 	return symAddr("gParties") + ((trainer * 6) + slot) * 100u;
@@ -516,6 +567,10 @@ static void frameCallback(struct mCoreThread* t) {
 			}
 			break;
 		}
+		case C_PARTY:
+			showParty(p);
+			advance = true;
+			break;
 		case C_BATTLE:
 			checkBattle(p, c->value);
 			advance = true;
@@ -687,9 +742,12 @@ static void loadScript(const char* path, int depth) {
 			if (n >= 4 && isdigit((unsigned char)b[0])) c.frames = atoi(b);
 			else if (n >= 4) c.keys = parseKeys(b);
 			snprintf(c.text, sizeof(c.text), "%s != 0", a);
+		} else if (!strcmp(cmd, "party")) {
+			c.kind = C_PARTY;
 		} else if (!strcmp(cmd, "menu_to")) {
 			c.kind = C_MENU;
 			if (!strcmp(a, "SAVE")) c.value = 5;
+			else if (!strcmp(a, "BAG")) c.value = 2;
 			else if (!strcmp(a, "COOP")) c.value = 15;
 			else { fprintf(stderr, "menu_to %s\n", a); exit(1); }
 			snprintf(c.text, sizeof(c.text), "menu %s", a);

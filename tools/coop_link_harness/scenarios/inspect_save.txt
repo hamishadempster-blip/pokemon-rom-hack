@@ -1,0 +1,12 @@
+# Continue the lab saves and print the decoded lead and key items.
+b wait 1100
+b press START 2
+b wait 300
+b press A 2
+b wait 250
+b press A 2
+b mash_field 3000
+b until_field 4000
+b party
+b hex gBagPockets 48
+b dump continued

@@ -226,5 +226,6 @@ b wait 30
 b wait 600
 b dump lab
 b expect gBattleOutcome 1
+b party
 b expect_partner lab
 b shot lab

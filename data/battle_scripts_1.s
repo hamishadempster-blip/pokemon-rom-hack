@@ -3043,6 +3043,10 @@ BattleScript_CoopWildRan::
 	printstring STRINGID_GOTAWAYSAFELY
 	waitmessage B_WAIT_TIME_LONG
 BattleScript_CoopWildEnd::
+	setbyte sGIVEEXP_STATE, 0
+	getexp BS_OPPONENT1
+	setbyte sGIVEEXP_STATE, 0
+	getexp BS_OPPONENT2
 	endlinkbattle
 	waitmessage B_WAIT_TIME_LONG
 	end
