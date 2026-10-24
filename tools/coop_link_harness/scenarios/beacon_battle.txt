@@ -31,18 +31,28 @@ b wait 16
 0 hex gBagPosition 8
 0 expect gBagPosition+5:1 4
 0 press A 4
-0 wait 50
+0 wait 40
+0 shot context
 0 press A 4
-1 until_mem sGlobalScriptContextStatus:-1 1 4000
+0 wait 40
+0 shot afteruse
+0 hex coop.sBeacon 6
+0 hex gLinkCallback 4
+1 until_mem sGlobalScriptContextStatus:1 1 6000
+1 wait 90
 1 press A 4
-1 wait 40
+1 wait 50
 1 press A 4
+1 wait 50
+1 press A 4
+1 wait 80
+1 hex coop.sBeacon 6
 0 wait 40
 0 press B 4
 0 wait 20
 0 press B 4
-b mash_field 3000
-b until_field 3000
+b wait 1500
+b hex coop.sBeacon 6
 b expect coop.sBeacon+1:1 1
 b party
 b dump beacon-on

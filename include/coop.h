@@ -64,6 +64,7 @@ extern bool8 gCoopHoldLink;
 u16 Coop_PartnerOnSameMap(void);
 u16 Coop_PartnerOnSameTile(void);
 u16 Coop_SessionActive(void);
+bool8 Coop_CableUp(void);
 u16 Coop_IsLevelCapOn(void);
 u32 Coop_DisplayedLevelCap(void);
 u16 Coop_CaseChosen(void);

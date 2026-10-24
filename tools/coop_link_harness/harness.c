@@ -61,6 +61,13 @@ static int sNumSyms;
 static const char* sOutDir = "/tmp/coop_harness";
 static int sFailures;
 static int sMaxFrames = 200000;
+static FILE* sRecord;
+static pthread_mutex_t sRecLock = PTHREAD_MUTEX_INITIALIZER;
+static uint32_t sSnap[2][W * H];
+static int sSnapFrame[2];
+static int sRecorded;
+static unsigned sLastCb2[2];
+static int sCb2Logs[2];
 
 static void out(const char* fmt, ...) {
 	va_list ap;
@@ -187,6 +194,28 @@ static void writePng(struct Player* p, const char* name) {
 
 static unsigned sMain, sObjEvents, sAvatar, sSave1, sBattleFlags, sLockCtl, sLinkErr, sScriptStatus;
 static unsigned sCoopBss;
+
+static unsigned symFind(const char* name) {
+	for (int i = 0; i < sNumSyms; i++)
+		if (!strcmp(sSyms[i].name, name))
+			return sSyms[i].addr;
+	return 0;
+}
+
+static void printCb2Trace(struct Player* p) {
+	unsigned nAddr = symFind("gCb2TraceN");
+	unsigned cbAddr = symFind("gCb2TraceCb");
+	unsigned lrAddr = symFind("gCb2TraceLr");
+	if (!nAddr || !cbAddr || !lrAddr) return;
+	unsigned n = rd8(p, nAddr);
+	out("[p%d] callback trace n=%u live=%08x\n", p->id, n, rd32(p, sMain + 4));
+	unsigned start = n > 8 ? n - 8 : 0;
+	for (unsigned i = start; i < n; i++) {
+		unsigned cb = rd32(p, cbAddr + (i & 7) * 4);
+		unsigned lr = rd32(p, lrAddr + (i & 7) * 4);
+		out("  set %08x %s from %s\n", cb, symName(cb), symAt(lr));
+	}
+}
 
 static unsigned coopStatic(const char* name) {
 	char full[80];
@@ -379,15 +408,17 @@ static void dump(struct Player* p, const char* tag) {
 		}
 	}
 	unsigned remote = coopStatic("sPartner");
-	out("[f%06d p%d %s] cb1=%s cb2=%s map=%d.%d pos=(%d,%d) partner=%s lock=%u script=%u battle=%08x linkErr=%u"
+	out("[f%06d p%d %s] cb1=%s(%08x) cb2=%s(%08x) map=%d.%d pos=(%d,%d) partner=%s lock=%u script=%u battle=%08x linkErr=%u"
 	    " linkId=%u remote=%u.%u@(%u,%u) coop{state=%u req=%u wait=%u slot=%u kind=%u inBattle=%u valid=%u guest=%u hold=%u}\n",
-	    p->frame, p->id, tag, symName(cb1), symName(cb2), mg, mn, px, py, partner, rd8(p, sLockCtl),
+	    p->frame, p->id, tag, symName(cb1), cb1, symName(cb2), cb2, mg, mn, px, py, partner, rd8(p, sLockCtl),
 	    sScriptStatus ? rd8(p, sScriptStatus) : 0, rd32(p, sBattleFlags), rd8(p, sLinkErr),
 	    rd8(p, symAddr("gLink") + 2),
 	    rd8(p, remote + 2), rd8(p, remote + 3), rd8(p, remote + 4), rd8(p, remote + 5),
 	    rd8(p, coopStatic("sLinkState")), rd8(p, coopStatic("sRequest")), rd8(p, coopStatic("sWaitKind")),
 	    rd8(p, coopStatic("sSlot")), rd8(p, coopStatic("sBattleKind")), rd8(p, coopStatic("sInBattle")),
 	    rd8(p, coopStatic("sPartnerValid")), rd8(p, coopStatic("sIsGuest")), rd8(p, symAddr("gCoopHoldLink")));
+	if ((cb2 & ~1u) == (symFind("CB1_Overworld") & ~1u))
+		printCb2Trace(p);
 }
 
 static void battleDump(struct Player* p) {
@@ -420,13 +451,71 @@ static bool inField(struct Player* p) {
 	if (!overworld) overworld = symAddr("CB2_Overworld");
 	if ((rd32(p, sMain + 4) & ~1u) != overworld) return false;
 	if (rd8(p, sLockCtl)) return false;
-	if (sScriptStatus && rd8(p, sScriptStatus) == 0) return false;
+	// 0 is running and 1 is waiting on a message. 2 is shut down, which is idle.
+	if (sScriptStatus && rd8(p, sScriptStatus) != 2) return false;
 	return true;
+}
+
+static int wantRecord(struct Player* p) {
+	const char* all = getenv("RECORD_ALL");
+	if (all && all[0] == '1') return 1;
+	static unsigned battle;
+	if (!battle) {
+		battle = symFind("BattleMainCB2") & ~1u;
+		if (!battle) battle = 1;
+	}
+	if (battle == 1) return 0;
+	unsigned mine = rd32(p, sMain + 4) & ~1u;
+	unsigned other = rd32(&P[1 - p->id], sMain + 4) & ~1u;
+	return mine == battle || other == battle;
+}
+
+static void recordSide(struct Player* p) {
+	if (!sRecord) return;
+	pthread_mutex_lock(&sRecLock);
+	memcpy(sSnap[p->id], p->video, sizeof(p->video));
+	sSnapFrame[p->id] = p->frame;
+	// The two cores do not finish a frame on the same count. Pair this
+	// core's just-finished frame with the other core's latest finished frame.
+	int ready = p->id == 0 && sSnapFrame[1] > 0;
+	pthread_mutex_unlock(&sRecLock);
+	if (!ready || !wantRecord(p)) return;
+	enum { SIDE = W * 2 + 2 };
+	static unsigned char* rgb;
+	if (!rgb) rgb = malloc(SIDE * H * 3);
+	for (int y = 0; y < H; y++) {
+		unsigned char* row = rgb + y * SIDE * 3;
+		memset(row, 0, SIDE * 3);
+		for (int x = 0; x < W; x++) {
+			uint32_t c = sSnap[0][y * W + x];
+			row[x * 3] = c;
+			row[x * 3 + 1] = c >> 8;
+			row[x * 3 + 2] = c >> 16;
+		}
+		for (int x = 0; x < W; x++) {
+			uint32_t c = sSnap[1][y * W + x];
+			unsigned char* px = row + (W + 2 + x) * 3;
+			px[0] = c;
+			px[1] = c >> 8;
+			px[2] = c >> 16;
+		}
+	}
+	fwrite(rgb, 1, SIDE * H * 3, sRecord);
+	sRecorded++;
 }
 
 static void frameCallback(struct mCoreThread* t) {
 	struct Player* p = t->userData;
 	p->frame++;
+	if (sMain) {
+		unsigned cb2 = rd32(p, sMain + 4);
+		if (cb2 != sLastCb2[p->id]) {
+			sLastCb2[p->id] = cb2;
+			if (sCb2Logs[p->id]++ < 30)
+				out("[f%06d p%d] cb2 %08x %s\n", p->frame, p->id, cb2, symName(cb2));
+		}
+	}
+	recordSide(p);
 	if (p->frame > sMaxFrames && !p->done) {
 		out("[p%d] global frame limit hit at pc=%d\n", p->id, p->pc);
 		dump(p, "timeout");
@@ -911,6 +1000,22 @@ int main(int argc, char** argv) {
 		p->thread.frameCallback = frameCallback;
 		p->thread.logger.logger = &logger;
 	}
+	const char* record = getenv("RECORD");
+	if (record && record[0]) {
+		char cmd[900];
+		snprintf(cmd, sizeof(cmd),
+			"ffmpeg -y -loglevel error -f rawvideo -pix_fmt rgb24 -s %dx%d -r 60 -i - "
+			"-vf \"drawtext=fontfile=/usr/share/fonts/truetype/dejavu/DejaVuSans.ttf:"
+			"text='P1':x=4:y=2:fontsize=12:fontcolor=white:box=1:boxcolor=black@0.6,"
+			"drawtext=fontfile=/usr/share/fonts/truetype/dejavu/DejaVuSans.ttf:"
+			"text='P2':x=248:y=2:fontsize=12:fontcolor=white:box=1:boxcolor=black@0.6,"
+			"drawtext=fontfile=/usr/share/fonts/truetype/dejavu/DejaVuSans.ttf:"
+			"text='f %%{n}':x=4:y=148:fontsize=10:fontcolor=white:box=1:boxcolor=black@0.6\" "
+			"-c:v libx264 -preset veryfast -crf 20 -pix_fmt yuv420p -movflags +faststart '%s'",
+			W * 2 + 2, H, record);
+		sRecord = popen(cmd, "w");
+		if (!sRecord) { fprintf(stderr, "ffmpeg failed\n"); return 1; }
+	}
 	for (int i = 0; i < 2; i++)
 		if (!mCoreThreadStart(&P[i].thread)) { fprintf(stderr, "thread start failed\n"); return 1; }
 
@@ -928,6 +1033,10 @@ int main(int argc, char** argv) {
 		struct GBA* gba = P[i].core->board;
 		GBASavedataClean(&gba->memory.savedata, 0);
 		mCoreThreadInterrupt(&P[i].thread);
+	}
+	if (sRecord) {
+		pclose(sRecord);
+		out("recorded %d side-by-side frames\n", sRecorded);
 	}
 	out("frames p0=%d p1=%d failures=%d\n", P[0].frame, P[1].frame, sFailures);
 	_exit(sFailures ? 1 : 0);

@@ -199,8 +199,17 @@ static void CallCallbacks(void)
         gMain.callback2();
 }
 
+// Last eight main-callback changes, so a reload that freezes can be
+// traced to the call that installed the bad pointer.
+EWRAM_DATA u32 gCb2TraceCb[8] = {0};
+EWRAM_DATA u32 gCb2TraceLr[8] = {0};
+EWRAM_DATA u8 gCb2TraceN = 0;
+
 void SetMainCallback2(MainCallback callback)
 {
+    gCb2TraceCb[gCb2TraceN & 7] = (u32)(uintptr_t)callback;
+    gCb2TraceLr[gCb2TraceN & 7] = (u32)(uintptr_t)__builtin_return_address(0);
+    gCb2TraceN++;
     gMain.callback2 = callback;
     gMain.state = 0;
 }

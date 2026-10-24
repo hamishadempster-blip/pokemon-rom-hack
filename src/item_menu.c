@@ -717,7 +717,7 @@ static void CB2_Bag(void)
 {
     // A full co-op link queue used to stop this loop before the bag finished
     // opening, which left the screen black and the Twin Beacon unused.
-    if (Coop_SessionActive())
+    if (Coop_CableUp())
     {
         while (SetupBagMenu() != TRUE)
             ;
@@ -1279,7 +1279,7 @@ static void PrintItemSoldAmount(int windowId, int numSold, int moneyEarned)
 // as "don't read the buttons", which makes the Twin Beacon unusable.
 static bool8 BagShouldWaitForLink(void)
 {
-    if (Coop_SessionActive())
+    if (Coop_CableUp())
         return FALSE;
     return MenuHelpers_ShouldWaitForLinkRecv();
 }
@@ -1702,7 +1702,9 @@ static void OpenContextMenu(u8 taskId)
     case ITEMMENULOCATION_ITEMPC:
     case ITEMMENULOCATION_BERRY_TREE_MULCH:
     default:
-        if (MenuHelpers_IsLinkActive() == TRUE || InUnionRoom() == TRUE)
+        // A vanilla link room removes USE from key items. Co-op is that
+        // kind of link, and the Twin Beacon is used from this menu.
+        if ((MenuHelpers_IsLinkActive() == TRUE || InUnionRoom() == TRUE) && !Coop_CableUp())
         {
             if (gBagPosition.pocket == POCKET_KEY_ITEMS || !IsHoldingItemAllowed(gSpecialVar_ItemId))
             {

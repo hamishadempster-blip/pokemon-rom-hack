@@ -1,0 +1,14 @@
+# Continue the lab saves and stop once the overworld callback is installed.
+# A is tapped only until that callback appears, then the players must be free.
+b wait 900
+b press START 2
+b wait 180
+b until_cb2 CB2_Overworld 6000 A
+b until_field 2500
+b press A 4
+b wait 40
+b press A 4
+b wait 40
+b press A 4
+b until_field 2000
+b dump reloaded

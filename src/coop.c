@@ -258,6 +258,13 @@ u16 Coop_SessionActive(void)
     return sLinkState == COOP_LINK_UP && gReceivedRemoteLinkPlayers;
 }
 
+// The cable is up even when the stock link-player flag is clear. The bag
+// must still read buttons in that state.
+bool8 Coop_CableUp(void)
+{
+    return sLinkState == COOP_LINK_UP;
+}
+
 u16 Coop_PartnerOnSameMap(void)
 {
     if (!Coop_SessionActive() || !sPartnerValid)

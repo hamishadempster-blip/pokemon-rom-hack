@@ -1,0 +1,7 @@
+# Later A taps. This timing previously left callback2 on the vblank routine.
+b wait 1100
+b press START 2
+b wait 200
+b until_cb2 CB2_Overworld 8000 A
+b until_field 2000
+b dump reloaded
