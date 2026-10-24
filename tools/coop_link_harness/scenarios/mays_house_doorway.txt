@@ -1,0 +1,32 @@
+# Reported bug: two boys, the opening fight, the Twin Beacon, then May's
+# bedroom. The guest's rival stood on the stair warp and blocked the exit.
+# Player 0 opens Birch's bag, so player 1 is the guest here.
+# Legitimate play only: no story flags or variables are edited.
+include mays_house_boys.inc
+include rescue_boys.inc
+include rescue_bag_p0.inc
+include rescue_battle.inc
+include rescue_finish.inc
+b mash_field 8000
+b until_field 5000
+b expect_flag 0x2D2 1
+b expect_var 0x408D 3
+b press DOWN 200
+b until_field 2000
+include enter_bedroom.inc
+b shot bedroom-after-rescue
+include bedroom_roundtrip.inc
+b shot bedroom-roundtrip
+include unlink.inc
+b expect coop.sLinkState 0
+include bedroom_roundtrip.inc
+include relink.inc
+b expect coop.sLinkState 2
+include bedroom_roundtrip.inc
+b goto 3 4
+b wait 30
+b expect_partner relinked-bedroom
+b shot bedroom-relinked
+include save_game.inc
+b expect_map 1 3
+b expect_no_object 1

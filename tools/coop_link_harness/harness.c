@@ -22,7 +22,7 @@
 #define MAX_CMDS 4096
 #define MAX_SYMS 500000
 
-enum { C_PARTNER, C_GOTO, C_HEX, C_PRESS, C_WAIT, C_SHOT, C_DUMP, C_BARRIER, C_UNTIL_CB2, C_UNTIL_FIELD, C_EXPECT, C_UNTIL_MEM, C_BATTLE, C_MENU, C_PARTY, C_FIXTURE, C_WRITE, C_LEAD, C_MOVE, C_SIX, C_VAR, C_FLAG, C_VS, C_EXPECT_FLAG, C_EXPECT_VAR, C_NO_OBJECT };
+enum { C_PARTNER, C_GOTO, C_HEX, C_PRESS, C_WAIT, C_SHOT, C_DUMP, C_BARRIER, C_UNTIL_CB2, C_UNTIL_FIELD, C_EXPECT, C_UNTIL_MEM, C_BATTLE, C_MENU, C_PARTY, C_FIXTURE, C_WRITE, C_LEAD, C_MOVE, C_SIX, C_VAR, C_FLAG, C_VS, C_EXPECT_FLAG, C_EXPECT_VAR, C_NO_OBJECT, C_MAP, C_OBJECT, C_TEXT_SPEED };
 
 struct Cmd {
 	int kind;
@@ -132,6 +132,17 @@ static const char* symName(unsigned addr) {
 		if ((sSyms[i].type == 'T' || sSyms[i].type == 't') && (sSyms[i].addr & ~1u) == addr)
 			return sSyms[i].name;
 	snprintf(buf, sizeof(buf), "%08x", addr);
+	return buf;
+}
+
+static const char* symAtAny(unsigned addr) {
+	static __thread char buf[120];
+	int best = -1;
+	for (int i = 0; i < sNumSyms; i++)
+		if (sSyms[i].addr >= 0x02000000 && sSyms[i].addr <= addr && (best < 0 || sSyms[i].addr > sSyms[best].addr))
+			best = i;
+	if (best < 0) snprintf(buf, sizeof(buf), "%08x", addr);
+	else snprintf(buf, sizeof(buf), "%s+0x%x", sSyms[best].name, addr - sSyms[best].addr);
 	return buf;
 }
 
@@ -462,6 +473,13 @@ static void battleDump(struct Player* p) {
 	    rd8(p, symAddr("gBattleCommunication")), rd8(p, symAddr("gBattleCommunication") + 1),
 	    rd8(p, symAddr("gBattleCommunication") + 2), rd8(p, symAddr("gBattleCommunication") + 3),
 	    ctl[0], ctl[1], ctl[2], ctl[3], rd8(p, symAddr("gLink") + 1), rd8(p, symAddr("gLink") + 2));
+	{
+		char instr[120];
+		snprintf(instr, sizeof(instr), "%s", symAtAny(rd32(p, symAddr("gBattlescriptCurrInstr"))));
+		out("[f%06d p%d bscript] instr=%s action=%u turnAction=%u/%u attacker=%u target=%u\n", p->frame, p->id, instr,
+		    rd8(p, symAddr("gCurrentActionFuncId")), rd8(p, symAddr("gCurrentTurnActionNumber")), rd8(p, symAddr("gBattlersCount")),
+		    rd8(p, symAddr("gBattlerAttacker")), rd8(p, symAddr("gBattlerTarget")));
+	}
 	unsigned ends = symAddr("gBattlerControllerEndFuncs");
 	out("[f%06d p%d bend] vbl1=%u vbl2=%u cb1=%s count=%u end={%s, %s, %s, %s}\n", p->frame, p->id, rd32(p, sMain + 0x20), rd32(p, sMain + 0x24),
 	    symName(rd32(p, sMain)), rd8(p, symAddr("gBattlersCount")),
@@ -718,6 +736,43 @@ static void frameCallback(struct mCoreThread* t) {
             advance = true;
             break;
         }
+        case C_TEXT_SPEED: {
+            unsigned addr = rd32(p, symAddr("gSaveBlock2Ptr")) + 0x14;
+            p->core->busWrite16(p->core, addr, (rd16(p, addr) & ~7u) | (c->value & 7u));
+            out("[p%d] text speed %u\n", p->id, c->value);
+            advance = true;
+            break;
+        }
+        case C_MAP: {
+            unsigned save = rd32(p, sSave1);
+            unsigned mg = rd8(p, save + 4), mn = rd8(p, save + 5);
+            if (mg != c->addr || mn != c->value) {
+                out("[p%d] FAIL map %u.%u expected %u.%u\n", p->id, mg, mn, c->addr, c->value);
+                dump(p, "fail");
+                sFailures++;
+            } else out("[p%d] ok map %u.%u\n", p->id, mg, mn);
+            advance = true;
+            break;
+        }
+        case C_OBJECT: {
+            unsigned save = rd32(p, sSave1);
+            int found = 0, fx = 0, fy = 0;
+            for (unsigned i = 0; i < 16; i++) {
+                unsigned obj = sObjEvents + i * 0x24;
+                if ((rd8(p, obj) & 1) && rd8(p, obj + 8) == c->value
+                    && rd8(p, obj + 9) == rd8(p, save + 5) && rd8(p, obj + 10) == rd8(p, save + 4)) {
+                    found = 1;
+                    fx = (int16_t)rd16(p, obj + 0x10) - 7;
+                    fy = (int16_t)rd16(p, obj + 0x12) - 7;
+                }
+            }
+            if (!found || fx != (int)c->addr || fy != c->size) {
+                out("[p%d] FAIL object %u at (%d,%d) found=%d, expected (%u,%d)\n", p->id, c->value, fx, fy, found, c->addr, c->size);
+                sFailures++;
+            } else out("[p%d] ok object %u at (%d,%d)\n", p->id, c->value, fx, fy);
+            advance = true;
+            break;
+        }
         case C_VS: {
             unsigned counts[2] = {0, 0};
             for (unsigned side = 0; side < 2; side++)
@@ -962,6 +1017,20 @@ static void loadScript(const char* path, int depth) {
         } else if (!strcmp(cmd, "expect_no_object")) {
             c.kind = C_NO_OBJECT;
             c.value = strtoul(a, NULL, 0);
+        } else if (!strcmp(cmd, "text_speed")) {
+            // 0 slow, 1 mid, 2 fast. A player setting, not story state.
+            c.kind = C_TEXT_SPEED;
+            c.value = strtoul(a, NULL, 0);
+        } else if (!strcmp(cmd, "expect_map")) {
+            c.kind = C_MAP;
+            c.addr = strtoul(a, NULL, 0);
+            c.value = strtoul(b, NULL, 0);
+        } else if (!strcmp(cmd, "expect_object")) {
+            // LOCAL_ID X Y in map-local tiles, on the current map.
+            c.kind = C_OBJECT;
+            c.value = strtoul(a, NULL, 0);
+            c.addr = strtoul(b, NULL, 0);
+            c.size = atoi(d);
         } else if (!strcmp(cmd, "expect_vs_party") || !strcmp(cmd, "expect_flag") || !strcmp(cmd, "expect_var")) {
             c.kind = !strcmp(cmd, "expect_vs_party") ? C_VS : !strcmp(cmd, "expect_flag") ? C_EXPECT_FLAG : C_EXPECT_VAR;
             c.addr = strtoul(a, NULL, 0);

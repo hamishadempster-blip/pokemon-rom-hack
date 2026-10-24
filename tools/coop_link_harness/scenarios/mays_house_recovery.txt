@@ -1,0 +1,29 @@
+# Recovery of an affected pair of saves. Make them with the pre-fix build:
+# run mays_house_doorway.txt up to the bedroom and save there. The guest
+# (player 1) saved in May's bedroom with May on the stair warp; the host
+# (player 0) saved downstairs. On continue the guest's rival must be gone
+# before the player can move, with every other story value unchanged.
+include continue.inc
+b expect gSaveCounter:4 1
+1 expect_map 1 3
+0 expect_map 1 2
+b expect_no_object 1
+b expect_flag 0x2D2 1
+b expect_var 0x408D 3
+b expect_flag 0x74 0
+b expect_nz gParties:2
+b dump continued
+b shot continued
+0 goto 2 3
+0 press UP 30
+0 wait 60
+0 until_field 900
+b expect_map 1 3
+include bedroom_roundtrip.inc
+include relink.inc
+b expect coop.sLinkState 2
+include bedroom_roundtrip.inc
+b goto 3 4
+b wait 30
+b expect_partner recovered-relinked
+b shot recovered-relinked

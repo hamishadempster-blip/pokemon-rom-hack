@@ -1,0 +1,22 @@
+# Continue two saves made in May's bedroom after the rescue. Use the saves
+# from mays_house_doorway.txt, or a save from before the fix in which the
+# rival was left on the stair warp. Neither save may keep the rival, and
+# the rest of the story state must be untouched.
+include continue.inc
+b expect gSaveCounter:4 1
+b expect_map 1 3
+b expect_no_object 1
+b expect_flag 0x2D2 1
+b expect_var 0x408D 3
+b expect_flag 0x74 0
+b expect_nz gParties:2
+b dump continued
+b shot continued
+include bedroom_roundtrip.inc
+include relink.inc
+b expect coop.sLinkState 2
+include bedroom_roundtrip.inc
+b goto 3 4
+b wait 30
+b expect_partner reloaded-relinked
+b shot reloaded-relinked

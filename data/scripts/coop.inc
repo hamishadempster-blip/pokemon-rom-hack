@@ -157,14 +157,7 @@ Coop_EventScript_PartnerChoosing::
 
 Coop_EventScript_WarpToLab::
 	lockall
-	setflag FLAG_SYS_POKEMON_GET
-	setflag FLAG_RESCUED_BIRCH
-	setflag FLAG_HIDE_ROUTE_101_BIRCH_ZIGZAGOON_BATTLE
-	setflag FLAG_HIDE_ROUTE_101_BIRCH_STARTERS_BAG
-	clearflag FLAG_HIDE_LITTLEROOT_TOWN_BIRCHS_LAB_BIRCH
-	setvar VAR_BIRCH_LAB_STATE, 2
-	setvar VAR_ROUTE101_STATE, 3
-	special HealPlayerParty
+	call Route101_EventScript_ApplyRescueState
 	warp MAP_LITTLEROOT_TOWN_PROFESSOR_BIRCHS_LAB, 6, 5
 	waitstate
 	releaseall

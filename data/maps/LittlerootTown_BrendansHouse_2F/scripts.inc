@@ -1,14 +1,37 @@
 LittlerootTown_BrendansHouse_2F_MapScripts::
 	map_script MAP_SCRIPT_ON_TRANSITION, LittlerootTown_BrendansHouse_2F_OnTransition
+	map_script MAP_SCRIPT_ON_RESUME, LittlerootTown_BrendansHouse_2F_OnResume
 	map_script MAP_SCRIPT_ON_WARP_INTO_MAP_TABLE, LittlerootTown_BrendansHouse_2F_OnWarp
 	.byte 0
 
 LittlerootTown_BrendansHouse_2F_OnTransition:
+	call LittlerootTown_BrendansHouse_2F_EventScript_CheckRivalAway
 	call_if_lt VAR_LITTLEROOT_RIVAL_STATE, 2, LittlerootTown_BrendansHouse_2F_EventScript_CheckSetReadyToMeetBrendan
 	call_if_ge VAR_LITTLEROOT_RIVAL_STATE, 3, LittlerootTown_BrendansHouse_2F_EventScript_CheckShouldUpdateBrendanPos
 	call_if_eq VAR_LITTLEROOT_INTRO_STATE, 4, PlayersHouse_2F_EventScript_BlockStairsUntilClockIsSet
 	call SecretBase_EventScript_SetDecorationFlags
 	setvar VAR_SECRET_BASE_INITIALIZED, 0
+	end
+
+@ From the Route 101 rescue until Lilycove the rival is out on the road,
+@ so the bedroom rival stays hidden. Co-op partner saves made before the
+@ shared rescue state was fixed kept the rival visible, and the object's
+@ template tile is the stair warp. Hide it again before the objects load.
+LittlerootTown_BrendansHouse_2F_EventScript_CheckRivalAway::
+	goto_if_set FLAG_MET_RIVAL_LILYCOVE, LittlerootTown_BrendansHouse_2F_EventScript_RivalAwayRet
+	goto_if_unset FLAG_RESCUED_BIRCH, LittlerootTown_BrendansHouse_2F_EventScript_RivalAwayRet
+	setflag FLAG_HIDE_LITTLEROOT_TOWN_BRENDANS_HOUSE_RIVAL_BEDROOM
+LittlerootTown_BrendansHouse_2F_EventScript_RivalAwayRet::
+	return
+
+@ A save made in this room restores its objects from the save, without a
+@ transition. Remove a rival that should already be away at that point.
+LittlerootTown_BrendansHouse_2F_OnResume:
+	goto_if_set FLAG_MET_RIVAL_LILYCOVE, LittlerootTown_BrendansHouse_2F_EventScript_ResumeEnd
+	goto_if_unset FLAG_RESCUED_BIRCH, LittlerootTown_BrendansHouse_2F_EventScript_ResumeEnd
+	setflag FLAG_HIDE_LITTLEROOT_TOWN_BRENDANS_HOUSE_RIVAL_BEDROOM
+	removeobject LOCALID_RIVALS_HOUSE_2F_RIVAL
+LittlerootTown_BrendansHouse_2F_EventScript_ResumeEnd::
 	end
 
 LittlerootTown_BrendansHouse_2F_EventScript_CheckShouldUpdateBrendanPos::

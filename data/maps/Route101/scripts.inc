@@ -241,6 +241,20 @@ Route101_EventScript_RescueTry::
 	applymovement LOCALID_ROUTE101_BIRCH, Route101_Movement_BirchApproachPlayer
 	waitmovement 0
 	msgbox Route101_Text_YouSavedMe, MSGBOX_DEFAULT
+	call Route101_EventScript_ApplyRescueState
+	warp MAP_LITTLEROOT_TOWN_PROFESSOR_BIRCHS_LAB, 6, 5
+	waitstate
+	release
+	end
+
+@ The story state of a finished rescue. Both co-op roles call this: the
+@ player who opened the bag from the script above, and the partner from
+@ Coop_EventScript_WarpToLab. Keeping one copy stops the two saves drifting;
+@ the partner's copy used to skip the rival bedroom flag, so the rival
+@ stood on the stair warp of their bedroom on the next visit.
+Route101_EventScript_ApplyRescueState::
+	setflag FLAG_SYS_POKEMON_GET
+	setflag FLAG_RESCUED_BIRCH
 	special HealPlayerParty
 	setflag FLAG_HIDE_ROUTE_101_BIRCH_ZIGZAGOON_BATTLE
 	clearflag FLAG_HIDE_LITTLEROOT_TOWN_BIRCHS_LAB_BIRCH
@@ -251,10 +265,7 @@ Route101_EventScript_RescueTry::
 	checkplayergender
 	call_if_eq VAR_RESULT, MALE, Route101_EventScript_HideMayInBedroom
 	call_if_eq VAR_RESULT, FEMALE, Route101_EventScript_HideBrendanInBedroom
-	warp MAP_LITTLEROOT_TOWN_PROFESSOR_BIRCHS_LAB, 6, 5
-	waitstate
-	release
-	end
+	return
 
 Route101_EventScript_RescueBusy::
 	msgbox Route101_Text_RescueBusy, MSGBOX_DEFAULT
