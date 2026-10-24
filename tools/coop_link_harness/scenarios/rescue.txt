@@ -138,6 +138,8 @@ b wait 60
 1 wait 20
 1 press A 2
 b expect_battle moves
+b wait 1500
+b expect_battle hp
 b mash_field 20000
 b dump afterBattle
 b shot ab

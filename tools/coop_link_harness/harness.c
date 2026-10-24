@@ -22,7 +22,7 @@
 #define MAX_CMDS 4096
 #define MAX_SYMS 500000
 
-enum { C_PARTNER, C_GOTO, C_HEX, C_PRESS, C_WAIT, C_SHOT, C_DUMP, C_BARRIER, C_UNTIL_CB2, C_UNTIL_FIELD, C_EXPECT, C_UNTIL_MEM, C_BATTLE };
+enum { C_PARTNER, C_GOTO, C_HEX, C_PRESS, C_WAIT, C_SHOT, C_DUMP, C_BARRIER, C_UNTIL_CB2, C_UNTIL_FIELD, C_EXPECT, C_UNTIL_MEM, C_BATTLE, C_MENU };
 
 struct Cmd {
 	int kind;
@@ -217,8 +217,9 @@ static void checkBattle(struct Player* p, int moves) {
 	else if (rd8(p, symAddr("gBattlersCount")) != 4)
 		snprintf(why, sizeof(why), "battlers %u", rd8(p, symAddr("gBattlersCount")));
 	else if (!moves) {
-		unsigned own = rd16(p, partyMon(0, 0));
-		unsigned partner = rd16(p, partyMon(2, 0));
+		unsigned own = rd32(p, partyMon(0, 0));
+		unsigned partner = rd32(p, partyMon(2, 0));
+		struct Player* other = &P[1 - p->id];
 		unsigned mons = symAddr("gBattleMons");
 		unsigned foe = 0, foeCount = 0, hpOk = 1;
 		unsigned localBattler = linkId == 0 ? 0 : 2;
@@ -233,17 +234,18 @@ static void checkBattle(struct Player* p, int moves) {
 			}
 			if (lv == 2 && !rd16(p, mons + i * 140 + 42)) hpOk = 0;
 		}
-		struct Player* o = &P[1 - p->id];
 		unsigned otherFoe = 0, otherCount = 0;
 		for (int i = 0; i < 4; i++) {
-			unsigned sp = rd16(o, mons + i * 140);
-			if (rd8(o, mons + i * 140 + 44) == 2 && sp) {
+			unsigned sp = rd16(other, mons + i * 140);
+			if (rd8(other, mons + i * 140 + 44) == 2 && sp) {
 				otherFoe = sp;
 				otherCount++;
 			}
 		}
-		if (!own || rd16(p, partyMon(0, 1)) || !partner || rd16(p, partyMon(2, 1)) || own == partner)
-			snprintf(why, sizeof(why), "roster own %u partner %u", own, partner);
+		if (!own || rd32(p, partyMon(0, 1)) || !partner || rd32(p, partyMon(2, 1)) || own == partner)
+			snprintf(why, sizeof(why), "roster personality own %08x partner %08x", own, partner);
+		else if (own != rd32(other, partyMon(2, 0)) || partner != rd32(other, partyMon(0, 0)))
+			snprintf(why, sizeof(why), "personality not mirrored");
 		else if (rd8(p, partyMon(0, 0) + 84) != 5 || rd8(p, partyMon(2, 0) + 84) != 5)
 			snprintf(why, sizeof(why), "starter levels %u %u", rd8(p, partyMon(0, 0) + 84), rd8(p, partyMon(2, 0) + 84));
 		else if (linkId == 0 && (!ppOk || !hpOk))
@@ -253,34 +255,35 @@ static void checkBattle(struct Player* p, int moves) {
 		else if (foeCount && otherCount && foe != otherFoe)
 			snprintf(why, sizeof(why), "foe %u vs %u", foe, otherFoe);
 		else
-			out("[p%d] ok battle roster own=%u partner=%u foe=%u linkId=%u\n", p->id, own, partner, foe, linkId);
+			out("[p%d] ok battle roster lv5 hp %u/%u foe=%u linkId=%u\n", p->id, rd16(p, partyMon(0, 0) + 86), rd16(p, partyMon(0, 0) + 88), foe, linkId);
 	} else {
-		if (moves == 2 && linkId != 0) {
-			out("[p%d] ok hp compared on the link master\n", p->id);
+		if (moves == 2) {
+			// Party HP/maxHP sit in the clear tail of struct Pokemon (level at +84).
+			// The guest does not run DoBattleIntro, so its gBattleMons stays zero;
+			// the party is what both games actually keep.
+			unsigned hp0 = rd16(p, partyMon(0, 0) + 86), max0 = rd16(p, partyMon(0, 0) + 88);
+			unsigned hp2 = rd16(p, partyMon(2, 0) + 86), max2 = rd16(p, partyMon(2, 0) + 88);
+			struct Player* o = &P[1 - p->id];
+			unsigned ohp0 = rd16(o, partyMon(0, 0) + 86), omax0 = rd16(o, partyMon(0, 0) + 88);
+			unsigned ohp2 = rd16(o, partyMon(2, 0) + 86), omax2 = rd16(o, partyMon(2, 0) + 88);
+			unsigned mons = symAddr("gBattleMons");
+			unsigned battleHp = rd16(p, mons + 42);
+			if (linkId != 0) {
+				if (hp0 != ohp2 || max0 != omax2 || hp2 != ohp0 || max2 != omax0)
+					snprintf(why, sizeof(why), "party hp %u/%u and %u/%u vs other %u/%u and %u/%u", hp0, max0, hp2, max2, ohp0, omax0, ohp2, omax2);
+				else
+					out("[p%d] ok party hp matches the master (own %u/%u partner %u/%u)\n", p->id, hp0, max0, hp2, max2);
+			} else if (rd16(p, mons) == 0 || battleHp == 0)
+				snprintf(why, sizeof(why), "master battle mon empty");
+			else if (hp0 != ohp2 || max0 != omax2 || hp2 != ohp0 || max2 != omax0)
+				snprintf(why, sizeof(why), "party hp %u/%u and %u/%u vs guest %u/%u and %u/%u", hp0, max0, hp2, max2, ohp0, omax0, ohp2, omax2);
+			else if ((rd32(o, symAddr("gBattleMainFunc")) & ~1u) != (symAddr("BeginBattleIntroDummy") & ~1u))
+				snprintf(why, sizeof(why), "guest battle engine is running");
+			else
+				out("[p%d] ok party hp own %u/%u partner %u/%u; guest gBattleMons unused (engine is the master, its mon0 hp %u pp %u)\n",
+				    p->id, hp0, max0, hp2, max2, battleHp, rd8(p, mons + 37));
 		} else if (linkId != 0) {
 			out("[p%d] ok move record is on the link master\n", p->id);
-		} else if (moves == 2) {
-			unsigned mons = symAddr("gBattleMons");
-			struct Player* o = &P[1];
-			static const int guestOfMaster[] = { 2, 3, 0, 1 };
-			int differ = 0;
-			char detail[96] = "";
-			for (int i = 0; i < 4; i++) {
-				int g = guestOfMaster[i];
-				unsigned hp = rd16(p, mons + i * 140 + 42);
-				unsigned pp = rd8(p, mons + i * 140 + 37);
-				unsigned ohp = rd16(o, mons + g * 140 + 42);
-				unsigned opp = rd8(o, mons + g * 140 + 37);
-				if (hp != ohp || pp != opp) {
-					differ = 1;
-					snprintf(detail, sizeof(detail), "master %d hp %u pp %u vs guest %d hp %u pp %u", i, hp, pp, g, ohp, opp);
-					break;
-				}
-			}
-			if (differ)
-				snprintf(why, sizeof(why), "%s", detail);
-			else
-				out("[p%d] ok both games match on hp and pp\n", p->id);
 		} else {
 			unsigned mons = symAddr("gBattleMons");
 			unsigned move0 = rd16(p, symAddr("gChosenMoveByBattler"));
@@ -517,6 +520,33 @@ static void frameCallback(struct mCoreThread* t) {
 			checkBattle(p, c->value);
 			advance = true;
 			break;
+		case C_MENU: {
+			unsigned actions = symAddr("start_menu.sCurrentStartMenuActions");
+			unsigned n = rd8(p, symAddr("start_menu.sNumStartMenuActions"));
+			unsigned cur = rd8(p, symAddr("start_menu.sStartMenuCursorPos"));
+			int target = -1;
+			for (unsigned i = 0; i < n && i < 9; i++)
+				if (rd8(p, actions + i) == c->value) target = (int)i;
+			if (n == 0 || target < 0) {
+				if (++p->step > 90) {
+					out("[p%d] FAIL menu has no action %u\n", p->id, c->value);
+					dump(p, "fail");
+					sFailures++;
+					p->done = 1;
+				}
+				break;
+			}
+			if ((int)cur == target) { advance = true; break; }
+			if ((p->step % 16) < 2)
+				keys = target > (int)cur ? (1u << 7) : (1u << 6);
+			if (++p->step > 16 * 10) {
+				out("[p%d] FAIL menu cursor stuck at %u, want %d\n", p->id, cur, target);
+				dump(p, "fail");
+				sFailures++;
+				p->done = 1;
+			}
+			break;
+		}
 		case C_EXPECT: {
 			int nbytes = c->size < 0 ? -c->size : c->size;
 			unsigned v = rdN(p, c->addr, nbytes);
@@ -657,6 +687,12 @@ static void loadScript(const char* path, int depth) {
 			if (n >= 4 && isdigit((unsigned char)b[0])) c.frames = atoi(b);
 			else if (n >= 4) c.keys = parseKeys(b);
 			snprintf(c.text, sizeof(c.text), "%s != 0", a);
+		} else if (!strcmp(cmd, "menu_to")) {
+			c.kind = C_MENU;
+			if (!strcmp(a, "SAVE")) c.value = 5;
+			else if (!strcmp(a, "COOP")) c.value = 15;
+			else { fprintf(stderr, "menu_to %s\n", a); exit(1); }
+			snprintf(c.text, sizeof(c.text), "menu %s", a);
 		} else if (!strcmp(cmd, "expect_battle")) {
 			c.kind = C_BATTLE;
 			c.value = n >= 3 && !strcmp(a, "moves") ? 1 : n >= 3 && !strcmp(a, "hp") ? 2 : 0;

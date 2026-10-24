@@ -15,16 +15,7 @@ b hex gParties 2
 b dump continued
 b press START 2
 b wait 50
-b press DOWN 8
-b wait 25
-b press DOWN 8
-b wait 25
-b press DOWN 8
-b wait 25
-b press DOWN 8
-b wait 25
-b press DOWN 8
-b wait 25
+b menu_to COOP
 b press A 2
 b wait 50
 b press A 2
