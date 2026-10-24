@@ -235,6 +235,27 @@ struct ChooseMoveStruct
     struct ZMoveData zmove;
 };
 
+// The guest runs controllers only. Supply the live display state and the
+// master's legal-target masks instead of consulting an unrun battle engine.
+struct CoopMoveMon
+{
+    u16 species, hp, maxHP;
+    u16 attack, defense, speed, spAttack, spDefense;
+    u16 ability, item;
+    u8 types[3], level;
+    u32 status;
+};
+struct CoopMoveSelection
+{
+    enum Move moves[MAX_MON_MOVES];
+    u8 validTargets[MAX_MON_MOVES];
+    u8 absentBattlers;
+    u8 partyIndexes[MAX_BATTLERS_COUNT];
+    struct CoopMoveMon mons[MAX_BATTLERS_COUNT];
+};
+// transferBuffer is smaller than bufferA: respect the 256-byte send limit.
+STATIC_ASSERT(4 + sizeof(struct ChooseMoveStruct) + sizeof(struct CoopMoveSelection) <= 0x100, CoopMoveSelectionFitsTransferBuffer);
+
 enum
 {
     CONTROLLER_GETMONDATA,

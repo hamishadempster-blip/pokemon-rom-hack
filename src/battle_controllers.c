@@ -1139,7 +1139,38 @@ void BtlController_EmitChooseMove(enum BattlerId battler, u32 bufferId, bool8 is
     gBattleResources->transferBuffer[3] = 0;
     for (i = 0; i < sizeof(*movePPData); i++)
         gBattleResources->transferBuffer[4 + i] = *((u8 *)(movePPData) + i);
-    PrepareBufferDataTransfer(battler, bufferId, gBattleResources->transferBuffer, sizeof(*movePPData) + 4);
+    u32 size = sizeof(*movePPData) + 4;
+    if (gBattleTypeFlags & BATTLE_TYPE_COOP)
+    {
+        struct CoopMoveSelection *selection = (struct CoopMoveSelection *)&gBattleResources->transferBuffer[size];
+        memset(selection, 0, sizeof(*selection));
+        memcpy(selection->moves, movePPData->moves, sizeof(selection->moves));
+        selection->absentBattlers = gAbsentBattlerFlags;
+        for (u32 target = 0; target < MAX_BATTLERS_COUNT; target++)
+        {
+            selection->partyIndexes[target] = gBattlerPartyIndexes[target];
+            struct CoopMoveMon *dst = &selection->mons[target];
+            const struct BattlePokemon *src = &gBattleMons[target];
+            dst->species = src->species;
+            dst->hp = src->hp;
+            dst->maxHP = src->maxHP;
+            dst->attack = src->attack;
+            dst->defense = src->defense;
+            dst->speed = src->speed;
+            dst->spAttack = src->spAttack;
+            dst->spDefense = src->spDefense;
+            dst->ability = src->ability;
+            dst->item = src->item;
+            memcpy(dst->types, src->types, sizeof(dst->types));
+            dst->level = src->level;
+            dst->status = src->status1;
+            for (u32 slot = 0; slot < MAX_MON_MOVES; slot++)
+                if (CanTargetBattler(battler, target, movePPData->moves[slot]))
+                    selection->validTargets[slot] |= 1u << target;
+        }
+        size += sizeof(*selection);
+    }
+    PrepareBufferDataTransfer(battler, bufferId, gBattleResources->transferBuffer, size);
 }
 
 void BtlController_EmitChooseItem(enum BattlerId battler, u32 bufferId, u8 *battlePartyOrder)

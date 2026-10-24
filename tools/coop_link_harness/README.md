@@ -116,3 +116,44 @@ evolution, reload/reconnect/Beacon/Route 102 wild win, and a solo win using
 party slot six, with zero harness failures. These are local emulated cable
 tests. Internet netplay, move refusal, evolution cancellation, special
 battle-condition evolutions, and a cable pull during a level-up remain untested.
+
+## Target navigation and story regressions (build 0xC017012B)
+
+The guest now receives a compact controller snapshot of current battler HP,
+types, species, stats, party slots, and the master's legal-target masks.
+Its battle engine still does not run. Navigation is bounded to four candidates,
+even if a future packet contains no legal target. The snapshot is statically
+checked against the actual 256-byte transfer buffer, not just the larger receive
+buffer. Legal masks are keyed by move ID so reordering moves cannot mismatch them.
+
+The earlier rescue test confirmed moves immediately. `target_navigation.txt`
+now lets the host confirm first, delays the guest, cycles all four directions,
+backs out, chooses Ember again, verifies Ember reached the master, and wins.
+Its intro check reads the real VS task data (one Pokémon per player), rather
+than inferring indicators from the party. Captures 90 idle frames apart have
+identical PP-panel pixels. This scenario also passes with mGBA 0.10.3, matching
+the reported desktop emulator version.
+
+Additional scenarios:
+
+| Scenario | Verified behavior |
+| --- | --- |
+| `spread_selection.txt` | Leer explicitly targets both foes; B restores move names; the fight completes |
+| `trainer_reconnect.txt` | One-foe Calvin co-op battle, target cycling, both saves' defeated flag |
+| `coop_six.txt` | Six Pokémon each before battle, three each in battle/intro, all six restored after victory |
+| `rival_story.txt` | Mandatory Route 103 pair; both story flags set; rival removed on both games |
+| `doors_stagger.txt` | Partner hidden across different maps and restored after meeting |
+
+The trainer, six-party, rival, reconnect, solo, guest replacement/evolution,
+and opening scenarios pass on two local 0.10.2 cores. The delayed Ember scenario
+also passes on two 0.10.3 cores. `rival_story.txt` uses level/strong-stat fixtures
+to isolate story handoff from battle balance; it does not validate rival difficulty.
+The shared lab-save fixtures and bypassed Oldale adventure gate retain the
+scope described above. These runs do not prove every late-game trainer, catch,
+trade, or internet-netplay path.
+
+`expect_vs_party P0_COUNT P1_COUNT` checks the intro's actual indicators.
+`expect_flag ID VALUE` and `expect_var ID VALUE` check persistent state.
+`expect_no_object LOCAL_ID` checks that a completed story NPC is gone from
+the current map. The `oldale_reconnect.inc` and `route102_reconnect_start.inc`
+files share setup without duplicating the opening route traversal.

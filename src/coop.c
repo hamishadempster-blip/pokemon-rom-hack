@@ -121,6 +121,9 @@ static EWRAM_DATA bool8 sRescueGuestFollow = FALSE;
 static EWRAM_DATA bool8 sRescueDone = FALSE;
 static EWRAM_DATA u16 sRescueGuestTimer = 0;
 static EWRAM_DATA u8 sTalkNpc = 0;
+static EWRAM_DATA u8 sTalkNpcFacing = 0;
+static EWRAM_DATA u8 sTalkNpcMapGroup = 0;
+static EWRAM_DATA u8 sTalkNpcMapNum = 0;
 static EWRAM_DATA u8 sMerged = FALSE;
 static EWRAM_DATA u8 sSeq = 0;
 static EWRAM_DATA u8 sRequest = 0;
@@ -216,6 +219,7 @@ static void Coop_SendInvite(void);
 static u16 Coop_InviteChecksum(const struct CoopInvite *invite);
 static void Coop_FailWait(void);
 static bool8 Coop_InteractionBusy(void);
+static void Coop_RaiseVar(u16 varId, u16 floor);
 static bool8 Coop_PairBeatenLocally(void);
 static void Coop_GiveRescueStarter(u8 caseId, bool8 opener);
 static bool8 Coop_PartnerInBirchLab(void);
@@ -488,22 +492,9 @@ static void Coop_UpdateSprite(void)
 
         if (face == DIR_NONE)
             face = DIR_SOUTH;
-        // Standing still while talking: bob in place. Otherwise just turn.
-        if (sPartner.talkLocalId != 0 && sPartner.talkLocalId != 0xFF)
-        {
-            if (ObjectEventClearHeldMovementIfFinished(obj) != 0)
-            {
-                obj->singleMovementActive = FALSE;
-                ObjectEventClearHeldMovementIfActive(obj);
-                ObjectEventSetHeldMovement(obj, GetWalkInPlaceNormalMovementAction(face));
-            }
-        }
-        else if (obj->facingDirection != face)
-        {
-            obj->singleMovementActive = FALSE;
-            ObjectEventClearHeldMovementIfActive(obj);
-            ObjectEventSetHeldMovement(obj, GetFaceDirectionMovementAction(face));
-        }
+        // Talking players stand still; do not invent repeated walking steps.
+        if (obj->facingDirection != face)
+            ObjectEventTurn(obj, face);
         return;
     }
 
@@ -531,63 +522,55 @@ static void Coop_UpdateSprite(void)
 
 static void Coop_ReleaseTalkNpc(void)
 {
-    u8 objectId;
-
     if (sTalkNpc == 0)
         return;
-    objectId = GetObjectEventIdByLocalIdAndMap(sTalkNpc, gSaveBlock1Ptr->location.mapNum, gSaveBlock1Ptr->location.mapGroup);
-    if (objectId < OBJECT_EVENTS_COUNT)
-        ObjectEventClearHeldMovementIfActive(&gObjectEvents[objectId]);
+    u8 objectId = GetObjectEventIdByLocalIdAndMap(sTalkNpc, sTalkNpcMapNum, sTalkNpcMapGroup);
+    if (objectId < OBJECT_EVENTS_COUNT && !ScriptContext_IsEnabled() && !ArePlayerFieldControlsLocked())
+    {
+        struct ObjectEvent *npc = &gObjectEvents[objectId];
+        if (!npc->heldMovementActive)
+            ObjectEventTurn(npc, (enum Direction)sTalkNpcFacing);
+    }
     sTalkNpc = 0;
 }
 
-// The NPC your partner is talking to turns toward them and does the
-// little talk bob, instead of standing in whatever pose the map left them.
+// A remote conversation is cosmetic. Never clear or replace movement owned
+// by a local conversation/cutscene, and never restore a same-id NPC on a new map.
 static void Coop_AnimateTalkNpc(void)
 {
     u8 localId = sPartner.talkLocalId;
-    u8 objectId;
-    s16 dx, dy, adx, ady;
-    enum Direction face;
-    struct ObjectEvent *npc;
-
     if (gMain.callback2 != CB2_Overworld || !Coop_PartnerOnSameMap()
+     || ScriptContext_IsEnabled() || ArePlayerFieldControlsLocked()
      || localId == 0 || localId == 0xFF || localId == OBJ_EVENT_ID_COOP_PARTNER)
     {
         Coop_ReleaseTalkNpc();
         return;
     }
-    if (localId != sTalkNpc)
+    if (localId != sTalkNpc || sTalkNpcMapGroup != gSaveBlock1Ptr->location.mapGroup
+     || sTalkNpcMapNum != gSaveBlock1Ptr->location.mapNum)
         Coop_ReleaseTalkNpc();
-
-    objectId = GetObjectEventIdByLocalIdAndMap(localId, gSaveBlock1Ptr->location.mapNum, gSaveBlock1Ptr->location.mapGroup);
+    u8 objectId = GetObjectEventIdByLocalIdAndMap(localId, gSaveBlock1Ptr->location.mapNum, gSaveBlock1Ptr->location.mapGroup);
     if (objectId >= OBJECT_EVENTS_COUNT)
         return;
-
-    npc = &gObjectEvents[objectId];
-    if (ObjectEventClearHeldMovementIfFinished(npc) == 0)
+    struct ObjectEvent *npc = &gObjectEvents[objectId];
+    if (npc->heldMovementActive || npc->singleMovementActive)
+        return;
+    s16 dx = (s16)sPartner.x - npc->currentCoords.x;
+    s16 dy = (s16)sPartner.y - npc->currentCoords.y;
+    if ((dx < 0 ? -dx : dx) + (dy < 0 ? -dy : dy) != 1)
     {
-        sTalkNpc = localId;
+        Coop_ReleaseTalkNpc();
         return;
     }
-
-    dx = (s16)sPartner.x - npc->currentCoords.x;
-    dy = (s16)sPartner.y - npc->currentCoords.y;
-    adx = dx < 0 ? -dx : dx;
-    ady = dy < 0 ? -dy : dy;
-    if (dx == 0 && dy == 0)
-        face = (enum Direction)sPartner.facing;
-    else if (adx > ady)
-        face = dx > 0 ? DIR_EAST : DIR_WEST;
-    else
-        face = dy > 0 ? DIR_SOUTH : DIR_NORTH;
-    if (face == DIR_NONE)
-        face = DIR_SOUTH;
-
-    npc->singleMovementActive = FALSE;
-    ObjectEventClearHeldMovementIfActive(npc);
-    ObjectEventSetHeldMovement(npc, GetWalkInPlaceNormalMovementAction(face));
+    if (sTalkNpc == 0)
+    {
+        sTalkNpcFacing = npc->facingDirection;
+        sTalkNpcMapGroup = gSaveBlock1Ptr->location.mapGroup;
+        sTalkNpcMapNum = gSaveBlock1Ptr->location.mapNum;
+    }
     sTalkNpc = localId;
+    enum Direction face = dx ? (dx > 0 ? DIR_EAST : DIR_WEST) : (dy > 0 ? DIR_SOUTH : DIR_NORTH);
+    ObjectEventTurn(npc, face);
 }
 
 static void Coop_FillFrame(struct CoopFrame *frame)
@@ -2279,6 +2262,15 @@ static void Coop_GiveJointWin(void)
     }
     if (sBattleFlag != 0)
         FlagSet(sBattleFlag);
+    if (sBattleKind == COOP_KIND_TRAINER)
+    {
+        // Ordinary shared trainers have no story flag in the invite. The
+        // talker's stock script only marks its own save, so mark both here.
+        u16 trainers[2] = { TRAINER_BATTLE_PARAM.opponentA, TRAINER_BATTLE_PARAM.opponentB };
+        for (u32 i = 0; i < ARRAY_COUNT(trainers); i++)
+            if (trainers[i] != TRAINER_NONE && trainers[i] < TRAINERS_COUNT && !IsSpecialTrainer(trainers[i]))
+                SetTrainerFlag(trainers[i]);
+    }
     if (sBattleKind == COOP_KIND_CHAMPION)
         FlagSet(FLAG_IS_CHAMPION);
     if (sBattleKind == COOP_KIND_RIVAL && save != NULL && sRivalFightStage != 0xFF && save->rivalStage <= sRivalFightStage)
@@ -2293,13 +2285,13 @@ static void Coop_QueueGuestFollowup(void)
         // the invite would replay without it, and a lower value replays the
         // next room's walk-in on the wrong door.
         if (sBattleFlag == FLAG_DEFEATED_ELITE_4_SIDNEY)
-            VarSet(VAR_ELITE_4_STATE, 1);
+            Coop_RaiseVar(VAR_ELITE_4_STATE, 1);
         else if (sBattleFlag == FLAG_DEFEATED_ELITE_4_PHOEBE)
-            VarSet(VAR_ELITE_4_STATE, 2);
+            Coop_RaiseVar(VAR_ELITE_4_STATE, 2);
         else if (sBattleFlag == FLAG_DEFEATED_ELITE_4_GLACIA)
-            VarSet(VAR_ELITE_4_STATE, 3);
+            Coop_RaiseVar(VAR_ELITE_4_STATE, 3);
         else if (sBattleFlag == FLAG_DEFEATED_ELITE_4_DRAKE)
-            VarSet(VAR_ELITE_4_STATE, 4);
+            Coop_RaiseVar(VAR_ELITE_4_STATE, 4);
         sGuestFollowup = 9;
     }
     else if (sBattleKind == COOP_KIND_CHAMPION)
@@ -2353,7 +2345,7 @@ static u16 Coop_GiveStoryItem(u16 item)
 // VAR_0x8004 is the follow-up code. 0 means the guest can walk.
 // 1 means a story item did not fit, and this scene was left in place.
 // 2 means warp to Route 128, where the host arrives after Archie.
-u16 Coop_ApplyGuestStory(void)
+static u16 Coop_ApplyGuestStoryProgress(void)
 {
     switch (VarGet(VAR_0x8004))
     {
@@ -2464,6 +2456,23 @@ u16 Coop_ApplyGuestStory(void)
     default:
         return 0;
     }
+}
+
+// Story flags take effect on the current map immediately. Otherwise the
+// guest can still see/talk to a rival or villain until the next map reload.
+u16 Coop_ApplyGuestStory(void)
+{
+    u16 result = Coop_ApplyGuestStoryProgress();
+    if (gMapHeader.events != NULL)
+    {
+        for (u32 i = 0; i < gMapHeader.events->objectEventCount; i++)
+        {
+            const struct ObjectEventTemplate *object = &gMapHeader.events->objectEvents[i];
+            if (object->flagId != 0 && FlagGet(object->flagId))
+                RemoveObjectEventByLocalIdAndMap(object->localId, gSaveBlock1Ptr->location.mapNum, gSaveBlock1Ptr->location.mapGroup);
+        }
+    }
+    return result;
 }
 
 bool8 Coop_FinishTrainerBattle(void)

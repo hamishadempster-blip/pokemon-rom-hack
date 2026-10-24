@@ -22,7 +22,7 @@
 #define MAX_CMDS 4096
 #define MAX_SYMS 500000
 
-enum { C_PARTNER, C_GOTO, C_HEX, C_PRESS, C_WAIT, C_SHOT, C_DUMP, C_BARRIER, C_UNTIL_CB2, C_UNTIL_FIELD, C_EXPECT, C_UNTIL_MEM, C_BATTLE, C_MENU, C_PARTY, C_FIXTURE, C_WRITE, C_LEAD, C_MOVE, C_SIX, C_VAR, C_FLAG };
+enum { C_PARTNER, C_GOTO, C_HEX, C_PRESS, C_WAIT, C_SHOT, C_DUMP, C_BARRIER, C_UNTIL_CB2, C_UNTIL_FIELD, C_EXPECT, C_UNTIL_MEM, C_BATTLE, C_MENU, C_PARTY, C_FIXTURE, C_WRITE, C_LEAD, C_MOVE, C_SIX, C_VAR, C_FLAG, C_VS, C_EXPECT_FLAG, C_EXPECT_VAR, C_NO_OBJECT };
 
 struct Cmd {
 	int kind;
@@ -50,6 +50,7 @@ struct Player {
 	int barrierReached;
 	int stable;
 	int done;
+    unsigned vsFlags;
 };
 
 static struct Player P[2];
@@ -370,7 +371,7 @@ static void checkBattle(struct Player* p, int moves) {
 		if (moves == 2) {
 			// Party HP/maxHP sit in the clear tail of struct Pokemon (level at +84).
 			// The guest does not run DoBattleIntro, so its gBattleMons stays zero;
-			// the party is what both games actually keep.
+			// the party is what both games actually keep; UI snapshots are not engine state.
 			unsigned hp0 = rd16(p, partyMon(0, 0) + 86), max0 = rd16(p, partyMon(0, 0) + 88);
 			unsigned hp2 = rd16(p, partyMon(2, 0) + 86), max2 = rd16(p, partyMon(2, 0) + 88);
 			struct Player* o = &P[1 - p->id];
@@ -390,7 +391,7 @@ static void checkBattle(struct Player* p, int moves) {
 			else if ((rd32(o, symAddr("gBattleMainFunc")) & ~1u) != (symAddr("BeginBattleIntroDummy") & ~1u))
 				snprintf(why, sizeof(why), "guest battle engine is running");
 			else
-				out("[p%d] ok party hp own %u/%u partner %u/%u; guest gBattleMons unused (engine is the master, its mon0 hp %u pp %u)\n",
+				out("[p%d] ok party hp own %u/%u partner %u/%u; guest uses a UI snapshot; master mon0 hp %u pp %u\n",
 				    p->id, hp0, max0, hp2, max2, battleHp, rd8(p, mons + 37));
 		} else if (linkId != 0) {
 			out("[p%d] ok move record is on the link master\n", p->id);
@@ -552,6 +553,15 @@ static void frameCallback(struct mCoreThread* t) {
 		sFailures++;
 		p->done = 1;
 	}
+    // Capture actual intro indicator data, not the party data used to build it.
+    unsigned vsFunc = symFind("InitLinkBattleVsScreen");
+    unsigned tasks = symFind("gTasks");
+    if (vsFunc && tasks) for (unsigned i = 0; i < 16; i++) {
+        unsigned task = tasks + i * 40;
+        if (rd8(p, task + 4) && (rd32(p, task) & ~1u) == (vsFunc & ~1u))
+            p->vsFlags = rd16(p, task + 14);
+    }
+
 	unsigned keys = 0;
 	while (!p->done) {
 		if (p->pc >= p->ncmds) { p->done = 1; break; }
@@ -696,6 +706,41 @@ static void frameCallback(struct mCoreThread* t) {
             else p->core->busWrite32(p->core, c->addr, c->value);
             advance = true;
             break;
+        case C_NO_OBJECT: {
+            unsigned save = rd32(p, sSave1), found = 0;
+            for (unsigned i = 0; i < 16; i++) {
+                unsigned obj = sObjEvents + i * 0x24;
+                if ((rd8(p, obj) & 1) && rd8(p, obj + 8) == c->value
+                    && rd8(p, obj + 9) == rd8(p, save + 5) && rd8(p, obj + 10) == rd8(p, save + 4)) found++;
+            }
+            if (found) { out("[p%d] FAIL story NPC %u still visible\n", p->id, c->value); sFailures++; }
+            else out("[p%d] ok story NPC %u removed\n", p->id, c->value);
+            advance = true;
+            break;
+        }
+        case C_VS: {
+            unsigned counts[2] = {0, 0};
+            for (unsigned side = 0; side < 2; side++)
+                for (unsigned slot = 0; slot < 3; slot++)
+                    counts[side] += ((p->vsFlags >> (side * 6 + slot * 2)) & 3) != 0;
+            if (counts[0] != c->addr || counts[1] != c->value) {
+                out("[p%d] FAIL intro party indicators %u/%u expected %u/%u\n", p->id, counts[0], counts[1], c->addr, c->value); sFailures++;
+            } else out("[p%d] ok intro party indicators %u/%u\n", p->id, counts[0], counts[1]);
+            advance = true;
+            break;
+        }
+        case C_EXPECT_VAR:
+        case C_EXPECT_FLAG: {
+            unsigned value;
+            if (c->kind == C_EXPECT_VAR)
+                value = rd16(p, rd32(p, sSave1) + symValue("harness.saveVarsOffset") + (c->addr - 0x4000) * 2);
+            else
+                value = (rd8(p, rd32(p, sSave1) + symValue("harness.saveFlagsOffset") + c->addr / 8) >> (c->addr % 8)) & 1;
+            if (value != c->value) { out("[p%d] FAIL saved state %x=%u expected %u\n", p->id, c->addr, value, c->value); sFailures++; }
+            else out("[p%d] ok saved state %x=%u\n", p->id, c->addr, value);
+            advance = true;
+            break;
+        }
         case C_VAR:
             p->core->busWrite16(p->core, rd32(p, sSave1) + symValue("harness.saveVarsOffset") + (c->addr - 0x4000) * 2, c->value);
             advance = true;
@@ -914,6 +959,13 @@ static void loadScript(const char* path, int depth) {
             c.addr = strtoul(a, NULL, 0);
             c.size = atoi(b);
             c.value = strtoul(d, NULL, 0);
+        } else if (!strcmp(cmd, "expect_no_object")) {
+            c.kind = C_NO_OBJECT;
+            c.value = strtoul(a, NULL, 0);
+        } else if (!strcmp(cmd, "expect_vs_party") || !strcmp(cmd, "expect_flag") || !strcmp(cmd, "expect_var")) {
+            c.kind = !strcmp(cmd, "expect_vs_party") ? C_VS : !strcmp(cmd, "expect_flag") ? C_EXPECT_FLAG : C_EXPECT_VAR;
+            c.addr = strtoul(a, NULL, 0);
+            c.value = strtoul(b, NULL, 0);
         } else if (!strcmp(cmd, "fixture_var") || !strcmp(cmd, "fixture_flag")) {
             c.kind = !strcmp(cmd, "fixture_var") ? C_VAR : C_FLAG;
             c.addr = strtoul(a, NULL, 0);

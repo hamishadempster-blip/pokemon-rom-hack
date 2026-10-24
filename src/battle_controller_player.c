@@ -411,25 +411,93 @@ static void HandleInputChooseAction(enum BattlerId battler)
     }
 }
 
+static bool32 MoveSelectionCanTarget(enum BattlerId battler, enum BattlerId target, enum Move move)
+{
+    enum MoveTarget kind = GetBattlerMoveSelectionTargetType(battler, move);
+    if (target >= gBattlersCount)
+        return FALSE;
+    if (kind == TARGET_USER_OR_ALLY)
+    {
+        if (!IsBattlerAlly(battler, target))
+            return FALSE;
+    }
+    else if (target == battler || (kind == TARGET_OPPONENT && IsBattlerAlly(battler, target)))
+        return FALSE;
+    if (gBattleTypeFlags & BATTLE_TYPE_COOP)
+    {
+        const struct CoopMoveSelection *selection = (const struct CoopMoveSelection *)&gBattleResources->bufferA[battler][4 + sizeof(struct ChooseMoveStruct)];
+        for (u32 slot = 0; slot < MAX_MON_MOVES; slot++)
+            if (selection->moves[slot] == move)
+                return (selection->validTargets[slot] & (1u << target)) != 0;
+        return FALSE;
+    }
+    return CanTargetBattler(battler, target, move);
+}
+
+static void MoveSelectionDrawTargetPrompt(enum BattlerId battler, const u8 *label, const u8 *name)
+{
+    if (!(gBattleTypeFlags & BATTLE_TYPE_COOP))
+        return;
+    MoveSelectionDestroyCursorAt(gMoveSelectionCursor[battler]);
+    BattlePutTextOnWindow(label, B_WIN_MOVE_NAME_1);
+    BattlePutTextOnWindow(name, B_WIN_MOVE_NAME_2);
+    BattlePutTextOnWindow(COMPOUND_STRING("A: OK"), B_WIN_MOVE_NAME_3);
+    BattlePutTextOnWindow(COMPOUND_STRING("B: Back"), B_WIN_MOVE_NAME_4);
+}
+
+static void MoveSelectionShowTarget(enum BattlerId battler)
+{
+    if (!(gBattleTypeFlags & BATTLE_TYPE_COOP))
+        return;
+    enum BattlerId target = gMultiUsePlayerCursor;
+    const u8 *label = COMPOUND_STRING("Yourself");
+    if (!IsBattlerAlly(battler, target))
+        label = GetBattlerPosition(target) == B_POSITION_OPPONENT_LEFT ? COMPOUND_STRING("Left foe") : COMPOUND_STRING("Right foe");
+    else if (target != battler)
+        label = COMPOUND_STRING("Partner");
+    MoveSelectionDrawTargetPrompt(battler, label, GetSpeciesName(gBattleMons[target].species));
+}
+
+static void MoveSelectionShowSpreadTargets(enum BattlerId battler, enum Move move, enum MoveTarget kind)
+{
+    const u8 *label = COMPOUND_STRING("Both foes");
+    if (kind == TARGET_USER_AND_ALLY)
+        label = COMPOUND_STRING("Your team");
+    else if (kind == TARGET_FOES_AND_ALLY)
+        label = COMPOUND_STRING("All others");
+    else if (kind == TARGET_ALL_BATTLERS)
+        label = COMPOUND_STRING("Everyone");
+    else if (kind == TARGET_FIELD)
+        label = COMPOUND_STRING("The field");
+    MoveSelectionDrawTargetPrompt(battler, label, GetMoveName(move));
+}
+
+static void MoveSelectionRestoreMoves(enum BattlerId battler)
+{
+    if (gBattleTypeFlags & BATTLE_TYPE_COOP)
+    {
+        MoveSelectionDisplayMoveNames(battler);
+        MoveSelectionCreateCursorAt(gMoveSelectionCursor[battler], 0);
+        MoveSelectionDisplayPPString(battler);
+        MoveSelectionDisplayPPNumber(battler);
+        MoveSelectionDisplayMoveType(battler);
+    }
+}
+
 void HandleInputChooseTarget(enum BattlerId battler)
 {
-    enum BattlerId i;
     static const enum BattlerPosition identities[MAX_BATTLERS_COUNT] =
     {
-        B_POSITION_PLAYER_LEFT,
-        B_POSITION_PLAYER_RIGHT,
-        B_POSITION_OPPONENT_RIGHT,
-        B_POSITION_OPPONENT_LEFT,
+        B_POSITION_PLAYER_LEFT, B_POSITION_PLAYER_RIGHT,
+        B_POSITION_OPPONENT_RIGHT, B_POSITION_OPPONENT_LEFT,
     };
-    enum Move move = GetMonData(GetBattlerMon(battler), MON_DATA_MOVE1 + gMoveSelectionCursor[battler]);
-    enum MoveTarget moveTarget = GetBattlerMoveSelectionTargetType(battler, move);
+    const struct ChooseMoveStruct *moveInfo = (const struct ChooseMoveStruct *)&gBattleResources->bufferA[battler][4];
+    enum Move move = moveInfo->moves[gMoveSelectionCursor[battler]];
 
     DoBounceEffect(gMultiUsePlayerCursor, BOUNCE_HEALTHBOX, 15, 1);
-    for (i = 0; i < gBattlersCount; i++)
-    {
+    for (u32 i = 0; i < gBattlersCount; i++)
         if (i != gMultiUsePlayerCursor)
             EndBounceEffect(i, BOUNCE_HEALTHBOX);
-    }
 
     if (JOY_HELD(DPAD_ANY) && gSaveBlock2Ptr->optionsButtonMode == OPTIONS_BUTTON_MODE_L_EQUALS_A)
         gPlayerDpadHoldFrames++;
@@ -438,12 +506,14 @@ void HandleInputChooseTarget(enum BattlerId battler)
 
     if (JOY_NEW(A_BUTTON))
     {
+        if (!MoveSelectionCanTarget(battler, gMultiUsePlayerCursor, move))
+            return;
         PlaySE(SE_SELECT);
         gSprites[gBattlerSpriteIds[gMultiUsePlayerCursor]].callback = SpriteCB_HideAsMoveTarget;
+        u32 selection = gMoveSelectionCursor[battler] | (gMultiUsePlayerCursor << 8);
         if (gBattleStruct->gimmick.playerSelect)
-            BtlController_EmitTwoReturnValues(battler, B_COMM_TO_ENGINE, B_ACTION_EXEC_SCRIPT, gMoveSelectionCursor[battler] | RET_GIMMICK | (gMultiUsePlayerCursor << 8));
-        else
-            BtlController_EmitTwoReturnValues(battler, B_COMM_TO_ENGINE, B_ACTION_EXEC_SCRIPT, gMoveSelectionCursor[battler] | (gMultiUsePlayerCursor << 8));
+            selection |= RET_GIMMICK;
+        BtlController_EmitTwoReturnValues(battler, B_COMM_TO_ENGINE, B_ACTION_EXEC_SCRIPT, selection);
         EndBounceEffect(gMultiUsePlayerCursor, BOUNCE_HEALTHBOX);
         TryHideLastUsedBall();
         HideGimmickTriggerSprite();
@@ -453,6 +523,7 @@ void HandleInputChooseTarget(enum BattlerId battler)
     {
         PlaySE(SE_SELECT);
         gSprites[gBattlerSpriteIds[gMultiUsePlayerCursor]].callback = SpriteCB_HideAsMoveTarget;
+        EndBounceEffect(gMultiUsePlayerCursor, BOUNCE_HEALTHBOX);
         gBattlerControllerFuncs[battler] = HandleInputChooseMove;
         if (gBattleStruct->gimmick.playerSelect == 1 && gBattleStruct->gimmick.usableGimmick[battler] == GIMMICK_Z_MOVE)
         {
@@ -460,119 +531,35 @@ void HandleInputChooseTarget(enum BattlerId battler)
             gBattleStruct->zmove.viewing = TRUE;
             ReloadMoveNames(battler);
         }
+        MoveSelectionRestoreMoves(battler);
         TryToAddMoveInfoWindow();
         DoBounceEffect(battler, BOUNCE_HEALTHBOX, 7, 1);
         DoBounceEffect(battler, BOUNCE_MON, 7, 1);
-        EndBounceEffect(gMultiUsePlayerCursor, BOUNCE_HEALTHBOX);
     }
-    else if (JOY_NEW(DPAD_LEFT | DPAD_UP))
+    else if (JOY_NEW(DPAD_ANY))
     {
-        PlaySE(SE_SELECT);
-        gSprites[gBattlerSpriteIds[gMultiUsePlayerCursor]].callback = SpriteCB_HideAsMoveTarget;
-
-        if (moveTarget == TARGET_USER_OR_ALLY)
+        enum BattlerPosition current = GetBattlerPosition(gMultiUsePlayerCursor);
+        s32 index = 0;
+        for (u32 i = 0; i < MAX_BATTLERS_COUNT; i++)
+            if (identities[i] == current)
+                index = i;
+        s32 direction = JOY_NEW(DPAD_LEFT | DPAD_UP) ? -1 : 1;
+        // Always bounded: stale/empty target state must never trap the CPU.
+        for (u32 attempt = 0; attempt < MAX_BATTLERS_COUNT; attempt++)
         {
-            gMultiUsePlayerCursor ^= BIT_FLANK;
+            index = (index + direction + MAX_BATTLERS_COUNT) % MAX_BATTLERS_COUNT;
+            enum BattlerId target = GetBattlerAtPosition(identities[index]);
+            if (!MoveSelectionCanTarget(battler, target, move))
+                continue;
+            PlaySE(SE_SELECT);
+            gSprites[gBattlerSpriteIds[gMultiUsePlayerCursor]].callback = SpriteCB_HideAsMoveTarget;
+            gMultiUsePlayerCursor = target;
+            gSprites[gBattlerSpriteIds[target]].callback = SpriteCB_ShowAsMoveTarget;
+            if (B_SHOW_EFFECTIVENESS)
+                MoveSelectionDisplayMoveEffectiveness(CheckTypeEffectiveness(battler, target), battler);
+            MoveSelectionShowTarget(battler);
+            break;
         }
-        else
-        {
-            bool32 validTarget = FALSE;
-            do
-            {
-                enum BattlerPosition currSelIdentity = GetBattlerPosition(gMultiUsePlayerCursor);
-
-                for (i = 0; i < MAX_BATTLERS_COUNT; i++)
-                {
-                    if (currSelIdentity == identities[i])
-                        break;
-                }
-                do
-                {
-                    if (i == 0)
-                        i = MAX_BATTLERS_COUNT - 1;
-                    else
-                        i--;
-                    gMultiUsePlayerCursor = GetBattlerAtPosition(identities[i]);
-                } while (gMultiUsePlayerCursor >= gBattlersCount);
-
-                switch (GetBattlerPosition(gMultiUsePlayerCursor))
-                {
-                case B_POSITION_PLAYER_LEFT:
-                case B_POSITION_PLAYER_RIGHT:
-                    if (battler != gMultiUsePlayerCursor)
-                        validTarget = TRUE;
-                    break;
-                case B_POSITION_OPPONENT_LEFT:
-                case B_POSITION_OPPONENT_RIGHT:
-                    validTarget = TRUE;
-                    break;
-                default:
-                    break;
-                }
-
-                if (!CanTargetBattler(battler, gMultiUsePlayerCursor, move)
-                 || (moveTarget == TARGET_OPPONENT && IsOnPlayerSide(gMultiUsePlayerCursor)))
-                    validTarget = FALSE;
-
-                if (B_SHOW_EFFECTIVENESS && validTarget)
-                    MoveSelectionDisplayMoveEffectiveness(CheckTypeEffectiveness(battler, gMultiUsePlayerCursor), battler);
-
-            } while (!validTarget);
-        }
-        gSprites[gBattlerSpriteIds[gMultiUsePlayerCursor]].callback = SpriteCB_ShowAsMoveTarget;
-    }
-    else if (JOY_NEW(DPAD_RIGHT | DPAD_DOWN))
-    {
-        PlaySE(SE_SELECT);
-        gSprites[gBattlerSpriteIds[gMultiUsePlayerCursor]].callback = SpriteCB_HideAsMoveTarget;
-
-        if (moveTarget == TARGET_USER_OR_ALLY)
-        {
-            gMultiUsePlayerCursor ^= BIT_FLANK;
-        }
-        else
-        {
-            do
-            {
-                enum BattlerPosition currSelIdentity = GetBattlerPosition(gMultiUsePlayerCursor);
-
-                for (i = 0; i < MAX_BATTLERS_COUNT; i++)
-                {
-                    if (currSelIdentity == identities[i])
-                        break;
-                }
-                do
-                {
-                    if (++i > 3)
-                        i = 0;
-                    gMultiUsePlayerCursor = GetBattlerAtPosition(identities[i]);
-                } while (gMultiUsePlayerCursor == gBattlersCount);
-
-                i = 0;
-                switch (GetBattlerPosition(gMultiUsePlayerCursor))
-                {
-                case B_POSITION_PLAYER_LEFT:
-                case B_POSITION_PLAYER_RIGHT:
-                    if (battler != gMultiUsePlayerCursor)
-                        i++;
-                    break;
-                case B_POSITION_OPPONENT_LEFT:
-                case B_POSITION_OPPONENT_RIGHT:
-                    i++;
-                    break;
-                default:
-                    break;
-                }
-                if (B_SHOW_EFFECTIVENESS)
-                    MoveSelectionDisplayMoveEffectiveness(CheckTypeEffectiveness(battler, gMultiUsePlayerCursor), battler);
-
-                if (!CanTargetBattler(battler, gMultiUsePlayerCursor, move)
-                 || (moveTarget == TARGET_OPPONENT && IsOnPlayerSide(gMultiUsePlayerCursor)))
-                    i = 0;
-            } while (i == 0);
-        }
-
-        gSprites[gBattlerSpriteIds[gMultiUsePlayerCursor]].callback = SpriteCB_ShowAsMoveTarget;
     }
 }
 
@@ -611,6 +598,7 @@ void HandleInputShowEntireFieldTargets(enum BattlerId battler)
         PlaySE(SE_SELECT);
         HideAllTargets();
         gBattlerControllerFuncs[battler] = HandleInputChooseMove;
+        MoveSelectionRestoreMoves(battler);
         DoBounceEffect(battler, BOUNCE_HEALTHBOX, 7, 1);
         DoBounceEffect(battler, BOUNCE_MON, 7, 1);
     }
@@ -640,6 +628,7 @@ void HandleInputShowTargets(enum BattlerId battler)
         PlaySE(SE_SELECT);
         HideAllTargets();
         gBattlerControllerFuncs[battler] = HandleInputChooseMove;
+        MoveSelectionRestoreMoves(battler);
         DoBounceEffect(battler, BOUNCE_HEALTHBOX, 7, 1);
         DoBounceEffect(battler, BOUNCE_MON, 7, 1);
     }
@@ -771,12 +760,15 @@ void HandleInputChooseMove(enum BattlerId battler)
                 MoveSelectionDisplayMoveEffectiveness(CheckTypeEffectiveness(battler, gMultiUsePlayerCursor), battler);
 
             gSprites[gBattlerSpriteIds[gMultiUsePlayerCursor]].callback = SpriteCB_ShowAsMoveTarget;
+            MoveSelectionShowTarget(battler);
             break;
         case 2:
             gBattlerControllerFuncs[battler] = HandleInputShowTargets;
+            MoveSelectionShowSpreadTargets(battler, moveInfo->moves[gMoveSelectionCursor[battler]], moveTarget);
             break;
         case 3: // Entire field
             gBattlerControllerFuncs[battler] = HandleInputShowEntireFieldTargets;
+            MoveSelectionShowSpreadTargets(battler, moveInfo->moves[gMoveSelectionCursor[battler]], moveTarget);
             break;
         }
     }
@@ -1921,7 +1913,8 @@ static void PrintLinkStandbyMsg(void)
     {
         gBattle_BG0_X = 0;
         gBattle_BG0_Y = 0;
-        BattlePutTextOnWindow(gText_LinkStandby, B_WIN_MSG);
+        BattlePutTextOnWindow((gBattleTypeFlags & BATTLE_TYPE_COOP)
+            ? COMPOUND_STRING("Ready. Waiting for partner...") : gText_LinkStandby, B_WIN_MSG);
     }
 }
 
@@ -2164,6 +2157,30 @@ static void PlayerChooseMoveInBattlePalace(enum BattlerId battler)
 
 void PlayerHandleChooseMove(enum BattlerId battler)
 {
+    if ((gBattleTypeFlags & BATTLE_TYPE_COOP) && !(gBattleTypeFlags & BATTLE_TYPE_IS_MASTER))
+    {
+        const struct CoopMoveSelection *selection = (const struct CoopMoveSelection *)&gBattleResources->bufferA[battler][4 + sizeof(struct ChooseMoveStruct)];
+        gAbsentBattlerFlags = selection->absentBattlers;
+        for (u32 i = 0; i < MAX_BATTLERS_COUNT; i++)
+        {
+            gBattlerPartyIndexes[i] = selection->partyIndexes[i];
+            struct BattlePokemon *dst = &gBattleMons[i];
+            const struct CoopMoveMon *src = &selection->mons[i];
+            dst->species = src->species;
+            dst->hp = src->hp;
+            dst->maxHP = src->maxHP;
+            dst->attack = src->attack;
+            dst->defense = src->defense;
+            dst->speed = src->speed;
+            dst->spAttack = src->spAttack;
+            dst->spDefense = src->spDefense;
+            dst->ability = src->ability;
+            dst->item = src->item;
+            memcpy(dst->types, src->types, sizeof(src->types));
+            dst->level = src->level;
+            dst->status1 = src->status;
+        }
+    }
     if (gBattleTypeFlags & BATTLE_TYPE_PALACE)
     {
         gBattleStruct->arenaMindPoints[battler] = 8;

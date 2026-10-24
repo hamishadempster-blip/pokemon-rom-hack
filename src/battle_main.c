@@ -1164,8 +1164,27 @@ static void CB2_HandleStartMultiPartnerBattle(void)
             gTasks[taskId].data[1] = 0x10E;
             gTasks[taskId].data[2] = 0x5A;
             gTasks[taskId].data[5] = 0;
-            gTasks[taskId].data[3] = 0x145;
-            gTasks[taskId].data[4] = 0x145;
+            if (gBattleTypeFlags & BATTLE_TYPE_COOP)
+            {
+                // The left team is the two humans, not two placeholder teams.
+                gTasks[taskId].data[3] = (gBlockRecvBuffer[0][1] & 0x3F)
+                                      | ((gBlockRecvBuffer[1][1] & 0x3F) << 6);
+                u16 foes = 0;
+                u32 i;
+                BUFFER_PARTY_VS_SCREEN_STATUS(gParties[B_TRAINER_OPPONENT_A], foes, i);
+                if (gBattleTypeFlags & BATTLE_TYPE_TWO_OPPONENTS)
+                {
+                    u16 second = 0;
+                    BUFFER_PARTY_VS_SCREEN_STATUS(gParties[B_TRAINER_OPPONENT_B], second, i);
+                    foes = (foes & 0x3F) | ((second & 0x3F) << 6);
+                }
+                gTasks[taskId].data[4] = foes;
+            }
+            else
+            {
+                gTasks[taskId].data[3] = 0x145;
+                gTasks[taskId].data[4] = 0x145;
+            }
             gBattleCommunication[MULTIUSE_STATE]++;
         }
         break;

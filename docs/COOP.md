@@ -8,7 +8,7 @@ Based off RHH's pokeemerald-expansion 1.17.1
 https://github.com/rh-hideout/pokeemerald-expansion/
 Pinned commit `bb1093a7c72d3961d9a37d8e02ad2abc2c866682`.
 
-Build id baked into the link handshake: `0xC017012A`.
+Build id baked into the link handshake: `0xC017012B`.
 
 ## Clean ROM
 
@@ -87,6 +87,9 @@ On the title screen, choose **NEW GAME**. The game asks whether to skip to the c
 - When one player's three faint and the other player is still standing, the battle carries on. It ends in a loss only when both players' first threes are down.
 - Co-op battles award experience and EVs to each player's participating first three and held Exp. Share holders, respecting the shared level cap. Ordinary competitive link battles still give no experience. The guest chooses level-up move replacements after the battle. Both players receive level-up evolution checks after returning to the field. Dropping the cable during the battle discards pending progression along with the party rollback.
 - A co-op battle hands the cable back open, so the session stays linked after the fight.
+- Each player confirms a move and its target. The player who finishes first sees “Ready. Waiting for partner...” until the other confirms. Single-target prompts name the left/right foe, yourself, or your partner. Spread prompts say “Both foes”, “Your team”, or the relevant area. A confirms; B returns to the move list.
+- The intro party indicators use each player's actual participating party. Ordinary shared trainer victories mark that trainer defeated on both saves.
+- A partner talking to an idle NPC turns that NPC toward them. Your own dialogue and cutscene movement take priority. Shared story hide flags remove completed NPCs on the current map without requiring a map reload.
 
 ### Wild Pokémon together (Route 102)
 
