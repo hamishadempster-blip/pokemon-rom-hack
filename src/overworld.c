@@ -2714,6 +2714,9 @@ static void ResumeMap(bool32 a1)
     ResumePausedWeather();
     if (!a1)
         SetUpFieldTasks();
+    // Continue restores active objects from the save and bypasses transition
+    // scripts. Repair completed story actors before those objects respawn.
+    Coop_ApplyPendingStory();
     RunOnResumeMapScript();
     TryStartMirageTowerPulseBlendEffect();
     // ResetTasks above removed the co-op task in the middle of a door,

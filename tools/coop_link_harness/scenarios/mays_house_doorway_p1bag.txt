@@ -16,6 +16,7 @@ b mash_field 8000
 b until_field 5000
 b expect_flag 0x2D2 1
 b expect_var 0x408D 3
+b expect_flag 0x2EE 1
 b press DOWN 200
 b until_field 2000
 include enter_bedroom.inc

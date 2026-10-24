@@ -99,7 +99,7 @@ Coop_EventScript_TalkPartner::
 
 Coop_EventScript_Menu::
 	lockall
-	specialvar VAR_RESULT, Coop_SessionActive
+	specialvar VAR_RESULT, Coop_CableUp
 	goto_if_eq VAR_RESULT, TRUE, Coop_EventScript_MenuLinked
 	special Coop_BufferCapText
 	msgbox Coop_Text_AskLink, MSGBOX_YESNO

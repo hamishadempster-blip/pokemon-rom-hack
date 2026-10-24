@@ -22,7 +22,7 @@
 #define MAX_CMDS 4096
 #define MAX_SYMS 500000
 
-enum { C_PARTNER, C_GOTO, C_HEX, C_PRESS, C_WAIT, C_SHOT, C_DUMP, C_BARRIER, C_UNTIL_CB2, C_UNTIL_FIELD, C_EXPECT, C_UNTIL_MEM, C_BATTLE, C_MENU, C_PARTY, C_FIXTURE, C_WRITE, C_LEAD, C_MOVE, C_SIX, C_VAR, C_FLAG, C_VS, C_EXPECT_FLAG, C_EXPECT_VAR, C_NO_OBJECT, C_MAP, C_OBJECT, C_TEXT_SPEED, C_PACE };
+enum { C_PARTNER, C_GOTO, C_HEX, C_PRESS, C_WAIT, C_SHOT, C_DUMP, C_BARRIER, C_UNTIL_CB2, C_UNTIL_FIELD, C_EXPECT, C_UNTIL_MEM, C_BATTLE, C_MENU, C_PARTY, C_FIXTURE, C_WRITE, C_LEAD, C_MOVE, C_SIX, C_VAR, C_FLAG, C_VS, C_EXPECT_FLAG, C_EXPECT_VAR, C_NO_OBJECT, C_MAP, C_OBJECT, C_TEXT_SPEED, C_PACE, C_MUTE };
 
 struct Cmd {
 	int kind;
@@ -51,6 +51,7 @@ struct Player {
 	int stable;
 	int done;
     unsigned vsFlags;
+    unsigned muteFrames, mutedOpcode;
 };
 
 static struct Player P[2];
@@ -556,6 +557,10 @@ static void recordSide(struct Player* p) {
 static void frameCallback(struct mCoreThread* t) {
 	struct Player* p = t->userData;
 	p->frame++;
+    // Controlled application-heartbeat outage: serial hardware keeps running.
+    // Patch only this emulated core's callback, and always restore its opcode.
+    if (p->muteFrames && --p->muteFrames == 0)
+        p->core->rawWrite16(p->core, symAddr("Coop_LinkCallback"), -1, p->mutedOpcode);
 	if (sMain) {
 		unsigned cb2 = rd32(p, sMain + 4);
 		if (cb2 != sLastCb2[p->id]) {
@@ -586,6 +591,15 @@ static void frameCallback(struct mCoreThread* t) {
 		struct Cmd* c = &p->cmds[p->pc];
 		bool advance = false;
 		switch (c->kind) {
+        case C_MUTE:
+            if (!p->muteFrames) {
+                unsigned addr = symAddr("Coop_LinkCallback");
+                p->mutedOpcode = rd16(p, addr);
+                p->core->rawWrite16(p->core, addr, -1, 0x4770); // bx lr
+            }
+            p->muteFrames = c->frames;
+            advance = true;
+            break;
 		case C_PRESS:
 			if (p->step < c->frames) keys = c->keys;
 			if (++p->step >= c->frames + 6) advance = true;
@@ -1033,6 +1047,9 @@ static void loadScript(const char* path, int depth) {
         } else if (!strcmp(cmd, "expect_no_object")) {
             c.kind = C_NO_OBJECT;
             c.value = strtoul(a, NULL, 0);
+        } else if (!strcmp(cmd, "mute_coop")) {
+            c.kind = C_MUTE;
+            c.frames = atoi(a);
         } else if (!strcmp(cmd, "pace_until_battle")) {
             // Walk up and down in place (grass) until a battle starts.
             c.kind = C_PACE;

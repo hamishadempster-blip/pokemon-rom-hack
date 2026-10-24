@@ -1,0 +1,24 @@
+include route102_reconnect_start.inc
+include wild_steps.inc
+0 until_cb2 BattleMainCB2 12000 A
+1 until_cb2 BattleMainCB2 12000 A
+b expect gBattlersCount 4
+b expect coop.sInBattle 1
+# Inject a real engine error flag on both cores. This tests the abort/rollback
+# handler, not physical cable-loss detection or internet reconnection.
+b write gLinkErrorOccurred:1 1
+b mash_field 6000 B
+b expect coop.sInBattle 0
+b expect coop.sLinkState 2
+b expect coop.sBeacon+1:1 1
+b wait 300
+b expect_partner after-abort
+include wild_steps.inc
+0 until_cb2 BattleMainCB2 12000 A
+1 until_cb2 BattleMainCB2 12000 A
+b expect gBattlersCount 4
+b expect coop.sInBattle 1
+b mash_field 25000
+b expect gBattleOutcome 1
+b expect coop.sLinkState 2
+b expect coop.sBeacon+1:1 1

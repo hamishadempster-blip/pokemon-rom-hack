@@ -1,0 +1,27 @@
+include route102_reconnect_start.inc
+include wild_steps.inc
+1 until_mem coop.sGuestPairPending 1 6000
+# The invitation expires while the guest is reading. A late YES cannot start
+# an orphan battle. Application heartbeats recover without toggling Beacon.
+1 mute_coop 900
+1 wait 750
+1 press A 2
+1 mash_field 1200
+0 until_cb2 BattleMainCB2 9000
+0 expect gBattlersCount 2
+0 expect coop.sInBattle 0
+0 mash_field 25000
+1 mash_field 4000 B
+b wait 500
+b expect coop.sLinkState 2
+b expect coop.sBeacon+1:1 1
+b expect coop.sGuestPairPending 0
+b expect coop.sPartnerValid 1
+include wild_steps.inc
+0 until_cb2 BattleMainCB2 12000 A
+1 until_cb2 BattleMainCB2 12000 A
+b expect gBattlersCount 4
+b mash_field 25000
+b expect gBattleOutcome 1
+b expect coop.sLinkState 2
+b expect coop.sBeacon+1:1 1

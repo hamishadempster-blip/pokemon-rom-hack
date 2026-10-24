@@ -1,0 +1,18 @@
+include oldale_reconnect.inc
+include center_stagger.inc
+b goto 10 10 2500
+b goto 1 10 2500
+b press LEFT 40
+b until_field 2000
+include wild_steps.inc
+0 until_cb2 BattleMainCB2 12000 A
+1 until_cb2 BattleMainCB2 12000 A
+b expect gBattlersCount 4
+b expect coop.sInBattle 1
+b mash_field 25000
+b expect gBattleOutcome 1
+b expect coop.sLinkState 2
+b expect coop.sBeacon+1:1 1
+b expect_partner center-battle-finished
+include unlink.inc
+b expect coop.sLinkState 0

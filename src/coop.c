@@ -120,7 +120,8 @@ static EWRAM_DATA bool8 sLinkWait = FALSE;
 static EWRAM_DATA u16 sLinkWaitTimer = 0;
 static EWRAM_DATA u8 sLinkPlayersSeen = 0;
 static EWRAM_DATA u8 sLinkStatusCount = 0;
-static EWRAM_DATA u8 sLinkErrorStreak = 0;
+static EWRAM_DATA u16 sLinkErrorStreak = 0;
+static EWRAM_DATA u8 sUnlinkTimer = 0;
 static EWRAM_DATA u8 sBadFrameStreak = 0;
 static EWRAM_DATA bool8 sBirchBag = FALSE;
 static EWRAM_DATA u8 sRescueField = COOP_RESCUE_RETURN_NONE;
@@ -315,12 +316,13 @@ u32 Coop_DisplayedLevelCap(void)
 
 u16 Coop_SessionActive(void)
 {
-    return sLinkState == COOP_LINK_UP && gReceivedRemoteLinkPlayers;
+    return sLinkState == COOP_LINK_UP && gReceivedRemoteLinkPlayers
+        && sLinkErrorStreak < COOP_LINK_QUIET_LIMIT;
 }
 
 // The cable is up even when the stock link-player flag is clear. The bag
 // must still read buttons in that state.
-bool8 Coop_CableUp(void)
+u16 Coop_CableUp(void)
 {
     return sLinkState == COOP_LINK_UP;
 }
@@ -435,6 +437,7 @@ static void Coop_NoteBadFrame(void)
 static void Coop_NoteGoodFrame(void)
 {
     sBadFrameStreak = 0;
+    sLinkErrorStreak = 0;
 }
 
 static void Coop_ShowPartner(struct ObjectEvent *obj)
@@ -734,6 +737,11 @@ void Coop_FormatStatus(u8 *dest)
     }
     end = StringCopy(dest, sBeacon.on ? COMPOUND_STRING("LINKED · BEACON ON") : COMPOUND_STRING("LINKED · BEACON OFF"));
     *end++ = CHAR_NEWLINE;
+    if (!Coop_SessionActive())
+    {
+        StringCopy(end, COMPOUND_STRING("Partner unavailable\nRecovering link..."));
+        return;
+    }
     if (!sPartnerValid)
     {
         StringCopy(end, COMPOUND_STRING("Partner: joining…"));
@@ -881,6 +889,12 @@ static void Coop_HandleFrame(u32 playerId, const u16 *words)
     if (status == COOP_UNPACK_BUILD)
     {
         Coop_Drop(Coop_EventScript_BuildMismatch);
+        return;
+    }
+    if (frame.request == COOP_REQ_UNLINK)
+    {
+        // Deliberate unlink is distinct from a missing heartbeat.
+        Coop_Drop(sUnlinkTimer ? NULL : Coop_EventScript_Disconnected);
         return;
     }
     Coop_AcceptPartner(&frame);
@@ -1074,7 +1088,7 @@ static void Coop_HandleInvite(u32 playerId, const struct CoopInvite *invite)
 
     if (invite->kind == COOP_KIND_ACK)
     {
-        if (sWaitingAck && invite->seq == sInvite.seq)
+        if (sWaitingAck && invite->seq == sInvite.seq && Coop_SessionActive() && sPartnerValid)
             Coop_LaunchBattle(FALSE);
         return;
     }
@@ -1581,29 +1595,25 @@ static void Coop_NoteLinkHealth(void)
     if (gMain.inBattle && (gBattleTypeFlags & BATTLE_TYPE_COOP))
         return;
 
-    // Checksums and a full send queue show up whenever a message box, a
-    // door, or Birch's bag copies a lot of tiles. That is not the cable
-    // coming out. Forget those blips. The session ends only when the other
-    // game is actually gone.
+    // Transport error bits and idle serial words are not a peer heartbeat.
+    // Count time since an accepted co-op frame instead, including while a
+    // menu/script is open. Keep session intent and Beacon through outages.
     Link_ConsumeErrors();
     gCoopHoldLink = TRUE;
     SetSuppressLinkErrorMessage(TRUE);
 
-    if (ScriptContext_IsEnabled() || sBirchBag || gMain.inBattle || gMain.callback2 != CB2_Overworld)
+    if (sLinkErrorStreak < 0xFFFF)
+        sLinkErrorStreak++;
+    if (sLinkErrorStreak == 45 || sLinkErrorStreak % 60 == 0)
+        Link_RecoverCoopCable();
+    if (sLinkErrorStreak >= COOP_LINK_QUIET_LIMIT)
     {
-        sLinkErrorStreak = 0;
-        return;
-    }
-    if (!gReceivedRemoteLinkPlayers || EXTRACT_RECEIVED_NOTHING(gLinkStatus))
-    {
-        if (++sLinkErrorStreak == 45)
-            Link_RecoverCoopCable();
-        if (sLinkErrorStreak >= COOP_LINK_QUIET_LIMIT)
-            Coop_Drop(Coop_EventScript_Disconnected);
-    }
-    else
-    {
-        sLinkErrorStreak = 0;
+        if (sPartnerValid)
+            Coop_RemoveSprite();
+        sPartnerValid = FALSE;
+        // A late YES must not start a battle after its peer went away.
+        if (sGuestPairPending)
+            sGuestPairTimer = 0xFFFF;
     }
 }
 
@@ -1624,6 +1634,7 @@ static void Coop_Drop(const u8 *message)
     sRescueEcho = 0;
     sGuestPairPending = FALSE;
     sLinkState = COOP_LINK_IDLE;
+    sUnlinkTimer = 0;
     sLinkPhase = 0;
     sLinkPhaseTimer = 0;
     sHandshakeSaved = FALSE;
@@ -1667,6 +1678,14 @@ static void Task_CoopSession(u8 taskId)
         // stay black while the music plays.
         if (gMain.inBattle)
             return;
+        if (sUnlinkTimer != 0)
+        {
+            sRequest = COOP_REQ_UNLINK;
+            Coop_MaintainCallback();
+            if (--sUnlinkTimer == 0)
+                Coop_Drop(NULL);
+            return;
+        }
         Coop_MaintainCallback();
         Coop_FlushReply();
         Coop_UpdateSprite();
@@ -1703,9 +1722,21 @@ static void Task_CoopSession(u8 taskId)
     }
     if (sJoinLaunchPending && !ScriptContext_IsEnabled())
     {
-        sJoinLaunchPending = FALSE;
-        Coop_LaunchBattle(TRUE);
-        return;
+        if (!Coop_SessionActive() || !sPartnerValid)
+        {
+            sJoinLaunchPending = FALSE;
+            sInBattle = FALSE;
+            sReplyKind = 0;
+            sPendingMessage = Coop_EventScript_PartnerDeclined;
+        }
+        else if (sReplyKind == 0 && (gLinkCallback == NULL || gLinkCallback == Coop_LinkCallback))
+        {
+            // A queued ACK has to leave the cable before battle code takes
+            // ownership of its block buffer and stops flushing field replies.
+            sJoinLaunchPending = FALSE;
+            Coop_LaunchBattle(TRUE);
+            return;
+        }
     }
     if (sPendingMessage != NULL && !gMain.inBattle && !ScriptContext_IsEnabled() && !ArePlayerFieldControlsLocked())
     {
@@ -1822,6 +1853,14 @@ u16 Coop_ArmLinkWait(void)
 
 u16 Coop_Disconnect(void)
 {
+    if (Coop_SessionActive() && sPartnerValid)
+    {
+        // Repeat over position frames before releasing the serial port.
+        // The other player can distinguish this from a temporary outage.
+        sRequest = COOP_REQ_UNLINK;
+        sUnlinkTimer = 30;
+        return TRUE;
+    }
     Coop_Drop(Coop_EventScript_Disconnected);
     sPendingMessage = NULL;
     return TRUE;
@@ -1964,7 +2003,7 @@ static void Coop_PollBeacon(void)
         sBeaconQueued = 0;
         Coop_SyncBeaconRequest();
     }
-    if (!sPartnerValid)
+    if (!sPartnerValid || !Coop_SessionActive())
         return;
     CoopProtocol_BeaconStep(&sBeacon, sPartner.request, sPartner.slot, Coop_InteractionBusy());
     event = sBeacon.event;
@@ -2677,6 +2716,16 @@ void Coop_ApplyPendingStory(void)
     struct CoopSave *save = CoopSave();
     u16 pending;
 
+    // FLAG_RESCUED_BIRCH is set before starter selection, so require the
+    // completed route state as well. Do not touch Birch's later field NPC.
+    if (FlagGet(FLAG_RESCUED_BIRCH) && VarGet(VAR_ROUTE101_STATE) >= 3)
+    {
+        FlagSet(FLAG_HIDE_ROUTE_101_ZIGZAGOON);
+        FlagSet(FLAG_HIDE_ROUTE_101_BIRCH_ZIGZAGOON_BATTLE);
+        if (gSaveBlock1Ptr->location.mapGroup == MAP_GROUP(MAP_ROUTE101)
+         && gSaveBlock1Ptr->location.mapNum == MAP_NUM(MAP_ROUTE101))
+            RemoveObjectEventByLocalIdAndMap(LOCALID_ROUTE101_ZIGZAGOON, MAP_NUM(MAP_ROUTE101), MAP_GROUP(MAP_ROUTE101));
+    }
     if (save == NULL)
         return;
     Coop_RefreshLocalStory();
@@ -3355,8 +3404,8 @@ void Coop_AbortBattle(void)
 
 bool8 Coop_WildPairReady(void)
 {
-    if (gSaveBlock1Ptr->location.mapGroup != MAP_GROUP(MAP_ROUTE102)
-     || gSaveBlock1Ptr->location.mapNum != MAP_NUM(MAP_ROUTE102))
+    // Special facilities have their own encounter and party rules.
+    if (Coop_PlaceStaysSolo())
         return FALSE;
     if (!Coop_SessionActive() || !sBeacon.on || !Coop_PartnerOnSameMap())
         return FALSE;
@@ -3602,7 +3651,7 @@ u16 Coop_PairGuestAnswer(void)
         return 2;
     sGuestPairPending = FALSE;
     if (sGuestPairTimer >= (kind == COOP_KIND_PAIR ? COOP_PAIR_ANSWER_LIMIT : COOP_JOIN_ANSWER_LIMIT)
-     || !Coop_SessionActive())
+     || !Coop_SessionActive() || !Coop_PartnerOnSameMap())
     {
         Coop_SendReply(COOP_KIND_NACK, seq);
         return 2;

@@ -1,0 +1,26 @@
+# Run ONLY on old build C017012C, with save_lab.txt saves (player 0 opened the bag).
+# Produces a genuine persisted guest-only Zigzagoon after the completed rescue.
+include oldale_reconnect.inc
+b goto 9 18 2000
+b press DOWN 70
+b until_field 2000
+b goto 9 5 2000
+b goto 15 5 2000
+b goto 15 10 2000
+b goto 9 10 2000
+b dump old-zig-state
+1 expect_any_object 4
+0 expect_flag 0x2EE 1
+1 expect_flag 0x2EE 0
+b press START 2
+b wait 60
+b menu_to SAVE
+b press A 2
+b wait 50
+b press A 2
+b wait 250
+b press A 2
+b wait 100
+b press B 2
+b until_mem gSaveCounter:4 2 3000
+b until_field 3000

@@ -1,0 +1,56 @@
+include route102_reconnect_start.inc
+# Drop application heartbeats, not the emulated serial cable, for 15 seconds.
+b mute_coop 900
+b wait 400
+b expect coop.sLinkState 2
+b expect coop.sBeacon+1:1 1
+b expect gCoopHoldLink:1 1
+b expect coop.sPartnerValid 0
+b expect_no_partner unavailable
+# The linked menu, including UNLINK, must remain accessible during recovery.
+0 press START 2
+0 wait 45
+0 shot recovering-status
+0 menu_to COOP
+0 press A 2
+0 wait 50
+0 press B 2
+0 wait 25
+0 press B 2
+b wait 600
+b until_field 1200 B
+b expect coop.sLinkState 2
+b expect coop.sBeacon+1:1 1
+b expect coop.sPartnerValid 1
+b expect_partner recovered
+# Also exercise a one-way outage: only player 1 becomes unavailable.
+0 mute_coop 600
+b wait 350
+1 expect coop.sPartnerValid 0
+0 expect coop.sPartnerValid 1
+b expect coop.sLinkState 2
+b expect coop.sBeacon+1:1 1
+b wait 350
+b expect coop.sPartnerValid 1
+include wild_steps.inc
+0 until_cb2 BattleMainCB2 12000 A
+1 until_cb2 BattleMainCB2 12000 A
+b expect gBattlersCount 4
+b expect coop.sInBattle 1
+b mash_field 25000
+b expect gBattleOutcome 1
+b expect coop.sLinkState 2
+b expect coop.sBeacon+1:1 1
+# Only player 0 explicitly unlinks; player 1 must receive the intent.
+0 press START 2
+0 wait 45
+0 menu_to COOP
+0 press A 2
+0 wait 40
+0 press DOWN 2
+0 wait 10
+0 press A 2
+0 until_mem coop.sLinkState 0 2000 A
+1 until_mem coop.sLinkState 0 2000 A
+b mash_field 1200 B
+b expect coop.sLinkState 0

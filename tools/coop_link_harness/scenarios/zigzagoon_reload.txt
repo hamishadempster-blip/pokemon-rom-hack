@@ -1,0 +1,16 @@
+# Continue affected Route 101 saves made by build C017012C. A successful
+# rescue is already recorded, but Zigzagoon's hide flag was never stored.
+b wait 1100
+b press START 2
+b wait 200
+b until_cb2 CB2_Overworld 8000 A
+b until_field 3000
+b expect_flag 0x2EE 1
+b expect_flag 0x2D0 1
+b expect_var 0x408D 3
+b expect_no_object 4
+b expect_no_object 2
+0 expect_lead 255 5
+1 expect_lead 228 5
+b expect gSaveCounter:4 2
+b shot repaired-route101-save

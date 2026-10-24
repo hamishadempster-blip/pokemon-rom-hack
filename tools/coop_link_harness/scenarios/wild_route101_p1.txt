@@ -1,0 +1,13 @@
+include wild_route101_start.inc
+1 write sWildEncountersDisabled 0
+1 pace_until_battle 9000
+1 write sWildEncountersDisabled 1
+0 until_cb2 BattleMainCB2 12000 A
+1 until_cb2 BattleMainCB2 12000 A
+b expect gBattlersCount 4
+b expect coop.sInBattle 1
+b mash_field 25000
+b expect gBattleOutcome 1
+b expect coop.sLinkState 2
+b expect coop.sBeacon+1:1 1
+b expect_partner route101-p1-battle-finished

@@ -60,6 +60,12 @@ int main(void)
     Expect(out.rivalStage == 2 && out.gender == 1 && out.bike == 1 && out.surf == 0, "rival and movement");
     Expect(out.activity == COOP_ACT_MENU && out.legend[2] == COOP_OWNER_NONE, "activity beside the legend owners");
 
+    frame.request = COOP_REQ_UNLINK;
+    CoopProtocol_Pack(words, &frame, 0);
+    Expect(CoopProtocol_Unpack(words, &out, COOP_BUILD_XOR) == COOP_UNPACK_OK
+        && out.request == COOP_REQ_UNLINK, "explicit unlink survives the four-bit request field");
+    frame.request = COOP_REQ_CASE;
+
     words[7] ^= 1;
     Expect(CoopProtocol_Unpack(words, &out, COOP_BUILD_XOR) == COOP_UNPACK_DROP, "bad checksum");
 
@@ -125,7 +131,7 @@ int main(void)
     Expect(CoopProtocol_KeepOwnInvite(0, 1, 0, 1) == 0, "an optional wait yields to a mandatory fight");
     Expect(CoopProtocol_KeepOwnInvite(0, 1, 1, 0) == 0, "an optional invite is not held off by this rule");
 
-    Expect(COOP_LINK_QUIET_LIMIT == 240, "quiet cable matches the gpSP Gen 3 peer timeout");
+    Expect(COOP_LINK_QUIET_LIMIT == 240, "missing heartbeats become unavailable after four seconds");
     Expect(CoopProtocol_RaiseVar(0, 1) == 1, "a guest story var moves forward");
     Expect(CoopProtocol_RaiseVar(8, 7) == 8, "a later story var stays");
     Expect(CoopProtocol_RaiseVar(6, 6) == 6, "an equal story var stays");

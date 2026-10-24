@@ -2427,6 +2427,11 @@ void ResetRecvBuffer(void)
 
 bool32 ShouldCheckForUnionRoom(void)
 {
+    // The Center's resume/healing script must not switch an established
+    // co-op cable to RFU and replace its callback with a wireless scan.
+    if (gCoopHoldLink)
+        return FALSE;
+
     if (OW_UNION_DISABLE_CHECK)
         return FALSE;
 

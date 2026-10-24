@@ -213,3 +213,31 @@ the guest's save has May on the stair warp and the guest cannot go down.
 Not run here: internet netplay, late-game rival scenes (lab Pokédex scene,
 Rustboro, Routes 110/119, Lilycove), a real affected save from a player's
 own game, and a cable pull during the new prompts.
+
+
+## Persistent session regressions (build 0xC017012D)
+
+New lab-save scenarios: `center_beacon`, `link_recovery`, `wild_route101`,
+`wild_route101_p1`, `trainer_p1`, `rival_p1`, `battle_abort_recovery`, and
+`invite_timeout_recovery`. They cover both initiators, Center entry/healing/
+exit with staggered players, application heartbeat outages, expired invites,
+explicit unilateral unlink, and a completed double after recovery.
+
+`mute_coop FRAMES` suppresses this core's application frame sender by
+patching its first instruction to `bx lr`, then restores the original
+instruction automatically. It does not disconnect the serial cable. The
+battle-abort scenario injects an engine error flag; it does not validate
+physical cable-loss detection. Field messages are dismissed using
+`mash_field TIMEOUT B`; `until_field` does not press buttons.
+
+To recreate a persisted Zigzagoon bug, run `zigzagoon_affected_save.txt`
+against build C017012C with old `save_lab` saves (player 0 opened the bag).
+The guest must show object 4 and hide flag 0, while the opener has flag 1.
+This saves on Route 101. Then run `zigzagoon_reload.txt` on build D with
+those saved files. Both must hide the actor immediately on Continue, retain
+route state 3, the original level-5 leads and save counter 2. Set
+`ZIG_AFFECTED=/path/to/old-route101-saves` to add this check to `run_all.sh`.
+The affected-save producer is deliberately not part of the new-ROM suite.
+
+Final run results and fixture limits: `docs/COOP_REGRESSION_C017012D.md` and
+`docs/COOP_HANDOFF.md`.
