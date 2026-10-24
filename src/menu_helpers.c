@@ -1,4 +1,5 @@
 #include "global.h"
+#include "coop.h"
 #include "task.h"
 #include "window.h"
 #include "menu.h"
@@ -310,6 +311,10 @@ static bool8 IsActiveOverworldLinkBusy(void)
 
 bool8 MenuHelpers_ShouldWaitForLinkRecv(void)
 {
+    // Co-op owns and drains its cable queue independently of the stock
+    // overworld link menus. Waiting here can freeze the move-summary UI.
+    if (Coop_CableUp())
+        return FALSE;
     if (IsActiveOverworldLinkBusy() == TRUE || IsLinkRecvQueueAtOverworldMax() == TRUE )
         return TRUE;
     else

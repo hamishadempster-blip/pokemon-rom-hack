@@ -2416,9 +2416,9 @@ static void Cmd_getexp(void)
                         gBattleStruct->teamGotExpMsgPrinted = TRUE;
                     }
 
-                    // The guest applies its own EVs when the exp command arrives.
-                    if (!(*expMonId & EXP_GETTER_PARTNER))
-                        MonGainEVs(ExpGetterMon(*expMonId), faintedSpecies);
+                    // Keep the master's partner shadow in step with the guest's
+                    // local EV update so later level-up stats agree.
+                    MonGainEVs(ExpGetterMon(*expMonId), faintedSpecies);
                 }
                 gBattleScripting.getexpState++;
             }
@@ -2427,7 +2427,7 @@ static void Cmd_getexp(void)
     case 3: // Set stats and give exp
         if (gBattleControllerExecFlags == 0)
         {
-            gBattleResources->bufferB[0][0] = 0;
+            gBattleResources->bufferB[ExpGetterBattler(*expMonId)][0] = 0;
             currLvl = GetMonData(&*ExpGetterMon(*expMonId), MON_DATA_LEVEL);
             if (GetMonData(&*ExpGetterMon(*expMonId), MON_DATA_HP) && currLvl != MAX_LEVEL)
             {
@@ -2455,6 +2455,42 @@ static void Cmd_getexp(void)
     case 4: // lvl up if necessary
         if (gBattleControllerExecFlags == 0)
         {
+            // A remote level-up belongs to the guest controller. Never pass its
+            // tagged party id into the local level-up scripts or bit shifts.
+            if (*expMonId & EXP_GETTER_PARTNER)
+            {
+                enum BattlerId battler = ExpGetterBattler(*expMonId);
+                u8 *reply = gBattleResources->bufferB[battler];
+                struct Pokemon *mon = ExpGetterMon(*expMonId);
+                u32 remainder = (reply[0] == CONTROLLER_TWORETURNVALUES && reply[1] == RET_VALUE_LEVELED_UP) ? T1_READ_32(&reply[2]) : 0;
+                u32 exp = GetMonData(mon, MON_DATA_EXP) + gBattleStruct->battlerExpReward - remainder;
+                u32 oldLevel = GetMonData(mon, MON_DATA_LEVEL);
+
+                SetMonData(mon, MON_DATA_EXP, &exp);
+                CalculateMonStats(mon);
+                for (u32 level = oldLevel; level < GetMonData(mon, MON_DATA_LEVEL); level++)
+                    AdjustFriendship(mon, FRIENDSHIP_EVENT_GROW_LEVEL);
+                if (gBattlerPartyIndexes[battler] == (*expMonId & (EXP_GETTER_PARTNER - 1)))
+                {
+                    if (gBattleMons[battler].volatiles.transformed)
+                    {
+                        gBattleMons[battler].level = GetMonData(mon, MON_DATA_LEVEL);
+                        gBattleMons[battler].hp = GetMonData(mon, MON_DATA_HP);
+                    }
+                    else
+                    {
+                        CopyMonLevelAndBaseStatsToBattleMon(battler, mon, TRUE);
+                        if (gBattleMons[battler].volatiles.powerTrick)
+                        {
+                            u16 temp;
+                            SWAP(gBattleMons[battler].attack, gBattleMons[battler].defense, temp);
+                        }
+                    }
+                }
+                gBattleStruct->battlerExpReward = remainder;
+                gBattleScripting.getexpState = 5;
+                break;
+            }
             if (gBattleResources->bufferB[0][0] == CONTROLLER_TWORETURNVALUES && gBattleResources->bufferB[0][1] == RET_VALUE_LEVELED_UP)
             {
                 u16 temp = 0xFF;

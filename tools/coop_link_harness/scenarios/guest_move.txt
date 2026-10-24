@@ -1,0 +1,10 @@
+# Targeted fixture: full move set just below a level boundary.
+include rescue_start.inc
+b fixture_guest 228 15 5119
+include rescue_finish.inc
+b mash_field 20000
+1 expect_lead 228 16
+b expect_partner progression-finished
+b shot progression-finished
+1 expect_move 44
+1 expect_no_move 10

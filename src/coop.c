@@ -10,6 +10,7 @@
 #include "constants/battle_pyramid.h"
 #include "caps.h"
 #include "event_data.h"
+#include "evolution_scene.h"
 #include "item.h"
 #include "event_object_movement.h"
 #include "fieldmap.h"
@@ -154,6 +155,16 @@ static EWRAM_DATA struct Pokemon sTradeMon = {0};
 static EWRAM_DATA struct Pokemon sPartySnap[PARTY_SIZE] = {0};
 static EWRAM_DATA struct CoopInvite sInvite = {0};
 static EWRAM_DATA const u8 *sPendingMessage = NULL;
+// Local level-up work survives battle resource cleanup, but never an abort.
+static EWRAM_DATA u8 sProgressLevels[COOP_BATTLE_SLOTS] = {0};
+static EWRAM_DATA u16 sProgressMoves[COOP_BATTLE_SLOTS] = {0};
+static EWRAM_DATA bool8 sProgressGuest = FALSE;
+static EWRAM_DATA bool8 sProgressPending = FALSE;
+static EWRAM_DATA u8 sProgressSlot = 0;
+static EWRAM_DATA u16 sProgressEvolution = SPECIES_NONE;
+static EWRAM_DATA bool8 sProgressCanStop = FALSE;
+extern const u8 Coop_EventScript_Progression[];
+
 static EWRAM_DATA u8 sGuestFollowup = 0;
 static EWRAM_DATA u8 sLegendConflict = 0;
 static EWRAM_DATA struct CoopBeaconState sBeacon = {0};
@@ -1500,6 +1511,12 @@ static void Task_CoopSession(u8 taskId)
         }
         Coop_NoteLinkHealth();
     }
+    if (sProgressPending && !sInBattle && !gMain.inBattle
+     && !ScriptContext_IsEnabled() && !ArePlayerFieldControlsLocked())
+    {
+        sProgressPending = FALSE;
+        ScriptContext_SetupScript(Coop_EventScript_Progression);
+    }
     if (sPendingMessage != NULL && !gMain.inBattle && !ScriptContext_IsEnabled() && !ArePlayerFieldControlsLocked())
     {
         const u8 *message = sPendingMessage;
@@ -1677,7 +1694,7 @@ bool8 Coop_BeaconActive(void)
 
 static bool8 Coop_InteractionBusy(void)
 {
-    return sInBattle || gMain.inBattle || sTradeSlot != 0xFF || sTradeSent || sWaitingAck || sWaitKind != 0 || sGuestPairPending;
+    return sProgressPending || sInBattle || gMain.inBattle || sTradeSlot != 0xFF || sTradeSent || sWaitingAck || sWaitKind != 0 || sGuestPairPending;
 }
 
 static void Coop_SyncBeaconRequest(void)
@@ -2194,6 +2211,10 @@ void Coop_OnBattleLaunched(void)
     u32 i;
 
     Coop_ClearCatchState();
+    memset(sProgressLevels, 0, sizeof(sProgressLevels));
+    memset(sProgressMoves, 0, sizeof(sProgressMoves));
+    sProgressPending = FALSE;
+    sProgressSlot = 0;
     memcpy(sPartySnap, gParties[B_TRAINER_PLAYER], sizeof(sPartySnap));
     for (i = COOP_BATTLE_SLOTS; i < PARTY_SIZE; i++)
         ZeroMonData(&gParties[B_TRAINER_PLAYER][i]);
@@ -2211,6 +2232,11 @@ static void Coop_RestoreParty(bool8 aborted)
 
     if (!sHasSnapshot)
         return;
+    if (aborted)
+    {
+        memset(sProgressLevels, 0, sizeof(sProgressLevels));
+        sProgressPending = FALSE;
+    }
     // Anything sitting in 4-6 now joined during the battle, such as a catch.
     if (!aborted)
     {
@@ -2938,4 +2964,71 @@ bool8 Coop_InterceptRival(u16 trainerId)
     Coop_QueueRival(stage);
     ScriptContext_Stop();
     return TRUE;
+}
+
+// The guest has no battle script engine. Its own controller records every
+// crossed level; normal field move-learning UI handles replacements afterward.
+void Coop_RecordLevelUp(u8 slot, u8 oldLevel)
+{
+    if (!(gBattleTypeFlags & BATTLE_TYPE_COOP) || slot >= COOP_BATTLE_SLOTS)
+        return;
+    if (sProgressLevels[slot] == 0)
+        sProgressLevels[slot] = oldLevel;
+    sProgressGuest = !(gBattleTypeFlags & BATTLE_TYPE_IS_MASTER);
+    sProgressPending = TRUE;
+    if (sProgressGuest)
+    {
+        struct Pokemon *mon = &gParties[B_TRAINER_PLAYER][slot];
+        for (u32 level = oldLevel; level < GetMonData(mon, MON_DATA_LEVEL); level++)
+            AdjustFriendship(mon, FRIENDSHIP_EVENT_GROW_LEVEL);
+        gLeveledUpInBattle |= 1u << slot;
+    }
+}
+
+u16 Coop_NextProgression(void)
+{
+    for (; sProgressSlot < COOP_BATTLE_SLOTS; sProgressSlot++)
+    {
+        struct Pokemon *mon = &gParties[B_TRAINER_PLAYER][sProgressSlot];
+        u32 oldLevel = sProgressLevels[sProgressSlot];
+        if (oldLevel == 0)
+            continue;
+        if (sProgressGuest)
+        {
+            const struct LevelUpMove *moves = GetSpeciesLevelUpLearnset(GetMonData(mon, MON_DATA_SPECIES));
+            while (moves[sProgressMoves[sProgressSlot]].move != LEVEL_UP_MOVE_END)
+            {
+                const struct LevelUpMove *entry = &moves[sProgressMoves[sProgressSlot]++];
+                if (entry->level > oldLevel && entry->level <= GetMonData(mon, MON_DATA_LEVEL))
+                {
+                    u32 i;
+                    for (i = 0; i < MAX_MON_MOVES; i++)
+                        if (GetMonData(mon, MON_DATA_MOVE1 + i) == entry->move)
+                            break;
+                    if (i < MAX_MON_MOVES)
+                        continue;
+                    gSpecialVar_0x8004 = sProgressSlot;
+                    gSpecialVar_0x8005 = entry->move;
+                    return 1;
+                }
+            }
+        }
+        sProgressLevels[sProgressSlot] = 0;
+        bool32 canStop = TRUE;
+        sProgressEvolution = GetEvolutionTargetSpecies(mon, EVO_MODE_BATTLE_ONLY, 0, NULL, &canStop, CHECK_EVO);
+        sProgressCanStop = canStop;
+        if (sProgressEvolution != SPECIES_NONE)
+            return 2;
+    }
+    gLeveledUpInBattle = 0;
+    return 0;
+}
+
+void Coop_StartProgressionEvolution(void)
+{
+    struct Pokemon *mon = &gParties[B_TRAINER_PLAYER][sProgressSlot];
+    bool32 canStop = sProgressCanStop;
+    GetEvolutionTargetSpecies(mon, EVO_MODE_BATTLE_ONLY, 0, NULL, &canStop, DO_EVO);
+    gCB2_AfterEvolution = CB2_ReturnToFieldContinueScript;
+    BeginEvolutionScene(mon, sProgressEvolution, canStop, sProgressSlot);
 }

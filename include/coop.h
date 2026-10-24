@@ -56,6 +56,10 @@ extern const u8 Coop_EventScript_TalkPartner[];
 
 struct Pokemon;
 
+void Coop_RecordLevelUp(u8 slot, u8 oldLevel);
+u16 Coop_NextProgression(void);
+void Coop_StartProgressionEvolution(void);
+
 extern bool8 gCoopBattleLaunching;
 extern bool8 gCoopArmWild;
 // Set while a co-op session should survive a one-off link glitch, such as a door.

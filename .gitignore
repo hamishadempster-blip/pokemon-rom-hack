@@ -23,7 +23,6 @@
 sound/**/*.bin
 sound/songs/midi/*.s
 tools/agbcc
-tools/compresSmol/
 *.map
 *.bat
 *.dump

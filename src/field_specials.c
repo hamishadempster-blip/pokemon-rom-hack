@@ -4539,7 +4539,7 @@ static void Task_LearnMove(u8 taskId)
     gTasks[taskId].tState = LearnMove(&sMoveLearnUI, taskId);
 }
 
-void CanTeachMoveBoxMon(void)
+static void StartLearnMoveTask(bool32 levelUp)
 {
     if (gSpecialVar_0x8004 == PARTY_NOTHING_CHOSEN)
     {
@@ -4548,10 +4548,20 @@ void CanTeachMoveBoxMon(void)
         return;
     }
     u32 taskId = CreateTask(Task_LearnMove, 1);
-    gTasks[taskId].tState = GetLearnMoveStartState();
+    gTasks[taskId].tState = levelUp ? GetLevelUpLearnMoveStartState() : GetLearnMoveStartState();
     gTasks[taskId].tPartyIndex = gSpecialVar_0x8004;
     gTasks[taskId].tMove = gSpecialVar_0x8005;
     gTasks[taskId].tRecoverPp = TRUE;
+}
+
+void CanTeachMoveBoxMon(void)
+{
+    StartLearnMoveTask(FALSE);
+}
+
+void CanTeachLevelUpMove(void)
+{
+    StartLearnMoveTask(TRUE);
 }
 
 static void FieldCB_ContinueLearningMove(void)

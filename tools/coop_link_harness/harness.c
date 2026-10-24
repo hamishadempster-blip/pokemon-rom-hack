@@ -22,7 +22,7 @@
 #define MAX_CMDS 4096
 #define MAX_SYMS 500000
 
-enum { C_PARTNER, C_GOTO, C_HEX, C_PRESS, C_WAIT, C_SHOT, C_DUMP, C_BARRIER, C_UNTIL_CB2, C_UNTIL_FIELD, C_EXPECT, C_UNTIL_MEM, C_BATTLE, C_MENU, C_PARTY };
+enum { C_PARTNER, C_GOTO, C_HEX, C_PRESS, C_WAIT, C_SHOT, C_DUMP, C_BARRIER, C_UNTIL_CB2, C_UNTIL_FIELD, C_EXPECT, C_UNTIL_MEM, C_BATTLE, C_MENU, C_PARTY, C_FIXTURE, C_WRITE, C_LEAD, C_MOVE, C_SIX, C_VAR, C_FLAG };
 
 struct Cmd {
 	int kind;
@@ -240,6 +240,36 @@ static void readLead(struct Player* p, unsigned* species, unsigned* exp, unsigne
 	*species = words[sub] & 0x7FF;
 	*held = (words[sub] >> 16) & 0x3FF;
 	*exp = words[sub + 1] & 0x1FFFFF;
+}
+
+// Explicit test fixture: seed a real encrypted lead immediately below a level
+// boundary. Battle EXP, move UI, evolution, and save writes still run in-game.
+static void fixtureLead(struct Player* p, unsigned trainer, unsigned species, unsigned level, unsigned exp) {
+    static const unsigned char sub1[24] = {1,1,2,3,2,3,0,0,0,0,0,0,2,3,1,1,3,2,2,3,1,1,3,2};
+    unsigned mon = partyMon(trainer, 0), pid = rd32(p, mon), key = pid ^ rd32(p, mon + 4), words[12];
+    for (int i = 0; i < 12; i++) words[i] = rd32(p, mon + 32 + i * 4) ^ key;
+    unsigned a = sSub0[pid % 24] * 3, b = sub1[pid % 24] * 3;
+    words[a] = (words[a] & ~0x7FFu) | species;
+    words[a + 1] = (words[a + 1] & ~0x1FFFFFu) | exp;
+    // Four distinct moves, none of the boundary moves used by these scenarios.
+    words[b] = 10 | (45u << 16);
+    words[b + 1] = 52 | (64u << 16);
+    words[b + 2] = 0x23232323;
+    unsigned checksum = 0;
+    for (int i = 0; i < 12; i++) {
+        checksum += (words[i] & 0xFFFF) + (words[i] >> 16);
+        p->core->busWrite32(p->core, mon + 32 + i * 4, words[i] ^ key);
+    }
+    p->core->busWrite16(p->core, mon + 28, checksum);
+    p->core->busWrite8(p->core, mon + 84, level);
+    out("[p%d] fixture species=%u level=%u exp=%u (cached stats unchanged)\n", p->id, species, level, exp);
+}
+
+static unsigned leadMove(struct Player* p, unsigned slot) {
+    static const unsigned char sub1[24] = {1,1,2,3,2,3,0,0,0,0,0,0,2,3,1,1,3,2,2,3,1,1,3,2};
+    unsigned mon = partyMon(0, 0), pid = rd32(p, mon), key = pid ^ rd32(p, mon + 4);
+    unsigned word = rd32(p, mon + 32 + sub1[pid % 24] * 12 + (slot / 2) * 4) ^ key;
+    return (word >> ((slot % 2) * 16)) & 0x7FF;
 }
 
 static int bagHas(struct Player* p, unsigned item) {
@@ -656,6 +686,52 @@ static void frameCallback(struct mCoreThread* t) {
 			}
 			break;
 		}
+		case C_FIXTURE:
+            fixtureLead(p, c->frames && p->id == 0 ? 2 : 0, c->addr, c->size, c->value);
+            advance = true;
+            break;
+        case C_WRITE:
+            if (c->size == 1) p->core->busWrite8(p->core, c->addr, c->value);
+            else if (c->size == 2) p->core->busWrite16(p->core, c->addr, c->value);
+            else p->core->busWrite32(p->core, c->addr, c->value);
+            advance = true;
+            break;
+        case C_VAR:
+            p->core->busWrite16(p->core, rd32(p, sSave1) + symValue("harness.saveVarsOffset") + (c->addr - 0x4000) * 2, c->value);
+            advance = true;
+            break;
+        case C_FLAG: {
+            unsigned addr = rd32(p, sSave1) + symValue("harness.saveFlagsOffset") + c->addr / 8;
+            unsigned mask = 1u << (c->addr % 8), value = rd8(p, addr);
+            p->core->busWrite8(p->core, addr, c->value ? value | mask : value & ~mask);
+            advance = true;
+            break;
+        }
+        case C_SIX:
+            for (unsigned slot = 1; slot < 6; slot++)
+                for (unsigned off = 0; off < 100; off++)
+                    p->core->busWrite8(p->core, partyMon(0, slot) + off, rd8(p, partyMon(0, 0) + off));
+            p->core->busWrite8(p->core, symAddr("gPartiesCount"), 6);
+            advance = true;
+            break;
+        case C_MOVE: {
+            unsigned i;
+            for (i = 0; i < 4; i++) if (leadMove(p, i) == c->value) break;
+            if ((i < 4) != (c->size != 0)) { out("[p%d] FAIL move %u present=%u\n", p->id, c->value, i < 4); sFailures++; }
+            else out("[p%d] ok move %u present=%u\n", p->id, c->value, i < 4);
+            advance = true;
+            break;
+        }
+        case C_LEAD: {
+            unsigned species, exp, held;
+            readLead(p, &species, &exp, &held);
+            if (species != c->addr || rd8(p, partyMon(0, 0) + 84) != c->size) {
+                out("[p%d] FAIL lead species=%u level=%u\n", p->id, species, rd8(p, partyMon(0, 0) + 84));
+                sFailures++;
+            } else out("[p%d] ok lead species=%u level=%u exp=%u\n", p->id, species, c->size, exp);
+            advance = true;
+            break;
+        }
 		case C_PARTY:
 			showParty(p);
 			advance = true;
@@ -759,8 +835,8 @@ static void loadScript(const char* path, int depth) {
 	while (fgets(line, sizeof(line), f)) {
 		char* hash = strchr(line, '#');
 		if (hash) *hash = 0;
-		char who[8], cmd[32], a[96] = "", b[96] = "", d[96] = "";
-		int n = sscanf(line, "%7s %31s %95s %95s %95s", who, cmd, a, b, d);
+		char who[8], cmd[32], a[96] = "", b[96] = "", d[96] = "", e[96] = "";
+		int n = sscanf(line, "%7s %31s %95s %95s %95s %95s", who, cmd, a, b, d, e);
 		if (n < 1) continue;
 		if (!strcmp(who, "include")) {
 			char inc[512], rel[256];
@@ -832,6 +908,26 @@ static void loadScript(const char* path, int depth) {
 			if (n >= 4 && isdigit((unsigned char)b[0])) c.frames = atoi(b);
 			else if (n >= 4) c.keys = parseKeys(b);
 			snprintf(c.text, sizeof(c.text), "%s != 0", a);
+        } else if (!strcmp(cmd, "fixture_lead") || !strcmp(cmd, "fixture_guest")) {
+            c.kind = C_FIXTURE;
+            c.frames = !strcmp(cmd, "fixture_guest");
+            c.addr = strtoul(a, NULL, 0);
+            c.size = atoi(b);
+            c.value = strtoul(d, NULL, 0);
+        } else if (!strcmp(cmd, "fixture_var") || !strcmp(cmd, "fixture_flag")) {
+            c.kind = !strcmp(cmd, "fixture_var") ? C_VAR : C_FLAG;
+            c.addr = strtoul(a, NULL, 0);
+            c.value = strtoul(b, NULL, 0);
+        } else if (!strcmp(cmd, "fixture_six")) {
+            c.kind = C_SIX;
+        } else if (!strcmp(cmd, "expect_move") || !strcmp(cmd, "expect_no_move")) {
+            c.kind = C_MOVE;
+            c.size = !strcmp(cmd, "expect_move");
+            c.value = strtoul(a, NULL, 0);
+        } else if (!strcmp(cmd, "expect_lead")) {
+            c.kind = C_LEAD;
+            c.addr = strtoul(a, NULL, 0);
+            c.size = atoi(b);
 		} else if (!strcmp(cmd, "party")) {
 			c.kind = C_PARTY;
 		} else if (!strcmp(cmd, "menu_to")) {
@@ -845,7 +941,7 @@ static void loadScript(const char* path, int depth) {
 			c.kind = C_BATTLE;
 			c.value = n >= 3 && !strcmp(a, "moves") ? 1 : n >= 3 && !strcmp(a, "hp") ? 2 : 0;
 			snprintf(c.text, sizeof(c.text), "battle %s", c.value ? "moves" : "roster");
-		} else if (!strcmp(cmd, "until_mem") || !strcmp(cmd, "expect")) {
+		} else if (!strcmp(cmd, "until_mem") || !strcmp(cmd, "expect") || !strcmp(cmd, "write")) {
 			// until_mem SYM[+off]:size value [timeout]
 			char sym[96]; unsigned off = 0; int size = 1;
 			strncpy(sym, a, sizeof(sym) - 1);
@@ -853,11 +949,12 @@ static void loadScript(const char* path, int depth) {
 			if (colon) { size = atoi(colon + 1); *colon = 0; }
 			char* plus = strchr(sym, '+');
 			if (plus) { off = strtoul(plus + 1, NULL, 0); *plus = 0; }
-			c.kind = !strcmp(cmd, "expect") ? C_EXPECT : C_UNTIL_MEM;
+			c.kind = !strcmp(cmd, "write") ? C_WRITE : !strcmp(cmd, "expect") ? C_EXPECT : C_UNTIL_MEM;
 			c.addr = (!strncmp(sym, "coop.", 5) ? symAddr(sym) : symAddr(sym)) + off;
 			c.size = size;
 			c.value = symValue(b);
 			c.frames = n >= 5 ? atoi(d) : 3000;
+            if (n >= 6) c.keys = parseKeys(e);
 			snprintf(c.text, sizeof(c.text), "%s == %s", a, b);
 		} else {
 			fprintf(stderr, "bad command %s\n", cmd);

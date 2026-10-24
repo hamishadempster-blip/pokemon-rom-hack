@@ -59,3 +59,60 @@ for both players to reach it.
 | `include FILE` | Inline another script |
 
 `coop.<name>` resolves the statics in `src/coop.c`.
+
+## Progression and reconnect regressions
+
+Run `save_lab.txt` once, then supply its two saves to the reload tests:
+
+```sh
+SAVE0=/tmp/coop_harness/save_lab/p0.sav SAVE1=/tmp/coop_harness/save_lab/p1.sav \
+  tools/coop_link_harness/run_scenario.sh tools/coop_link_harness/scenarios/route102_reconnect.txt
+SAVE0=/tmp/coop_harness/save_lab/p0.sav SAVE1=/tmp/coop_harness/save_lab/p1.sav \
+  tools/coop_link_harness/run_scenario.sh tools/coop_link_harness/scenarios/solo_six.txt
+tools/coop_link_harness/run_scenario.sh tools/coop_link_harness/scenarios/guest_move.txt
+tools/coop_link_harness/run_scenario.sh tools/coop_link_harness/scenarios/guest_evolution.txt
+```
+
+`route102_reconnect.txt` continues both saves, reconnects, uses the Beacon,
+walks to Route 102, wins a wild double, and checks the session and Beacon remain
+on. It marks the opening adventure flag and Oldale state complete to bypass
+the Route 103 story gate; it does not test that rival sequence.
+
+`guest_move.txt` seeds the guest's real encrypted party data and the master's
+matching partner copy immediately below level 16, with four moves. The actual
+rescue battle awards EXP. The guest must learn Bite, replace Scratch, reach
+level 16, and return to the lab. `guest_evolution.txt` uses a Torchic at the
+level-16 boundary and checks that the guest finishes as Combusken. Cached
+pre-level stats are deliberately unchanged by these fixtures; they are not
+balance or damage tests. Production EXP, stat recalculation, menu prompts,
+evolution, link traffic, and field callbacks execute normally.
+
+`solo_six.txt` fills the local party with six copies of the lead as a fixture,
+starts a real solo wild battle on Route 101 while the Beacon is on, chooses
+slot six through the party UI, wins, and checks all six remain in the party.
+
+Additional script commands:
+
+| Command | Meaning |
+| --- | --- |
+| `fixture_guest SPECIES LEVEL EXP` | On both cores, seed the guest lead and its mirrored partner copy; use `b` |
+| `fixture_lead SPECIES LEVEL EXP` | Seed this core's own lead |
+| `fixture_six` | Fill all six local slots with copies of the lead |
+| `fixture_flag ID VALUE` | Set/clear a saved story flag |
+| `fixture_var ID VALUE` | Set a saved variable (0x4000 range) |
+| `write SYM[+off][:size] VALUE` | Write a test setup value to RAM |
+| `expect_lead SPECIES LEVEL` | Check local lead species and level |
+| `expect_move MOVE` / `expect_no_move MOVE` | Check local lead's decrypted moves |
+
+`until_mem` accepts optional mash keys after its timeout. Save offsets for
+fixtures are compiled from this tree's `SaveBlock1` using the ARM ABI during
+`build.sh`; they are not copied from vanilla Emerald's layout.
+
+## Verified 2026-10-24
+
+ROM build and host protocol tests pass. Two mGBA 0.10.2 cores completed the
+opening/rescue/save scenario, guest Bite replacement, guest Torchic-to-Combusken
+evolution, reload/reconnect/Beacon/Route 102 wild win, and a solo win using
+party slot six, with zero harness failures. These are local emulated cable
+tests. Internet netplay, move refusal, evolution cancellation, special
+battle-condition evolutions, and a cable pull during a level-up remain untested.

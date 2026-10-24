@@ -387,3 +387,9 @@ s32 GetLearnMoveResumeAfterSummaryScreenState(void)
 #undef state
 #undef partyIndex
 #undef move
+
+// Level-up eligibility is established by the species learnset, not the TM list.
+s32 GetLevelUpLearnMoveStartState(void)
+{
+    return LEARN_MOVE;
+}

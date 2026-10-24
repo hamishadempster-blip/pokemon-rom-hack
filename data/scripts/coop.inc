@@ -616,3 +616,21 @@ Coop_Text_PairAskGuest:
 Coop_Text_PairTooLate:
 	.string "Your partner couldn't wait,\n"
 	.string "so that fight went ahead without you.$"
+
+@ Resolve local progression before accepting another battle invite.
+Coop_EventScript_Progression::
+	lockall
+Coop_EventScript_ProgressionNext::
+	specialvar VAR_RESULT, Coop_NextProgression
+	goto_if_eq VAR_RESULT, 1, Coop_EventScript_ProgressionMove
+	goto_if_eq VAR_RESULT, 2, Coop_EventScript_ProgressionEvolution
+	releaseall
+	end
+Coop_EventScript_ProgressionMove::
+	special CanTeachLevelUpMove
+	waitstate
+	goto Coop_EventScript_ProgressionNext
+Coop_EventScript_ProgressionEvolution::
+	special Coop_StartProgressionEvolution
+	waitstate
+	goto Coop_EventScript_ProgressionNext

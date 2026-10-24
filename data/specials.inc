@@ -669,3 +669,7 @@ gSpecials::
 	def_special Coop_PairGuestAnswer
 	def_special Coop_BufferPairNames
 	def_special ScriptGetShownMonSpecies
+
+	def_special Coop_NextProgression
+	def_special Coop_StartProgressionEvolution
+	def_special CanTeachLevelUpMove

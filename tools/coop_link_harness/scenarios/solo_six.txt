@@ -1,0 +1,66 @@
+# Lab save fixture, linked, Beacon on. Route 101 must still be solo.
+include beacon_battle.txt
+b mash_field 2000 B
+0 fixture_six
+0 expect gPartiesCount 6
+0 press DOWN 200
+0 until_field 2000
+0 goto 11 1 2000
+0 press UP 60
+0 until_field 2000
+0 write sWildEncountersDisabled 0
+0 fixture_flag 0x74 1
+0 goto 7 17 2000
+0 press UP 24
+0 press LEFT 64
+0 press RIGHT 64
+0 press LEFT 64
+0 press RIGHT 64
+0 press LEFT 64
+0 press RIGHT 64
+0 press LEFT 64
+0 press RIGHT 64
+0 press LEFT 64
+0 press RIGHT 64
+0 press LEFT 64
+0 press RIGHT 64
+0 press LEFT 64
+0 press RIGHT 64
+0 press LEFT 64
+0 press RIGHT 64
+0 press LEFT 64
+0 press RIGHT 64
+0 press LEFT 64
+0 press RIGHT 64
+0 press LEFT 64
+0 press RIGHT 64
+0 press LEFT 64
+0 press RIGHT 64
+0 press LEFT 64
+0 press RIGHT 64
+0 press LEFT 64
+0 press RIGHT 64
+0 press LEFT 64
+0 press RIGHT 64
+0 press LEFT 64
+0 press RIGHT 64
+0 until_cb2 BattleMainCB2 6000
+0 until_mem gBattlerControllerFuncs:4 HandleInputChooseAction 10000 A
+0 expect gBattlersCount 2
+0 expect gPartiesCount 6
+0 press DOWN 2
+0 press A 2
+0 until_cb2 CB2_UpdatePartyMenu 2000
+0 wait 60
+0 press RIGHT 2
+0 press DOWN 2 4
+0 expect gPartyMenu+9:1 5
+0 press A 2
+0 wait 45
+0 press A 2
+0 until_mem gBattlerPartyIndexes 5 5000 A
+0 expect gPartiesCount 6
+0 mash_field 20000
+0 expect gBattleOutcome 1
+0 expect gPartiesCount 6
+0 shot solo-six-finished

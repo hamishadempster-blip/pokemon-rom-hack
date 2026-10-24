@@ -8,7 +8,7 @@ Based off RHH's pokeemerald-expansion 1.17.1
 https://github.com/rh-hideout/pokeemerald-expansion/
 Pinned commit `bb1093a7c72d3961d9a37d8e02ad2abc2c866682`.
 
-Build id baked into the link handshake: `0xC0170129`.
+Build id baked into the link handshake: `0xC017012A`.
 
 ## Clean ROM
 
@@ -85,7 +85,7 @@ On the title screen, choose **NEW GAME**. The game asks whether to skip to the c
 - A dropped cable mid-battle puts all six back the way they were when the battle started. No badge, no prize.
 - If your first three are all fainted or eggs, a gym, rival, Elite Four, champion, or legendary fight refuses to start and tells you to heal or move one up. If your partner's first three are down, it refuses with a message about your partner. An ordinary trainer with the Twin Beacon on stays a solo fight for whoever's first three are down.
 - When one player's three faint and the other player is still standing, the battle carries on. It ends in a loss only when both players' first threes are down.
-- Link battles give no experience in this build, the same as stock link battles. Experience is unchanged by a co-op fight.
+- Co-op battles award experience and EVs to each player's participating first three and held Exp. Share holders, respecting the shared level cap. Ordinary competitive link battles still give no experience. The guest chooses level-up move replacements after the battle. Both players receive level-up evolution checks after returning to the field. Dropping the cable during the battle discards pending progression along with the party rollback.
 - A co-op battle hands the cable back open, so the session stays linked after the fight.
 
 ### Wild Pokémon together (Route 102)
@@ -101,7 +101,7 @@ This is the first route with shared wild battles. Other routes keep stock wild b
 - A full party and a full PC refuse the ball before it is thrown, and the fight continues.
 - Pulling the cable during the shakes, or at any point before the battle ends, gives nobody the Pokémon.
 - Running away needs both of you to choose RUN on the same turn. One player alone gets a message, and that turn is spent. A player whose first three are all down does not need to choose RUN. Roar, Whirlwind, and Red Card do not end the battle early. Your own Teleport switches out. A wild Pokémon can still flee with Teleport.
-- No experience, the same as the other co-op battles.
+- Co-op wild wins award experience under the same participation and cap rules as co-op trainer battles.
 
 ### Rick and Allen (Route 102)
 
@@ -295,6 +295,13 @@ sh tools/coop_make_patch.sh emerald-coop.bps
 ```
 
 The script checks the clean ROM hash. It uses `flips` for BPS, or `beat` for UPS. If neither is installed it prints the command and does not invent a patch. Apply the patch to a clean ROM with the same tool. Do not put the patched ROM in this repo.
+
+## Local regression checks
+
+The headless two-core checks and their fixture scope are documented in
+[tools/coop_link_harness/README.md](../tools/coop_link_harness/README.md).
+The required upstream `tools/compresSmol` source is included so a fresh clone
+can build; its generated executables remain ignored.
 
 ## Two-player script
 

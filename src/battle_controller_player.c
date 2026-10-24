@@ -1401,8 +1401,6 @@ static s32 GetTaskExpValue(u8 taskId)
     return (u16)(gTasks[taskId].tExpTask_gainedExp_1) | (gTasks[taskId].tExpTask_gainedExp_2 << 16);
 }
 
-static void CoopGuestLearnLevelMoves(struct Pokemon *mon);
-
 static void Task_GiveExpToMon(u8 taskId)
 {
     u32 monId = (u8)(gTasks[taskId].tExpTask_monId);
@@ -1424,7 +1422,7 @@ static void Task_GiveExpToMon(u8 taskId)
             SetMonData(mon, MON_DATA_EXP, (B_LEVEL_UP_NOTIFICATION >= GEN_9) ? &expAfterGain : &nextLvlExp);
 
             CalculateMonStats(mon);
-            CoopGuestLearnLevelMoves(mon);
+            Coop_RecordLevelUp(monId, level);
 
             // Reapply Dynamax HP multiplier after stats are recalculated.
             if (GetActiveGimmick(battler) == GIMMICK_DYNAMAX && monId == gBattlerPartyIndexes[battler])
@@ -1511,7 +1509,7 @@ static void Task_GiveExpWithExpBar(u8 taskId)
                     SetMonData(mon, MON_DATA_EXP, &expOnNextLvl);
 
                 CalculateMonStats(mon);
-                CoopGuestLearnLevelMoves(mon);
+                Coop_RecordLevelUp(monId, level);
 
                 // Reapply Dynamax HP multiplier after stats are recalculated.
                 if (GetActiveGimmick(battler) == GIMMICK_DYNAMAX && monId == gBattlerPartyIndexes[battler])
@@ -2253,25 +2251,6 @@ static void PlayerHandleCmd23(enum BattlerId battler)
     BattleStopLowHpSound();
     BeginNormalPaletteFade(PALETTES_ALL, 2, 0, 16, RGB_BLACK);
     BtlController_Complete(battler);
-}
-
-static void CoopGuestLearnLevelMoves(struct Pokemon *mon)
-{
-    enum Move learned;
-    u32 guard;
-
-    // The guest does not run the battle script, so a level-up there never
-    // reaches the "learn a move" prompt. Empty slots take the new move.
-    // A full set keeps its moves rather than opening a prompt this game cannot show.
-    if (!Coop_BattleGuest())
-        return;
-    learned = MonTryLearningNewMove(mon, TRUE);
-    for (guard = 0; learned != MOVE_NONE && guard < MAX_MON_MOVES; guard++)
-    {
-        if (learned == MON_HAS_MAX_MOVES)
-            break;
-        learned = MonTryLearningNewMove(mon, FALSE);
-    }
 }
 
 void PlayerHandleExpUpdate(enum BattlerId battler)
