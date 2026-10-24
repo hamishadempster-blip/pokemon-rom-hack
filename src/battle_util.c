@@ -1312,12 +1312,27 @@ void ResetSentPokesToOpponentValue(void)
 
     gSentPokesToOpponent[0] = 0;
     gSentPokesToOpponent[1] = 0;
+    gCoopSentInBits[0] = 0;
+    gCoopSentInBits[1] = 0;
 
     for (i = 0; i < gBattlersCount; i += 2)
         bits |= 1u << gBattlerPartyIndexes[i];
 
     for (i = 1; i < gBattlersCount; i += 2)
         gSentPokesToOpponent[(i & BIT_FLANK) >> 1] = bits;
+
+    if (gBattleTypeFlags & BATTLE_TYPE_COOP)
+    {
+        for (i = 0; i < gBattlersCount; i++)
+        {
+            if (!IsOnPlayerSide(i) || (gAbsentBattlerFlags & (1u << i)))
+                continue;
+            if (GetBattlerTrainer(i) == B_TRAINER_PARTNER)
+                gCoopSentInBits[1] |= 1u << gBattlerPartyIndexes[i];
+            else
+                gCoopSentInBits[0] |= 1u << gBattlerPartyIndexes[i];
+        }
+    }
 }
 
 void OpponentSwitchInResetSentPokesToOpponentValue(enum BattlerId battler)
@@ -1350,6 +1365,13 @@ void UpdateSentPokesToOpponentValue(enum BattlerId battler)
         s32 i;
         for (i = 1; i < gBattlersCount; i++)
             gSentPokesToOpponent[(i & BIT_FLANK) >> 1] |= 1u << gBattlerPartyIndexes[battler];
+        if (gBattleTypeFlags & BATTLE_TYPE_COOP)
+        {
+            if (GetBattlerTrainer(battler) == B_TRAINER_PARTNER)
+                gCoopSentInBits[1] |= 1u << gBattlerPartyIndexes[battler];
+            else
+                gCoopSentInBits[0] |= 1u << gBattlerPartyIndexes[battler];
+        }
     }
 }
 

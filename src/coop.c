@@ -2177,6 +2177,11 @@ static void Coop_ClearCatchState(void)
     gCoopLastBall = ITEM_NONE;
 }
 
+bool8 Coop_BattleGuest(void)
+{
+    return sIsGuest;
+}
+
 void Coop_OnBattleLaunched(void)
 {
     u32 i;

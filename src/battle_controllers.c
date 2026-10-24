@@ -1186,7 +1186,7 @@ void BtlController_EmitHealthBarUpdate(enum BattlerId battler, u32 bufferId, u16
     PrepareBufferDataTransfer(battler, bufferId, gBattleResources->transferBuffer, 4);
 }
 
-void BtlController_EmitExpUpdate(enum BattlerId battler, u32 bufferId, u8 partyId, s32 expPoints)
+void BtlController_EmitExpUpdate(enum BattlerId battler, u32 bufferId, u8 partyId, s32 expPoints, u16 defeatedSpecies)
 {
     gBattleResources->transferBuffer[0] = CONTROLLER_EXPUPDATE;
     gBattleResources->transferBuffer[1] = partyId;
@@ -1194,7 +1194,10 @@ void BtlController_EmitExpUpdate(enum BattlerId battler, u32 bufferId, u8 partyI
     gBattleResources->transferBuffer[3] = (expPoints & 0x0000FF00) >> 8;
     gBattleResources->transferBuffer[4] = (expPoints & 0x00FF0000) >> 16;
     gBattleResources->transferBuffer[5] = (expPoints & 0xFF000000) >> 24;
-    PrepareBufferDataTransfer(battler, bufferId, gBattleResources->transferBuffer, 6);
+    // Non-zero only for the guest. That game applies the EVs itself.
+    gBattleResources->transferBuffer[6] = defeatedSpecies;
+    gBattleResources->transferBuffer[7] = defeatedSpecies >> 8;
+    PrepareBufferDataTransfer(battler, bufferId, gBattleResources->transferBuffer, 8);
 }
 
 void BtlController_EmitStatusIconUpdate(enum BattlerId battler, u32 bufferId, u32 status)

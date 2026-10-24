@@ -107,6 +107,7 @@ bool8 Coop_BlockUnreadyMandatory(u16 trainerId);
 bool8 Coop_InterceptRival(u16 trainerId);
 bool8 Coop_TryQueueOrdinaryDouble(void);
 void Coop_OnBattleLaunched(void);
+bool8 Coop_BattleGuest(void);
 bool8 Coop_FinishTrainerBattle(void);
 bool8 Coop_FinishWildBattle(void);
 void Coop_AbortBattle(void);

@@ -723,6 +723,7 @@ static void loadScript(const char* path, int depth) {
 			continue;
 		} else if (!strcmp(cmd, "until_cb2")) {
 			c.kind = C_UNTIL_CB2; c.addr = symAddr(a); c.frames = n >= 4 ? atoi(b) : 3000;
+			if (n >= 5) c.keys = parseKeys(d);
 			snprintf(c.text, sizeof(c.text), "cb2 %s", a);
 		} else if (!strcmp(cmd, "until_field") || !strcmp(cmd, "mash_field")) {
 			c.kind = C_UNTIL_FIELD; c.frames = n >= 3 ? atoi(a) : 3000;

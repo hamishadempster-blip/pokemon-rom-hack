@@ -1065,6 +1065,9 @@ extern struct SpecialStatus gSpecialStatuses[MAX_BATTLERS_COUNT];
 extern u16 gBattleWeather;
 extern u16 gIntroSlideFlags;
 extern u8 gSentPokesToOpponent[2];
+// Co-op only. [0] is the master's party, [1] is the guest's. Party indexes
+// collide in gSentPokesToOpponent because both leads are slot 0.
+extern u8 gCoopSentInBits[2];
 extern struct BattleEnigmaBerry gEnigmaBerries[MAX_BATTLERS_COUNT];
 extern struct BattleScripting gBattleScripting;
 extern struct BattleStruct *gBattleStruct;

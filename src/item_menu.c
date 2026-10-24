@@ -1,5 +1,6 @@
 #include "global.h"
 #include "item_menu.h"
+#include "coop.h"
 #include "battle.h"
 #include "battle_controllers.h"
 #include "battle_pyramid.h"
@@ -714,6 +715,14 @@ void VBlankCB_BagMenuRun(void)
 
 static void CB2_Bag(void)
 {
+    // A full co-op link queue used to stop this loop before the bag finished
+    // opening, which left the screen black and the Twin Beacon unused.
+    if (Coop_SessionActive())
+    {
+        while (SetupBagMenu() != TRUE)
+            ;
+        return;
+    }
     while (MenuHelpers_ShouldWaitForLinkRecv() != TRUE && SetupBagMenu() != TRUE && MenuHelpers_IsLinkActive() != TRUE)
         {};
 }
@@ -752,6 +761,10 @@ static bool8 SetupBagMenu(void)
     case 6:
         if (!MenuHelpers_IsLinkActive())
             ResetTasks();
+        // The bag wipes every task. Co-op's task is what drains the link
+        // queue; without it the queue sits full and the bag ignores input,
+        // so the Twin Beacon can never be used while linked.
+        Coop_ResumeAfterTasksReset();
         gMain.state++;
         break;
     case 7:
@@ -1262,6 +1275,15 @@ static void PrintItemSoldAmount(int windowId, int numSold, int moneyEarned)
     PrintMoneyAmount(windowId, CalculateMoneyTextHorizontalPosition(moneyEarned), 1, moneyEarned, 0);
 }
 
+// Co-op fills the link queue on purpose. The stock bag treats a full queue
+// as "don't read the buttons", which makes the Twin Beacon unusable.
+static bool8 BagShouldWaitForLink(void)
+{
+    if (Coop_SessionActive())
+        return FALSE;
+    return MenuHelpers_ShouldWaitForLinkRecv();
+}
+
 static void Task_BagMenu_HandleInput(u8 taskId)
 {
     s16 *data = gTasks[taskId].data;
@@ -1269,7 +1291,7 @@ static void Task_BagMenu_HandleInput(u8 taskId)
     u16 *cursorPos = &gBagPosition.cursorPosition[gBagPosition.pocket];
     s32 listPosition;
 
-    if (MenuHelpers_ShouldWaitForLinkRecv() != TRUE && !gPaletteFade.active)
+    if (BagShouldWaitForLink() != TRUE && !gPaletteFade.active)
     {
         switch (GetSwitchBagPocketDirection())
         {
@@ -1538,7 +1560,7 @@ static void Task_HandleSwappingItemsInput(u8 taskId)
 {
     s16 *data = gTasks[taskId].data;
 
-    if (MenuHelpers_ShouldWaitForLinkRecv() != TRUE)
+    if (BagShouldWaitForLink() != TRUE)
     {
         if (JOY_NEW(SELECT_BUTTON))
         {
@@ -1783,7 +1805,7 @@ static void Task_ItemContext_Normal(u8 taskId)
 
 static void Task_ItemContext_SingleRow(u8 taskId)
 {
-    if (MenuHelpers_ShouldWaitForLinkRecv() != TRUE)
+    if (BagShouldWaitForLink() != TRUE)
     {
         s8 selection = Menu_ProcessInputNoWrap();
         switch (selection)
@@ -1804,7 +1826,7 @@ static void Task_ItemContext_SingleRow(u8 taskId)
 
 static void Task_ItemContext_MultipleRows(u8 taskId)
 {
-    if (MenuHelpers_ShouldWaitForLinkRecv() != TRUE)
+    if (BagShouldWaitForLink() != TRUE)
     {
         s8 cursorPos = Menu_GetCursorPos();
         if (JOY_NEW(DPAD_UP))
