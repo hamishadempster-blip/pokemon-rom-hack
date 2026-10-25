@@ -1,0 +1,729 @@
+trainer	class	maps	stage	before	after
+TRAINER_SAWYER_1	Hiker	MtChimney	2	Geodude 21	Geodude 23, Solrock 22
+TRAINER_GRUNT_AQUA_HIDEOUT_1	Team Aqua	AquaHideout_1F	5	Poochyena 32	Mightyena 37, Pelipper 36
+TRAINER_GRUNT_AQUA_HIDEOUT_2	Team Aqua	AquaHideout_B1F	4	Zubat 31, Carvanha 31	Crobat 35 @ Sitrus Berry, Dondozo 35
+TRAINER_GRUNT_AQUA_HIDEOUT_3	Team Aqua	AquaHideout_B1F	5	Zubat 32	Crobat 37, Mightyena 36
+TRAINER_GRUNT_AQUA_HIDEOUT_4	Team Aqua	AquaHideout_B2F	5	Carvanha 32	Sharpedo 37, Kilowattrel 36
+TRAINER_GRUNT_SEAFLOOR_CAVERN_1	Team Aqua	SeafloorCavern_Room1	6	Poochyena 36	Mightyena 40 @ Sitrus Berry, Grafaiai 39
+TRAINER_GRUNT_SEAFLOOR_CAVERN_2	Team Aqua	SeafloorCavern_Room1	6	Carvanha 36	Sharpedo 40, Mightyena 39
+TRAINER_GRUNT_SEAFLOOR_CAVERN_3	Team Aqua	SeafloorCavern_Room4	6	Zubat 36	Crobat 40, Tentacruel 39
+TRAINER_GABRIELLE_1	Pkmn Breeder	MtPyre_3F	3	Skitty 26, Poochyena 26, Zigzagoon 26, Lotad 26, Seedot 26, Taillow 26	Skitty 28, Mightyena 28, Linoone 28, Cottonee 28, Nuzleaf 28, Swellow 28
+TRAINER_GRUNT_PETALBURG_WOODS	Team Aqua	PetalburgWoods	0	Poochyena 9	Poochyena 9
+TRAINER_MARCEL	Cooltrainer	Route121	3	Manectric 29, Shiftry 29	Manectric 31, Shiftry 31
+TRAINER_ALBERTO	Bird Keeper	Route123	4	Pelipper 30, Xatu 30	Pelipper 34 @ Sitrus Berry, Flamigo 34
+TRAINER_ED	Collector	Route123	4	Zangoose 30, Seviper 30	Zangoose 34, Seviper 34
+TRAINER_GRUNT_SEAFLOOR_CAVERN_4	Team Aqua	SeafloorCavern_Room4	6	Carvanha 36	Sharpedo 40, Pelipper 39
+TRAINER_DECLAN	Swimmer M	Route124	6	Gyarados 34	Gyarados 38, Tentacruel 37
+TRAINER_GRUNT_RUSTURF_TUNNEL	Team Aqua	RusturfTunnel	0	Poochyena 11	Poochyena 11
+TRAINER_GRUNT_WEATHER_INST_1	Team Aqua	Route119_WeatherInstitute_1F	3	Zubat 27, Poochyena 27	Golbat 29, Mightyena 29
+TRAINER_GRUNT_WEATHER_INST_2	Team Aqua	Route119_WeatherInstitute_2F	3	Poochyena 27, Carvanha 27	Mightyena 29, Kilowattrel 29
+TRAINER_GRUNT_WEATHER_INST_3	Team Aqua	Route119_WeatherInstitute_2F	3	Poochyena 26, Zubat 26, Carvanha 26	Mightyena 28, Golbat 28, Thievul 28
+TRAINER_GRUNT_MUSEUM_1	Team Aqua	SlateportCity_OceanicMuseum_2F	0	Carvanha 15	Carvanha 15
+TRAINER_GRUNT_MUSEUM_2	Team Aqua	SlateportCity_OceanicMuseum_2F	0	Zubat 14, Carvanha 14	Zubat 14, Nickit 14
+TRAINER_GRUNT_SPACE_CENTER_1	Team Magma	MossdeepCity_SpaceCenter_1F	5	Numel 32	Camerupt 37 @ Sitrus Berry, Thievul 36
+TRAINER_GRUNT_MT_PYRE_1	Team Aqua	MtPyre_Summit	5	Zubat 32	Crobat 37, Absol 36
+TRAINER_GRUNT_MT_PYRE_2	Team Aqua	MtPyre_Summit	5	Carvanha 32	Sharpedo 37, Barraskewda 36
+TRAINER_GRUNT_MT_PYRE_3	Team Aqua	MtPyre_Summit	4	Poochyena 30, Carvanha 30	Mightyena 34 @ Sitrus Berry, Sharpedo 34
+TRAINER_GRUNT_WEATHER_INST_4	Team Aqua	Route119_WeatherInstitute_1F	3	Carvanha 28	Carvanha 30, Corphish 29
+TRAINER_GRUNT_AQUA_HIDEOUT_5	Team Aqua	AquaHideout_B1F	5	Carvanha 32	Sharpedo 37, Krokorok 36
+TRAINER_GRUNT_AQUA_HIDEOUT_6	Team Aqua	AquaHideout_B2F	5	Zubat 32	Crobat 37, Mightyena 36
+TRAINER_FREDRICK	Expert	Route123	4	Makuhita 30, Machoke 30	Hariyama 34, Lucario 34, Crabominable 33
+TRAINER_ZANDER	Black Belt	MtPyre_2F	4	Hariyama 31	Hariyama 35, Crabominable 34
+TRAINER_LEAH	Hex Maniac	MtPyre_2F	4	Spoink 31	Grumpig 35 @ Sitrus Berry, Honedge 34
+TRAINER_DAISY	Aroma Lady	Route103	0	Shroomish 14, Roselia 14	Shroomish 14, Applin 14
+TRAINER_ROSE_1	Aroma Lady	Route118	0	Roselia 14, Shroomish 14, Roselia 14	Roselia 14, Shroomish 14, Roselia 14
+TRAINER_FELIX	Cooltrainer	VictoryRoad_B2F	7	Medicham 43, Claydol 43	Medicham 48 @ Sitrus Berry, Claydol 48, Thievul 47
+TRAINER_VIOLET	Aroma Lady	Route123	3	Roselia 26, Gloom 26	Roselia 28, Gloom 28
+TRAINER_ROSE_2	Aroma Lady	Route118	3	Shroomish 26, Roselia 26	Breloom 28, Roselia 28
+TRAINER_ROSE_3	Aroma Lady	Route118	3	Shroomish 28, Gloom 28, Roselia 28	Breloom 30, Gloom 30, Roselia 30
+TRAINER_ROSE_4	Aroma Lady	Route118	4	Shroomish 31, Gloom 31, Roselia 31	Breloom 35, Vileplume 35, Roserade 35
+TRAINER_ROSE_5	Aroma Lady	Route118	6	Breloom 34, Gloom 34, Roselia 34	Breloom 38, Vileplume 38, Roserade 38
+TRAINER_DUSTY_1	Ruin Maniac	Route111	2	Sandslash 23	Sandslash 25, Cufant 24
+TRAINER_CHIP	Ruin Maniac	Route120	3	Baltoy 27, Sandshrew 27, Sandslash 27	Baltoy 29, Cufant 29, Sandslash 29
+TRAINER_FOSTER	Ruin Maniac	Route105	3	Sandshrew 25, Sandslash 25	Sandslash 27, Cufant 27
+TRAINER_DUSTY_2	Ruin Maniac	Route111	3	Sandslash 27	Sandslash 29, Cufant 28
+TRAINER_DUSTY_3	Ruin Maniac	Route111	4	Sandslash 30	Sandslash 34, Cufant 33
+TRAINER_DUSTY_4	Ruin Maniac	Route111	5	Sandslash 33	Sandslash 38, Copperajah 37
+TRAINER_DUSTY_5	Ruin Maniac	Route111	6	Sandslash 36	Sandslash 40, Copperajah 39
+TRAINER_LOLA_1	Tuber F	Route109	0	Azurill 12, Azurill 12	Azurill 12, Azurill 12
+TRAINER_AUSTINA	Tuber F	Route109	3	Marill 26	Azumarill 28, Corphish 27
+TRAINER_GWEN	Tuber F	Route109	3	Marill 26	Azumarill 28, Wattrel 27
+TRAINER_LOLA_2	Tuber F	Route109	3	Marill 26, Marill 26	Azumarill 28 @ Oran Berry, Azumarill 28
+TRAINER_LOLA_3	Tuber F	Route109	3	Marill 29, Marill 29	Azumarill 31 @ Oran Berry, Azumarill 31
+TRAINER_LOLA_4	Tuber F	Route109	5	Marill 32, Marill 32	Azumarill 37 @ Sitrus Berry, Azumarill 37
+TRAINER_LOLA_5	Tuber F	Route109	6	Azumarill 35, Azumarill 35	Azumarill 39 @ Sitrus Berry, Azumarill 39
+TRAINER_RICKY_1	Tuber M	Route109	0	Zigzagoon 13	Zigzagoon 13
+TRAINER_SIMON	Tuber M	Route109_SeashoreHouse	0	Azurill 12, Marill 12	Azurill 12, Wattrel 12
+TRAINER_CHARLIE	Tuber M	AbandonedShip_Corridors_1F	3	Marill 26	Azumarill 28, Wailmer 27
+TRAINER_RICKY_2	Tuber M	Route109	3	Linoone 27	Linoone 29, Corphish 28
+TRAINER_RICKY_3	Tuber M	Route109	4	Linoone 30	Linoone 34, Crawdaunt 33
+TRAINER_RICKY_4	Tuber M	Route109	5	Linoone 33	Linoone 38, Crawdaunt 37
+TRAINER_RICKY_5	Tuber M	Route109	6	Linoone 36	Linoone 40, Crawdaunt 39
+TRAINER_RANDALL	Cooltrainer	PetalburgCity_Gym	3	Swellow 26	Swellow 28, Tandemaus 27
+TRAINER_PARKER	Cooltrainer	PetalburgCity_Gym	3	Spinda 26	Spinda 28 @ Oran Berry, Wooloo 27
+TRAINER_GEORGE	Cooltrainer	PetalburgCity_Gym	3	Slakoth 26	Vigoroth 28 @ Sitrus Berry, Oinkologne-M 27
+TRAINER_BERKE	Cooltrainer	PetalburgCity_Gym	3	Vigoroth 26	Vigoroth 28, Loudred 27
+TRAINER_BRAXTON	Cooltrainer	Route123	3	Swellow 28, Trapinch 28, Wailmer 28, Magneton 28, Shiftry 28	Swellow 30, Trapinch 30, Wailmer 30, Magneton 30, Rotom 30
+TRAINER_VINCENT	Cooltrainer	Route110_TrickHousePuzzle8	7	Sableye 44, Medicham 44, Sharpedo 44	Sableye 49 @ Sitrus Berry, Medicham 49, Sharpedo 49
+TRAINER_LEROY	Cooltrainer	Route110_TrickHousePuzzle8	7	Mawile 46, Starmie 46	Mawile 51, Crabominable 51
+TRAINER_WILTON_1	Cooltrainer	Route111	1	Electrike 17, Wailmer 17, Makuhita 17	Electrike 18, Glimmet 18, Makuhita 18
+TRAINER_EDGAR	Cooltrainer	VictoryRoad_1F	7	Cacturne 43, Pelipper 43	Cacturne 48, Pawmo 48, Spidops 47
+TRAINER_ALBERT	Cooltrainer	VictoryRoad_1F	7	Magneton 43, Muk 43	Magnezone 48, Hatterene 48
+TRAINER_SAMUEL	Cooltrainer	VictoryRoad_B1F	6	Swellow 42, Mawile 42, Kadabra 42	Swellow 46 @ Silk Scarf, Mawile 46, Alakazam 46
+TRAINER_VITO	Cooltrainer	VictoryRoad_B2F	6	Dodrio 42, Kadabra 42, Electrode 42, Shiftry 42	Dodrio 46, Hatterene 46, Electrode 46, Shiftry 46
+TRAINER_OWEN	Cooltrainer	VictoryRoad_B2F	6	Kecleon 42, Graveler 42, Wailord 42	Kecleon 46, Golem 46, Palafin-Zero 46
+TRAINER_WILTON_2	Cooltrainer	Route111	3	Electrike 26, Wailmer 26, Makuhita 26	Electrike 28, Glimmet 28, Hariyama 28
+TRAINER_WILTON_3	Cooltrainer	Route111	3	Manectric 29, Wailmer 29, Makuhita 29	Manectric 31, Glimmet 31, Hariyama 31
+TRAINER_WILTON_4	Cooltrainer	Route111	5	Manectric 32, Wailmer 32, Makuhita 32	Manectric 37 @ Magnet, Glimmora 37, Hariyama 37
+TRAINER_WILTON_5	Cooltrainer	Route111	6	Manectric 35, Wailmer 35, Hariyama 35	Manectric 39 @ Magnet, Glimmora 39, Hariyama 39
+TRAINER_WARREN	Cooltrainer	Route133	5	Graveler 33, Ludicolo 33	Golem 38, Kilowattrel 38, Maushold-Four 37
+TRAINER_MARY	Cooltrainer	PetalburgCity_Gym	3	Delcatty 26	Delcatty 28 @ Oran Berry, Tandemaus 27
+TRAINER_ALEXIA	Cooltrainer	PetalburgCity_Gym	3	Wigglytuff 26	Wigglytuff 28, Smoliv 27
+TRAINER_JODY	Cooltrainer	PetalburgCity_Gym	3	Zangoose 26	Zangoose 28, Kecleon 27
+TRAINER_WENDY	Cooltrainer	Route123	3	Mawile 29, Roselia 29, Pelipper 29	Mawile 31, Lycanroc 31, Pelipper 31
+TRAINER_KEIRA	Cooltrainer	Route110_TrickHousePuzzle8	7	Lairon 45, Manectric 45	Aggron 50 @ Sitrus Berry, Manectric 50
+TRAINER_BROOKE_1	Cooltrainer	Route111	1	Wingull 17, Numel 17, Roselia 17	Wingull 18, Shinx 18, Roselia 18
+TRAINER_JENNIFER	Cooltrainer	Route120	4	Sableye 30	Sableye 34, Volbeat 33
+TRAINER_HOPE	Cooltrainer	VictoryRoad_1F	7	Roselia 45	Roserade 50, Dachsbun 49
+TRAINER_SHANNON	Cooltrainer	VictoryRoad_B1F	7	Claydol 45	Claydol 50, Azumarill 49
+TRAINER_MICHELLE	Cooltrainer	VictoryRoad_B1F	6	Torkoal 42, Medicham 42, Ludicolo 42	Torkoal 46 @ Sitrus Berry, Medicham 46, Ludicolo 46
+TRAINER_CAROLINE	Cooltrainer	VictoryRoad_B2F	7	Skarmory 43, Sableye 43	Skarmory 48, Heliolisk 48, Toedscruel 47
+TRAINER_JULIE	Cooltrainer	VictoryRoad_B2F	6	Sandslash 42, Ninetales 42, Tropius 42	Sandslash 46 @ Soft Sand, Ninetales 46, Thievul 46
+TRAINER_BROOKE_2	Cooltrainer	Route111	3	Wingull 26, Numel 26, Roselia 26	Wingull 28 @ Oran Berry, Luxio 28, Roselia 28
+TRAINER_BROOKE_3	Cooltrainer	Route111	3	Pelipper 29, Numel 29, Roselia 29	Pelipper 31 @ Oran Berry, Luxio 31, Roselia 31
+TRAINER_BROOKE_4	Cooltrainer	Route111	5	Pelipper 32, Numel 32, Roselia 32	Pelipper 37 @ Mystic Water, Luxray 37, Roserade 37
+TRAINER_BROOKE_5	Cooltrainer	Route111	6	Pelipper 34, Camerupt 34, Roselia 34	Pelipper 38 @ Mystic Water, Luxray 38, Roserade 38
+TRAINER_PATRICIA	Hex Maniac	Route110_TrickHousePuzzle7	6	Banette 41, Lunatone 41	Banette 45, Rotom 45
+TRAINER_KINDRA	Hex Maniac	Route123	4	Duskull 30, Shuppet 30	Duskull 34, Litwick 34
+TRAINER_TAMMY	Hex Maniac	Route121	3	Duskull 29, Shuppet 29	Duskull 31, Shuppet 31
+TRAINER_VALERIE_1	Hex Maniac	MtPyre_6F	5	Sableye 32	Sableye 37 @ Sitrus Berry, Duskull 36
+TRAINER_TASHA	Hex Maniac	MtPyre_5F	5	Shuppet 32	Shuppet 37 @ Sitrus Berry, Rotom 36
+TRAINER_VALERIE_2	Hex Maniac	MtPyre_6F	4	Sableye 31, Spoink 31	Sableye 35 @ Sitrus Berry, Grumpig 35, Duskull 34
+TRAINER_VALERIE_3	Hex Maniac	MtPyre_6F	6	Spoink 35, Sableye 35	Grumpig 39 @ Sitrus Berry, Sableye 39, Duskull 38
+TRAINER_VALERIE_4	Hex Maniac	MtPyre_6F	6	Spoink 40, Sableye 40	Grumpig 44 @ Sitrus Berry, Sableye 44, Dusknoir 43
+TRAINER_VALERIE_5	Hex Maniac	MtPyre_6F	6	Duskull 42, Sableye 42, Grumpig 42	Dusknoir 46 @ Sitrus Berry, Sableye 46, Grumpig 46
+TRAINER_CINDY_1	Lady	Route104	0	Zigzagoon 7	Lechonk 7
+TRAINER_DAPHNE	Lady	SootopolisCity_Gym_B1F	6	Luvdisc 39, Luvdisc 39	Luvdisc 43 @ Nugget, Dondozo 43
+TRAINER_GRUNT_SPACE_CENTER_2	Team Magma	MossdeepCity_SpaceCenter_1F	4	Mightyena 26, Mightyena 28, Numel 30	Capsakid 30, Mightyena 32, Numel 34 @ Sitrus Berry
+TRAINER_BRIANNA	Lady	SootopolisCity_Gym_B1F	6	Seaking 40	Seaking 44 @ Nugget, Sealeo 43
+TRAINER_NAOMI	Lady	SSTidalRooms	7	Roselia 45	Roserade 50 @ Nugget, Delcatty 49
+TRAINER_CINDY_3	Lady	Route104	3	Linoone 27	Linoone 29 @ Nugget, Oinkologne-M 28
+TRAINER_CINDY_4	Lady	Route104	4	Linoone 30	Linoone 34 @ Nugget, Oinkologne-M 33
+TRAINER_CINDY_5	Lady	Route104	5	Linoone 33	Linoone 38 @ Nugget, Oinkologne-M 37
+TRAINER_CINDY_6	Lady	Route104	6	Linoone 36	Linoone 40 @ Nugget, Oinkologne-M 39
+TRAINER_MELISSA	Beauty	MtChimney	2	Marill 21	Azumarill 23, Cottonee 22
+TRAINER_SHEILA	Beauty	MtChimney	2	Shroomish 21	Shroomish 23, Cottonee 22
+TRAINER_SHIRLEY	Beauty	MtChimney	2	Numel 21	Numel 23, Whismur 22
+TRAINER_JESSICA_1	Beauty	Route121	3	Kecleon 29, Seviper 29	Kecleon 31, Dolliv 31
+TRAINER_CONNIE	Beauty	SootopolisCity_Gym_B1F	6	Goldeen 40	Seaking 44 @ Mystic Water, Barraskewda 43
+TRAINER_BRIDGET	Beauty	SootopolisCity_Gym_B1F	6	Azumarill 40	Azumarill 44, Kilowattrel 43
+TRAINER_OLIVIA	Beauty	SootopolisCity_Gym_B1F	6	Clamperl 35, Corphish 37, Lombre 39	Huntail 39, Dondozo 41, Ludicolo 43
+TRAINER_TIFFANY	Beauty	SootopolisCity_Gym_B1F	6	Carvanha 39, Sharpedo 39	Sharpedo 43, Barraskewda 43, Pelipper 42
+TRAINER_JESSICA_2	Beauty	Route121	6	Kecleon 35, Seviper 35	Kecleon 39, Arboliva 39
+TRAINER_JESSICA_3	Beauty	Route121	6	Kecleon 38, Seviper 38	Kecleon 42, Arboliva 42
+TRAINER_JESSICA_4	Beauty	Route121	6	Kecleon 41, Seviper 41	Kecleon 45, Arboliva 45
+TRAINER_JESSICA_5	Beauty	Route121	7	Kecleon 44, Seviper 44	Kecleon 49, Arboliva 49
+TRAINER_WINSTON_1	Rich Boy	Route104	0	Zigzagoon 7	Zigzagoon 7 @ Nugget
+TRAINER_MOLLIE	Expert	Route133	5	Whiscash 33, Meditite 33	Whiscash 38, Meditite 38
+TRAINER_GARRET	Rich Boy	SSTidalRooms	7	Azumarill 45	Azumarill 50 @ Nugget, Dubwool 49
+TRAINER_WINSTON_2	Rich Boy	Route104	3	Linoone 27	Linoone 29 @ Nugget, Smoliv 28
+TRAINER_WINSTON_3	Rich Boy	Route104	4	Linoone 30	Linoone 34 @ Nugget, Dolliv 33
+TRAINER_WINSTON_4	Rich Boy	Route104	5	Linoone 33	Linoone 38 @ Nugget, Arboliva 37
+TRAINER_WINSTON_5	Rich Boy	Route104	6	Linoone 36	Linoone 40 @ Nugget, Arboliva 39
+TRAINER_STEVE_1	Pokemaniac	Route114	1	Aron 19	Aron 20
+TRAINER_THALIA_1	Beauty	AbandonedShip_Rooms_1F	3	Wailmer 25, Horsea 25	Wailmer 27, Oinkologne-M 27
+TRAINER_MARK	Pokemaniac	MtPyre_2F	4	Rhyhorn 31	Rhyhorn 35, Noibat 34
+TRAINER_GRUNT_MT_CHIMNEY_1	Team Magma	MtChimney	2	Numel 20	Numel 22 @ Oran Berry, Nickit 21
+TRAINER_STEVE_2	Pokemaniac	Route114	3	Lairon 27	Lairon 29 @ Oran Berry, Sandile 28
+TRAINER_STEVE_3	Pokemaniac	Route114	3	Lairon 29, Rhyhorn 29	Lairon 31 @ Oran Berry, Rhyhorn 31, Sandile 31
+TRAINER_STEVE_4	Pokemaniac	Route114	5	Lairon 32, Rhyhorn 32	Lairon 37 @ Sitrus Berry, Rhyhorn 37, Krokorok 37
+TRAINER_STEVE_5	Pokemaniac	Route114	6	Aggron 35, Rhydon 35	Aggron 39 @ Sitrus Berry, Rhyperior 39, Krokorok 39
+TRAINER_LUIS	Swimmer M	Route105	3	Carvanha 26	Carvanha 28, Wattrel 27
+TRAINER_DOMINIK	Swimmer M	Route105	3	Tentacool 26	Tentacool 28, Carvanha 27
+TRAINER_DOUGLAS	Swimmer M	Route106	2	Tentacool 24, Tentacool 24	Tentacool 26, Wattrel 26
+TRAINER_DARRIN	Swimmer M	Route107	2	Tentacool 24, Wingull 24, Tentacool 24	Tentacool 26, Wingull 26, Wattrel 26
+TRAINER_TONY_1	Swimmer M	Route107	3	Carvanha 26	Carvanha 28, Wattrel 27
+TRAINER_JEROME	Swimmer M	Route108	3	Tentacruel 26	Tentacruel 28, Wattrel 27
+TRAINER_MATTHEW	Swimmer M	Route108	3	Carvanha 26	Carvanha 28 @ Oran Berry, Wattrel 27
+TRAINER_DAVID	Swimmer M	Route109	3	Tentacool 25, Carvanha 25	Tentacool 27 @ Oran Berry, Carvanha 27
+TRAINER_SPENCER	Swimmer M	Route124	5	Tentacool 33, Wingull 33	Tentacruel 38, Kilowattrel 38
+TRAINER_ROLAND	Swimmer M	Route124	6	Carvanha 34	Sharpedo 38 @ Sitrus Berry, Tentacruel 37
+TRAINER_NOLEN	Swimmer M	Route125	6	Tentacruel 34	Tentacruel 38 @ Mystic Water, Finizen 37
+TRAINER_STAN	Swimmer M	Route125	6	Horsea 34	Kingdra 38 @ Sitrus Berry, Crawdaunt 37
+TRAINER_BARRY	Swimmer M	Route126	6	Gyarados 34	Gyarados 38, Azumarill 37
+TRAINER_DEAN	Swimmer M	Route126	4	Carvanha 31, Wingull 31, Carvanha 31	Sharpedo 35, Pelipper 35, Veluza 35
+TRAINER_RODNEY	Swimmer M	Route130	6	Gyarados 34	Gyarados 38, Basculegion 37
+TRAINER_RICHARD	Swimmer M	Route131	6	Pelipper 34	Pelipper 38, Dondozo 37
+TRAINER_HERMAN	Swimmer M	Route131	5	Wingull 33, Tentacruel 33	Pelipper 38, Tentacruel 38
+TRAINER_SANTIAGO	Swimmer M	Route130	5	Tentacruel 33, Wailmer 33	Tentacruel 38 @ Sitrus Berry, Dondozo 38
+TRAINER_GILBERT	Swimmer M	Route132	6	Sharpedo 34	Sharpedo 38 @ Sitrus Berry, Barraskewda 37
+TRAINER_FRANKLIN	Swimmer M	Route133	6	Sealeo 34	Sealeo 38, Finizen 37
+TRAINER_KEVIN	Swimmer M	Route131	6	Spheal 34	Sealeo 38, Finizen 37
+TRAINER_JACK	Swimmer M	Route134	6	Gyarados 34	Gyarados 38 @ Sitrus Berry, Veluza 37
+TRAINER_CHAD	Swimmer M	Route124	5	Tentacool 33, Wailmer 33	Tentacruel 38, Veluza 38
+TRAINER_TONY_2	Swimmer M	Route107	4	Sharpedo 30	Sharpedo 34, Kilowattrel 33
+TRAINER_TONY_3	Swimmer M	Route107	5	Sharpedo 33	Sharpedo 38, Kilowattrel 37
+TRAINER_TONY_4	Swimmer M	Route107	6	Staryu 34, Sharpedo 36	Starmie 38, Sharpedo 40, Kilowattrel 37
+TRAINER_TONY_5	Swimmer M	Route107	6	Starmie 37, Sharpedo 39	Starmie 41, Sharpedo 43, Kilowattrel 40
+TRAINER_TAKAO	Black Belt	DewfordTown_Gym	0	Machop 13	Machop 13
+TRAINER_HITOSHI	Black Belt	Route134	5	Machop 32, Machoke 32	Machamp 37, Crabominable 37
+TRAINER_KIYO	Black Belt	Route132	6	Hariyama 34	Hariyama 38 @ Sitrus Berry, Meditite 37
+TRAINER_KOICHI	Black Belt	Route115	3	Machop 24, Machoke 28	Flamigo 26, Machoke 30
+TRAINER_NOB_1	Black Belt	Route115	1	Machop 19	Machop 20
+TRAINER_NOB_2	Black Belt	Route115	3	Machoke 27	Machoke 29 @ Oran Berry, Meditite 28
+TRAINER_NOB_3	Black Belt	Route115	3	Machop 29, Machoke 29	Machop 31 @ Oran Berry, Machoke 31, Meditite 31
+TRAINER_NOB_4	Black Belt	Route115	4	Machop 31, Machoke 31, Machoke 31	Machamp 35 @ Sitrus Berry, Machamp 35, Machamp 35, Meditite 35
+TRAINER_NOB_5	Black Belt	Route115	5	Machop 33, Machoke 33, Machoke 33, Machamp 33	Machamp 38 @ Sitrus Berry, Meditite 38, Machamp 38, Machamp 38 @ Black Belt
+TRAINER_YUJI	Black Belt	Route110_TrickHousePuzzle4	3	Makuhita 26, Machoke 26	Hariyama 28, Machoke 28
+TRAINER_DAISUKE	Black Belt	Route111	1	Machop 19	Machop 20
+TRAINER_ATSUSHI	Black Belt	MtPyre_4F	5	Hariyama 32	Hariyama 37, Meditite 36
+TRAINER_KIRK	Guitarist	MauvilleCity_Gym	1	Electrike 17, Voltorb 17	Electrike 18, Pawmi 18
+TRAINER_GRUNT_AQUA_HIDEOUT_7	Team Aqua	AquaHideout_B1F	4	Poochyena 31, Zubat 31	Mightyena 35, Crobat 35
+TRAINER_GRUNT_AQUA_HIDEOUT_8	Team Aqua	AquaHideout_B2F	5	Carvanha 32	Sharpedo 37, Wailmer 36
+TRAINER_SHAWN	Guitarist	MauvilleCity_Gym	1	Voltorb 17, Magnemite 17	Voltorb 18, Magnemite 18
+TRAINER_FERNANDO_1	Guitarist	Route123	4	Electrike 30, Loudred 30	Manectric 34, Loudred 34
+TRAINER_DALTON_1	Guitarist	Route118	0	Magnemite 15, Whismur 15	Magnemite 15, Whismur 15
+TRAINER_DALTON_2	Guitarist	Route118	3	Magnemite 25, Whismur 25, Magnemite 25	Magnemite 27 @ Oran Berry, Loudred 27, Magnemite 27
+TRAINER_DALTON_3	Guitarist	Route118	3	Magnemite 28, Loudred 28, Magnemite 28	Magnemite 30 @ Oran Berry, Loudred 30, Magnemite 30
+TRAINER_DALTON_4	Guitarist	Route118	4	Magneton 31, Loudred 31, Magneton 31	Magnezone 35 @ Sitrus Berry, Loudred 35, Magnezone 35
+TRAINER_DALTON_5	Guitarist	Route118	6	Magneton 34, Exploud 34, Magneton 34	Magnezone 38 @ Sitrus Berry, Exploud 38, Magnezone 38
+TRAINER_BERNIE_1	Kindler	Route114	1	Slugma 18, Wingull 18	Slugma 19, Wingull 19
+TRAINER_BERNIE_2	Kindler	Route114	3	Slugma 26, Wingull 26	Slugma 28, Wingull 28
+TRAINER_BERNIE_3	Kindler	Route114	3	Slugma 29, Pelipper 29	Slugma 31, Pelipper 31
+TRAINER_BERNIE_4	Kindler	Route114	5	Slugma 32, Pelipper 32	Slugma 37, Pelipper 37
+TRAINER_BERNIE_5	Kindler	Route114	6	Magcargo 35, Pelipper 35	Magcargo 39, Pelipper 39
+TRAINER_DREW	Camper	Route111	2	Sandshrew 23	Sandshrew 25, Oinkologne-M 24
+TRAINER_BEAU	Camper	Route111	2	Baltoy 21, Sandshrew 21, Baltoy 21	Baltoy 23, Sandshrew 23, Baltoy 23
+TRAINER_LARRY	Camper	Route112	1	Nuzleaf 18	Lechonk 19
+TRAINER_SHANE	Camper	Route114	1	Sandshrew 18, Nuzleaf 18	Sandshrew 19, Nuzleaf 19
+TRAINER_JUSTIN	Camper	Route110_TrickHousePuzzle3	2	Kecleon 24	Kecleon 26, Ninjask 25
+TRAINER_ETHAN_1	Camper	JaggedPass	2	Zigzagoon 20, Taillow 20	Zigzagoon 22, Cufant 22
+TRAINER_AUTUMN	Picnicker	JaggedPass	2	Shroomish 21	Shroomish 23, Cottonee 22
+TRAINER_TRAVIS	Camper	Route111	1	Sandshrew 18	Sandshrew 19
+TRAINER_ETHAN_2	Camper	JaggedPass	3	Zigzagoon 26, Taillow 26	Linoone 28, Cufant 28
+TRAINER_ETHAN_3	Camper	JaggedPass	3	Linoone 29, Swellow 29	Linoone 31, Cufant 31
+TRAINER_ETHAN_4	Camper	JaggedPass	4	Sandshrew 31, Swellow 31, Linoone 31	Sandslash 35, Cufant 35, Linoone 35
+TRAINER_ETHAN_5	Camper	JaggedPass	6	Swellow 34, Sandslash 34, Linoone 34	Swellow 38 @ Silk Scarf, Copperajah 38, Linoone 38
+TRAINER_BRENT	Bug Maniac	Route119	3	Surskit 26	Masquerain 28, Spidops 27
+TRAINER_DONALD	Bug Maniac	Route119	2	Wurmple 24, Silcoon 24, Beautifly 24	Beautifly 26 @ Oran Berry, Beautifly 26, Spidops 26
+TRAINER_TAYLOR	Bug Maniac	Route119	3	Wurmple 27, Cascoon 27, Dustox 27	Beautifly 29, Dustox 29, Dustox 29
+TRAINER_JEFFREY_1	Bug Maniac	Route120	3	Surskit 27, Surskit 27, Surskit 27	Masquerain 29 @ Oran Berry, Masquerain 29, Spidops 29
+TRAINER_DEREK	Bug Maniac	Route117	1	Dustox 16, Beautifly 16	Dustox 17, Tarountula 17
+TRAINER_JEFFREY_2	Bug Maniac	Route120	4	Surskit 31, Surskit 31, Surskit 31	Masquerain 35 @ Sitrus Berry, Masquerain 35, Spidops 35
+TRAINER_JEFFREY_3	Bug Maniac	Route120	6	Surskit 34, Surskit 34, Masquerain 34	Masquerain 38 @ Silver Powder, Masquerain 38, Spidops 38
+TRAINER_JEFFREY_4	Bug Maniac	Route120	6	Surskit 36, Wurmple 36, Surskit 36, Masquerain 36	Masquerain 40 @ Silver Powder, Beautifly 40, Spidops 40, Masquerain 40
+TRAINER_JEFFREY_5	Bug Maniac	Route120	6	Surskit 38, Dustox 38, Surskit 38, Masquerain 38, Beautifly 38	Masquerain 42 @ Silver Powder, Dustox 42, Spidops 42, Masquerain 42 @ Silver Powder, Beautifly 42
+TRAINER_EDWARD	Psychic	Route110	0	Abra 15	Hatenna 15
+TRAINER_PRESTON	Psychic	MossdeepCity_Gym	6	Kirlia 36	Gardevoir 40 @ Sitrus Berry, Grumpig 39
+TRAINER_VIRGIL	Psychic	MossdeepCity_Gym	6	Ralts 36	Gardevoir 40 @ Twisted Spoon, Hattrem 39
+TRAINER_BLAKE	Psychic	MossdeepCity_Gym	6	Girafarig 36	Girafarig 40, Gardevoir 39
+TRAINER_WILLIAM	Psychic	MtPyre_3F	3	Ralts 26, Ralts 26, Kirlia 26	Kirlia 28, Kirlia 28, Kirlia 28
+TRAINER_JOSHUA	Psychic	Route110_TrickHousePuzzle7	6	Kadabra 41, Solrock 41	Alakazam 45 @ Twisted Spoon, Solrock 45
+TRAINER_CAMERON_1	Psychic	Route123	4	Solrock 31	Solrock 35, Indeedee 34
+TRAINER_CAMERON_2	Psychic	Route123	5	Kadabra 33, Solrock 33	Alakazam 38, Solrock 38, Indeedee 38
+TRAINER_CAMERON_3	Psychic	Route123	6	Kadabra 38, Solrock 38	Alakazam 42, Solrock 42, Indeedee 42
+TRAINER_CAMERON_4	Psychic	Route123	6	Kadabra 41, Solrock 41	Alakazam 45, Solrock 45, Indeedee 45
+TRAINER_CAMERON_5	Psychic	Route123	7	Solrock 45, Alakazam 45	Solrock 50, Alakazam 50, Indeedee 50
+TRAINER_JACLYN	Psychic	Route110	1	Abra 16	Hatenna 17
+TRAINER_HANNAH	Psychic	MossdeepCity_Gym	6	Kirlia 36	Gardevoir 40, Alakazam 39
+TRAINER_SAMANTHA	Psychic	MossdeepCity_Gym	6	Xatu 36	Xatu 40, Indeedee 39
+TRAINER_MAURA	Psychic	MossdeepCity_Gym	6	Kadabra 36	Alakazam 40 @ Sitrus Berry, Indeedee-F 39
+TRAINER_KAYLA	Psychic	MtPyre_3F	3	Wobbuffet 26, Natu 26, Kadabra 26	Wobbuffet 28, Natu 28, Hatenna 28
+TRAINER_ALEXIS	Psychic	Route110_TrickHousePuzzle7	6	Kirlia 41, Xatu 41	Gardevoir 45, Xatu 45, Indeedee-F 44
+TRAINER_JACKI_1	Psychic	Route123	4	Kadabra 30, Lunatone 30	Alakazam 34, Veluza 34
+TRAINER_JACKI_2	Psychic	Route123	6	Kadabra 34, Lunatone 34	Alakazam 38, Veluza 38
+TRAINER_JACKI_3	Psychic	Route123	6	Kadabra 37, Lunatone 37	Alakazam 41, Veluza 41
+TRAINER_JACKI_4	Psychic	Route123	6	Kadabra 40, Lunatone 40	Alakazam 44, Veluza 44
+TRAINER_JACKI_5	Psychic	Route123	7	Lunatone 43, Alakazam 43	Lunatone 48, Veluza 48
+TRAINER_WALTER_1	Gentleman	Route121	3	Manectric 29	Manectric 31, Cufant 30
+TRAINER_MICAH	Gentleman	SSTidalRooms	7	Manectric 44, Manectric 44	Manectric 49, Manectric 49
+TRAINER_THOMAS	Gentleman	SSTidalRooms	7	Zangoose 45	Zangoose 50, Arboliva 49
+TRAINER_WALTER_2	Gentleman	Route121	6	Manectric 34	Manectric 38, Copperajah 37
+TRAINER_WALTER_3	Gentleman	Route121	6	Linoone 36, Manectric 36	Linoone 40, Manectric 40, Copperajah 39
+TRAINER_WALTER_4	Gentleman	Route121	6	Linoone 39, Manectric 39	Linoone 43, Manectric 43, Copperajah 42
+TRAINER_WALTER_5	Gentleman	Route121	6	Linoone 41, Golduck 41, Manectric 41	Linoone 45, Golduck 45, Manectric 45, Copperajah 45
+TRAINER_JERRY_1	School Kid	Route116	0	Ralts 9	Hatenna 9
+TRAINER_TED	School Kid	Route110_TrickHousePuzzle2	1	Ralts 17	Ralts 18
+TRAINER_PAUL	School Kid	Route110_TrickHousePuzzle2	0	Numel 15, Oddish 15, Wingull 15	Numel 15, Oddish 15, Wingull 15
+TRAINER_JERRY_2	School Kid	Route116	3	Ralts 26, Meditite 26	Hatenna 28 @ Oran Berry, Meditite 28
+TRAINER_JERRY_3	School Kid	Route116	3	Kirlia 29, Meditite 29	Hatenna 31 @ Oran Berry, Meditite 31
+TRAINER_JERRY_4	School Kid	Route116	5	Kirlia 32, Medicham 32	Hattrem 37 @ Sitrus Berry, Medicham 37
+TRAINER_JERRY_5	School Kid	Route116	6	Kirlia 34, Banette 34, Medicham 34	Hattrem 38 @ Sitrus Berry, Banette 38, Medicham 38
+TRAINER_KAREN_1	School Kid	Route116	0	Shroomish 9	Hatenna 9
+TRAINER_GEORGIA	School Kid	Route110_TrickHousePuzzle2	1	Shroomish 16, Beautifly 16	Shroomish 17, Hatenna 17
+TRAINER_KAREN_2	School Kid	Route116	3	Shroomish 26, Whismur 26	Hatenna 28, Loudred 28
+TRAINER_KAREN_3	School Kid	Route116	3	Shroomish 29, Loudred 29	Hatenna 31, Loudred 31
+TRAINER_KAREN_4	School Kid	Route116	5	Breloom 32, Loudred 32	Hattrem 37, Loudred 37, Veluza 36
+TRAINER_KAREN_5	School Kid	Route116	6	Breloom 35, Exploud 35	Hattrem 39, Exploud 39, Veluza 38
+TRAINER_KATE_AND_JOY	Sr And Jr	Route121	5	Spinda 30, Slaking 32	Dubwool 35, Slaking 37
+TRAINER_ANNA_AND_MEG_1	Sr And Jr	Route117	1	Zigzagoon 15, Makuhita 17	Hatenna 16, Makuhita 18
+TRAINER_ANNA_AND_MEG_2	Sr And Jr	Route117	4	Zigzagoon 28, Makuhita 30	Hatenna 32, Hariyama 34
+TRAINER_ANNA_AND_MEG_3	Sr And Jr	Route117	5	Zigzagoon 31, Makuhita 33	Hattrem 36, Hariyama 38 @ Black Belt
+TRAINER_ANNA_AND_MEG_4	Sr And Jr	Route117	6	Linoone 34, Makuhita 36	Hattrem 38, Hariyama 40 @ Black Belt
+TRAINER_ANNA_AND_MEG_5	Sr And Jr	Route117	6	Linoone 36, Hariyama 38	Hattrem 40, Hariyama 42 @ Black Belt
+TRAINER_VICTOR	Winstrate	Route111	1	Taillow 16, Zigzagoon 16	Taillow 17 @ Oran Berry, Tandemaus 17
+TRAINER_MIGUEL_1	Pokefan	Route103	0	Skitty 15	Wooloo 15
+TRAINER_COLTON	Pokefan	SSTidalRooms	6	Skitty 22, Skitty 36, Skitty 40, Skitty 12, Skitty 30, Delcatty 42	Skitty 26 @ Oran Berry, Hattrem 40, Delcatty 44 @ Oran Berry, Skitty 16 @ Oran Berry, Delcatty 34 @ Oran Berry, Delcatty 46 @ Oran Berry
+TRAINER_MIGUEL_2	Pokefan	Route103	3	Skitty 29	Skitty 31 @ Oran Berry, Dubwool 30
+TRAINER_MIGUEL_3	Pokefan	Route103	5	Skitty 32	Delcatty 37 @ Oran Berry, Dubwool 36
+TRAINER_MIGUEL_4	Pokefan	Route103	6	Delcatty 35	Delcatty 39 @ Oran Berry, Dubwool 38
+TRAINER_MIGUEL_5	Pokefan	Route103	6	Delcatty 38	Delcatty 42 @ Sitrus Berry, Dubwool 41
+TRAINER_VICTORIA	Winstrate	Route111	1	Roselia 17	Wattrel 18
+TRAINER_VANESSA	Pokefan	Route121	4	Pikachu 30	Raichu 34 @ Oran Berry, Azumarill 33
+TRAINER_BETHANY	Pokefan	SootopolisCity_Gym_B1F	6	Azurill 35, Marill 37, Azumarill 39	Azumarill 39 @ Oran Berry, Dondozo 41, Azumarill 43 @ Oran Berry
+TRAINER_ISABEL_1	Pokefan	Route110	0	Plusle 14, Minun 14	Plusle 14 @ Oran Berry, Wooloo 14
+TRAINER_ISABEL_2	Pokefan	Route110	3	Plusle 26, Minun 26	Plusle 28 @ Oran Berry, Dubwool 28
+TRAINER_ISABEL_3	Pokefan	Route110	3	Plusle 29, Minun 29	Plusle 31 @ Oran Berry, Dubwool 31
+TRAINER_ISABEL_4	Pokefan	Route110	5	Plusle 32, Minun 32	Plusle 37 @ Oran Berry, Dubwool 37
+TRAINER_ISABEL_5	Pokefan	Route110	6	Plusle 35, Minun 35	Plusle 39 @ Sitrus Berry, Dubwool 39
+TRAINER_TIMOTHY_1	Expert	Route115	3	Hariyama 27	Hariyama 29, Riolu 28
+TRAINER_TIMOTHY_2	Expert	Route115	5	Hariyama 33	Hariyama 38, Lucario 37
+TRAINER_TIMOTHY_3	Expert	Route115	6	Hariyama 36	Hariyama 40, Lucario 39
+TRAINER_TIMOTHY_4	Expert	Route115	6	Hariyama 39	Hariyama 43, Lucario 42
+TRAINER_TIMOTHY_5	Expert	Route115	6	Hariyama 42	Hariyama 46, Lucario 45
+TRAINER_VICKY	Winstrate	Route111	1	Meditite 18	Meditite 19
+TRAINER_SHELBY_1	Expert	MtChimney	2	Meditite 21, Makuhita 21	Meditite 23, Flamigo 23
+TRAINER_SHELBY_2	Expert	MtChimney	4	Meditite 30, Makuhita 30	Meditite 34, Flamigo 34, Machamp 33
+TRAINER_SHELBY_3	Expert	MtChimney	5	Medicham 33, Hariyama 33	Medicham 38, Flamigo 38, Machamp 37
+TRAINER_SHELBY_4	Expert	MtChimney	6	Medicham 36, Hariyama 36	Medicham 40, Flamigo 40, Machamp 39
+TRAINER_SHELBY_5	Expert	MtChimney	6	Medicham 39, Hariyama 39	Medicham 43, Flamigo 43, Machamp 42
+TRAINER_CALVIN_1	Youngster	Route102	0	Poochyena 5	Poochyena 5
+TRAINER_BILLY	Youngster	Route104	0	Zigzagoon 5, Seedot 7	Zigzagoon 5, Seedot 7
+TRAINER_JOSH	Youngster	RustboroCity_Gym	0	Geodude 10	Glimmet 10
+TRAINER_TOMMY	Youngster	RustboroCity_Gym	0	Geodude 8, Geodude 8	Geodude 8, Glimmet 8
+TRAINER_JOEY	Youngster	Route116	0	Machop 9	Machop 9
+TRAINER_BEN	Youngster	MauvilleCity_Gym	1	Zigzagoon 17, Gulpin 17	Zigzagoon 18, Shinx 18
+TRAINER_QUINCY	Cooltrainer	VictoryRoad_1F	7	Slaking 43, Dusclops 43	Slaking 48, Scovillain 48
+TRAINER_KATELYNN	Cooltrainer	VictoryRoad_1F	7	Gardevoir 43, Slaking 43	Gardevoir 48, Palafin-Zero 48, Muk 47
+TRAINER_JAYLEN	Youngster	Route113	1	Trapinch 19	Trapinch 20
+TRAINER_DILLON	Youngster	Route113	1	Aron 19	Wooloo 20
+TRAINER_CALVIN_2	Youngster	Route102	3	Mightyena 27	Mightyena 29 @ Oran Berry
+TRAINER_CALVIN_3	Youngster	Route102	4	Swellow 28, Mightyena 30	Swellow 32, Mightyena 34 @ Sitrus Berry
+TRAINER_CALVIN_4	Youngster	Route102	5	Swellow 31, Linoone 29, Mightyena 33	Swellow 36, Linoone 34, Mightyena 38 @ Black Glasses
+TRAINER_CALVIN_5	Youngster	Route102	6	Swellow 34, Linoone 32, Mightyena 36	Swellow 38, Linoone 36, Mightyena 40 @ Black Glasses
+TRAINER_EDDIE	Youngster	Route110_TrickHousePuzzle1	1	Zigzagoon 14, Zigzagoon 16	Lechonk 15, Zigzagoon 17
+TRAINER_ALLEN	Youngster	Route102	0	Zigzagoon 4, Taillow 3	Zigzagoon 4, Taillow 3
+TRAINER_TIMMY	Youngster	Route110	0	Aron 15, Electrike 13	Aron 15, Electrike 13
+TRAINER_ANDREW	Fisherman	Route103	0	Magikarp 5, Tentacool 10, Magikarp 15	Magikarp 5, Tentacool 10, Magikarp 15
+TRAINER_IVAN	Fisherman	Route104	0	Magikarp 5, Magikarp 6, Magikarp 7	Magikarp 5, Wattrel 6, Magikarp 7
+TRAINER_CLAUDE	Fisherman	Route114	1	Magikarp 16, Goldeen 17, Barboach 18	Magikarp 17, Wattrel 18, Barboach 19
+TRAINER_ELLIOT_1	Fisherman	Route106	0	Magikarp 10, Tentacool 7, Magikarp 10	Magikarp 10, Tentacool 7, Magikarp 10
+TRAINER_NED	Fisherman	Route106	0	Tentacool 11	Tentacool 11
+TRAINER_DALE	Fisherman	Route110	0	Tentacool 11, Wailmer 14, Tentacool 11, Wailmer 14	Tentacool 11, Wailmer 14, Tentacool 11, Wailmer 14
+TRAINER_NOLAN	Fisherman	Route114	1	Barboach 19	Wattrel 20
+TRAINER_BARNY	Fisherman	Route118	3	Tentacool 25, Carvanha 25	Tentacool 27, Wattrel 27
+TRAINER_WADE	Fisherman	Route118	1	Tentacool 16	Wattrel 17
+TRAINER_CARTER	Fisherman	Route109	3	Wailmer 25, Tentacruel 25	Wailmer 27, Tentacruel 27
+TRAINER_ELLIOT_2	Fisherman	Route106	3	Tentacool 24, Gyarados 27, Gyarados 27	Tentacool 26, Gyarados 29, Gyarados 29
+TRAINER_ELLIOT_3	Fisherman	Route106	3	Gyarados 29, Carvanha 26, Tentacool 26, Gyarados 29	Gyarados 31, Carvanha 28, Tentacool 28, Gyarados 31
+TRAINER_ELLIOT_4	Fisherman	Route106	4	Gyarados 31, Carvanha 30, Tentacruel 30, Gyarados 31	Gyarados 35, Sharpedo 34, Tentacruel 34, Gyarados 35
+TRAINER_ELLIOT_5	Fisherman	Route106	6	Gyarados 33, Sharpedo 33, Gyarados 33, Tentacruel 35	Gyarados 37, Sharpedo 37, Gyarados 37, Tentacruel 39 @ Mystic Water
+TRAINER_RONALD	Fisherman	Route132	6	Magikarp 19, Gyarados 21, Gyarados 23, Gyarados 26, Gyarados 30, Gyarados 35	Finizen 23, Gyarados 25, Gyarados 27, Gyarados 30, Gyarados 34, Gyarados 39 @ Mystic Water
+TRAINER_JACOB	Triathlete	Route110	0	Voltorb 6, Voltorb 6, Magnemite 14	Voltorb 6, Voltorb 6, Magnemite 14
+TRAINER_ANTHONY	Triathlete	Route110	0	Magnemite 14, Magnemite 14	Magnemite 14, Magnemite 14
+TRAINER_BENJAMIN_1	Triathlete	Route110	1	Magnemite 16	Magnemite 17
+TRAINER_BENJAMIN_2	Triathlete	Route110	4	Magnemite 30	Magnezone 34, Noibat 33
+TRAINER_BENJAMIN_3	Triathlete	Route110	5	Magnemite 33	Magnezone 38 @ Magnet, Noibat 37
+TRAINER_BENJAMIN_4	Triathlete	Route110	6	Magneton 36	Magnezone 40 @ Magnet, Noibat 39
+TRAINER_BENJAMIN_5	Triathlete	Route110	6	Magneton 39	Magnezone 43 @ Magnet, Noibat 42
+TRAINER_ABIGAIL_1	Triathlete	Route110	1	Magnemite 16	Magnemite 17
+TRAINER_JASMINE	Triathlete	Route110	0	Magnemite 14, Magnemite 14, Voltorb 6	Magnemite 14, Rookidee 14, Voltorb 6
+TRAINER_ABIGAIL_2	Triathlete	Route110	3	Magnemite 28	Magnemite 30 @ Oran Berry, Helioptile 29
+TRAINER_ABIGAIL_3	Triathlete	Route110	4	Magnemite 31	Magnezone 35 @ Sitrus Berry, Heliolisk 34
+TRAINER_ABIGAIL_4	Triathlete	Route110	6	Magneton 34	Magnezone 38 @ Magnet, Heliolisk 37
+TRAINER_ABIGAIL_5	Triathlete	Route110	6	Magneton 37	Magnezone 41 @ Magnet, Heliolisk 40
+TRAINER_DYLAN_1	Triathlete	Route117	1	Doduo 17	Doduo 18
+TRAINER_DYLAN_2	Triathlete	Route117	3	Doduo 28	Doduo 30, Tentacool 29
+TRAINER_DYLAN_3	Triathlete	Route117	4	Doduo 31	Dodrio 35, Tentacruel 34
+TRAINER_DYLAN_4	Triathlete	Route117	6	Dodrio 34	Dodrio 38, Tentacruel 37
+TRAINER_DYLAN_5	Triathlete	Route117	6	Dodrio 37	Dodrio 41, Tentacruel 40
+TRAINER_MARIA_1	Triathlete	Route117	1	Doduo 17	Doduo 18
+TRAINER_MARIA_2	Triathlete	Route117	3	Doduo 28	Doduo 30, Wailmer 29
+TRAINER_MARIA_3	Triathlete	Route117	4	Doduo 31	Dodrio 35, Wailmer 34
+TRAINER_MARIA_4	Triathlete	Route117	6	Dodrio 34	Dodrio 38, Wailmer 37
+TRAINER_MARIA_5	Triathlete	Route117	6	Dodrio 37	Dodrio 41, Wailmer 40
+TRAINER_CAMDEN	Triathlete	Route127	5	Staryu 33, Staryu 33	Starmie 38, Dondozo 38
+TRAINER_DEMETRIUS	Youngster	AbandonedShip_Rooms_1F	3	Zigzagoon 25, Electrike 25	Linoone 27 @ Oran Berry, Electrike 27
+TRAINER_ISAIAH_1	Triathlete	Route128	6	Staryu 35	Starmie 39, Heliolisk 38
+TRAINER_PABLO_1	Triathlete	Route126	5	Staryu 33, Staryu 33	Starmie 38 @ Sitrus Berry, Barraskewda 38
+TRAINER_CHASE	Triathlete	Route129	6	Wingull 26, Staryu 34	Pelipper 30, Starmie 38, Pawmo 29
+TRAINER_ISAIAH_2	Triathlete	Route128	6	Staryu 39	Starmie 43, Heliolisk 42
+TRAINER_ISAIAH_3	Triathlete	Route128	6	Staryu 42	Starmie 46, Heliolisk 45
+TRAINER_ISAIAH_4	Triathlete	Route128	7	Starmie 45	Starmie 50, Heliolisk 49
+TRAINER_ISAIAH_5	Triathlete	Route128	8	Starmie 48	Starmie 53, Heliolisk 52
+TRAINER_ISOBEL	Triathlete	Route126	6	Staryu 34	Starmie 38, Corvisquire 37
+TRAINER_DONNY	Triathlete	Route127	6	Wingull 26, Staryu 34	Finizen 30, Starmie 38
+TRAINER_TALIA	Triathlete	Route131	6	Staryu 34	Starmie 38 @ Mystic Water, Rotom 37
+TRAINER_KATELYN_1	Triathlete	Route128	6	Staryu 35	Starmie 39, Azumarill 38
+TRAINER_ALLISON	Triathlete	Route129	5	Wingull 27, Staryu 33	Heliolisk 32, Starmie 38
+TRAINER_KATELYN_2	Triathlete	Route128	6	Staryu 39	Starmie 43, Azumarill 42
+TRAINER_KATELYN_3	Triathlete	Route128	6	Staryu 42	Starmie 46, Azumarill 45
+TRAINER_KATELYN_4	Triathlete	Route128	7	Starmie 45	Starmie 50, Azumarill 49
+TRAINER_KATELYN_5	Triathlete	Route128	8	Starmie 48	Starmie 53, Azumarill 52
+TRAINER_NICOLAS_1	Dragon Tamer	MeteorFalls_1F_2R	6	Altaria 37, Altaria 37	Altaria 41 @ Sitrus Berry, Noibat 41, Vibrava 40
+TRAINER_NICOLAS_2	Dragon Tamer	MeteorFalls_1F_2R	6	Altaria 41, Altaria 41	Altaria 45 @ Sitrus Berry, Noibat 45, Vibrava 44
+TRAINER_NICOLAS_3	Dragon Tamer	MeteorFalls_1F_2R	7	Altaria 44, Altaria 44	Altaria 49 @ Sitrus Berry, Noibat 49, Flygon 48
+TRAINER_NICOLAS_4	Dragon Tamer	MeteorFalls_1F_2R	7	Bagon 46, Altaria 46, Altaria 46	Shelgon 51 @ Sitrus Berry, Noivern 51, Altaria 51, Flygon 51
+TRAINER_NICOLAS_5	Dragon Tamer	MeteorFalls_1F_2R	8	Altaria 49, Altaria 49, Shelgon 49	Altaria 54 @ Sitrus Berry, Noivern 54, Salamence 54 @ Dragon Fang, Flygon 54
+TRAINER_AARON	Dragon Tamer	Route134	6	Bagon 34	Shelgon 38 @ Dragon Fang, Cyclizar 37
+TRAINER_PERRY	Bird Keeper	Route118	3	Wingull 26	Wingull 28 @ Oran Berry, Swellow 27
+TRAINER_HUGH	Bird Keeper	Route119	3	Wingull 25, Tropius 25	Wingull 27, Noibat 27
+TRAINER_PHIL	Bird Keeper	Route119	3	Swellow 26	Swellow 28, Swablu 27
+TRAINER_JARED	Bird Keeper	FortreeCity_Gym	3	Doduo 27, Skarmory 27, Tropius 27	Doduo 29, Kilowattrel 29, Tropius 29
+TRAINER_HUMBERTO	Bird Keeper	FortreeCity_Gym	4	Skarmory 30	Skarmory 34 @ Sitrus Berry, Swellow 33
+TRAINER_PRESLEY	Bird Keeper	Route125	5	Tropius 33, Xatu 33	Tropius 38 @ Sitrus Berry, Xatu 38
+TRAINER_EDWARDO	Bird Keeper	FortreeCity_Gym	3	Doduo 29, Pelipper 29	Doduo 31, Flamigo 31
+TRAINER_COLIN	Bird Keeper	Route120	3	Wingull 28, Natu 28	Pelipper 30, Flamigo 30
+TRAINER_ROBERT_1	Bird Keeper	Route120	3	Swablu 29	Swablu 31, Corvisquire 30
+TRAINER_BENNY	Bird Keeper	Route110_TrickHousePuzzle6	6	Swellow 36, Pelipper 36, Xatu 36	Swellow 40 @ Silk Scarf, Pelipper 40, Kilowattrel 40
+TRAINER_CHESTER	Bird Keeper	Route118	3	Taillow 25, Swellow 25	Swellow 27, Swellow 27
+TRAINER_ROBERT_2	Bird Keeper	Route120	5	Natu 32, Swablu 32	Xatu 37 @ Twisted Spoon, Altaria 37, Corvisquire 37
+TRAINER_ROBERT_3	Bird Keeper	Route120	6	Natu 35, Altaria 35	Xatu 39 @ Twisted Spoon, Altaria 39, Corvisquire 39
+TRAINER_ROBERT_4	Bird Keeper	Route120	6	Natu 38, Altaria 38	Xatu 42 @ Twisted Spoon, Altaria 42, Corviknight 42
+TRAINER_ROBERT_5	Bird Keeper	Route120	6	Altaria 41, Xatu 41	Altaria 45 @ Dragon Fang, Xatu 45, Corviknight 45
+TRAINER_ALEX	Bird Keeper	Route134	5	Natu 33, Swellow 33	Xatu 38, Flamigo 38, Altaria 37
+TRAINER_BECK	Bird Keeper	Route133	6	Tropius 34	Tropius 38, Flamigo 37
+TRAINER_YASU	Ninja Boy	Route119	3	Ninjask 26	Ninjask 28, Golbat 27
+TRAINER_TAKASHI	Ninja Boy	Route119	3	Ninjask 25, Koffing 25	Ninjask 27, Koffing 27
+TRAINER_DIANNE	Cooltrainer	VictoryRoad_B2F	7	Claydol 43, Lanturn 43	Claydol 48 @ Soft Sand, Tatsugiri 48, Gardevoir 47
+TRAINER_JANI	Tuber F	AbandonedShip_Rooms2_1F	3	Marill 26	Azumarill 28, Wattrel 27
+TRAINER_LAO_1	Ninja Boy	Route113	1	Koffing 17, Koffing 17, Koffing 17	Koffing 18, Glimmet 18, Koffing 18
+TRAINER_LUNG	Ninja Boy	Route113	1	Koffing 18, Ninjask 18	Koffing 19, Nickit 19
+TRAINER_LAO_2	Ninja Boy	Route113	3	Koffing 24, Koffing 24, Koffing 24, Koffing 26	Koffing 26, Glimmet 26, Koffing 26, Koffing 28
+TRAINER_LAO_3	Ninja Boy	Route113	3	Koffing 27, Koffing 27, Koffing 27, Koffing 29	Koffing 29, Glimmet 29, Koffing 29, Koffing 31
+TRAINER_LAO_4	Ninja Boy	Route113	5	Koffing 30, Koffing 30, Koffing 30, Koffing 32	Koffing 35, Glimmet 35, Koffing 35, Weezing 37
+TRAINER_LAO_5	Ninja Boy	Route113	6	Koffing 33, Koffing 33, Koffing 33, Weezing 35	Weezing 37, Glimmora 37, Weezing 37, Weezing 39 @ Smoke Ball
+TRAINER_JOCELYN	Battle Girl	DewfordTown_Gym	0	Meditite 13	Riolu 13
+TRAINER_LAURA	Battle Girl	DewfordTown_Gym	0	Meditite 13	Meditite 13
+TRAINER_CYNDY_1	Battle Girl	Route115	1	Meditite 18, Makuhita 18	Meditite 19, Pawmi 19
+TRAINER_CORA	Battle Girl	Route110_TrickHousePuzzle4	3	Meditite 27	Meditite 29, Flamigo 28
+TRAINER_PAULA	Battle Girl	Route110_TrickHousePuzzle4	3	Breloom 27	Breloom 29 @ Oran Berry, Hariyama 28
+TRAINER_CYNDY_2	Battle Girl	Route115	3	Meditite 26, Makuhita 26	Meditite 28, Pawmo 28
+TRAINER_CYNDY_3	Battle Girl	Route115	3	Meditite 29, Makuhita 29	Meditite 31, Pawmo 31
+TRAINER_CYNDY_4	Battle Girl	Route115	5	Medicham 32, Hariyama 32	Medicham 37, Pawmo 37
+TRAINER_CYNDY_5	Battle Girl	Route115	6	Medicham 35, Hariyama 35	Medicham 39, Pawmo 39
+TRAINER_MADELINE_1	Parasol Lady	Route113	1	Numel 19	Numel 20
+TRAINER_CLARISSA	Parasol Lady	Route120	3	Roselia 28, Wailmer 28	Roselia 30, Kilowattrel 30
+TRAINER_ANGELICA	Parasol Lady	Route120	4	Castform 30	Castform 34 @ Sitrus Berry, Veluza 33
+TRAINER_MADELINE_2	Parasol Lady	Route113	3	Numel 29	Numel 31, Corphish 30
+TRAINER_MADELINE_3	Parasol Lady	Route113	5	Numel 32	Camerupt 37, Crawdaunt 36
+TRAINER_MADELINE_4	Parasol Lady	Route113	6	Roselia 34, Numel 34	Roserade 38, Camerupt 38, Crawdaunt 37
+TRAINER_MADELINE_5	Parasol Lady	Route113	6	Roselia 37, Camerupt 37	Roserade 41, Camerupt 41, Crawdaunt 40
+TRAINER_BEVERLY	Swimmer F	Route105	3	Wingull 25, Wailmer 25	Wingull 27, Wattrel 27
+TRAINER_IMANI	Swimmer F	Route105	3	Marill 26	Azumarill 28 @ Oran Berry, Wattrel 27
+TRAINER_KYLA	Swimmer F	Route106	3	Wailmer 26	Wailmer 28, Azumarill 27
+TRAINER_DENISE	Swimmer F	Route107	3	Wingull 25, Goldeen 25	Wingull 27, Goldeen 27
+TRAINER_BETH	Swimmer F	Route107	3	Goldeen 26	Goldeen 28, Tentacool 27
+TRAINER_TARA	Swimmer F	Route108	3	Horsea 25, Marill 25	Horsea 27, Wattrel 27
+TRAINER_MISSY	Swimmer F	Route108	3	Goldeen 26	Goldeen 28, Tentacool 27
+TRAINER_ALICE	Swimmer F	Route109	2	Goldeen 24, Wingull 24, Goldeen 24	Goldeen 26, Wingull 26, Wattrel 26
+TRAINER_JENNY_1	Swimmer F	Route124	6	Wailmer 34	Wailmer 38, Dondozo 37
+TRAINER_GRACE	Swimmer F	Route124	6	Marill 34	Azumarill 38, Sharpedo 37
+TRAINER_TANYA	Swimmer F	Route125	6	Luvdisc 34	Luvdisc 38 @ Sitrus Berry, Dondozo 37
+TRAINER_SHARON	Swimmer F	Route125	6	Seaking 34	Seaking 38, Wailmer 37
+TRAINER_NIKKI	Swimmer F	Route126	5	Marill 33, Spheal 33	Azumarill 38, Barraskewda 38
+TRAINER_BRENDA	Swimmer F	Route126	6	Goldeen 34	Seaking 38, Pelipper 37
+TRAINER_KATIE	Swimmer F	Route130	5	Goldeen 33, Spheal 33	Seaking 38, Veluza 38
+TRAINER_SUSIE	Swimmer F	Route131	6	Luvdisc 34	Luvdisc 38 @ Mystic Water, Sealeo 37
+TRAINER_KARA	Swimmer F	Route131	6	Seaking 34	Seaking 38, Lanturn 37
+TRAINER_DANA	Swimmer F	Route132	6	Azumarill 34	Azumarill 38, Tentacruel 37
+TRAINER_SIENNA	Swimmer F	Route126	5	Luvdisc 33, Luvdisc 33	Luvdisc 38, Luvdisc 38
+TRAINER_DEBRA	Swimmer F	Route133	6	Seaking 34	Seaking 38, Pelipper 37
+TRAINER_LINDA	Swimmer F	Route133	5	Horsea 33, Seadra 33	Kingdra 38 @ Mystic Water, Kingdra 38
+TRAINER_LAUREL	Swimmer F	Route134	5	Luvdisc 33, Luvdisc 33	Luvdisc 38 @ Sitrus Berry, Dondozo 38
+TRAINER_CARLEE	Swimmer F	Route128	6	Seaking 35	Seaking 39 @ Mystic Water, Wailmer 38
+TRAINER_JENNY_2	Swimmer F	Route124	6	Wailmer 38	Wailord 42, Dondozo 41
+TRAINER_JENNY_3	Swimmer F	Route124	6	Wailmer 41	Wailord 45, Dondozo 44
+TRAINER_JENNY_4	Swimmer F	Route124	7	Staryu 43, Wailmer 43	Starmie 48, Wailord 48, Dondozo 48
+TRAINER_JENNY_5	Swimmer F	Route124	7	Luvdisc 45, Wailmer 45, Starmie 45	Luvdisc 50, Wailord 50, Starmie 50, Dondozo 50
+TRAINER_HEIDI	Picnicker	Route111	2	Sandshrew 22, Baltoy 22	Sandshrew 24, Applin 24
+TRAINER_BECKY	Picnicker	Route111	2	Sandshrew 22, Marill 22	Sandshrew 24 @ Oran Berry, Cottonee 24
+TRAINER_CAROL	Picnicker	Route112	1	Taillow 17, Lombre 17	Taillow 18, Tandemaus 18
+TRAINER_NANCY	Picnicker	Route114	1	Marill 18, Lombre 18	Marill 19, Applin 19
+TRAINER_MARTHA	Picnicker	Route110_TrickHousePuzzle3	2	Skitty 23, Swablu 23	Skitty 25, Wooloo 25
+TRAINER_DIANA_1	Picnicker	JaggedPass	1	Shroomish 19, Oddish 19, Swablu 19	Shroomish 20, Oddish 20, Hatenna 20
+TRAINER_CEDRIC	Psychic	MtPyre_6F	5	Wobbuffet 32	Wobbuffet 37, Hattrem 36
+TRAINER_IRENE	Picnicker	Route111	1	Shroomish 17, Marill 17	Shroomish 18, Smoliv 18
+TRAINER_DIANA_2	Picnicker	JaggedPass	3	Shroomish 25, Gloom 25, Swablu 25	Breloom 27, Gloom 27, Hatenna 27
+TRAINER_DIANA_3	Picnicker	JaggedPass	3	Breloom 28, Gloom 28, Swablu 28	Breloom 30, Gloom 30, Hatenna 30
+TRAINER_DIANA_4	Picnicker	JaggedPass	4	Breloom 31, Gloom 31, Swablu 31	Breloom 35, Vileplume 35, Hattrem 35
+TRAINER_DIANA_5	Picnicker	JaggedPass	6	Breloom 40, Vileplume 40, Altaria 40	Breloom 44, Vileplume 44, Hatterene 44
+TRAINER_AMY_AND_LIV_1	Twins	Route103	0	Plusle 15, Minun 15	Plusle 15, Tandemaus 15
+TRAINER_AMY_AND_LIV_2	Twins	Route103	3	Plusle 27, Minun 27	Plusle 29, Maushold-Four 29
+TRAINER_GINA_AND_MIA_1	Twins	Route104	0	Seedot 6, Lotad 6	Seedot 6, Lotad 6
+TRAINER_MIU_AND_YUKI	Twins	Route123	3	Beautifly 26, Dustox 26	Beautifly 28 @ Oran Berry, Dubwool 28
+TRAINER_AMY_AND_LIV_4	Twins	Route103	4	Plusle 30, Minun 30	Plusle 34, Maushold-Four 34
+TRAINER_AMY_AND_LIV_5	Twins	Route103	5	Plusle 33, Minun 33	Plusle 38 @ Magnet, Maushold-Four 38
+TRAINER_AMY_AND_LIV_6	Twins	Route103	6	Plusle 36, Minun 36	Plusle 40 @ Magnet, Maushold-Four 40
+TRAINER_HUEY	Sailor	Route109	0	Wingull 12, Machop 12	Wingull 12, Riolu 12
+TRAINER_EDMOND	Sailor	Route109	0	Wingull 13	Riolu 13
+TRAINER_ERNEST_1	Sailor	Route125	5	Wingull 33, Machoke 33	Pelipper 38, Veluza 38, Flamigo 37
+TRAINER_DWAYNE	Sailor	Route109_SeashoreHouse	0	Wingull 11, Machop 11, Tentacool 11	Wingull 11, Machop 11, Tentacool 11
+TRAINER_PHILLIP	Sailor	SSTidalLowerDeck	7	Tentacruel 44, Machoke 44	Tentacruel 49, Machamp 49
+TRAINER_LEONARD	Sailor	SSTidalLowerDeck	7	Machop 43, Pelipper 43, Machoke 43	Machamp 48 @ Black Belt, Pelipper 48, Machamp 48
+TRAINER_DUNCAN	Sailor	AbandonedShip_Corridors_B1F	3	Spheal 25, Machoke 25	Spheal 27, Pawmo 27
+TRAINER_ERNEST_2	Sailor	Route125	6	Wingull 36, Tentacool 36, Machoke 36	Pelipper 40, Veluza 40, Machamp 40, Flamigo 40
+TRAINER_ERNEST_3	Sailor	Route125	6	Pelipper 39, Tentacool 39, Machoke 39	Pelipper 43, Veluza 43, Machamp 43, Flamigo 43
+TRAINER_ERNEST_4	Sailor	Route125	6	Pelipper 42, Tentacool 42, Machoke 42	Pelipper 46, Veluza 46, Machamp 46, Flamigo 46
+TRAINER_ERNEST_5	Sailor	Route125	7	Pelipper 45, Machoke 45, Tentacruel 45	Pelipper 50, Veluza 50, Tentacruel 50, Flamigo 50
+TRAINER_ANNIKA	Pokefan	SootopolisCity_Gym_B1F	6	Feebas 39, Feebas 39	Milotic 43 @ Oran Berry, Milotic 43 @ Oran Berry
+TRAINER_JAZMYN	Cooltrainer 2	Route123	3	Absol 27	Absol 29, Riolu 28
+TRAINER_JONAS	Ninja Boy	Route123	4	Koffing 31	Koffing 35, Krokorok 34
+TRAINER_KAYLEY	Parasol Lady	Route123	4	Castform 31	Castform 35 @ Sitrus Berry, Basculegion 34
+TRAINER_AURON	Expert	Route125	5	Manectric 33, Machamp 33	Manectric 38 @ Magnet, Flamigo 38
+TRAINER_KELVIN	Sailor	Route134	5	Machoke 33, Spheal 33	Machamp 38 @ Black Belt, Barraskewda 38
+TRAINER_MARLEY	Cooltrainer	Route134	6	Manectric 34	Manectric 38 @ Magnet, Noibat 37
+TRAINER_REYNA	Battle Girl	Route134	5	Meditite 33, Hariyama 33	Meditite 38 @ Sitrus Berry, Hariyama 38
+TRAINER_HUDSON	Sailor	Route134	6	Wailmer 34	Wailmer 38, Basculegion 37
+TRAINER_CONOR	Expert	Route133	5	Chinchou 33, Hariyama 33	Lanturn 38, Lucario 38
+TRAINER_EDWIN_1	Collector	Route110	0	Lombre 14, Nuzleaf 14	Lombre 14, Nuzleaf 14
+TRAINER_HECTOR	Collector	Route115	1	Zangoose 18, Seviper 18	Zangoose 19, Pawmi 19
+TRAINER_EDWIN_2	Collector	Route110	3	Lombre 26, Nuzleaf 26	Lombre 28 @ Oran Berry, Nuzleaf 28
+TRAINER_EDWIN_3	Collector	Route110	3	Lombre 29, Nuzleaf 29	Lombre 31 @ Oran Berry, Nuzleaf 31
+TRAINER_EDWIN_4	Collector	Route110	5	Lombre 32, Nuzleaf 32	Ludicolo 37 @ Sitrus Berry, Shiftry 37
+TRAINER_EDWIN_5	Collector	Route110	6	Ludicolo 35, Shiftry 35	Ludicolo 39 @ Sitrus Berry, Shiftry 39
+TRAINER_ISAAC_1	Pkmn Breeder	Route117	0	Whismur 11, Zigzagoon 11, Aron 11, Poochyena 11, Taillow 11, Makuhita 11	Whismur 11, Zigzagoon 11, Aron 11, Wooloo 11, Taillow 11, Makuhita 11
+TRAINER_DAVIS	Bug Catcher	Route123	3	Pinsir 27	Pinsir 29, Spidops 28
+TRAINER_MITCHELL	Cooltrainer	VictoryRoad_B1F	7	Lunatone 43, Solrock 43	Lunatone 48 @ Sitrus Berry, Whimsicott 48
+TRAINER_ISAAC_2	Pkmn Breeder	Route117	2	Loudred 22, Linoone 22, Aron 22, Mightyena 22, Swellow 22, Makuhita 22	Loudred 24, Linoone 24, Aron 24, Wooloo 24, Swellow 24, Makuhita 24
+TRAINER_ISAAC_3	Pkmn Breeder	Route117	3	Loudred 25, Linoone 25, Aron 25, Mightyena 25, Swellow 25, Hariyama 25	Loudred 27, Linoone 27, Aron 27, Wooloo 27, Swellow 27, Hariyama 27
+TRAINER_ISAAC_4	Pkmn Breeder	Route117	3	Loudred 28, Linoone 28, Aron 28, Mightyena 28, Swellow 28, Hariyama 28	Loudred 30, Linoone 30, Aron 30, Dubwool 30, Swellow 30, Hariyama 30
+TRAINER_ISAAC_5	Pkmn Breeder	Route117	4	Loudred 31, Linoone 31, Lairon 31, Mightyena 31, Swellow 31, Hariyama 31	Loudred 35, Linoone 35, Lairon 35, Dubwool 35, Swellow 35, Hariyama 35
+TRAINER_LYDIA_1	Pkmn Breeder	Route117	0	Wingull 11, Shroomish 11, Marill 11, Roselia 11, Skitty 11, Goldeen 11	Wingull 11, Shroomish 11, Marill 11, Hatenna 11, Skitty 11, Goldeen 11
+TRAINER_HALLE	Cooltrainer	VictoryRoad_B1F	7	Sableye 43, Absol 43	Sableye 48 @ Black Glasses, Lycanroc 48
+TRAINER_GARRISON	Ruin Maniac	AbandonedShip_Rooms2_1F	3	Sandslash 26	Sandslash 28, Sandile 27
+TRAINER_LYDIA_2	Pkmn Breeder	Route117	2	Wingull 22, Shroomish 22, Marill 22, Roselia 22, Skitty 22, Goldeen 22	Wingull 24 @ Oran Berry, Shroomish 24, Azumarill 24, Hatenna 24, Skitty 24, Goldeen 24
+TRAINER_LYDIA_3	Pkmn Breeder	Route117	3	Pelipper 25, Breloom 25, Marill 25, Roselia 25, Delcatty 25, Goldeen 25	Pelipper 27 @ Oran Berry, Breloom 27, Azumarill 27, Hatenna 27, Delcatty 27, Goldeen 27
+TRAINER_LYDIA_4	Pkmn Breeder	Route117	3	Pelipper 28, Breloom 28, Marill 28, Roselia 28, Delcatty 28, Goldeen 28	Pelipper 30 @ Oran Berry, Breloom 30, Azumarill 30, Hatenna 30, Delcatty 30, Goldeen 30
+TRAINER_LYDIA_5	Pkmn Breeder	Route117	4	Pelipper 31, Breloom 31, Azumarill 31, Roselia 31, Delcatty 31, Seaking 31	Pelipper 35 @ Sitrus Berry, Breloom 35, Azumarill 35, Hattrem 35, Delcatty 35, Seaking 35
+TRAINER_JACKSON_1	Pkmn Ranger	Route119	3	Breloom 27	Breloom 29 @ Oran Berry, Masquerain 28
+TRAINER_LORENZO	Pkmn Ranger	Route120	3	Seedot 28, Nuzleaf 28, Lombre 28	Nuzleaf 30, Dolliv 30, Lombre 30
+TRAINER_SEBASTIAN	Pkmn Ranger	Route110_TrickHousePuzzle6	6	Cacturne 39	Cacturne 43 @ Miracle Seed, Arboliva 42
+TRAINER_JACKSON_2	Pkmn Ranger	Route119	4	Breloom 31	Breloom 35 @ Sitrus Berry, Masquerain 34
+TRAINER_JACKSON_3	Pkmn Ranger	Route119	6	Breloom 34	Breloom 38 @ Miracle Seed, Masquerain 37
+TRAINER_JACKSON_4	Pkmn Ranger	Route119	6	Breloom 37	Breloom 41 @ Miracle Seed, Masquerain 40
+TRAINER_JACKSON_5	Pkmn Ranger	Route119	6	Kecleon 39, Breloom 39	Kecleon 43 @ Silk Scarf, Breloom 43, Masquerain 43
+TRAINER_CATHERINE_1	Pkmn Ranger	Route119	3	Gloom 26, Roselia 26	Gloom 28 @ Oran Berry, Applin 28
+TRAINER_JENNA	Pkmn Ranger	Route120	3	Lotad 28, Lombre 28, Nuzleaf 28	Lombre 30, Lombre 30, Joltik 30
+TRAINER_SOPHIA	Pkmn Ranger	Route110_TrickHousePuzzle6	6	Swablu 38, Roselia 38	Altaria 42 @ Dragon Fang, Amoonguss 42
+TRAINER_CATHERINE_2	Pkmn Ranger	Route119	4	Gloom 30, Roselia 30	Vileplume 34 @ Sitrus Berry, Flapple 34
+TRAINER_CATHERINE_3	Pkmn Ranger	Route119	5	Gloom 33, Roselia 33	Vileplume 38 @ Sitrus Berry, Flapple 38
+TRAINER_CATHERINE_4	Pkmn Ranger	Route119	6	Gloom 36, Roselia 36	Vileplume 40 @ Sitrus Berry, Flapple 40
+TRAINER_CATHERINE_5	Pkmn Ranger	Route119	6	Bellossom 39, Roselia 39	Bellossom 43 @ Sitrus Berry, Flapple 43
+TRAINER_JULIO	Triathlete	JaggedPass	2	Magnemite 21	Magnemite 23 @ Oran Berry, Pawmo 22
+TRAINER_GRUNT_SEAFLOOR_CAVERN_5	Team Aqua	SeafloorCavern_Room3	6	Mightyena 35, Golbat 35	Mightyena 39 @ Black Glasses, Basculegion 39, Absol 38
+TRAINER_GRUNT_MT_PYRE_4	Team Aqua	MtPyre_Summit	4	Wailmer 30, Zubat 30	Wailmer 34, Thievul 34, Crawdaunt 33
+TRAINER_GRUNT_JAGGED_PASS	Team Magma	JaggedPass	2	Poochyena 22, Numel 22	Mightyena 24 @ Oran Berry, Thievul 24
+TRAINER_MARC	Hiker	RustboroCity_Gym	0	Geodude 8, Geodude 8	Geodude 8, Nacli 8
+TRAINER_BRENDEN	Sailor	DewfordTown_Gym	0	Machop 13	Machop 13
+TRAINER_LILITH	Battle Girl	DewfordTown_Gym	0	Meditite 13	Meditite 13
+TRAINER_CRISTIAN	Black Belt	DewfordTown_Gym	0	Makuhita 13	Makuhita 13
+TRAINER_SYLVIA	Hex Maniac	MossdeepCity_Gym	6	Meditite 36	Medicham 40 @ Black Belt, Grumpig 39
+TRAINER_LEONARDO	Swimmer M	Route126	6	Carvanha 34	Sharpedo 38, Sealeo 37
+TRAINER_ATHENA	Cooltrainer	Route127	5	Manectric 32, Linoone 32	Manectric 37, Flamigo 37
+TRAINER_HARRISON	Swimmer M	Route128	6	Tentacruel 35	Tentacruel 39, Pelipper 38
+TRAINER_GRUNT_MT_CHIMNEY_2	Team Magma	MtChimney	2	Zubat 20	Zubat 22 @ Oran Berry, Numel 21
+TRAINER_CLARENCE	Swimmer M	Route129	6	Sharpedo 34	Sharpedo 38, Veluza 37
+TRAINER_NATE	Gentleman	MossdeepCity_Gym	6	Spoink 36	Grumpig 40 @ Sitrus Berry, Hattrem 39
+TRAINER_KATHLEEN	Hex Maniac	MossdeepCity_Gym	6	Kadabra 36	Alakazam 40 @ Twisted Spoon, Indeedee-F 39
+TRAINER_CLIFFORD	Gentleman	MossdeepCity_Gym	6	Girafarig 36	Girafarig 40 @ Sitrus Berry, Grumpig 39
+TRAINER_NICHOLAS	Psychic	MossdeepCity_Gym	6	Wobbuffet 36	Wobbuffet 40 @ Sitrus Berry, Gardevoir 39
+TRAINER_GRUNT_SPACE_CENTER_3	Team Magma	MossdeepCity_SpaceCenter_1F	4	Zubat 31, Poochyena 31	Crobat 35 @ Sitrus Berry, Scovillain 35
+TRAINER_GRUNT_SPACE_CENTER_4	Team Magma	MossdeepCity_SpaceCenter_1F	5	Baltoy 32	Baltoy 37 @ Sitrus Berry, Scovillain 36
+TRAINER_GRUNT_SPACE_CENTER_5	Team Magma	MossdeepCity_SpaceCenter_2F	5	Zubat 32	Crobat 37 @ Sitrus Berry, Litwick 36
+TRAINER_GRUNT_SPACE_CENTER_6	Team Magma	MossdeepCity_SpaceCenter_2F	5	Mightyena 32	Mightyena 37, Litwick 36
+TRAINER_GRUNT_SPACE_CENTER_7	Team Magma	MossdeepCity_SpaceCenter_2F	5	Baltoy 32	Baltoy 37, Sableye 36
+TRAINER_MACEY	Psychic	MossdeepCity_Gym	6	Natu 36	Xatu 40, Chimecho 39
+TRAINER_PAXTON	Expert	Route132	5	Swellow 33, Breloom 33	Swellow 38 @ Silk Scarf, Crabominable 38
+TRAINER_ISABELLA	Triathlete	Route124	6	Staryu 34	Starmie 38 @ Sitrus Berry, Heliolisk 37
+TRAINER_GRUNT_WEATHER_INST_5	Team Aqua	Route119_WeatherInstitute_2F	3	Zubat 27, Poochyena 27	Golbat 29, Thievul 29
+TRAINER_JONATHAN	Cooltrainer	Route132	5	Kecleon 33, Loudred 33	Kecleon 38, Loudred 38
+TRAINER_TIANA	Lass	Route102	0	Zigzagoon 4, Shroomish 4	Zigzagoon 4, Lechonk 4
+TRAINER_HALEY_1	Lass	Route104	0	Lotad 6, Shroomish 6	Lotad 6, Lechonk 6
+TRAINER_JANICE	Lass	Route116	0	Marill 9	Marill 9
+TRAINER_VIVI	Winstrate	Route111	0	Marill 15, Shroomish 15, Numel 15	Marill 15, Shroomish 15, Numel 15
+TRAINER_HALEY_2	Lass	Route104	3	Lombre 26, Shroomish 26	Lombre 28, Oinkologne-M 28
+TRAINER_HALEY_3	Lass	Route104	3	Lombre 29, Breloom 29	Lombre 31, Oinkologne-M 31
+TRAINER_HALEY_4	Lass	Route104	5	Lombre 32, Breloom 32	Ludicolo 37, Oinkologne-M 37
+TRAINER_HALEY_5	Lass	Route104	6	Swellow 34, Lombre 34, Breloom 34	Swellow 38, Oinkologne-M 38, Breloom 38
+TRAINER_SALLY	Lass	Route110_TrickHousePuzzle1	1	Oddish 16	Smoliv 17
+TRAINER_ROBIN	Lass	Route110_TrickHousePuzzle1	0	Skitty 14, Shroomish 14, Marill 14	Skitty 14, Shroomish 14, Hatenna 14
+TRAINER_ANDREA	Lass	SootopolisCity_Gym_B1F	6	Luvdisc 40	Luvdisc 44, Kilowattrel 43
+TRAINER_CRISSY	Lass	SootopolisCity_Gym_B1F	6	Goldeen 39, Wailmer 39	Seaking 43 @ Mystic Water, Barraskewda 43, Wailord 42
+TRAINER_RICK	Bug Catcher	Route102	0	Wurmple 4, Wurmple 4	Wurmple 4, Wurmple 4
+TRAINER_LYLE	Bug Catcher	PetalburgWoods	0	Wurmple 3, Wurmple 3, Wurmple 3, Wurmple 3	Wurmple 3, Wurmple 3, Wurmple 3, Wurmple 3
+TRAINER_JOSE	Bug Catcher	Route116	0	Wurmple 8, Nincada 8	Wurmple 8, Tarountula 8
+TRAINER_DOUG	Bug Catcher	Route119	3	Nincada 28, Ninjask 28	Ninjask 30, Ninjask 30
+TRAINER_GREG	Bug Catcher	Route119	3	Volbeat 25, Illumise 25	Volbeat 27, Spidops 27
+TRAINER_KENT	Bug Catcher	Route119	3	Ninjask 25	Ninjask 27, Spidops 26
+TRAINER_JAMES_1	Bug Catcher	PetalburgWoods	0	Nincada 6, Nincada 6	Nincada 6, Nincada 6
+TRAINER_JAMES_2	Bug Catcher	PetalburgWoods	3	Ninjask 27	Ninjask 29, Spidops 28
+TRAINER_JAMES_3	Bug Catcher	PetalburgWoods	3	Dustox 29, Ninjask 29	Dustox 31, Ninjask 31, Spidops 31
+TRAINER_JAMES_4	Bug Catcher	PetalburgWoods	4	Surskit 31, Dustox 31, Ninjask 31	Masquerain 35, Dustox 35, Ninjask 35, Spidops 35
+TRAINER_JAMES_5	Bug Catcher	PetalburgWoods	5	Surskit 33, Ninjask 33, Dustox 33, Ninjask 33	Masquerain 38, Spidops 38, Dustox 38, Ninjask 38
+TRAINER_BRICE	Hiker	Route112	1	Numel 17, Machop 17	Numel 18, Machop 18
+TRAINER_TRENT_1	Hiker	Route112	1	Geodude 16, Geodude 17, Geodude 16	Geodude 17, Geodude 18, Nacli 17
+TRAINER_LENNY	Hiker	Route114	1	Geodude 18, Machop 18	Geodude 19, Glimmet 19
+TRAINER_LUCAS_1	Hiker	Route114	1	Geodude 18, Numel 18	Geodude 19, Numel 19
+TRAINER_ALAN	Hiker	Route110_TrickHousePuzzle3	2	Geodude 22, Nosepass 22, Graveler 22	Geodude 24, Nacli 24, Graveler 24
+TRAINER_CLARK	Hiker	Route116	0	Geodude 8	Glimmet 8
+TRAINER_ERIC	Hiker	JaggedPass	2	Geodude 20, Baltoy 20	Geodude 22, Cufant 22
+TRAINER_MIKE_2	Hiker	RusturfTunnel	1	Geodude 16, Geodude 16, Machop 16	Geodude 17, Geodude 17, Machop 17
+TRAINER_TRENT_2	Hiker	Route112	2	Geodude 24, Geodude 24, Geodude 24, Graveler 24	Geodude 26 @ Oran Berry, Geodude 26, Nacli 26, Graveler 26
+TRAINER_TRENT_3	Hiker	Route112	3	Geodude 27, Geodude 27, Graveler 27, Graveler 27	Graveler 29 @ Oran Berry, Graveler 29, Naclstack 29, Graveler 29
+TRAINER_TRENT_4	Hiker	Route112	4	Geodude 30, Graveler 30, Graveler 30, Graveler 30	Golem 34 @ Sitrus Berry, Golem 34, Naclstack 34, Golem 34
+TRAINER_TRENT_5	Hiker	Route112	5	Graveler 33, Graveler 33, Graveler 33, Golem 33	Golem 38 @ Sitrus Berry, Golem 38, Naclstack 38, Golem 38
+TRAINER_DEZ_AND_LUKE	Young Couple	MtPyre_2F	4	Delcatty 31, Manectric 31	Delcatty 35, Manectric 35
+TRAINER_LEA_AND_JED	Young Couple	SSTidalRooms	7	Luvdisc 45, Luvdisc 45	Luvdisc 50, Grimmsnarl 50
+TRAINER_KIRA_AND_DAN_1	Young Couple	AbandonedShip_Rooms2_1F	3	Volbeat 25, Illumise 25	Volbeat 27 @ Oran Berry, Cottonee 27
+TRAINER_KIRA_AND_DAN_2	Young Couple	AbandonedShip_Rooms2_1F	4	Volbeat 30, Illumise 30	Volbeat 34 @ Sitrus Berry, Whimsicott 34
+TRAINER_KIRA_AND_DAN_3	Young Couple	AbandonedShip_Rooms2_1F	5	Volbeat 33, Illumise 33	Volbeat 38 @ Sitrus Berry, Whimsicott 38
+TRAINER_KIRA_AND_DAN_4	Young Couple	AbandonedShip_Rooms2_1F	6	Volbeat 36, Illumise 36	Volbeat 40 @ Sitrus Berry, Whimsicott 40
+TRAINER_KIRA_AND_DAN_5	Young Couple	AbandonedShip_Rooms2_1F	6	Volbeat 39, Illumise 39	Volbeat 43 @ Sitrus Berry, Whimsicott 43
+TRAINER_JOHANNA	Beauty	Route109_SeashoreHouse	0	Goldeen 13	Goldeen 13
+TRAINER_VIVIAN	Battle Girl	MauvilleCity_Gym	1	Meditite 17, Meditite 17	Meditite 18, Meditite 18
+TRAINER_HIDEO	Ninja Boy	Route119	3	Koffing 25, Koffing 25	Koffing 27, Shroodle 27
+TRAINER_KEIGO	Ninja Boy	Route120	3	Koffing 28, Ninjask 28	Koffing 30 @ Oran Berry, Ninjask 30
+TRAINER_RILEY	Ninja Boy	Route120	3	Nincada 28, Koffing 28	Ninjask 30 @ Oran Berry, Sandile 30
+TRAINER_FLINT	Camper	FortreeCity_Gym	3	Swellow 29, Xatu 29	Swellow 31 @ Oran Berry, Kilowattrel 31
+TRAINER_ASHLEY	Picnicker	FortreeCity_Gym	3	Swablu 27, Swablu 27, Swablu 27	Swablu 29, Swablu 29, Kilowattrel 29
+TRAINER_JONAH	Fisherman	Route127	5	Wailmer 30, Tentacool 31, Sharpedo 32	Wailmer 35, Basculegion 36, Sharpedo 37
+TRAINER_HENRY	Fisherman	Route127	6	Carvanha 31, Tentacruel 34	Sharpedo 35, Tentacruel 38
+TRAINER_ROGER	Fisherman	Route127	6	Magikarp 15, Magikarp 25, Gyarados 35	Veluza 19, Gyarados 29, Gyarados 39
+TRAINER_ALEXA	Cooltrainer	Route128	6	Gloom 34, Azumarill 34	Vileplume 38, Azumarill 38, Grumpig 37
+TRAINER_RUBEN	Cooltrainer	Route128	6	Shiftry 34, Nosepass 34	Shiftry 38, Rotom 38, Loudred 37
+TRAINER_KOJI_1	Black Belt	Route127	6	Machoke 34	Machamp 38, Meditite 37
+TRAINER_WAYNE	Fisherman	Route128	6	Tentacool 31, Tentacool 31, Wailmer 36	Veluza 35, Tentacruel 35, Wailmer 40
+TRAINER_AIDAN	Bird Keeper	Route127	5	Swellow 32, Skarmory 32	Swellow 37, Flamigo 37
+TRAINER_REED	Swimmer M	Route129	5	Spheal 33, Sharpedo 33	Sealeo 38 @ Never-Melt Ice, Sharpedo 38
+TRAINER_TISHA	Swimmer F	Route129	6	Chinchou 34	Lanturn 38, Tentacruel 37
+TRAINER_TORI_AND_TIA	Twins	Route113	1	Spinda 19, Spinda 19	Spinda 20, Cottonee 20
+TRAINER_KIM_AND_IRIS	Sr And Jr	Route125	6	Swablu 32, Numel 35	Swablu 36, Camerupt 39
+TRAINER_TYRA_AND_IVY	Sr And Jr	Route114	2	Roselia 18, Graveler 20	Roselia 20, Graveler 22
+TRAINER_MEL_AND_PAUL	Young Couple	Route109	3	Dustox 27, Beautifly 27	Dustox 29 @ Oran Berry, Beautifly 29
+TRAINER_JOHN_AND_JAY_1	Old Couple	MeteorFalls_1F_2R	6	Medicham 39, Hariyama 39	Medicham 43, Hariyama 43
+TRAINER_JOHN_AND_JAY_2	Old Couple	MeteorFalls_1F_2R	7	Medicham 43, Hariyama 43	Medicham 48, Hariyama 48
+TRAINER_JOHN_AND_JAY_3	Old Couple	MeteorFalls_1F_2R	7	Medicham 46, Hariyama 46	Medicham 51, Hariyama 51
+TRAINER_JOHN_AND_JAY_4	Old Couple	MeteorFalls_1F_2R	8	Medicham 49, Hariyama 49	Medicham 54, Hariyama 54
+TRAINER_JOHN_AND_JAY_5	Old Couple	MeteorFalls_1F_2R	8	Medicham 52, Hariyama 52	Medicham 57, Hariyama 57
+TRAINER_RELI_AND_IAN	Sis And Bro	Route131	6	Azumarill 35, Wingull 33	Azumarill 39, Kilowattrel 37
+TRAINER_LILA_AND_ROY_1	Sis And Bro	Route124	6	Chinchou 34, Carvanha 33	Lanturn 38, Arboliva 37
+TRAINER_LILA_AND_ROY_2	Sis And Bro	Route124	6	Chinchou 42, Carvanha 40	Lanturn 46, Arboliva 44
+TRAINER_LILA_AND_ROY_3	Sis And Bro	Route124	7	Lanturn 45, Carvanha 43	Lanturn 50, Arboliva 48
+TRAINER_LILA_AND_ROY_4	Sis And Bro	Route124	8	Lanturn 48, Sharpedo 46	Lanturn 53, Arboliva 51
+TRAINER_LILA_AND_ROY_5	Sis And Bro	Route124	8	Lanturn 51, Sharpedo 49	Lanturn 56, Arboliva 54
+TRAINER_LISA_AND_RAY	Sis And Bro	Route107	3	Goldeen 27, Tentacool 25	Goldeen 29, Wooloo 27
+TRAINER_CHRIS	Fisherman	Route119	3	Magikarp 29, Tentacool 20, Feebas 26, Carvanha 23	Gyarados 31, Tentacool 22, Feebas 28, Carvanha 25
+TRAINER_DAWSON	Rich Boy	Route116	0	Zigzagoon 8, Poochyena 8	Zigzagoon 8 @ Nugget, Poochyena 8
+TRAINER_SARAH	Lady	Route116	0	Lotad 8, Zigzagoon 8	Lotad 8, Lechonk 8
+TRAINER_DARIAN	Fisherman	Route104	0	Magikarp 9	Magikarp 9
+TRAINER_HAILEY	Tuber F	Route109	0	Marill 13	Marill 13
+TRAINER_CHANDLER	Tuber M	Route109	0	Tentacool 12, Tentacool 12	Tentacool 12, Wattrel 12
+TRAINER_KALEB	Pokefan	Route110	0	Minun 14, Plusle 14	Minun 14 @ Oran Berry, Lechonk 14
+TRAINER_JOSEPH	Guitarist	Route110	0	Electrike 14, Voltorb 14	Electrike 14, Wattrel 14
+TRAINER_ALYSSA	Triathlete	Route110	0	Magnemite 15	Rookidee 15
+TRAINER_MARCOS	Guitarist	Route103	0	Voltorb 15	Wattrel 15
+TRAINER_RHETT	Black Belt	Route103	0	Makuhita 15	Makuhita 15
+TRAINER_TYRON	Camper	Route111	1	Sandshrew 19	Lechonk 20
+TRAINER_CELINA	Aroma Lady	Route111	1	Roselia 18	Applin 19
+TRAINER_BIANCA	Picnicker	Route111	1	Shroomish 18	Shroomish 19
+TRAINER_HAYDEN	Kindler	Route111	1	Numel 18	Numel 19
+TRAINER_SOPHIE	Picnicker	Route113	1	Marill 17, Lombre 19	Marill 18, Lombre 20
+TRAINER_COBY	Bird Keeper	Route113	1	Skarmory 17, Swellow 19	Skarmory 18, Swellow 20
+TRAINER_LAWRENCE	Camper	Route113	1	Baltoy 18, Sandshrew 18	Baltoy 19, Sandshrew 19
+TRAINER_WYATT	Pokemaniac	Route113	1	Aron 18, Aron 18	Aron 19, Glimmet 19
+TRAINER_ANGELINA	Picnicker	Route114	1	Lombre 18, Marill 18	Lombre 19, Lechonk 19
+TRAINER_KAI	Fisherman	Route114	1	Barboach 19	Barboach 20
+TRAINER_CHARLOTTE	Picnicker	Route114	1	Nuzleaf 19	Wooloo 20
+TRAINER_DEANDRE	Youngster	Route118	0	Zigzagoon 14, Aron 14, Electrike 14	Zigzagoon 14, Aron 14, Electrike 14
+TRAINER_GRUNT_MAGMA_HIDEOUT_1	Team Magma	MagmaHideout_1F	3	Zubat 29	Golbat 31, Sandile 30
+TRAINER_GRUNT_MAGMA_HIDEOUT_2	Team Magma	MagmaHideout_1F	3	Poochyena 29	Mightyena 31 @ Oran Berry, Shroodle 30
+TRAINER_GRUNT_MAGMA_HIDEOUT_3	Team Magma	MagmaHideout_2F_1R	3	Numel 29	Numel 31, Carvanha 30
+TRAINER_GRUNT_MAGMA_HIDEOUT_4	Team Magma	MagmaHideout_2F_1R	3	Baltoy 28, Zubat 28	Baltoy 30, Thievul 30
+TRAINER_GRUNT_MAGMA_HIDEOUT_5	Team Magma	MagmaHideout_2F_1R	3	Baltoy 28, Numel 28	Baltoy 30, Numel 30
+TRAINER_GRUNT_MAGMA_HIDEOUT_6	Team Magma	MagmaHideout_2F_2R	3	Mightyena 29	Mightyena 31 @ Oran Berry, Thievul 30
+TRAINER_GRUNT_MAGMA_HIDEOUT_7	Team Magma	MagmaHideout_2F_2R	3	Zubat 29	Golbat 31, Capsakid 30
+TRAINER_GRUNT_MAGMA_HIDEOUT_8	Team Magma	MagmaHideout_2F_2R	3	Poochyena 29	Mightyena 31, Numel 30
+TRAINER_GRUNT_MAGMA_HIDEOUT_9	Team Magma	MagmaHideout_3F_1R	3	Zubat 29	Golbat 31, Slugma 30
+TRAINER_GRUNT_MAGMA_HIDEOUT_10	Team Magma	MagmaHideout_3F_2R	3	Mightyena 29	Mightyena 31, Carvanha 30
+TRAINER_GRUNT_MAGMA_HIDEOUT_11	Team Magma	MagmaHideout_4F	3	Baltoy 29	Baltoy 31, Sandile 30
+TRAINER_GRUNT_MAGMA_HIDEOUT_12	Team Magma	MagmaHideout_4F	3	Numel 29	Numel 31, Mightyena 30
+TRAINER_GRUNT_MAGMA_HIDEOUT_13	Team Magma	MagmaHideout_4F	3	Zubat 29	Golbat 31, Slugma 30
+TRAINER_GRUNT_MAGMA_HIDEOUT_14	Team Magma	MagmaHideout_2F_1R	3	Mightyena 29	Mightyena 31, Capsakid 30
+TRAINER_GRUNT_MAGMA_HIDEOUT_15	Team Magma	MagmaHideout_2F_2R	3	Numel 29	Numel 31 @ Oran Berry, Sableye 30
+TRAINER_GRUNT_MAGMA_HIDEOUT_16	Team Magma	MagmaHideout_3F_1R	3	Baltoy 29	Baltoy 31, Thievul 30
+TRAINER_DARCY	Cooltrainer	Route132	5	Pelipper 33, Camerupt 33	Pelipper 38, Noibat 38
+TRAINER_PETE	Swimmer M	Route103	0	Tentacool 15	Tentacool 15
+TRAINER_ISABELLE	Swimmer F	Route103	0	Marill 15	Marill 15
+TRAINER_ANDRES_1	Ruin Maniac	Route105	3	Sandshrew 25, Sandshrew 25	Sandslash 27, Sandslash 27
+TRAINER_JOSUE	Bird Keeper	Route105	3	Taillow 25, Wingull 25	Swellow 27, Wingull 27
+TRAINER_CAMRON	Triathlete	Route107	3	Staryu 26	Staryu 28 @ Oran Berry, Flamigo 27
+TRAINER_CORY_1	Sailor	Route108	2	Wingull 24, Machop 24, Tentacool 24	Wingull 26, Flamigo 26, Tentacool 26
+TRAINER_CAROLINA	Cooltrainer	Route108	2	Manectric 24, Swellow 24, Manectric 24	Manectric 26, Swellow 26, Manectric 26
+TRAINER_ELIJAH	Bird Keeper	Route109	3	Skarmory 25, Skarmory 25	Skarmory 27, Noibat 27
+TRAINER_CELIA	Picnicker	Route111	2	Marill 22, Lombre 22	Azumarill 24, Wooloo 24
+TRAINER_BRYAN	Ruin Maniac	Route111	2	Sandshrew 22, Sandslash 22	Sandshrew 24, Sandslash 24
+TRAINER_BRANDEN	Camper	Route111	2	Taillow 22, Nuzleaf 22	Taillow 24, Joltik 24
+TRAINER_BRYANT	Kindler	Route112	1	Numel 18, Slugma 18	Numel 19, Slugma 19
+TRAINER_SHAYLA	Aroma Lady	Route112	1	Shroomish 18, Roselia 18	Shroomish 19, Roselia 19
+TRAINER_KYRA	Triathlete	Route115	3	Doduo 26, Dodrio 26	Doduo 28, Dodrio 28
+TRAINER_JAIDEN	Ninja Boy	Route115	3	Ninjask 26, Gulpin 26	Ninjask 28, Thievul 28
+TRAINER_ALIX	Psychic	Route115	3	Kadabra 26, Kirlia 26	Kadabra 28, Hatenna 28
+TRAINER_HELENE	Battle Girl	Route115	3	Meditite 26, Makuhita 26	Meditite 28, Pawmo 28
+TRAINER_MARLENE	Psychic	Route115	1	Meditite 18, Spoink 18	Meditite 19, Hatenna 19
+TRAINER_DEVAN	Hiker	Route116	0	Geodude 8, Geodude 8	Geodude 8, Glimmet 8
+TRAINER_JOHNSON	Youngster	Route116	0	Shroomish 8, Lotad 8	Shroomish 8, Tandemaus 8
+TRAINER_MELINA	Triathlete	Route117	1	Doduo 17	Doduo 18
+TRAINER_BRANDI	Psychic	Route117	1	Ralts 17	Hatenna 18
+TRAINER_AISHA	Battle Girl	Route117	1	Meditite 17	Meditite 18
+TRAINER_MAKAYLA	Expert	Route132	5	Roselia 33, Medicham 33	Roserade 38, Pawmo 38, Hariyama 37
+TRAINER_FABIAN	Guitarist	Route119	3	Manectric 26	Manectric 28, Rotom 27
+TRAINER_DAYTON	Kindler	Route119	3	Slugma 25, Numel 25	Slugma 27, Numel 27
+TRAINER_RACHEL	Parasol Lady	Route119	3	Goldeen 26	Goldeen 28, Wattrel 27
+TRAINER_LEONEL	Cooltrainer	Route120	4	Manectric 30	Manectric 34, Basculegion 33
+TRAINER_CALLIE	Battle Girl	Route120	3	Meditite 28, Makuhita 28	Meditite 30, Hariyama 30
+TRAINER_CALE	Bug Maniac	Route121	3	Dustox 29, Beautifly 29	Dustox 31, Beautifly 31
+TRAINER_MYLES	Pkmn Breeder	Route121	3	Makuhita 25, Wingull 25, Tropius 25, Zigzagoon 25, Electrike 25, Numel 25	Makuhita 27, Wingull 27, Tropius 27, Linoone 27, Electrike 27, Numel 27
+TRAINER_PAT	Pkmn Breeder	Route121	3	Poochyena 25, Shroomish 25, Electrike 25, Marill 25, Sandshrew 25, Gulpin 25	Mightyena 27, Wooloo 27, Electrike 27, Azumarill 27, Sandslash 27, Gulpin 27
+TRAINER_CRISTIN_1	Cooltrainer	Route121	3	Loudred 29, Vigoroth 29	Loudred 31 @ Oran Berry, Vigoroth 31
+TRAINER_ANGELO	Bug Maniac	MauvilleCity_Gym	1	Illumise 17, Volbeat 17	Illumise 18, Shinx 18
+TRAINER_DARIUS	Bird Keeper	FortreeCity_Gym	4	Tropius 30	Tropius 34 @ Sitrus Berry, Corvisquire 33
+TRAINER_ANDRES_2	Ruin Maniac	Route105	4	Sandshrew 31, Sandshrew 31	Sandslash 35, Sandslash 35
+TRAINER_ANDRES_3	Ruin Maniac	Route105	5	Nosepass 33, Sandshrew 33, Sandshrew 33	Probopass 38, Sandslash 38, Sandslash 38
+TRAINER_ANDRES_4	Ruin Maniac	Route105	6	Nosepass 35, Sandshrew 35, Sandshrew 35	Probopass 39, Sandslash 39, Sandslash 39
+TRAINER_ANDRES_5	Ruin Maniac	Route105	6	Nosepass 37, Sandslash 37, Sandslash 37	Probopass 41, Sandslash 41, Sandslash 41
+TRAINER_CORY_2	Sailor	Route108	4	Wingull 30, Machop 30, Tentacool 30	Pelipper 34, Flamigo 34, Tentacruel 34
+TRAINER_CORY_3	Sailor	Route108	5	Pelipper 32, Machop 32, Tentacool 32	Pelipper 37, Flamigo 37, Tentacruel 37
+TRAINER_CORY_4	Sailor	Route108	6	Pelipper 34, Machop 34, Tentacruel 34	Pelipper 38, Flamigo 38, Tentacruel 38
+TRAINER_CORY_5	Sailor	Route108	6	Pelipper 36, Machoke 36, Tentacruel 36	Pelipper 40, Flamigo 40, Tentacruel 40
+TRAINER_PABLO_2	Triathlete	Route126	6	Staryu 37, Staryu 37	Starmie 41 @ Sitrus Berry, Barraskewda 41
+TRAINER_PABLO_3	Triathlete	Route126	6	Wingull 39, Staryu 39, Staryu 39	Pelipper 43 @ Sitrus Berry, Barraskewda 43, Starmie 43
+TRAINER_PABLO_4	Triathlete	Route126	6	Pelipper 41, Staryu 41, Staryu 41	Pelipper 45 @ Sitrus Berry, Barraskewda 45, Starmie 45
+TRAINER_PABLO_5	Triathlete	Route126	7	Pelipper 43, Starmie 43, Starmie 43	Pelipper 48 @ Sitrus Berry, Barraskewda 48, Starmie 48
+TRAINER_KOJI_2	Black Belt	Route127	6	Machoke 37, Machoke 37	Machamp 41, Machamp 41, Medicham 40
+TRAINER_KOJI_3	Black Belt	Route127	6	Makuhita 39, Machoke 39, Machoke 39	Hariyama 43, Machamp 43, Machamp 43, Medicham 43
+TRAINER_KOJI_4	Black Belt	Route127	6	Hariyama 41, Machoke 41, Machoke 41	Hariyama 45, Machamp 45, Machamp 45, Medicham 45
+TRAINER_KOJI_5	Black Belt	Route127	7	Hariyama 43, Machamp 43, Machamp 43	Hariyama 48, Machamp 48, Machamp 48, Medicham 48
+TRAINER_CRISTIN_2	Cooltrainer	Route121	6	Loudred 35, Vigoroth 35	Loudred 39 @ Sitrus Berry, Slaking 39, Roserade 38
+TRAINER_CRISTIN_3	Cooltrainer	Route121	6	Spinda 37, Loudred 37, Vigoroth 37	Spinda 41 @ Sitrus Berry, Loudred 41, Slaking 41, Roserade 41
+TRAINER_CRISTIN_4	Cooltrainer	Route121	6	Spinda 39, Loudred 39, Vigoroth 39	Spinda 43 @ Sitrus Berry, Exploud 43, Slaking 43, Roserade 43
+TRAINER_CRISTIN_5	Cooltrainer	Route121	6	Spinda 41, Exploud 41, Slaking 41	Spinda 45 @ Sitrus Berry, Exploud 45, Slaking 45, Roserade 45
+TRAINER_FERNANDO_2	Guitarist	Route123	6	Electrike 35, Electrike 35, Loudred 35	Manectric 39 @ Magnet, Manectric 39, Loudred 39
+TRAINER_FERNANDO_3	Guitarist	Route123	6	Electrike 37, Manectric 37, Loudred 37	Manectric 41 @ Magnet, Manectric 41, Loudred 41
+TRAINER_FERNANDO_4	Guitarist	Route123	6	Manectric 39, Manectric 39, Loudred 39	Manectric 43 @ Magnet, Manectric 43, Exploud 43
+TRAINER_FERNANDO_5	Guitarist	Route123	6	Manectric 41, Manectric 41, Exploud 41	Manectric 45 @ Magnet, Manectric 45, Exploud 45
+TRAINER_SAWYER_2	Hiker	MtChimney	3	Geodude 26, Numel 26	Geodude 28, Numel 28, Solrock 28
+TRAINER_SAWYER_3	Hiker	MtChimney	3	Machop 28, Numel 28, Graveler 28	Machop 30, Numel 30, Graveler 30, Solrock 30
+TRAINER_SAWYER_4	Hiker	MtChimney	4	Machop 30, Numel 30, Graveler 30	Machamp 34, Numel 34, Golem 34, Solrock 34
+TRAINER_SAWYER_5	Hiker	MtChimney	5	Machoke 33, Camerupt 33, Golem 33	Machamp 38, Camerupt 38, Golem 38, Solrock 38
+TRAINER_GABRIELLE_2	Pkmn Breeder	MtPyre_3F	4	Skitty 31, Mightyena 31, Zigzagoon 31, Lotad 31, Seedot 31, Taillow 31	Delcatty 35, Mightyena 35, Linoone 35, Whimsicott 35, Shiftry 35, Swellow 35
+TRAINER_GABRIELLE_3	Pkmn Breeder	MtPyre_3F	5	Skitty 33, Mightyena 33, Linoone 33, Lombre 33, Nuzleaf 33, Taillow 33	Delcatty 38, Mightyena 38, Linoone 38, Whimsicott 38, Shiftry 38, Swellow 38
+TRAINER_GABRIELLE_4	Pkmn Breeder	MtPyre_3F	6	Delcatty 35, Mightyena 35, Linoone 35, Lombre 35, Nuzleaf 35, Swellow 35	Delcatty 39, Mightyena 39, Linoone 39, Whimsicott 39, Shiftry 39, Swellow 39
+TRAINER_GABRIELLE_5	Pkmn Breeder	MtPyre_3F	6	Delcatty 37, Mightyena 37, Linoone 37, Ludicolo 37, Shiftry 37, Swellow 37	Delcatty 41, Mightyena 41, Linoone 41, Whimsicott 41, Shiftry 41, Swellow 41
+TRAINER_THALIA_2	Beauty	AbandonedShip_Rooms_1F	6	Wailmer 34, Horsea 34	Wailmer 38, Oinkologne-M 38
+TRAINER_THALIA_3	Beauty	AbandonedShip_Rooms_1F	6	Luvdisc 36, Wailmer 36, Seadra 36	Luvdisc 40, Oinkologne-M 40, Kingdra 40
+TRAINER_THALIA_4	Beauty	AbandonedShip_Rooms_1F	6	Luvdisc 38, Wailmer 38, Seadra 38	Luvdisc 42, Oinkologne-M 42, Kingdra 42
+TRAINER_THALIA_5	Beauty	AbandonedShip_Rooms_1F	6	Luvdisc 40, Wailord 40, Kingdra 40	Luvdisc 44, Oinkologne-M 44, Kingdra 44
+TRAINER_MARIELA	Psychic	Route110_TrickHousePuzzle7	6	Chimecho 41	Chimecho 45, Claydol 44
+TRAINER_ALVARO	Psychic	Route110_TrickHousePuzzle7	6	Banette 41, Kadabra 41	Banette 45, Indeedee-F 45
+TRAINER_EVERETT	Gentleman	Route110_TrickHousePuzzle7	6	Wobbuffet 41	Wobbuffet 45 @ Twisted Spoon, Dubwool 44
