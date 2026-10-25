@@ -12,12 +12,12 @@ include deal_setup.inc
 0 press DOWN 2
 0 press A 2
 0 until_cb2 CB2_UpdatePartyMenu 600 A
-0 wait 30
+0 wait 60
 0 press A 2
 0 wait 60
 0 shot gift-last-one
 0 until_cb2 CB2_UpdatePartyMenu 600 A
-0 wait 30
+0 wait 60
 0 press B 2
 0 mash_field 1200 B
 1 expect coop_deal.sDeal 0
@@ -74,14 +74,15 @@ b expect_txn 0
 0 press DOWN 2
 0 press A 2
 0 until_cb2 CB2_UpdatePartyMenu 600 A
-0 wait 30
+0 wait 60
 0 press DOWN 2
 0 press DOWN 2
 0 press A 2
 0 wait 90
 0 shot gift-mail
+0 hex coop_deal.sDeal 4
 0 until_cb2 CB2_UpdatePartyMenu 600 A
-0 wait 30
+0 wait 60
 0 press DOWN 2
 0 press A 2
 0 until_mem coop_deal.sDeal 1 900 A

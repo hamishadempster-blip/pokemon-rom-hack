@@ -1,0 +1,85 @@
+# Partner menu edge cases (actual play from the story_seg6 saves):
+# 1. Busy: player 1 has the start menu open. Player 0's request waits,
+#    player 1's menu is not interrupted, and after a few seconds player 0
+#    hears that player 1 is busy.
+# 2. Both ask at once: link player 0 keeps its question, player 1's own
+#    request ends ("busy") and player 1 is asked instead; player 1 says NO.
+# 3. The partner leaves: (FIXTURE) player 1 stops reading deal messages and
+#    walks into the Pokemon Centre; player 0's wait ends ("isn't here").
+include deal_setup.inc
+# 1. Busy.
+1 press START 2
+1 wait 60
+0 press A 2
+0 wait 90
+0 press A 2
+0 wait 90
+0 until_mem coop_deal.sDeal 1 900 A
+b sync
+b wait 120
+1 shot busy-menu-open
+1 expect coop_deal.sDeal 2
+0 until_mem coop_deal.sDeal 0 2400
+0 wait 60
+0 shot busy-told
+b sync
+1 expect coop_deal.sDeal 0
+1 press B 2
+1 until_field 600
+0 mash_field 600 B
+b sync
+# 2. Both open the menu and go through BATTLE with the default rules to
+#    the final YES/NO, then press YES together.
+b press A 2
+b wait 90
+b press A 2
+b wait 90
+b press A 2
+b wait 90
+b press A 2
+b wait 90
+b press A 2
+b wait 90
+b press A 2
+b wait 90
+b press A 2
+b wait 90
+b shot both-at-yes
+b sync
+b press A 2
+b wait 30
+0 expect coop_deal.sDeal 1
+1 until_mem coop_deal.sDeal 2 1200
+1 wait 60
+1 shot p1-own-ended
+1 until_mem coop_deal.sDeal+12 1 900 A
+1 wait 90
+1 shot p1-asked
+1 press A 2
+1 wait 150
+1 press DOWN 2
+1 wait 10
+1 press A 2
+0 until_mem coop_deal.sDeal 0 900
+0 wait 60
+0 shot said-no
+b mash_field 900 B
+b expect coop_deal.sDeal 0
+b sync
+# 3. The partner leaves while being asked.
+1 patch_ret CoopDeal_HandleBlock 0
+0 press A 2
+0 wait 90
+0 press A 2
+0 wait 90
+0 until_mem coop_deal.sDeal 1 900 A
+b sync
+1 walk 16 39 2000
+1 walk 16 38 2000
+1 until_map 11 5 3000
+0 until_mem coop_deal.sDeal 0 900
+0 wait 30
+0 shot partner-left
+0 mash_field 900 B
+b expect coop_deal.sDeal 0
+b expect coop.sLinkState 2

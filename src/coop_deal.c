@@ -91,6 +91,7 @@ enum
     WAIT_TEAM,
     WAIT_QUIET,     // no deal block in flight, so none lands in the battle's
     WAIT_SAVE,      // this game's save has reached the flash
+    WAIT_DONE,      // nothing to wait for: return sDoneResult next frame
 };
 
 // Settling a record left PREPARED by an earlier, interrupted exchange.
@@ -238,6 +239,8 @@ static EWRAM_DATA struct Pokemon sFriendlySnap[PARTY_SIZE] = {0};
 static EWRAM_DATA bool8 sFriendlyHasSnap = FALSE;
 static EWRAM_DATA u8 sFriendlyOutcome = 0;
 static EWRAM_DATA bool8 sFriendlyAborting = FALSE;
+static EWRAM_DATA u8 sEarlyEnd = 0; // COOP_DEAL_* + 1 for a script not yet waiting
+static EWRAM_DATA u8 sDoneResult = 0;
 static EWRAM_DATA u16 sSavedFacility = 0;
 static EWRAM_DATA const u8 *sDealMessage = NULL;
 static EWRAM_DATA u8 sTeamOrder[PARTY_SIZE] = {0};
@@ -930,7 +933,7 @@ void CoopDeal_HandleBlock(u32 playerId, const u16 *words)
 static void Deal_Reset(void)
 {
     // A script waiting for a save keeps waiting: the save finishes anyway.
-    u8 waitKind = sDeal.waitKind == WAIT_SAVE ? WAIT_SAVE : WAIT_NONE;
+    u8 waitKind = (sDeal.waitKind == WAIT_SAVE || sDeal.waitKind == WAIT_DONE) ? sDeal.waitKind : WAIT_NONE;
 
     memset(&sDeal, 0, sizeof(sDeal));
     sDeal.waitKind = waitKind;
@@ -941,7 +944,12 @@ static void Deal_Reset(void)
 static void Deal_EndWait(u8 result)
 {
     if (sDeal.waitKind == WAIT_NONE)
+    {
+        // The deal ended before its script reached the wait (it was still
+        // printing): that wait returns this at once.
+        sEarlyEnd = result + 1;
         return;
+    }
     sDeal.waitKind = WAIT_NONE;
     gSpecialVar_Result = result;
     ScriptContext_Enable();
@@ -956,7 +964,7 @@ static void Deal_PollWait(void)
 {
     u16 limit = 0;
 
-    if (sDeal.waitKind == WAIT_NONE || sDeal.waitKind == WAIT_SAVE)
+    if (sDeal.waitKind == WAIT_NONE || sDeal.waitKind == WAIT_SAVE || sDeal.waitKind == WAIT_DONE)
         return;
     sDeal.waitTimer++;
     // The partner left the link or the map: nothing more can arrive.
@@ -1053,7 +1061,7 @@ void CoopDeal_Poll(void)
     {
         // Nothing can be sent or received. A waiting script must not wait
         // forever, and a question not yet shown is dropped.
-        if (sDeal.waitKind != WAIT_NONE && sDeal.waitKind != WAIT_SAVE)
+        if (sDeal.waitKind != WAIT_NONE && sDeal.waitKind != WAIT_SAVE && sDeal.waitKind != WAIT_DONE)
         {
             Deal_EndWait(COOP_DEAL_LOST);
             Deal_Reset();
@@ -1116,6 +1124,7 @@ void CoopDeal_OnSessionStart(void)
 // VAR_RESULT: COOP_DEAL_OK, or why not.
 u16 CoopDeal_CanStart(void)
 {
+    sEarlyEnd = 0;
     if (Deal_HasPending())
         return COOP_DEAL_PENDING;
     if (!Deal_LinkOk() || !Coop_DealPartnerHere())
@@ -1216,7 +1225,39 @@ u16 CoopDeal_StartRequest(void)
 // script runs `waitstate`; VAR_RESULT then holds a COOP_DEAL_* result.
 void CoopDeal_Wait(void)
 {
-    sDeal.waitKind = gSpecialVar_0x8004;
+    u8 kind = gSpecialVar_0x8004;
+    u8 need;
+
+    switch (kind)
+    {
+    case WAIT_ANSWER:
+        need = DS_ASK;
+        break;
+    case WAIT_CONFIRM:
+        need = DS_NEGOTIATE;
+        break;
+    case WAIT_READY:
+        need = DS_PREPARED;
+        break;
+    case WAIT_TEAM:
+    case WAIT_QUIET:
+        need = DS_TEAM;
+        break;
+    default:
+        need = 0xFF; // a save wait belongs to no deal state
+        break;
+    }
+    if (need != 0xFF && sDeal.state != need)
+    {
+        // The deal already ended (or another took its place): no waiting.
+        // `waitstate` follows, so the script resumes on the next frame.
+        sDoneResult = sEarlyEnd ? sEarlyEnd - 1 : COOP_DEAL_CANCELLED;
+        sEarlyEnd = 0;
+        sDeal.waitKind = WAIT_DONE;
+        return;
+    }
+    sEarlyEnd = 0;
+    sDeal.waitKind = kind;
     sDeal.waitTimer = 0;
     ScriptContext_Stop();
     // Already there: finish on the next poll.
@@ -1226,6 +1267,7 @@ void CoopDeal_Wait(void)
 // request is gone. STR_VAR_1 partner, STR_VAR_2 and STR_VAR_3 the details.
 u16 CoopDeal_BufferIncoming(void)
 {
+    sEarlyEnd = 0;
     CoopDeal_BufferPartnerName();
     if (sDeal.state != DS_INCOMING)
         return COOP_DEAL_NONE;
@@ -1513,6 +1555,8 @@ void CoopDeal_FieldFrame(void)
     Deal_SaveStep();
     if (sDeal.waitKind == WAIT_SAVE && !Deal_Saving())
         Deal_EndWait(COOP_DEAL_OK);
+    else if (sDeal.waitKind == WAIT_DONE)
+        Deal_EndWait(sDoneResult);
 }
 
 u16 CoopDeal_Cancel(void)
