@@ -1,0 +1,65 @@
+# Build 0xC0170131 roster, in play (story_seg6 saves, not linked):
+# - player 0: the Lavaridge woman gives a SALANDIT; it is female, because
+#   it evolves into SALAZZLE at level 33 (males never do);
+# - player 1: a BUIZEL (one of the 24 new families) evolves into FLOATZEL
+#   at level 26.
+# Both turn the level cap off from the CO-OP list (LEVEL CAP, YES) first.
+# FIXTURES: fixture_warp to Lavaridge and Granite Cave; the gift is moved
+# to the lead and set one EXP point below its evolution level (its
+# personality, so its gender, is kept); player 1's lead becomes a BUIZEL
+# the same way; battlers hit hard.
+include continue.inc
+b no_wild 1
+b smart_moves 1
+b strong_battlers 600
+b press START 2
+b wait 40
+b menu_to COOP
+b press A 2
+b wait 60
+b press DOWN 2
+b wait 10
+b press DOWN 2
+b wait 10
+b press DOWN 2
+b wait 10
+b shot cap-entry
+b press A 2
+b wait 120
+b press A 2
+b wait 120
+b shot cap-off
+b mash_field 1500
+0 fixture_warp 4 3 3 6
+0 until_field 3000
+0 press LEFT 2
+0 wait 20
+0 press A 2
+0 wait 120
+0 press A 2
+0 wait 90
+0 press A 2
+0 wait 120
+0 shot salandit-offer
+0 press A 2
+0 wait 400
+0 press B 2
+0 wait 60
+0 mash_field 2000 B
+0 expect_flag 0x20 1
+0 expect_species 1 757
+0 fixture_swap 0 1
+0 fixture_lead 757 32 35936
+1 fixture_lead 418 25 17575
+b fixture_warp 24 7 6 7
+b until_field 3000
+b no_wild 0
+b pace_until_battle 9000
+b no_wild 1
+b until_cb2 BattleMainCB2 6000
+b mash_field 30000
+b until_field 3000
+0 expect_species 0 758
+1 expect_species 0 419
+b shot evolved
+b party

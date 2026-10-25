@@ -22,7 +22,7 @@
 #define MAX_CMDS 4096
 #define MAX_SYMS 500000
 
-enum { C_PARTNER, C_GOTO, C_HEX, C_PRESS, C_WAIT, C_SHOT, C_DUMP, C_BARRIER, C_UNTIL_CB2, C_UNTIL_FIELD, C_EXPECT, C_UNTIL_MEM, C_BATTLE, C_MENU, C_PARTY, C_FIXTURE, C_WRITE, C_LEAD, C_MOVE, C_SIX, C_VAR, C_FLAG, C_VS, C_EXPECT_FLAG, C_EXPECT_VAR, C_NO_OBJECT, C_MAP, C_OBJECT, C_TEXT_SPEED, C_PACE, C_MUTE, C_PARTNER_AT, C_ITEM, C_EXPECT_ITEM, C_UNTIL_TEXT, C_WARP, C_PC_COUNT, C_MONS, C_NO_COPIES, C_NOTE_MONEY, C_MONEY_GAIN, C_FORCE_ENC, C_EXPECT_RANGE, C_WALK, C_NO_WILD, C_CROSS, C_WALK_BATTLE, C_SMART, C_STRONG, C_UNTIL_TASK, C_MIRROR, C_SPECIES, C_NOTE_PARTY, C_SAME_PARTY, C_PATCH_RET, C_SLOT, C_TXN, C_MONEY_SAME, C_DEX };
+enum { C_PARTNER, C_GOTO, C_HEX, C_PRESS, C_WAIT, C_SHOT, C_DUMP, C_BARRIER, C_UNTIL_CB2, C_UNTIL_FIELD, C_EXPECT, C_UNTIL_MEM, C_BATTLE, C_MENU, C_PARTY, C_FIXTURE, C_WRITE, C_LEAD, C_MOVE, C_SIX, C_VAR, C_FLAG, C_VS, C_EXPECT_FLAG, C_EXPECT_VAR, C_NO_OBJECT, C_MAP, C_OBJECT, C_TEXT_SPEED, C_PACE, C_MUTE, C_PARTNER_AT, C_ITEM, C_EXPECT_ITEM, C_UNTIL_TEXT, C_WARP, C_PC_COUNT, C_MONS, C_NO_COPIES, C_NOTE_MONEY, C_MONEY_GAIN, C_FORCE_ENC, C_EXPECT_RANGE, C_WALK, C_NO_WILD, C_CROSS, C_WALK_BATTLE, C_SMART, C_STRONG, C_UNTIL_TASK, C_MIRROR, C_SPECIES, C_NOTE_PARTY, C_SAME_PARTY, C_PATCH_RET, C_SLOT, C_TXN, C_MONEY_SAME, C_DEX, C_SWAP };
 
 struct Cmd {
 	int kind;
@@ -655,6 +655,29 @@ static void recordSide(struct Player* p) {
 // Keys a player would press when not in control: tap A through messages
 // and battles; in a battle's party menu (forced switch) step to a healthy
 // Pokemon (DOWN, A, A); back out of a summary screen with B.
+// The player stands in the free field facing the co-op partner's sprite.
+// A tapped there opens the partner menu (BATTLE, TRADE, ...), which a
+// scenario that only mashes through text never means to do.
+static bool facingPartner(struct Player* p) {
+	if (!inField(p)) return false;
+	unsigned obj = sObjEvents + rd8(p, sAvatar + 5) * 0x24;
+	int x = (int16_t)rd16(p, obj + 0x10), y = (int16_t)rd16(p, obj + 0x12);
+	switch (rd8(p, obj + 0x18) & 0xF) {
+	case 1: y++; break;
+	case 2: y--; break;
+	case 3: x--; break;
+	case 4: x++; break;
+	default: return false;
+	}
+	for (int i = 0; i < 16; i++) {
+		unsigned o = sObjEvents + i * 0x24;
+		if ((rd8(p, o) & 1) && rd8(p, o + 8) == 0xFC
+		 && (int16_t)rd16(p, o + 0x10) == x && (int16_t)rd16(p, o + 0x12) == y)
+			return true;
+	}
+	return false;
+}
+
 static unsigned autoKeys(struct Player* p, unsigned step) {
 	static unsigned partyCb, summaryMain, summaryInit;
 	if (!partyCb) {
@@ -670,6 +693,8 @@ static unsigned autoKeys(struct Player* p, unsigned step) {
 	}
 	if (battling && ((summaryMain && cbNow == summaryMain) || (summaryInit && cbNow == summaryInit)))
 		return (step % 24) < 2 ? 2 : 0;
+	if (facingPartner(p))
+		return 0;
 	return (step % 24) < 2 ? 1 : 0;
 }
 
@@ -1484,6 +1509,17 @@ static void frameCallback(struct mCoreThread* t) {
             advance = true;
             break;
         }
+        case C_SWAP:
+            // fixture_swap A B: exchange two party slots (each Pokemon is
+            // self-contained, so its personality and gender are kept).
+            for (unsigned off = 0; off < 100; off++) {
+                unsigned x = rd8(p, partyMon(0, c->size) + off), y = rd8(p, partyMon(0, c->value) + off);
+                p->core->busWrite8(p->core, partyMon(0, c->size) + off, y);
+                p->core->busWrite8(p->core, partyMon(0, c->value) + off, x);
+            }
+            out("[p%d] fixture swap slots %d and %u\n", p->id, c->size, c->value);
+            advance = true;
+            break;
         case C_SIX:
             for (unsigned slot = 1; slot < 6; slot++)
                 for (unsigned off = 0; off < 100; off++)
@@ -1860,6 +1896,10 @@ static void loadScript(const char* path, int depth) {
             c.addr = symAddr(a);
             c.frames = n >= 4 ? atoi(b) : 0;
             snprintf(c.text, sizeof(c.text), "%s", a);
+        } else if (!strcmp(cmd, "fixture_swap")) {
+            c.kind = C_SWAP;
+            c.size = atoi(a);
+            c.value = strtoul(b, NULL, 0);
         } else if (!strcmp(cmd, "fixture_six")) {
             c.kind = C_SIX;
         } else if (!strcmp(cmd, "expect_move") || !strcmp(cmd, "expect_no_move")) {

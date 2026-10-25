@@ -293,3 +293,44 @@ segments 1–2 always and 3–6 plus `catch_walk` with `LONG=1`):
 | `story_seg6` | Staggered Pokémon Centre heal, UNLINK, split maps (Mart), relink apart, rejoin, save |
 | `catch_walk` | (LONG chain) Walk to Route 104 grass alone, catch with an own Poké Ball, save |
 | `coop_levelup_boxes` | Co-op level-ups: each game's copy of the partner's lead matches the partner's level and max HP |
+
+## Partner menu, QoL, quest, and roster runs (build 0xC0170131)
+
+These start from `story_seg6` saves (Rustboro, linked play). `run_all.sh`
+runs them with `SEG6=/dir/with/p0.sav,p1.sav`, then the reload scenarios on
+the saves they wrote.
+
+| Scenario | Covers |
+|---|---|
+| `deal_trade` (+`_reload`) | Partner menu TRADE with a held-item trade evolution, then reload: both saved, no copies |
+| `deal_cut_before_partner` (+`_reload`) | Power cut before the partner escrowed: the held Pokémon returns on reload |
+| `deal_cut_after_commit` (+`_reload`) | Power cut after one side committed: the other completes on reload |
+| `deal_lost_ready` | A lost READY recovered live by STATUS |
+| `deal_gifts` (+`_reload`) | GIVE ITEM / GIVE POKéMON, and the refusals (last Pokémon, key item, held Mail) |
+| `deal_edge` | Busy partner, both asking at once, partner leaving mid-question |
+| `deal_battle`, `deal_battle_doubles`, `deal_battle_rules` | Friendly 6v6 singles; Lv. 50 doubles with the team picker; STANDARD refusal, UNRESTRICTED Lv. 100, link-error abort. Parties and money unchanged |
+| `deal_dex` (+`deal_dex_offline`) | Partner catches synced, the list marks, and the offline copy |
+| `deal_fast` | BATTLE SCENE FAST shared only when both chose it |
+| `practice` | The COACH: own team singles, partner's team doubles at Lv. 50; party and money unchanged |
+| `save_identity` | Screenshots of CONTINUE and SAVE with the build id (visual check only) |
+| `pp_solo` | Power Problems alone, unlinked: log, trip, ROLYCOLY/JOLTIK, VOLT, switch, appliance room, pages, chamber, WATTSON once, POWER SHOP, journal; saves |
+| `pp_coop` | Linked: breaker changes and a trip seen live on the other save, split tasks, VOLT + FUSE duo (co-op multi), switch by player 1, catch-up for player 0 at a map change, both paid once, linked journal |
+| `pp_reconnect` | Breakers reset while unlinked are kept by the higher count on relink; a live trip resets both |
+| `pp_stagger` (+`_reload`) | Player 0 finished alone earlier (pp_solo's save); player 1 gets the generator-off state after linking and a map change, WATTSON pays once, survives reload |
+| `roster_g` | Unlinked LEVEL CAP toggle; the Lavaridge female SALANDIT evolves into SALAZZLE at 33; a BUIZEL evolves into FLOATZEL at 26 |
+
+New verbs: `fixture_swap A B` (exchange two party slots, keeping each
+Pokémon's personality), `fixture_slot SLOT SPECIES [HELD]`, `expect_species
+SLOT SPECIES`, `note_party`/`expect_party_same`, `expect_txn STATE`,
+`expect_money_same`, `patch_ret SYM FRAMES`, `dex_caught NUM VALUE`,
+`expect_partner_dex NUM VALUE`, `menu_to POKEDEX|OPTION`.
+
+Fixtures in these runs: `fixture_warp` between rooms (New Mauville's
+blue/green barrier maze is stock and not walked), flags for Wattson's key
+step and for an obstacle a player does not need, strong battlers, and
+EXP set one point below an evolution level. The quest logic, breakers, link
+messages, battles, story ledger, rewards, and saves are the real code.
+
+The partner menu ignores an A press that lands within 20 frames of a scene
+or message closing (mashing through text). Scenarios that press A at the
+partner right after a menu closed wait 30 frames first.

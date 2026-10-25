@@ -5,6 +5,8 @@
 #
 #   tools/coop_link_harness/run_all.sh            # all scenarios
 #   ONLY="rival_join rival_pending" run_all.sh    # a subset (fresh-save ones)
+#   SEG6=/path/dir run_all.sh                     # also the story_seg6-based
+#                                                 # partner menu, QoL, and quest runs
 #   AFFECTED=/path/dir run_all.sh                 # also run mays_house_recovery
 #                                                 # on host_p0.sav/guest_p1.sav
 #
@@ -66,6 +68,22 @@ if [ -n "${LONG:-}" ]; then
 fi
 
 run bedroom_reload SAVE0="$out/mays_house_doorway/p0.sav" SAVE1="$out/mays_house_doorway/p1.sav"
+
+# SEG6=dir with p0.sav/p1.sav from story_seg6 (Rustboro, linked play): the
+# partner menu, QoL, and Power Problems scenarios, then their reloads.
+if [ -n "${SEG6:-}" ]; then
+	for s in deal_trade deal_cut_before_partner deal_cut_after_commit deal_lost_ready deal_gifts deal_edge \
+	         deal_battle deal_battle_doubles deal_battle_rules deal_dex deal_fast practice save_identity \
+	         pp_solo pp_coop pp_reconnect roster_g; do
+		run "$s" SAVE0="$SEG6/p0.sav" SAVE1="$SEG6/p1.sav"
+	done
+	for s in deal_trade deal_cut_before_partner deal_cut_after_commit deal_gifts; do
+		run "${s}_reload" SAVE0="$out/$s/p0.sav" SAVE1="$out/$s/p1.sav"
+	done
+	run deal_dex_offline SAVE0="$out/deal_dex/p0.sav" SAVE1="$out/deal_dex/p1.sav"
+	run pp_stagger SAVE0="$out/pp_solo/p0.sav" SAVE1="$SEG6/p1.sav"
+	run pp_stagger_reload SAVE0="$out/pp_solo/p0.sav" SAVE1="$out/pp_stagger/p1.sav"
+fi
 
 if [ -n "${AFFECTED:-}" ]; then
 	run mays_house_recovery SAVE0="$AFFECTED/host_p0.sav" SAVE1="$AFFECTED/guest_p1.sav"

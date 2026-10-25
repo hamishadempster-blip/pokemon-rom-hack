@@ -2095,8 +2095,24 @@ void Coop_SettlePartner(void)
     sPartnerStepWait = 0;
 }
 
+// Frames the field has been free (no script, controls unlocked), and how
+// long it had been free when the current script or menu began.
+static EWRAM_DATA u8 sFieldFreeFrames = 0;
+static EWRAM_DATA u8 sFreeBeforeScript = 0;
+#define COOP_PARTNER_TALK_SETTLE 20
+
 void Coop_OverworldFrame(void)
 {
+    if (ScriptContext_IsEnabled() || ArePlayerFieldControlsLocked())
+    {
+        if (sFieldFreeFrames != 0)
+            sFreeBeforeScript = sFieldFreeFrames;
+        sFieldFreeFrames = 0;
+    }
+    else if (sFieldFreeFrames < 255)
+    {
+        sFieldFreeFrames++;
+    }
     CoopDeal_FieldFrame();
     Coop_PollSharedItems();
     if (sLinkState != COOP_LINK_IDLE || sPendingMessage != NULL)
@@ -2209,6 +2225,10 @@ u16 Coop_BufferCapText(void)
 u16 Coop_PartnerChatOk(void)
 {
     if (Coop_InteractionBusy() || sJoinLaunchPending || gCoopBattleLaunching)
+        return FALSE;
+    // An A press that lands as a scene or message closes (mashing through
+    // text) does not open the partner menu; a deliberate press does.
+    if (sFreeBeforeScript < COOP_PARTNER_TALK_SETTLE)
         return FALSE;
     if (sPartnerValid && sPartner.activity == COOP_ACT_BUSY)
         return FALSE;

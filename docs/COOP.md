@@ -61,12 +61,12 @@ On the title screen, choose **NEW GAME**. The game asks whether to skip to the c
 1. Both games are the same build. Each copy of the ROM needs its own file name and its own save. In mGBA, open one copy, choose File, New Multiplayer Window, and open the other copy there. RetroArch has to already be in a Gen 3 link lobby. Open the start menu, choose **CO-OP**, and say yes. The question stays on the bedroom. The game then waits on a message that counts how many games the cable can see. It should go from 1 to 2, then say who you linked with. Press B to cancel. A count that stays at 1 means the two mGBA windows are not in the same multiplayer session.
 2. The first exchange compares the build id and the level cap. Either mismatch aborts. Change the cap from CO-OP before linking. The cap is on unless you turn it off.
 3. You can walk different maps. The link stays up when either of you goes through a door. The partner sprite appears only on the same map, and it walks. A door is a new map, so the sprite drops and comes back when you return. The partner sprite never blocks you: you can walk through it, so a partner standing on stairs or in a doorway cannot trap you. When you share a tile, the sprite is drawn on the first free side of you (south, north, west, east), never inside a wall or an NPC.
-   While linked, opening the start menu shows a small status window: the link and Twin Beacon state, where your partner is (or "here"), whether a fight here would be together ("Fights: together") or solo and why ("Solo: partner in menu", "Fights: solo (apart)", "Solo: front 3 fainted", ...), and which twin is your rival. Choosing **CO-OP** while linked first explains the current state in one line (for example "BEACON ON: fights here can be co-op with your partner." or "Linked: you explore together. BEACON OFF: optional fights solo.") and lists **BEACON ON** or **BEACON OFF** (named by what it will do; the same request as using the item), **UNLINK** (asks first), and **BACK**. B or BACK returns to the start menu.
+   While linked, opening the start menu shows a small status window: the link and Twin Beacon state, where your partner is (or "here"), whether a fight here would be together ("Fights: together") or solo and why ("Solo: partner in menu", "Fights: solo (apart)", "Solo: front 3 fainted", ...), and which twin is your rival. Choosing **CO-OP** while linked first explains the current state in one line (for example "BEACON ON: fights here can be co-op with your partner." or "Linked: you explore together. BEACON OFF: optional fights solo.") and lists **BEACON ON** or **BEACON OFF** (named by what it will do; the same request as using the item), **UNLINK** (asks first), **PARTNER DEX**, **JOURNAL**, and **BACK**. B or BACK returns to the start menu. Not linked, CO-OP lists **LINK UP**, **JOURNAL**, **PARTNER DEX** (the catches saved at the last link), **LEVEL CAP**, and **BACK**.
    - **Linked** means you see each other, explore independently, and share story progress.
    - **Beacon on** means ordinary wild Pokémon and trainers can become co-op battles when you are on the same map.
    - **Beacon off** means those stay solo. Mandatory story battles (gyms, rivals, villains, Elite Four, champion, legendaries) still need you both, Beacon or not.
 4. After the rescue fight, Birch gives each of you a Twin Beacon in the lab. The starter was already chosen on Route 101, so the lab nicknames it. The Beacon stays in the Key Items pocket. Using it asks the other player. Ordinary trainer battles become co-op only after both agree, and both games switch on that agreed exchange. Either person can ask to turn it off. A request made during a battle or trade waits until that fight or trade is over. Explicitly choosing UNLINK turns the Beacon off; temporary communication stalls preserve it. The item stays in the bag. Gyms, Soren and Mira, the Elite Four, the champion, and the legendary fights ignore the Beacon and still need both of you on the map.
-5. Talk to the sprite to see where they are. From the party screen, while linked, **TRADE** offers one Pokémon. Both sides have to agree. Pulling the cable before both sides commit leaves both parties alone. You cannot trade your last conscious Pokémon.
+5. Press A facing your partner for the partner menu: **BATTLE**, **TRADE**, **GIVE ITEM**, **GIVE POKéMON** (see [With your partner](#with-your-partner)). The party screen no longer has its own TRADE.
 6. Explicitly disconnect from the CO-OP menu. Missing overworld heartbeats hide the unavailable partner and show “Recovering link...” in the start menu; they preserve the session and Beacon choice. Valid frames restore availability automatically when the existing transport resumes. UNLINK remains accessible during recovery. A closed emulator cannot communicate, and restarting it may require linking again. Fresh link sessions exchange shared progress and begin with Beacon off.
 
 ## Story rules
@@ -140,6 +140,39 @@ Rick (`TRAINER_RICK`, 615) and Allen (`TRAINER_ALLEN`, 333) on Route 102 are the
 Megas, Z-Moves, Dynamax, and Terastallization are off, including Primal Reversion.
 
 A few Hoenn Pokémon were retuned for doubles. See [Roster changes](#roster-changes). When both players stand on the same tile, a wild double that rolls Plusle, Minun, Volbeat, Illumise, Lunatone, Solrock, Seviper, Zangoose, or either Indeedee brings that Pokémon's pair instead of a random second species. Gym leaders, their partners, the Elite Four, and the champion also switch more carefully and look for a two-hit knockout. Their ace levels are unchanged.
+
+## With your partner
+
+Press A while facing your partner's sprite (linked, same map). A partner who is in a menu, a script, a battle, or another exchange is "busy": your request waits up to eight seconds and then says so, and nothing interrupts them. If you both ask at once, link player 0's question goes first and player 1 is asked instead. Every wait ends: on an answer, on B where the text says so, on a timeout, or when the partner leaves the map or the link.
+
+**BATTLE** (a friendly battle, nothing at stake):
+- Choose SINGLES or DOUBLES, then OWN LEVELS, ALL LV. 50, or ALL LV. 100, then UP TO 6, 4, or 3 Pokémon each, then STANDARD (no species and no held item twice in a team) or UNRESTRICTED. Your partner sees the whole rule set before answering.
+- With 3 or 4, each player picks a team on a team screen; otherwise the whole party. Eggs sit out, and every Pokémon starts the battle fully healed.
+- Afterwards both parties are exactly as before the battle (HP, PP, items, levels): no EXP, money, items, Pokédex entries, or trainer flags. A dropped link ends it at once for both, and the parties are restored.
+- The Twin Beacon setting is unchanged by a friendly battle.
+
+**TRADE**: each player offers one Pokémon; both see exactly what they give and get, and both confirm. **GIVE POKéMON** and **GIVE ITEM** send one Pokémon or a stack of items; the receiver accepts or declines.
+- You cannot give or trade away your last Pokémon that can battle, an egg, or a Pokémon holding an item that cannot be given. Key items, HMs, Mail, and other important items cannot be given.
+- A full party sends a received Pokémon to the PC; a full PC or bag pocket refuses before anything moves.
+- Trade evolutions happen (including held-item ones) after the trade.
+- Each exchange is saved on both games before it completes: what you give is held in your save until your partner's game has saved too. If the link or power drops in between, nothing is lost or copied: the next time the same two saves link, they finish the exchange or return it. A partner whose save is lost for good leaves your held Pokémon or item pending; the start menu note says so.
+
+## Quality of life
+
+- **Partner catches in the Pokédex.** While linked, the two games exchange which species each has caught. The Pokédex list marks each entry: your ball only, your partner's (green), or both (red over green). CO-OP, PARTNER DEX says whose catches these are and when they were last synced; not linked, it shows the copy saved at the last link.
+- **BATTLE SCENE: FAST.** OPTION, BATTLE SCENE now has ON, OFF, and FAST. FAST skips move animations and shortens message pauses. A shared battle (co-op or friendly) uses only what both players allow: FAST only if both chose it, animations only if both want them.
+- **Which save is this?** CONTINUE and the SAVE window show the location and the ROM build ("Build C0170131"), so both players can check they have the same build before linking.
+- **Practice (the COACH).** A COACH stands in the Pokémon Centers of Rustboro, Dewford, Slateport, Verdanturf, Fallarbor, Mossdeep, Sootopolis, Pacifidlog, and Ever Grande. He sets up an AI battle against a copy of your own team or (linked) your partner's, singles or doubles, at your own levels or all at Lv. 50. Everything that fights is a copy: your party and money are put back afterwards, the bag is closed during the fight, and nothing is awarded.
+
+## Quests
+
+**CO-OP, JOURNAL** lists each quest's progress on your save. One quest is in this build; five more are planned ([COOP_QUESTS.md](COOP_QUESTS.md)).
+
+**New Mauville: Power Problems.** After WATTSON gives you the BASEMENT KEY, he warns that surges keep tripping New Mauville's three circuit breakers. A MAINTENANCE LOG by the stairs gives the order (STORAGE, SERVICE, CONTROL); a wrong order trips them all again. A ROLYCOLY and a JOLTIK are in the way of the first two panels. VOLT, who powers his amplifiers from the generator, stands on the MAIN SWITCH. Once the three are reset and VOLT is beaten, the switch stops the generator, the APPLIANCE ROOM (with a ROTOM) opens, and WATTSON pays you. Three torn pages point to a sealed chamber that opens with the generator off.
+- **Alone:** everything can be done by one player.
+- **Together:** while linked, a breaker either of you resets is reset on both saves at once (a wrong press trips both). With your partner on the map and the Twin Beacon on, VOLT calls FUSE and you can take them on together; NO keeps it a solo fight.
+- **Apart:** if your partner stops the generator first, it is off on your save too from your next map change. WATTSON still has your own reward, and the ROTOM, PORYGON, and chamber cache are yours to find.
+- **POWER SHOP:** a clerk by Mauville's Gym sells evolution items once the generator is off, with more at the sixth, seventh, and eighth badges.
 
 ## Roster changes
 

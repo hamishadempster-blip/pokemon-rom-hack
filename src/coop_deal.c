@@ -845,8 +845,15 @@ void CoopDeal_HandleBlock(u32 playerId, const u16 *words)
     memcpy(&msg, words, sizeof(msg));
     if (msg.magic != COOP_DEAL_MAGIC || msg.checksum != Deal_Checksum(&msg))
         return;
+    // A block can be overwritten in the receive buffer by the next one
+    // before it is read; whatever does not belong to this exchange is
+    // dropped rather than trusted.
+    if (msg.otId != Deal_PartnerOtId())
+        return;
     sLink.quietTimer = 0;
-    Deal_Acked(msg.ack);
+    // An ack can only cover messages this game has sent.
+    if (!CoopProtocol_SeqIsNew(sLink.outSeq, msg.ack))
+        Deal_Acked(msg.ack);
     if (msg.type == DMSG_ACK)
         return;
     if (sLink.inSeqKnown && !CoopProtocol_SeqIsNew(sLink.lastInSeq, msg.seq))
@@ -854,6 +861,12 @@ void CoopDeal_HandleBlock(u32 playerId, const u16 *words)
         sLink.needAck = TRUE;
         return;
     }
+    // The partner sends one message at a time and repeats it until it is
+    // acknowledged, so a real one is always the next number. Anything else
+    // is a damaged block: accepting it would make every later message look
+    // old, and the exchange would stall.
+    if (sLink.inSeqKnown && (u16)(msg.seq - sLink.lastInSeq) != 1)
+        return;
     sLink.lastInSeq = msg.seq;
     sLink.inSeqKnown = TRUE;
     sLink.needAck = TRUE;

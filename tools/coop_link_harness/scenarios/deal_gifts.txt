@@ -23,6 +23,7 @@ include deal_setup.inc
 1 expect coop_deal.sDeal 0
 0 expect gPartiesCount 1
 # 2. GIVE ITEM: a key item stays; then 2 of 5 POKE BALLS.
+0 wait 30
 0 press A 2
 0 wait 40
 0 press DOWN 2
@@ -67,6 +68,7 @@ b expect_txn 0
 0 fixture_six
 0 fixture_slot 1 263
 0 fixture_slot 2 252 199
+0 wait 30
 0 press A 2
 0 wait 40
 0 press DOWN 2
