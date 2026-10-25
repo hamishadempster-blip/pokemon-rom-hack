@@ -1,0 +1,28 @@
+# JOURNEY 01 (main co-op playthrough, no fixtures): two new games on the
+# same ROM. OPTION text speed FAST, NEW GAME, Birch's full intro (no test
+# start), names Kai (boy, player 0) and Rosa (girl, player 1), the truck,
+# Mum, the clock; link from the CO-OP menu, Mum's TV, the twins' house,
+# Route 101: both players pick starters from Birch's bag and win the
+# Poochyena double together; Birch's lab; both save.
+include journey_opening_intro.inc
+include rescue_after_boot.inc
+include rescue_finish.inc
+b mash_field 8000
+b until_field 5000
+b press START 2
+b wait 60
+b menu_to SAVE
+b press A 2
+b wait 50
+b press A 2
+b wait 250
+b press A 2
+b wait 40
+b press B 2
+b wait 20
+b until_mem gSaveCounter:4 1 3000
+b until_field 3000
+b dump saved
+b expect_nz gParties:2
+b expect_partner saved
+b party

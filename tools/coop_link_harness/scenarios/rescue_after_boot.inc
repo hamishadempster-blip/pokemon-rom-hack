@@ -1,0 +1,112 @@
+# From field control in the bedroom (after the clock): link, Mum's TV,
+# Littleroot, the twins' house, and the Route 101 rescue.
+include link.inc
+include tv.inc
+include outside.inc
+0 goto 14 9
+1 goto 5 9
+0 press UP 40
+1 press UP 40
+b wait 60
+b shot r1
+b dump rivalhouse
+b mash_field 3000
+b shot r2
+b dump rivalmomdone
+0 goto 2 3
+1 goto 8 3
+0 press UP 30
+1 press UP 30
+b wait 60
+b until_field 600
+b shot u1
+b dump upstairs
+0 goto 5 3
+1 goto 3 3
+b press DOWN 4
+b wait 10
+b press A 2
+b wait 60
+b shot v1
+b mash_field 4000
+b shot v2
+b dump rivalmet
+0 goto 1 2
+1 goto 7 2
+b press UP 30
+b wait 60
+b until_field 900
+b dump rival1f
+0 goto 2 7
+1 goto 8 7
+b press DOWN 50
+b wait 40
+b until_field 900
+b dump outside2
+b expect_partner outside2
+0 goto 11 2
+1 goto 10 2
+b wait 30
+b expect_partner north
+b shot w0
+0 goto 11 1
+b wait 40
+b shot w1
+b mash_field 2000
+b shot w2
+b dump p0saw
+1 goto 11 2
+1 goto 11 1
+b wait 40
+1 mash_field 2000
+b dump p1saw
+b expect_partner afterTwin
+b shot w3
+0 goto 11 1
+b press UP 40
+b wait 30
+b dump route101
+b mash_field 3000
+b dump rescueScene
+b shot x1
+b expect_partner route101
+0 goto 7 15
+0 press UP 12
+0 wait 20
+0 press A 4
+0 wait 30
+0 shot z1
+0 dump afterA
+0 press A 2
+0 wait 60
+0 shot k1
+0 press A 2
+0 wait 120
+0 shot k2
+0 press A 2
+0 wait 60
+0 shot k3
+0 dump hostAfterPick
+0 press A 2
+0 wait 120
+0 dump hostWait
+0 shot k4
+0 wait 300
+0 dump hostLater
+0 shot k5
+1 wait 900
+1 dump guestLater
+1 shot k5
+b wait 500
+b shot m1
+b dump battle1
+b press A 2
+b wait 60
+b shot m2
+b press A 2
+b wait 200
+b shot m3
+b dump battle2
+0 until_mem gBattlerControllerFuncs:4 HandleInputChooseAction 12000
+1 until_mem gBattlerControllerFuncs+8:4 HandleInputChooseAction 12000
+b expect_battle roster

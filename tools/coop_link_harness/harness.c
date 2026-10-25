@@ -22,7 +22,7 @@
 #define MAX_CMDS 4096
 #define MAX_SYMS 500000
 
-enum { C_PARTNER, C_GOTO, C_HEX, C_PRESS, C_WAIT, C_SHOT, C_DUMP, C_BARRIER, C_UNTIL_CB2, C_UNTIL_FIELD, C_EXPECT, C_UNTIL_MEM, C_BATTLE, C_MENU, C_PARTY, C_FIXTURE, C_WRITE, C_LEAD, C_MOVE, C_SIX, C_VAR, C_FLAG, C_VS, C_EXPECT_FLAG, C_EXPECT_VAR, C_NO_OBJECT, C_MAP, C_OBJECT, C_TEXT_SPEED, C_PACE, C_MUTE, C_PARTNER_AT, C_ITEM, C_EXPECT_ITEM, C_UNTIL_TEXT, C_WARP, C_PC_COUNT, C_MONS, C_NO_COPIES, C_NOTE_MONEY, C_MONEY_GAIN, C_FORCE_ENC, C_EXPECT_RANGE, C_WALK, C_NO_WILD, C_CROSS, C_WALK_BATTLE, C_SMART, C_STRONG, C_UNTIL_TASK, C_MIRROR, C_SPECIES, C_NOTE_PARTY, C_SAME_PARTY, C_PATCH_RET, C_SLOT, C_TXN, C_MONEY_SAME, C_DEX, C_SWAP, C_GENDER, C_FILL, C_UNFILL, C_WRITEP, C_TINT, C_UNTIL_FTEXT, C_NICK };
+enum { C_PARTNER, C_GOTO, C_HEX, C_PRESS, C_WAIT, C_SHOT, C_DUMP, C_BARRIER, C_UNTIL_CB2, C_UNTIL_FIELD, C_EXPECT, C_UNTIL_MEM, C_BATTLE, C_MENU, C_PARTY, C_FIXTURE, C_WRITE, C_LEAD, C_MOVE, C_SIX, C_VAR, C_FLAG, C_VS, C_EXPECT_FLAG, C_EXPECT_VAR, C_NO_OBJECT, C_MAP, C_OBJECT, C_TEXT_SPEED, C_PACE, C_MUTE, C_PARTNER_AT, C_ITEM, C_EXPECT_ITEM, C_UNTIL_TEXT, C_WARP, C_PC_COUNT, C_MONS, C_NO_COPIES, C_NOTE_MONEY, C_MONEY_GAIN, C_FORCE_ENC, C_EXPECT_RANGE, C_WALK, C_NO_WILD, C_CROSS, C_WALK_BATTLE, C_SMART, C_STRONG, C_UNTIL_TASK, C_MIRROR, C_SPECIES, C_NOTE_PARTY, C_SAME_PARTY, C_PATCH_RET, C_SLOT, C_TXN, C_MONEY_SAME, C_DEX, C_SWAP, C_GENDER, C_FILL, C_UNFILL, C_WRITEP, C_TINT, C_UNTIL_FTEXT, C_NICK, C_GRIND, C_CATCH };
 
 struct Cmd {
 	int kind;
@@ -60,6 +60,7 @@ struct Player {
     unsigned offField;
     unsigned char partyNote[600];
     unsigned patchAddr, patchOpcode, patchFrames;
+    int grindCount, grindInBattle;
 };
 
 static struct Player P[2];
@@ -1338,6 +1339,77 @@ static void frameCallback(struct mCoreThread* t) {
             advance = true;
             break;
         }
+        case C_CATCH: {
+            // catch N [timeout]: in a wild battle already started, throw the
+            // first ball in the POKe BALLS pocket at each of this player's
+            // action menus, up to N throws; then fight with A. Declines the
+            // nickname (B). Done when back in the field.
+            bool battling = rd8(p, sMain + 0x439) & 2;
+            unsigned cb2 = rd32(p, sMain + 4) & ~1u;
+            static unsigned bagCb, chooseAction;
+            if (!bagCb) { bagCb = symAddr("CB2_BagMenuRun") & ~1u; chooseAction = symAddr("HandleInputChooseAction") & ~1u; }
+            if (++p->step >= c->frames) {
+                out("[p%d] FAIL catch timeout (%d throws)\n", p->id, p->grindCount);
+                dump(p, "fail"); writePng(p, "fail"); sFailures++;
+                p->grindCount = 0; p->grindInBattle = 0; advance = true; break;
+            }
+            if (!battling && cb2 != bagCb) {
+                if (p->grindInBattle && inField(p)) {
+                    out("[f%06d p%d catch] battle over after %d throws: outcome=%u party=%u\n", p->frame, p->id, p->grindCount,
+                        rd8(p, symAddr("gBattleOutcome")), rd8(p, symAddr("gPartiesCount")));
+                    p->grindCount = 0; p->grindInBattle = 0; advance = true; break;
+                }
+                keys = (p->step % 24) < 2 ? 2 : 0; // B: nickname NO, dex page, messages
+                break;
+            }
+            p->grindInBattle = 1;
+            if (cb2 == bagCb) {
+                unsigned t = p->step % 30;
+                if (rd8(p, symAddr("gBagPosition") + 5) != 1) keys = t < 2 ? (1u << 4) : 0;
+                else keys = t < 2 ? 1 : 0;
+                break;
+            }
+            int atMenu = 0;
+            unsigned funcs = symAddr("gBattlerControllerFuncs");
+            for (int b = 0; b < 4; b++)
+                if ((rd32(p, funcs + b * 4) & ~1u) == chooseAction) atMenu = 1;
+            if (atMenu && p->grindCount < (int)c->value) {
+                unsigned t = p->step % 60;
+                if (t == 0) keys = 1u << 4;            // RIGHT: BAG
+                else if (t == 20) { keys = 1; p->grindCount++; out("[p%d] catch: throw %d\n", p->id, p->grindCount); }
+                break;
+            }
+            if (atMenu) { keys = autoKeys(p, p->step); break; }
+            keys = (p->step % 24) < 2 ? 2 : 0;
+            break;
+        }
+        case C_GRIND: {
+            // grind N PCT [timeout]: in grass, pace for wild battles and fight
+            // them (A presses, smart_moves if on) until N battles are done or
+            // the lead's HP drops below PCT% (or it faints). Logs each battle.
+            unsigned lead = partyMon(0, 0);
+            unsigned hp = rd16(p, lead + 86), maxhp = rd16(p, lead + 88);
+            bool battling = rd8(p, sMain + 0x439) & 2;
+            if (++p->step >= c->frames) {
+                out("[p%d] FAIL grind timeout after %d battles\n", p->id, p->grindCount);
+                dump(p, "fail"); writePng(p, "fail"); sFailures++;
+                p->grindCount = 0; p->grindInBattle = 0; advance = true; break;
+            }
+            if (battling) { p->grindInBattle = 1; keys = autoKeys(p, p->step); break; }
+            if (!inField(p)) { keys = autoKeys(p, p->step); break; }
+            if (p->grindInBattle) {
+                p->grindInBattle = 0;
+                p->grindCount++;
+                out("[f%06d p%d grind] battle %d done: lead lv=%u hp=%u/%u outcome=%u\n", p->frame, p->id, p->grindCount,
+                    rd8(p, lead + 84), hp, maxhp, rd8(p, symAddr("gBattleOutcome")));
+            }
+            if (p->grindCount >= (int)c->value || hp == 0 || hp * 100 < (unsigned)c->size * maxhp) {
+                out("[p%d] grind stop after %d battles (lead hp %u/%u)\n", p->id, p->grindCount, hp, maxhp);
+                p->grindCount = 0; advance = true; break;
+            }
+            keys = ((p->step / 24) & 1) ? (1u << 7) : (1u << 6);
+            break;
+        }
         case C_PACE: {
             if ((rd32(p, sMain + 4) & ~1u) == (symAddr("BattleMainCB2") & ~1u)) { advance = true; break; }
             // pace_until_mem: stop when the value matches instead.
@@ -2016,6 +2088,17 @@ static void loadScript(const char* path, int depth) {
             c.size = size;
             c.value = strtoul(b, NULL, 0);
             c.frames = n >= 5 ? atoi(d) : 6000;
+        } else if (!strcmp(cmd, "catch")) {
+            // catch N [timeout]
+            c.kind = C_CATCH;
+            c.value = strtoul(a, NULL, 0);
+            c.frames = n >= 4 ? atoi(b) : 20000;
+        } else if (!strcmp(cmd, "grind")) {
+            // grind N PCT [timeout]
+            c.kind = C_GRIND;
+            c.value = strtoul(a, NULL, 0);
+            c.size = atoi(b);
+            c.frames = n >= 5 ? atoi(d) : 60000;
         } else if (!strcmp(cmd, "pace_until_battle")) {
             // Walk up and down in place (grass) until a battle starts.
             c.kind = C_PACE;
