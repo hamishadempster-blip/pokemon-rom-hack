@@ -1440,7 +1440,67 @@ enum NationalDexOrder
     F(PETILIL) \
     F(LILLIGANT) \
     F(SNOM) \
-    F(FROSMOTH)
+    F(FROSMOTH) \
+    F(BUIZEL) \
+    F(FLOATZEL) \
+    F(SEWADDLE) \
+    F(SWADLOON) \
+    F(LEAVANNY) \
+    F(VENIPEDE) \
+    F(WHIRLIPEDE) \
+    F(SCOLIPEDE) \
+    F(ROLYCOLY) \
+    F(CARKOL) \
+    F(COALOSSAL) \
+    F(SKIDDO) \
+    F(GOGOAT) \
+    F(DRILBUR) \
+    F(EXCADRILL) \
+    F(FOMANTIS) \
+    F(LURANTIS) \
+    F(DARUMAKA) \
+    F(DARMANITAN) \
+    F(SIZZLIPEDE) \
+    F(CENTISKORCH) \
+    F(SALANDIT) \
+    F(SALAZZLE) \
+    F(SCRAGGY) \
+    F(SCRAFTY) \
+    F(MUDBRAY) \
+    F(MUDSDALE) \
+    F(RUFFLET) \
+    F(BRAVIARY) \
+    F(VULLABY) \
+    F(MANDIBUZZ) \
+    F(CLOBBOPUS) \
+    F(GRAPPLOCT) \
+    F(CLAUNCHER) \
+    F(CLAWITZER) \
+    F(SKRELP) \
+    F(DRAGALGE) \
+    F(PANCHAM) \
+    F(PANGORO) \
+    F(SOLOSIS) \
+    F(DUOSION) \
+    F(REUNICLUS) \
+    F(GOTHITA) \
+    F(GOTHORITA) \
+    F(GOTHITELLE) \
+    F(LARVESTA) \
+    F(VOLCARONA) \
+    F(DEINO) \
+    F(ZWEILOUS) \
+    F(HYDREIGON) \
+    F(LEDYBA) \
+    F(LEDIAN) \
+    F(SPINARAK) \
+    F(ARIADOS) \
+    F(HOOTHOOT) \
+    F(NOCTOWL) \
+    F(SUNKERN) \
+    F(SUNFLORA) \
+    F(SEEL) \
+    F(DEWGONG)
 
 // Hoenn Pokédex order
 enum HoennDexOrder
@@ -1661,7 +1721,7 @@ enum KantoDexOrder
 };
 
 #define KANTO_DEX_COUNT (KANTO_DEX_MEW + 1)
-#define HOENN_DEX_COUNT (HOENN_DEX_FROSMOTH + 1)
+#define HOENN_DEX_COUNT (HOENN_DEX_DEWGONG + 1)
 
 #define REGIONAL_DEX_COUNT (IS_FRLG ? KANTO_DEX_COUNT : HOENN_DEX_COUNT)
 

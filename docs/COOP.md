@@ -181,6 +181,12 @@ Stats below are HP / Attack / Defense / Sp. Atk / Sp. Def / Speed. Abilities are
 | Dustox | 60/50/70/50/90/65, Shield Dust / Compound Eyes | 80/40/90/60/105/55, Shield Dust / Compound Eyes / Healer | Defensive status support. Hidden Healer can cure its partner. Rage Powder 24, Toxic Spikes 28, Sludge Bomb 40, Safeguard 45 beside Moonlight, Light Screen, Toxic, and Whirlwind; Quiver Dance moved to Beautifly only. |
 | Armaldo | 75/125/100/70/80/45, Battle Armor / Swift Swim | 85/130/110/45/90/50, Battle Armor / Swift Swim | Bulkier physical attacker. Rapid Spin 1, Knock Off 30, Stone Edge 40, Swords Dance 52 beside X-Scissor and Rock Blast. |
 | Luxray | 80/120/79/95/79/70, Rivalry / Intimidate / Guts | 80/125/79/75/79/88, Rivalry / Intimidate / Guts | Electric/Dark (Shinx and Luxio stay Electric). Faster. Fire, Ice, and Thunder Fang at 1, Crunch 42, Wild Charge 50, Psychic Fangs 58, Supercell Slam 68; Swagger removed. |
+| Ledian | 55/35/50/55/110/85, Swarm / Early Bird / Iron Fist | 70/105/65/35/95/95, Iron Fist / Early Bird / Swarm | Physical punching specialist (Iron Fist is now its first ability). Comet Punch 1, Mach Punch 15, Lunge 24, Ice and Thunder Punch 26, Fire Punch 30, Drain Punch 36, Acrobatics 42, Swords Dance 46; special Swift, Struggle Bug, Bug Buzz, Air Slash removed. Still four times weak to Rock. |
+| Ariados | 70/90/70/60/70/40, Swarm / Insomnia / Sniper | 90/100/85/50/85/40, Swarm / Insomnia / Stakeout | Durable trapper. Spider Web 1, Toxic Thread 30, Sticky Web 34, Knock Off 38, Poison Jab 41, Leech Life 44 beside Shadow Sneak and Sucker Punch; Psychic removed. Still slow. |
+| Sunflora | 75/75/55/105/85/30, Chlorophyll / Solar Power / Early Bird | 85/50/70/125/90/30, Chlorophyll / Solar Power / Drought | Grass/Fire slow sun attacker (Sunkern stays Grass). Ember on evolution, Weather Ball 16, Synthesis 24, Flamethrower 28, Heat Wave 37, Earth Power 46; physical Pound, Bullet Seed, Double-Edge removed. Weak to Rock, Flying and Poison. |
+| Magcargo | 60/50/120/90/80/30, Magma Armor / Flame Body / Weak Armor | 85/45/120/85/105/30, Solid Rock / Flame Body / Magma Armor | Defensive wall. Stealth Rock 38, Recover 40 (was 47), Will-O-Wisp 42 (Slugma 30), Body Press 50. Still four times weak to Water and Ground, softened by Solid Rock. |
+| Dewgong | 90/70/80/70/95/70, Thick Fat / Hydration / Ice Body | 100/60/90/80/105/60, Thick Fat / Hydration / Ice Body | Doubles support. Life Dew on evolution (heals itself and its partner), Fake Out 1, Scald 38, Haze 42, Ice Beam 48 (was 55), beside Icy Wind, Encore and Aqua Ring; Sheer Cold removed. |
+| Noctowl | 100/50/50/86/96/70, Insomnia / Keen Eye / Tinted Lens | 110/40/60/95/110/70, Insomnia / Keen Eye / Tinted Lens | Specially defensive screen support. Light Screen 20 (Reflect 12), Roost 25, Hypnosis 30, Whirlwind 33, Psyshock 36, Hurricane 50; physical Sky Attack and Take Down, and Uproar removed. |
 
 Together on the same tile, a wild double of any of these pairs is the pair itself: Plusle and Minun, Volbeat and Illumise, Lunatone and Solrock, Seviper and Zangoose, Indeedee male and female.
 
@@ -248,6 +254,35 @@ Together on the same tile, a wild double of any of these pairs is the pair itsel
 | Honedge | Altering Cave (Route 103, by Surf) | 26–30 |
 | Petilil | Route 123 | 26 and 28 |
 | Snom | Shoal Cave, low tide ice and inner rooms | 28–32 |
+| Buizel | Route 104, and Route 104 surfing | 4 and 5, and 15–20 |
+| Sewaddle | Petalburg Woods | 5 |
+| Venipede | Petalburg Woods, and Rusturf Tunnel | 5, and 6 and 8 |
+| Rolycoly | Rusturf Tunnel, and New Mauville | 6 and 7, and 22 and 23 |
+| Skiddo | Route 116, and Route 118 | 7 and 8, and 25 and 26 |
+| Drilbur | Granite Cave 1F, B1F, B2F | 9, 10, 11 |
+| Fomantis | Route 117, and Route 123 | 13, and 26 and 27 |
+| Darumaka | Fiery Path | 15 and 16 |
+| Sizzlipede | Fiery Path | 15 |
+| Salandit | Fiery Path, and Magma Hideout (a female is given in Lavaridge) | 15 and 16, and 30 |
+| Scraggy | Route 111 desert | 20 |
+| Mudbray | Route 111 desert, Route 112, and Jagged Pass | 21, 15, and 21 |
+| Rufflet | Route 112, and Jagged Pass | 14 and 16, and 21 |
+| Vullaby | Route 113, and Jagged Pass | 14 and 16, and 21 |
+| Clobbopus | Route 115 | 23 and 24 |
+| Clauncher | Routes 106 and 107, and Dewford (Good Rod) | 15–25 |
+| Skrelp | Routes 105 and 109 surfing, and Routes 108 and 109 (Super Rod) | 20–30 |
+| Grimer (Alola) | Slateport City and Route 110, surfing | 20–30 |
+| Pancham | Route 119 | 25 |
+| Solosis | Route 119, and Route 120 | 25, and 26 |
+| Gothita | Route 120 | 25 and 27 |
+| Vulpix (Alola) | Shoal Cave, low tide ice and lower rooms | 28 and 30 |
+| Larvesta | Magma Hideout (rare) | 29 and 30 |
+| Deino | Meteor Falls B1F back room (needs Waterfall) | 32 and 35 |
+| Ledyba | Route 102, and Route 117 | 4, and 13 |
+| Spinarak | Route 102, and Route 119 | 4, and 24 |
+| Hoothoot | Route 116, and Route 121 | 6, and 26 |
+| Sunkern | Route 116, Route 123, and the Safari Zone | 6, 26, and 33–34 |
+| Seel | Routes 105 and 125, and Shoal Cave, surfing | 15–30 |
 
 Gigalith is on the Desert Underpass. The underpass encounter table already runs from 35 to 45, so level 42 is inside that table. Sandile and Helioptile stay at the desert's own levels. Tadbulb uses New Mauville's own levels, 22 and 24, because that cave's table runs from 22 to 26. Crabrawler is a surf encounter on Route 106, which has no grass.
 
