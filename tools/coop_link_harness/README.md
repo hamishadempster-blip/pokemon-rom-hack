@@ -223,6 +223,12 @@ New lab-save scenarios: `center_beacon`, `link_recovery`, `wild_route101`,
 exit with staggered players, application heartbeat outages, expired invites,
 explicit unilateral unlink, and a completed double after recovery.
 
+`force_encounter 1|0` (a fixture) patches this core's `WildEncounterCheck` to
+return TRUE, so its next grass step rolls an encounter; `0` restores the
+original code. `wild_simultaneous` uses it on both cores to make two
+encounters land on the same frame. `qol` covers the party cursor memory and
+the quick repeat heal at a nurse.
+
 `mute_coop FRAMES` suppresses this core's application frame sender by
 patching its first instruction to `bx lr`, then restores the original
 instruction automatically. It does not disconnect the serial cable. The
@@ -239,5 +245,5 @@ route state 3, the original level-5 leads and save counter 2. Set
 `ZIG_AFFECTED=/path/to/old-route101-saves` to add this check to `run_all.sh`.
 The affected-save producer is deliberately not part of the new-ROM suite.
 
-Final run results and fixture limits: `docs/COOP_REGRESSION_C017012D.md` and
+Final run results and fixture limits: `docs/COOP_REGRESSION_C017012E.md` and
 `docs/COOP_HANDOFF.md`.

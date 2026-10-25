@@ -1,4 +1,81 @@
-# Current regression fixes: build 0xC017012D
+# Seamless overworld, battles, Beacon, rivals, roster: build 0xC017012E
+
+Branch `coop-doorway-scenes-rivals`, on top of `672331ea` (C017012D). Keep it
+unmerged. Both games need this build. The save layout is unchanged, so
+existing saves load.
+
+## What changed
+
+- **Connected maps** (`544d5a95`):
+  - The partner is drawn through north/south/east/west connections, including
+    offset ones, while their real tile falls in the strip of the neighbouring
+    map this screen has loaded. Movement is a normal step across the boundary,
+    with no snap.
+  - One sprite, no collision, elevation taken from the tile.
+  - Doors, caves, warps, and Fly hide the partner and put a short note in the
+    map-name window ("NAME went inside", "NAME: PETALBURG CITY").
+  - Interiors and unrelated maps never draw them.
+  - Visibility does not imply eligibility: battles still need the same map.
+  - The field loop now drains the co-op receive backlog each frame. Before,
+    it read one command per frame, which could leave the partner up to 50
+    frames behind.
+- **Battles** (`544d5a95`, `bcad5418`, `8504de10`):
+  - A committed wild join launches even if the inviter goes quiet, and a
+    withdrawn invite cancels it.
+  - A guest's catch was encrypted with the master's OT id and decrypted as
+    garbage. It is now re-keyed to the guest's id with its data intact.
+  - Shared trainer wins paid no prize to either save. Each save now pays
+    itself the stock prize once.
+  - RUN needs both players on the same turn.
+- **Beacon clarity** (`bcad5418`):
+  - The start-menu status says whether fights here would be together, and
+    why not.
+  - The CO-OP menu explains Linked, Beacon on, and Beacon off in one line and
+    names the switch by what it does.
+  - A solo fight while linked with the Beacon on says why under its first
+    message: other map, busy, said no, no answer, team not ready, recovering,
+    facility, or one-player encounter.
+  - A surfing partner rides a surf blob.
+- **Rivals** (`38211b66`):
+  - Soren always leads with the starter line and Mira with the companion
+    line, and the added Pokémon fill their teams.
+  - The twin's talk line follows the rival stage.
+  - The twin never takes the partner's tile, so both screens place it the
+    same.
+  - A rival scene started alone explains why, returns the rival to its tile
+    and the map music, and plays in full later.
+- **Roster and gyms** (`675d528e`): see
+  [COOP_GYM_AND_ROSTER_AUDIT.md](COOP_GYM_AND_ROSTER_AUDIT.md) for the 107
+  audited species, how each is obtained, the evolution fixes (Gimmighoul,
+  Bisharp, Charcadet armors, Linking Cord), and every gym's final team.
+- **Small conveniences** (`b6dea32d`):
+  - The party screen reopens on the last highlighted Pokémon.
+  - Returning to the nurse who last healed you this session heals at once.
+  - Bag position memory and the expired-Repel renewal were already stock
+    features and are unchanged.
+- **Simultaneous encounters**: when both players roll a wild encounter on
+  the same frame, each answers the other "busy", and both fight solo with
+  "Solo: your partner is busy." Nothing is left waiting, and the next co-op
+  double works. This was already the behaviour; this batch adds a test for
+  it.
+
+## Decisions taken
+
+- Gyms remain co-op only, as the project already specified. There is no
+  separate solo gym team; each side's three Pokémon form a self-contained
+  team.
+- Visible across a boundary means "on another map" for battles, invitations,
+  and scenes.
+- Gimmighoul now evolves at level 50 and Bisharp at level 64, because the
+  stock items they need don't exist in this game.
+
+## Verification
+
+Exact results are in [COOP_REGRESSION_C017012E.md](COOP_REGRESSION_C017012E.md).
+
+---
+
+# Previous: regression fixes, build 0xC017012D
 
 Branch: `coop-doorway-scenes-rivals`, based on `66719f6d`. Keep unmerged.
 Both players need the new build; existing save layout is unchanged.

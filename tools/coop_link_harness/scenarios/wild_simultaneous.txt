@@ -1,0 +1,43 @@
+# Both players roll a wild encounter on the same frame with the Beacon on.
+# Each is already calling its partner over, so each answers the other's
+# invitation "busy": both fight solo with that note, nothing is left
+# waiting, the link and Beacon stay up, and a later co-op double works.
+# From lab saves. FIXTURES: force_encounter patches WildEncounterCheck to
+# pass, so the collision is exact; level-40 strong leads win the solo fights
+# (a loss would white out to town). Invitations, replies, battles are real.
+include wild_route101_start.inc
+0 fixture_lead 255 40 56660
+1 fixture_lead 228 40 80000
+# Both stand in tall grass (Route 101 rows 3-5), facing their next step.
+0 goto 14 5 2000
+1 goto 13 4 2000
+b write sWildEncountersDisabled 0
+b force_encounter 1
+b sync
+0 press RIGHT 8
+1 press UP 8
+b wait 30
+b force_encounter 0
+b write sWildEncountersDisabled 1
+b until_cb2 BattleMainCB2 6000
+b until_battle_text Solo:_your_partner_is_busy. 3000
+b expect gBattlersCount 2
+b expect coop.sInBattle 0
+b expect coop.sWaitKind 0
+b shot simultaneous-solo
+b mash_field 25000
+b expect coop.sLinkState 2
+b expect coop.sBeacon+1:1 1
+b expect coop.sWaitKind 0
+# Nothing stale: an ordinary co-op double starts and finishes afterwards.
+b sync
+0 write sWildEncountersDisabled 0
+0 pace_until_battle 9000
+0 write sWildEncountersDisabled 1
+0 until_cb2 BattleMainCB2 12000 A
+1 until_cb2 BattleMainCB2 12000 A
+b expect gBattlersCount 4
+b expect coop.sInBattle 1
+b mash_field 25000
+b expect gBattleOutcome 1
+b expect coop.sLinkState 2

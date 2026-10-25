@@ -22,7 +22,7 @@
 #define MAX_CMDS 4096
 #define MAX_SYMS 500000
 
-enum { C_PARTNER, C_GOTO, C_HEX, C_PRESS, C_WAIT, C_SHOT, C_DUMP, C_BARRIER, C_UNTIL_CB2, C_UNTIL_FIELD, C_EXPECT, C_UNTIL_MEM, C_BATTLE, C_MENU, C_PARTY, C_FIXTURE, C_WRITE, C_LEAD, C_MOVE, C_SIX, C_VAR, C_FLAG, C_VS, C_EXPECT_FLAG, C_EXPECT_VAR, C_NO_OBJECT, C_MAP, C_OBJECT, C_TEXT_SPEED, C_PACE, C_MUTE, C_PARTNER_AT, C_ITEM, C_EXPECT_ITEM, C_UNTIL_TEXT, C_WARP, C_PC_COUNT, C_MONS, C_NO_COPIES, C_NOTE_MONEY, C_MONEY_GAIN };
+enum { C_PARTNER, C_GOTO, C_HEX, C_PRESS, C_WAIT, C_SHOT, C_DUMP, C_BARRIER, C_UNTIL_CB2, C_UNTIL_FIELD, C_EXPECT, C_UNTIL_MEM, C_BATTLE, C_MENU, C_PARTY, C_FIXTURE, C_WRITE, C_LEAD, C_MOVE, C_SIX, C_VAR, C_FLAG, C_VS, C_EXPECT_FLAG, C_EXPECT_VAR, C_NO_OBJECT, C_MAP, C_OBJECT, C_TEXT_SPEED, C_PACE, C_MUTE, C_PARTNER_AT, C_ITEM, C_EXPECT_ITEM, C_UNTIL_TEXT, C_WARP, C_PC_COUNT, C_MONS, C_NO_COPIES, C_NOTE_MONEY, C_MONEY_GAIN, C_FORCE_ENC };
 
 struct Cmd {
 	int kind;
@@ -53,6 +53,7 @@ struct Player {
 	unsigned moneyBase;
     unsigned vsFlags;
     unsigned muteFrames, mutedOpcode;
+    unsigned encSaved[2], encForced;
 };
 
 static struct Player P[2];
@@ -645,6 +646,24 @@ static void frameCallback(struct mCoreThread* t) {
 		struct Cmd* c = &p->cmds[p->pc];
 		bool advance = false;
 		switch (c->kind) {
+        case C_FORCE_ENC: {
+            // FIXTURE: WildEncounterCheck returns TRUE (movs r0,#1; bx lr), so
+            // the next grass step rolls an encounter. Off restores the code.
+            unsigned addr = symAddr("WildEncounterCheck") & ~1u;
+            if (c->value && !p->encForced) {
+                p->encSaved[0] = rd16(p, addr);
+                p->encSaved[1] = rd16(p, addr + 2);
+                p->core->rawWrite16(p->core, addr, -1, 0x2001);
+                p->core->rawWrite16(p->core, addr + 2, -1, 0x4770);
+                p->encForced = 1;
+            } else if (!c->value && p->encForced) {
+                p->core->rawWrite16(p->core, addr, -1, p->encSaved[0]);
+                p->core->rawWrite16(p->core, addr + 2, -1, p->encSaved[1]);
+                p->encForced = 0;
+            }
+            advance = true;
+            break;
+        }
         case C_MUTE:
             if (!p->muteFrames) {
                 unsigned addr = symAddr("Coop_LinkCallback");
@@ -1300,6 +1319,9 @@ static void loadScript(const char* path, int depth) {
             c.value = strtoul(d, NULL, 0);
         } else if (!strcmp(cmd, "expect_no_object")) {
             c.kind = C_NO_OBJECT;
+            c.value = strtoul(a, NULL, 0);
+        } else if (!strcmp(cmd, "force_encounter")) {
+            c.kind = C_FORCE_ENC;
             c.value = strtoul(a, NULL, 0);
         } else if (!strcmp(cmd, "mute_coop")) {
             c.kind = C_MUTE;
