@@ -4745,12 +4745,13 @@ IVs: 31 HP / 31 Atk / 31 Def / 31 SpA / 31 SpD / 31 Spe
 - Tackle
 - Harden
 
-Geodude
+Nacli
+Ability: Purifying Salt
 Level: 14
 IVs: 31 HP / 31 Atk / 31 Def / 31 SpA / 31 SpD / 31 Spe
-- Rock Tomb
-- Tackle
-- Defense Curl
+- Smack Down
+- Mud Shot
+- Harden
 - Protect
 
 Aron
@@ -4771,13 +4772,14 @@ Items: Super Potion / Super Potion
 Double Battle: Yes
 AI: Check Bad Move / Try To Faint / Check Viability / HP Aware / Smart Switching / Try To 2HKO
 
-Makuhita
+Crabrawler
+Ability: Hyper Cutter
 Level: 20
 IVs: 31 HP / 31 Atk / 31 Def / 31 SpA / 31 SpD / 31 Spe
-- Rock Tomb
-- Arm Thrust
-- Sand Attack
-- Bulk Up
+- Rock Smash
+- Bubble Beam
+- Leer
+- Protect
 
 Machoke
 Level: 21
@@ -4823,13 +4825,14 @@ IVs: 31 HP / 31 Atk / 31 Def / 31 SpA / 31 SpD / 31 Spe
 - Light Screen
 - Shock Wave
 
-Electrode
+Tadbulb
+Ability: Static
 Level: 27
 IVs: 31 HP / 31 Atk / 31 Def / 31 SpA / 31 SpD / 31 Spe
 - Spark
-- Self Destruct
-- Shock Wave
-- Thunder Wave
+- Mud Shot
+- Charge
+- Water Gun
 
 === TRAINER_FLANNERY_1 ===
 Name: FLANNERY
@@ -4858,13 +4861,14 @@ IVs: 31 HP / 31 Atk / 31 Def / 31 SpA / 31 SpD / 31 Spe
 - Tackle
 - Protect
 
-Magcargo
+Armarouge @ Charcoal
+Ability: Flash Fire
 Level: 33
 IVs: 31 HP / 31 Atk / 31 Def / 31 SpA / 31 SpD / 31 Spe
-- Overheat
-- Rock Slide
-- Light Screen
-- Body Slam
+- Incinerate
+- Psybeam
+- Will O Wisp
+- Protect
 
 === TRAINER_NORMAN_1 ===
 Name: NORMAN
@@ -4885,13 +4889,14 @@ IVs: 31 HP / 31 Atk / 31 Def / 31 SpA / 31 SpD / 31 Spe
 - Counter
 - Feint Attack
 
-Vigoroth
+Maushold
+Ability: Friend Guard
 Level: 38
 IVs: 31 HP / 31 Atk / 31 Def / 31 SpA / 31 SpD / 31 Spe
-- Slash
+- Follow Me
+- Helping Hand
+- Super Fang
 - Encore
-- Feint Attack
-- Focus Energy
 
 Exploud
 Level: 39
@@ -4919,13 +4924,14 @@ IVs: 31 HP / 31 Atk / 31 Def / 31 SpA / 31 SpD / 31 Spe
 - Aerial Ace
 - Dragon Breath
 
-Swellow
+Corviknight @ Leftovers
+Ability: Mirror Armor
 Level: 44
 IVs: 31 HP / 31 Atk / 31 Def / 31 SpA / 31 SpD / 31 Spe
-- Aerial Ace
-- Endeavor
-- Quick Attack
-- Double Team
+- Drill Peck
+- Iron Head
+- Tailwind
+- Taunt
 
 Pelipper
 Ability: Drizzle
@@ -4954,13 +4960,14 @@ IVs: 31 HP / 31 Atk / 31 Def / 31 SpA / 31 SpD / 31 Spe
 - Hypnosis
 - Calm Mind
 
-Claydol
+Indeedee-F @ Sitrus Berry
+Ability: Psychic Surge
 Level: 50
 IVs: 31 HP / 31 Atk / 31 Def / 31 SpA / 31 SpD / 31 Spe
-- Protect
+- Follow Me
 - Psychic
-- Ancient Power
-- Light Screen
+- Helping Hand
+- Protect
 
 Solrock
 Level: 51
@@ -4980,14 +4987,14 @@ Items: Hyper Potion / Hyper Potion
 Double Battle: Yes
 AI: Check Bad Move / Try To Faint / Check Viability / HP Aware / Smart Switching / Try To 2HKO
 
-Ludicolo
-Ability: Swift Swim
+Veluza @ Mystic Water
+Ability: Sharpness
 Level: 56
 IVs: 31 HP / 31 Atk / 31 Def / 31 SpA / 31 SpD / 31 Spe
-- Surf
-- Giga Drain
-- Fake Out
-- Rain Dance
+- Aqua Cutter
+- Psycho Cut
+- Night Slash
+- Protect
 
 Whiscash
 Ability: Hydration
@@ -16818,13 +16825,14 @@ IVs: 31 HP / 31 Atk / 31 Def / 31 SpA / 31 SpD / 31 Spe
 - Confusion
 - Detect
 
-Primeape
-Level: 22
+Pawmo
+Ability: Volt Absorb
+Level: 21
 IVs: 31 HP / 31 Atk / 31 Def / 31 SpA / 31 SpD / 31 Spe
-- Karate Chop
-- Seismic Toss
-- Rock Slide
-- Bulk Up
+- Nuzzle
+- Arm Thrust
+- Bite
+- Quick Attack
 
 === TRAINER_JOULE_1 ===
 Name: JOULE
@@ -16880,14 +16888,14 @@ IVs: 31 HP / 31 Atk / 31 Def / 31 SpA / 31 SpD / 31 Spe
 - Protect
 - Howl
 
-Ninetales
-Ability: Flash Fire
+Scovillain
+Ability: Chlorophyll
 Level: 33
 IVs: 31 HP / 31 Atk / 31 Def / 31 SpA / 31 SpD / 31 Spe
 - Flamethrower
-- Will O Wisp
-- Confuse Ray
-- Quick Attack
+- Bullet Seed
+- Bite
+- Protect
 
 Tropius
 Ability: Solar Power
@@ -16948,13 +16956,14 @@ IVs: 31 HP / 31 Atk / 31 Def / 31 SpA / 31 SpD / 31 Spe
 - Aerial Ace
 - Spikes
 
-Crobat
+Flamigo
+Ability: Scrappy
 Level: 44
 IVs: 31 HP / 31 Atk / 31 Def / 31 SpA / 31 SpD / 31 Spe
-- Wing Attack
-- Bite
-- Confuse Ray
-- Toxic
+- Wide Guard
+- Feint
+- Low Kick
+- Air Slash
 
 Gyarados
 Level: 45
@@ -17023,13 +17032,14 @@ IVs: 31 HP / 31 Atk / 31 Def / 31 SpA / 31 SpD / 31 Spe
 - Recover
 - Attract
 
-Wailord
-Level: 58
+Dondozo @ Leftovers
+Ability: Unaware
+Level: 57
 IVs: 31 HP / 31 Atk / 31 Def / 31 SpA / 31 SpD / 31 Spe
-- Water Spout
-- Surf
-- Ice Beam
-- Rest
+- Order Up
+- Heavy Slam
+- Body Slam
+- Protect
 
 === TRAINER_STEVEN_CHAMPION ===
 Name: STEVEN

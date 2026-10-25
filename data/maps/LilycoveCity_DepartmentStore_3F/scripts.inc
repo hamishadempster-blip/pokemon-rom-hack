@@ -75,13 +75,17 @@ LilycoveCity_DepartmentStore_3F_Pokemart_Evolution:
 	.2byte ITEM_KINGS_ROCK
 	.2byte ITEM_DEEP_SEA_TOOTH
 	.2byte ITEM_DEEP_SEA_SCALE
+	.2byte ITEM_AUSPICIOUS_ARMOR
+	.2byte ITEM_MALICIOUS_ARMOR
+	.2byte ITEM_LINKING_CORD
 	pokemartlistend
 
 LilycoveCity_DepartmentStore_3F_Text_EvolutionClerk:
 	.string "Stones and apples for evolution\n"
 	.string "are on this counter.\p"
 	.string "Metal Coat, Dragon Scale,\n"
-	.string "Prism Scale, and Reaper Cloth\p"
+	.string "Prism Scale, Reaper Cloth, both\l"
+	.string "armors, and the Linking Cord\p"
 	.string "can be used straight from\n"
 	.string "the bag.$"
 

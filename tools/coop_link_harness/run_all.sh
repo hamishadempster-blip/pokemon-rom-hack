@@ -42,7 +42,8 @@ fi
 for s in $fresh; do run "$s"; done
 
 lab0="$out/save_lab/p0.sav"; lab1="$out/save_lab/p1.sav"
-for s in reconnect route102_reconnect solo_six trainer_reconnect trainer_p1 coop_six rival_story rival_p1 invite_refuse invite_busy coop_menu center_beacon link_recovery wild_route101 wild_route101_p1 battle_abort_recovery invite_timeout_recovery; do
+for s in reconnect route102_reconnect solo_six trainer_reconnect trainer_p1 coop_six rival_story rival_p1 invite_refuse invite_busy coop_menu center_beacon link_recovery wild_route101 wild_route101_p1 battle_abort_recovery invite_timeout_recovery \
+         connected_maps wild_places invite_cancel wild_run; do
 	run "$s" SAVE0="$lab0" SAVE1="$lab1"
 done
 

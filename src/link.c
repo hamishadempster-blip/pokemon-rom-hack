@@ -469,6 +469,22 @@ static void CB2_LinkTest(void)
     UpdatePaletteFade();
 }
 
+// The queued command after the current one, for every player, is empty or a
+// co-op position frame (never part of a block or any other exchange).
+static bool32 NextRecvCmdsAreCoopFrames(void)
+{
+    u8 i, pos = gLink.recvQueue.pos;
+
+    for (i = 0; i < gLink.playerCount && i < MAX_LINK_PLAYERS; i++)
+    {
+        u16 cmd = gLink.recvQueue.data[i][0][pos];
+
+        if (cmd != 0 && cmd != LINKCMD_COOP && cmd != LINKCMD_SEND_HELD_KEYS)
+            return FALSE;
+    }
+    return TRUE;
+}
+
 u16 LinkMain2(const u16 *heldKeys)
 {
     u8 i;
@@ -488,11 +504,15 @@ u16 LinkMain2(const u16 *heldKeys)
         // frame, the partner then walks the queue's age behind, up to a
         // second late and growing. Catch up in order, so a block still
         // arrives whole and the newest position wins.
+        // Only position frames are read ahead: a block arrives as a run of
+        // commands into one buffer, and the game reads a finished block on
+        // the next frame, so a second block read in the same frame would
+        // overwrite the first.
         if (gWirelessCommType == 0 && Coop_FieldLinkCatchUp())
         {
             u8 extra = 0;
 
-            while (gLink.recvQueue.count > 1 && extra++ < 16)
+            while (gLink.recvQueue.count > 1 && extra++ < 16 && NextRecvCmdsAreCoopFrames())
             {
                 DequeueRecvCmds(gRecvCmds);
                 ProcessRecvCmds(SIO_MULTI_CNT->id);

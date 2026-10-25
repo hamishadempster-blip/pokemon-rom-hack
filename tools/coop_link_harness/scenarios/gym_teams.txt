@@ -1,0 +1,55 @@
+# Representative gym fights with the expanded-roster teams: Roxanne (early),
+# Norman (middle), Juan (late), each with its partner trainer, both players.
+# Start from lab saves made by save_lab.txt. FIXTURES (not gameplay):
+#   - fixture_warp puts both players in front of the leader;
+#   - level-70 leads with strong cached stats, so the fights finish;
+#   - Norman's gym state is set to "four badges" so he accepts the fight.
+# Checked: the co-op gym starts, the new Pokemon are in it, the win sets the
+# leader flag and badge on both saves, and both saves get the same prize.
+include beacon_battle.txt
+b mash_field 2000 B
+b write sWildEncountersDisabled 1
+0 fixture_lead 255 70 344960
+1 fixture_lead 228 70 428750
+
+# --- Roxanne and Heath (badge 1): Nacli joins Nosepass and Aron.
+0 fixture_warp 11 3 5 3
+1 fixture_warp 11 3 4 3
+include gym_teams.inc
+b shot gym-roxanne
+b mash_field 30000
+b expect gBattleOutcome 1
+b expect_flag 0x4F0 1
+b expect_flag 0x867 1
+b sync
+b expect_same_prize
+b expect coop.sLinkState 2
+
+# --- Norman and Hana (badge 5): Maushold with Follow Me beside Slaking.
+b fixture_var 0x4085 6
+b fixture_flag 0x304 0
+0 fixture_warp 8 1 4 3
+1 fixture_warp 8 1 5 3
+include gym_teams.inc
+b shot gym-norman
+b mash_field 30000
+b expect gBattleOutcome 1
+b expect_flag 0x4F4 1
+b expect_flag 0x86B 1
+b sync
+b expect_same_prize
+b expect coop.sLinkState 2
+
+# --- Juan and Wallace (badge 8): Veluza and Dondozo in the rain team.
+0 fixture_warp 15 0 8 3
+1 fixture_warp 15 0 7 3
+include gym_teams.inc
+b shot gym-juan
+b mash_field 40000
+b expect gBattleOutcome 1
+b expect_flag 0x4F7 1
+b expect_flag 0x86E 1
+b sync
+b expect_same_prize
+b expect coop.sLinkState 2
+b expect_mons_intact

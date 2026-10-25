@@ -153,9 +153,10 @@ Coop_EventScript_AskToggleCap::
 Coop_EventScript_MenuLinked::
 	@ Say what the link and the Beacon mean right now, then offer the switch
 	@ named by what it will do.
+	@ Drawn at once, so the list is up as soon as the menu opens and a quick
+	@ DOWN, A is never lost to the text.
 	specialvar VAR_RESULT, Coop_BufferMenuExplain
-	message gStringVar4
-	waitmessage
+	messageinstant gStringVar4
 	goto_if_eq VAR_RESULT, TRUE, Coop_EventScript_MenuLinkedBeaconOn
 	dynmultichoice 21, 1, FALSE, 3, 0, DYN_MULTICHOICE_CB_NONE, Coop_Text_OptBeaconOn, Coop_Text_OptUnlink, Coop_Text_OptBack
 	goto Coop_EventScript_MenuLinkedChoice
