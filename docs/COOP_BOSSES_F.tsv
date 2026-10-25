@@ -1,0 +1,55 @@
+trainer	team
+TRAINER_BRENDAN_ROUTE_103_TREECKO	Torchic 5
+TRAINER_MAY_ROUTE_103_TREECKO	Houndour 5
+TRAINER_BRENDAN_ROUTE_103_TORCHIC	Mudkip 5
+TRAINER_MAY_ROUTE_103_TORCHIC	Wingull 5
+TRAINER_BRENDAN_ROUTE_103_MUDKIP	Treecko 5
+TRAINER_MAY_ROUTE_103_MUDKIP	Shroomish 5
+TRAINER_BRENDAN_RUSTBORO_TREECKO	Numel 14, Combusken 16
+TRAINER_MAY_RUSTBORO_TREECKO	Slugma 14, Houndour 16
+TRAINER_BRENDAN_RUSTBORO_TORCHIC	Nacli 14, Marshtomp 16
+TRAINER_MAY_RUSTBORO_TORCHIC	Lotad 14, Pelipper 16
+TRAINER_BRENDAN_RUSTBORO_MUDKIP	Applin 14, Grovyle 16
+TRAINER_MAY_RUSTBORO_MUDKIP	Lotad 14, Shroomish 16
+TRAINER_BRENDAN_ROUTE_110_TREECKO	Numel 21, Corvisquire 20, Combusken 22
+TRAINER_MAY_ROUTE_110_TREECKO	Slugma 21, Tarountula 20, Houndoom 22
+TRAINER_BRENDAN_ROUTE_110_TORCHIC	Nacli 21, Crabrawler 20, Marshtomp 22
+TRAINER_MAY_ROUTE_110_TORCHIC	Lombre 21, Tandemaus 20, Pelipper 22
+TRAINER_BRENDAN_ROUTE_110_MUDKIP	Flapple 21, Pawmi 20, Grovyle 22
+TRAINER_MAY_ROUTE_110_MUDKIP	Shroodle 21, Lotad 20, Breloom 22
+TRAINER_BRENDAN_ROUTE_119_TREECKO	Lucario 34, Camerupt 35, Corvisquire 34, Blaziken 36
+TRAINER_MAY_ROUTE_119_TREECKO	Hattrem 34, Ninetales 35, Spidops 34, Houndoom 36
+TRAINER_BRENDAN_ROUTE_119_TORCHIC	Lucario 34, Naclstack 35, Lanturn 34, Swampert 36
+TRAINER_MAY_ROUTE_119_TORCHIC	Hattrem 34, Lanturn 35, Maushold 34, Pelipper 36
+TRAINER_BRENDAN_ROUTE_119_MUDKIP	Lucario 34, Flapple 35, Pawmo 34, Sceptile 36
+TRAINER_MAY_ROUTE_119_MUDKIP	Hattrem 34, Grafaiai 35, Shiftry 34, Breloom 36
+TRAINER_BRENDAN_LILYCOVE_TREECKO	Lucario 46, Camerupt 47, Corviknight 46, Blaziken 48
+TRAINER_MAY_LILYCOVE_TREECKO	Hatterene 46, Ninetales 47, Magcargo 46, Houndoom 48
+TRAINER_BRENDAN_LILYCOVE_TORCHIC	Lucario 46, Garganacl 47, Lanturn 46, Swampert 48
+TRAINER_MAY_LILYCOVE_TORCHIC	Hatterene 46, Gyarados 47, Sharpedo 46, Pelipper 48
+TRAINER_BRENDAN_LILYCOVE_MUDKIP	Lucario 46, Flapple 47, Pawmot 46, Sceptile 48
+TRAINER_MAY_LILYCOVE_MUDKIP	Hatterene 46, Tropius 47, Shiftry 46, Breloom 48
+TRAINER_TABITHA_MT_CHIMNEY	Numel 26, Charcadet 26, Mightyena 27, Golbat 28
+TRAINER_MAXIE_MT_CHIMNEY	Mightyena 29, Golbat 29, Krokorok 30, Camerupt 31
+TRAINER_SHELLY_WEATHER_INSTITUTE	Mightyena 34, Barraskewda 34, Sharpedo 36
+TRAINER_TABITHA_MAGMA_HIDEOUT	Camerupt 40, Mightyena 40, Armarouge 41, Crobat 42
+TRAINER_MAXIE_MAGMA_HIDEOUT	Mightyena 44, Crobat 44, Revavroom 45, Camerupt 46
+TRAINER_MATT	Mightyena 41, Crobat 41, Crabominable 43
+TRAINER_TABITHA_MOSSDEEP	Mightyena 45, Ceruledge 46, Camerupt 47
+TRAINER_MAXIE_MOSSDEEP	Mightyena 47, Crobat 47, Krookodile 48, Camerupt 49
+TRAINER_SHELLY_SEAFLOOR_CAVERN	Mightyena 48, Basculegion 49, Sharpedo 50
+TRAINER_ARCHIE	Mightyena 52, Crobat 52, Dondozo 53, Sharpedo 54
+TRAINER_WALLY_MAUVILLE	Ralts 18
+TRAINER_WALLY_VR_1	Altaria 58, Delcatty 57, Roserade 58, Magneton 57, Whimsicott 58, Gardevoir 60
+TRAINER_WALLY_VR_2	Altaria 61, Delcatty 60, Roserade 61, Magneton 60, Whimsicott 61, Gardevoir 63
+TRAINER_WALLY_VR_3	Altaria 64, Delcatty 63, Roserade 64, Magneton 63, Whimsicott 64, Gardevoir 66
+TRAINER_WALLY_VR_4	Altaria 67, Delcatty 66, Roserade 67, Magneton 66, Whimsicott 67, Gardevoir 69
+TRAINER_WALLY_VR_5	Altaria 70, Delcatty 69, Roserade 70, Magneton 69, Whimsicott 70, Gardevoir 72
+TRAINER_SIDNEY	Mightyena 64, Kingambit 65, Cacturne 66
+TRAINER_NOIR	Grimmsnarl 64, Sharpedo 65, Absol 66
+TRAINER_WRAITH	Chandelure 64, Dusclops 65, Gengar 66
+TRAINER_GLACIA	Frosmoth 64, Glalie 65, Walrein 66
+TRAINER_FROST	Abomasnow 64, Cetitan 65, Glalie 66
+TRAINER_DRAKE	Dragapult 64, Kommo-o 65, Kingdra 66
+TRAINER_STEVEN_CHAMPION	Metagross 66, Aegislash 64, Armaldo 65
+TRAINER_WALLACE_CHAMPION	Milotic 66, Basculegion 64, Gyarados 65

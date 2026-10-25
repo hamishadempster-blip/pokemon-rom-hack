@@ -597,14 +597,18 @@ Gender: Male
 Music: Aqua
 Items: Super Potion
 Double Battle: No
-AI: Basic Trainer
+AI: Check Bad Move / Try To Faint / Check Viability / HP Aware / Smart Switching / Try To 2HKO / PP Stall Prevention / Weigh Ability Prediction / Ace Pokemon
 
 Mightyena
-Level: 34
+Level: 41
 IVs: 6 HP / 6 Atk / 6 Def / 6 SpA / 6 SpD / 6 Spe
 
-Golbat
-Level: 34
+Crobat
+Level: 41
+IVs: 6 HP / 6 Atk / 6 Def / 6 SpA / 6 SpD / 6 Spe
+
+Crabominable @ Sitrus Berry
+Level: 43
 IVs: 6 HP / 6 Atk / 6 Def / 6 SpA / 6 SpD / 6 Spe
 
 === TRAINER_ZANDER ===
@@ -631,14 +635,18 @@ Pic: Aqua Admin F
 Gender: Female
 Music: Aqua
 Double Battle: No
-AI: Basic Trainer
-
-Carvanha
-Level: 28
-IVs: 6 HP / 6 Atk / 6 Def / 6 SpA / 6 SpD / 6 Spe
+AI: Check Bad Move / Try To Faint / Check Viability / HP Aware / Smart Switching / Try To 2HKO / PP Stall Prevention / Weigh Ability Prediction / Ace Pokemon
 
 Mightyena
-Level: 28
+Level: 34
+IVs: 6 HP / 6 Atk / 6 Def / 6 SpA / 6 SpD / 6 Spe
+
+Barraskewda
+Level: 34
+IVs: 6 HP / 6 Atk / 6 Def / 6 SpA / 6 SpD / 6 Spe
+
+Sharpedo @ Sitrus Berry
+Level: 36
 IVs: 6 HP / 6 Atk / 6 Def / 6 SpA / 6 SpD / 6 Spe
 
 === TRAINER_SHELLY_SEAFLOOR_CAVERN ===
@@ -648,14 +656,18 @@ Pic: Aqua Admin F
 Gender: Female
 Music: Aqua
 Double Battle: No
-AI: Basic Trainer
-
-Sharpedo
-Level: 37
-IVs: 12 HP / 12 Atk / 12 Def / 12 SpA / 12 SpD / 12 Spe
+AI: Check Bad Move / Try To Faint / Check Viability / HP Aware / Smart Switching / Try To 2HKO / PP Stall Prevention / Weigh Ability Prediction / Ace Pokemon
 
 Mightyena
-Level: 37
+Level: 48
+IVs: 12 HP / 12 Atk / 12 Def / 12 SpA / 12 SpD / 12 Spe
+
+Basculegion
+Level: 49
+IVs: 12 HP / 12 Atk / 12 Def / 12 SpA / 12 SpD / 12 Spe
+
+Sharpedo @ Sitrus Berry
+Level: 50
 IVs: 12 HP / 12 Atk / 12 Def / 12 SpA / 12 SpD / 12 Spe
 
 === TRAINER_ARCHIE ===
@@ -666,18 +678,22 @@ Gender: Male
 Music: Aqua
 Items: Super Potion / Super Potion
 Double Battle: No
-AI: Basic Trainer
+AI: Check Bad Move / Try To Faint / Check Viability / HP Aware / Smart Switching / Try To 2HKO / PP Stall Prevention / Weigh Ability Prediction / Ace Pokemon
 
 Mightyena
-Level: 41
+Level: 52
 IVs: 18 HP / 18 Atk / 18 Def / 18 SpA / 18 SpD / 18 Spe
 
 Crobat
-Level: 41
+Level: 52
 IVs: 18 HP / 18 Atk / 18 Def / 18 SpA / 18 SpD / 18 Spe
 
-Sharpedo
-Level: 43
+Dondozo
+Level: 53
+IVs: 18 HP / 18 Atk / 18 Def / 18 SpA / 18 SpD / 18 Spe
+
+Sharpedo @ Sitrus Berry
+Level: 54
 IVs: 18 HP / 18 Atk / 18 Def / 18 SpA / 18 SpD / 18 Spe
 
 === TRAINER_LEAH ===
@@ -2303,7 +2319,7 @@ Gender: Female
 Music: Female
 Items: Full Restore
 Double Battle: No
-AI: Check Bad Move / Try To Faint
+AI: Check Bad Move / Try To Faint / Check Viability / HP Aware / Smart Switching / Try To 2HKO / PP Stall Prevention / Weigh Ability Prediction
 
 Lechonk
 Level: 7
@@ -2728,7 +2744,7 @@ Gender: Male
 Music: Rich
 Items: Full Restore
 Double Battle: No
-AI: Check Bad Move / Try To Faint
+AI: Check Bad Move / Try To Faint / Check Viability / HP Aware / Smart Switching / Try To 2HKO / PP Stall Prevention / Weigh Ability Prediction
 
 Zigzagoon @ Nugget
 Level: 7
@@ -5022,7 +5038,7 @@ Gender: Male
 Music: Elite Four
 Items: Full Restore / Full Restore
 Double Battle: Yes
-AI: Check Bad Move / Try To Faint / Check Viability / HP Aware / Smart Switching / Try To 2HKO
+AI: Check Bad Move / Try To Faint / Check Viability / HP Aware / Smart Switching / Try To 2HKO / PP Stall Prevention / Weigh Ability Prediction / Ace Pokemon
 Mugshot: Purple
 
 Mightyena
@@ -5033,13 +5049,14 @@ IVs: 30 HP / 30 Atk / 30 Def / 30 SpA / 30 SpD / 30 Spe
 - Double Edge
 - Sand Attack
 
-Shiftry
+Kingambit @ Black Glasses
+Ability: Defiant
 Level: 65
 IVs: 30 HP / 30 Atk / 30 Def / 30 SpA / 30 SpD / 30 Spe
-- Extrasensory
-- Feint Attack
-- Swagger
-- Double Team
+- Kowtow Cleave
+- Iron Head
+- Sucker Punch
+- Protect
 
 Cacturne @ Sitrus Berry
 Level: 66
@@ -5057,7 +5074,7 @@ Gender: Female
 Music: Elite Four
 Items: Full Restore / Full Restore
 Double Battle: Yes
-AI: Check Bad Move / Try To Faint / Check Viability / HP Aware / Smart Switching / Try To 2HKO
+AI: Check Bad Move / Try To Faint / Check Viability / HP Aware / Smart Switching / Try To 2HKO / PP Stall Prevention / Weigh Ability Prediction / Ace Pokemon
 Mugshot: Green
 
 Dusclops
@@ -5092,16 +5109,17 @@ Gender: Female
 Music: Elite Four
 Items: Full Restore / Full Restore
 Double Battle: Yes
-AI: Check Bad Move / Try To Faint / Check Viability / HP Aware / Smart Switching / Try To 2HKO
+AI: Check Bad Move / Try To Faint / Check Viability / HP Aware / Smart Switching / Try To 2HKO / PP Stall Prevention / Weigh Ability Prediction / Ace Pokemon
 Mugshot: Pink
 
-Sealeo
+Frosmoth
+Ability: Ice Scales
 Level: 64
 IVs: 30 HP / 30 Atk / 30 Def / 30 SpA / 30 SpD / 30 Spe
-- Encore
-- Body Slam
-- Hail
-- Ice Ball
+- Quiver Dance
+- Ice Beam
+- Bug Buzz
+- Protect
 
 Glalie
 Level: 65
@@ -5111,13 +5129,13 @@ IVs: 30 HP / 30 Atk / 30 Def / 30 SpA / 30 SpD / 30 Spe
 - Icy Wind
 - Light Screen
 
-Sealeo @ Sitrus Berry
+Walrein @ Sitrus Berry
 Level: 66
-IVs: 31 HP / 31 Atk / 31 Def / 31 SpA / 31 SpD / 31 Spe
+IVs: 30 HP / 30 Atk / 30 Def / 30 SpA / 30 SpD / 30 Spe
 - Blizzard
-- Double Edge
-- Hail
-- Attract
+- Surf
+- Body Slam
+- Protect
 
 === TRAINER_DRAKE ===
 Name: DRAKE
@@ -5127,24 +5145,26 @@ Gender: Male
 Music: Elite Four
 Items: Full Restore / Full Restore
 Double Battle: Yes
-AI: Check Bad Move / Try To Faint / Check Viability / HP Aware / Smart Switching / Try To 2HKO
+AI: Check Bad Move / Try To Faint / Check Viability / HP Aware / Smart Switching / Try To 2HKO / PP Stall Prevention / Weigh Ability Prediction / Ace Pokemon
 Mugshot: Blue
 
-Shelgon
+Dragapult
+Ability: Clear Body
 Level: 64
 IVs: 30 HP / 30 Atk / 30 Def / 30 SpA / 30 SpD / 30 Spe
-- Dragon Claw
-- Rock Tomb
+- Dragon Darts
+- Phantom Force
+- U Turn
 - Protect
-- Double Edge
 
-Altaria
+Kommo-o
+Ability: Bulletproof
 Level: 65
 IVs: 30 HP / 30 Atk / 30 Def / 30 SpA / 30 SpD / 30 Spe
-- Dragon Dance
-- Aerial Ace
-- Dragon Breath
-- Earthquake
+- Clanging Scales
+- Close Combat
+- Poison Jab
+- Protect
 
 Kingdra @ Sitrus Berry
 Level: 66
@@ -5162,7 +5182,7 @@ Gender: Female
 Music: Female
 Items: Potion / Potion
 Double Battle: Yes
-AI: Check Bad Move / Try To Faint / Check Viability / HP Aware / Smart Switching / Try To 2HKO
+AI: Check Bad Move / Try To Faint / Check Viability / HP Aware / Smart Switching / Try To 2HKO / PP Stall Prevention / Weigh Ability Prediction / Ace Pokemon
 
 Nosepass @ Oran Berry
 Ability: Sturdy
@@ -5198,7 +5218,7 @@ Gender: Male
 Music: Male
 Items: Super Potion / Super Potion
 Double Battle: Yes
-AI: Check Bad Move / Try To Faint / Check Viability / HP Aware / Smart Switching / Try To 2HKO
+AI: Check Bad Move / Try To Faint / Check Viability / HP Aware / Smart Switching / Try To 2HKO / PP Stall Prevention / Weigh Ability Prediction / Ace Pokemon
 
 Crabrawler
 Ability: Hyper Cutter
@@ -5234,7 +5254,7 @@ Gender: Male
 Music: Male
 Items: Super Potion / Super Potion
 Double Battle: Yes
-AI: Check Bad Move / Try To Faint / Check Viability / HP Aware / Smart Switching / Try To 2HKO
+AI: Check Bad Move / Try To Faint / Check Viability / HP Aware / Smart Switching / Try To 2HKO / PP Stall Prevention / Weigh Ability Prediction
 
 Magneton
 Ability: Magnet Pull
@@ -5270,7 +5290,7 @@ Gender: Female
 Music: Female
 Items: Hyper Potion / Hyper Potion
 Double Battle: Yes
-AI: Check Bad Move / Try To Faint / Check Viability / HP Aware / Smart Switching / Try To 2HKO
+AI: Check Bad Move / Try To Faint / Check Viability / HP Aware / Smart Switching / Try To 2HKO / PP Stall Prevention / Weigh Ability Prediction
 
 Torkoal @ White Herb
 Ability: Drought
@@ -5306,7 +5326,7 @@ Gender: Male
 Music: Male
 Items: Hyper Potion / Hyper Potion
 Double Battle: Yes
-AI: Check Bad Move / Try To Faint / Check Viability / HP Aware / Smart Switching / Try To 2HKO
+AI: Check Bad Move / Try To Faint / Check Viability / HP Aware / Smart Switching / Try To 2HKO / PP Stall Prevention / Weigh Ability Prediction
 
 Slaking @ Sitrus Berry
 Ability: Truant
@@ -5342,7 +5362,7 @@ Gender: Female
 Music: Female
 Items: Hyper Potion / Hyper Potion
 Double Battle: Yes
-AI: Check Bad Move / Try To Faint / Check Viability / HP Aware / Smart Switching / Try To 2HKO
+AI: Check Bad Move / Try To Faint / Check Viability / HP Aware / Smart Switching / Try To 2HKO / PP Stall Prevention / Weigh Ability Prediction
 
 Altaria @ Sitrus Berry
 Level: 46
@@ -5378,7 +5398,7 @@ Gender: Male
 Music: Female
 Items: Hyper Potion / Hyper Potion
 Double Battle: Yes
-AI: Check Bad Move / Try To Faint / Check Viability / HP Aware / Smart Switching / Try To 2HKO
+AI: Check Bad Move / Try To Faint / Check Viability / HP Aware / Smart Switching / Try To 2HKO / PP Stall Prevention / Weigh Ability Prediction
 
 Lunatone @ Sitrus Berry
 Level: 52
@@ -5413,7 +5433,7 @@ Gender: Male
 Music: Male
 Items: Hyper Potion / Hyper Potion
 Double Battle: Yes
-AI: Check Bad Move / Try To Faint / Check Viability / HP Aware / Smart Switching / Try To 2HKO
+AI: Check Bad Move / Try To Faint / Check Viability / HP Aware / Smart Switching / Try To 2HKO / PP Stall Prevention / Weigh Ability Prediction / Ace Pokemon
 
 Veluza @ Mystic Water
 Ability: Sharpness
@@ -5449,7 +5469,7 @@ Pic: School Kid M
 Gender: Male
 Music: Male
 Double Battle: No
-AI: Check Bad Move / Try To Faint
+AI: Check Bad Move / Try To Faint / Check Viability / HP Aware / Smart Switching / Try To 2HKO / PP Stall Prevention / Weigh Ability Prediction
 
 Hatenna
 Level: 9
@@ -5568,7 +5588,7 @@ Pic: School Kid F
 Gender: Female
 Music: Girl
 Double Battle: No
-AI: Check Bad Move / Try To Faint
+AI: Check Bad Move / Try To Faint / Check Viability / HP Aware / Smart Switching / Try To 2HKO / PP Stall Prevention / Weigh Ability Prediction
 
 Hatenna
 Level: 9
@@ -6301,7 +6321,7 @@ Pic: Youngster
 Gender: Male
 Music: Male
 Double Battle: No
-AI: Check Bad Move / Try To Faint
+AI: Check Bad Move / Try To Faint / Check Viability / HP Aware / Smart Switching / Try To 2HKO / PP Stall Prevention / Weigh Ability Prediction
 
 Poochyena
 Level: 5
@@ -6593,7 +6613,7 @@ Gender: Male
 Music: Male
 Items: Full Restore / Full Restore / Full Restore / Full Restore
 Double Battle: No
-AI: Basic Trainer
+AI: Check Bad Move / Try To Faint / Check Viability / HP Aware / Smart Switching / Try To 2HKO / PP Stall Prevention / Weigh Ability Prediction / Ace Pokemon
 Mugshot: Yellow
 
 Wailord
@@ -10022,19 +10042,19 @@ Pic: Magma Admin
 Gender: Male
 Music: Magma
 Double Battle: No
-AI: Check Bad Move
+AI: Check Bad Move / Try To Faint / Check Viability / HP Aware / Smart Switching / Try To 2HKO / PP Stall Prevention / Weigh Ability Prediction / Ace Pokemon
 Multi Party: Half
 
-Camerupt
-Level: 36
-IVs: 12 HP / 12 Atk / 12 Def / 12 SpA / 12 SpD / 12 Spe
-
 Mightyena
-Level: 38
+Level: 45
 IVs: 12 HP / 12 Atk / 12 Def / 12 SpA / 12 SpD / 12 Spe
 
-Golbat
-Level: 40
+Ceruledge
+Level: 46
+IVs: 12 HP / 12 Atk / 12 Def / 12 SpA / 12 SpD / 12 Spe
+
+Camerupt @ Charcoal
+Level: 47
 IVs: 12 HP / 12 Atk / 12 Def / 12 SpA / 12 SpD / 12 Spe
 
 === TRAINER_EDWIN_2 ===
@@ -10113,377 +10133,385 @@ Gender: Male
 Music: Male
 Items: Full Restore / Full Restore
 Double Battle: No
-AI: Basic Trainer
+AI: Check Bad Move / Try To Faint / Check Viability / HP Aware / Smart Switching / Try To 2HKO / PP Stall Prevention / Weigh Ability Prediction / Ace Pokemon
 
 Altaria
-Level: 44
+Level: 58
 IVs: 18 HP / 18 Atk / 18 Def / 18 SpA / 18 SpD / 18 Spe
-- Aerial Ace
-- Safeguard
-- Dragon Breath
-- Dragon Dance
 
 Delcatty
-Level: 43
+Level: 57
 IVs: 18 HP / 18 Atk / 18 Def / 18 SpA / 18 SpD / 18 Spe
-- Sing
-- Assist
-- Charm
-- Feint Attack
 
-Roselia
-Level: 44
+Roserade
+Level: 58
 IVs: 18 HP / 18 Atk / 18 Def / 18 SpA / 18 SpD / 18 Spe
-- Magical Leaf
-- Leech Seed
-- Giga Drain
-- Toxic
 
 Magneton
-Level: 41
+Level: 57
 IVs: 18 HP / 18 Atk / 18 Def / 18 SpA / 18 SpD / 18 Spe
-- Supersonic
-- Thunderbolt
-- Tri Attack
-- Screech
 
-Gardevoir
-Level: 45
-IVs: 30 HP / 30 Atk / 30 Def / 30 SpA / 30 SpD / 30 Spe
-- Double Team
-- Calm Mind
-- Psychic
-- Future Sight
+Whimsicott
+Level: 58
+IVs: 18 HP / 18 Atk / 18 Def / 18 SpA / 18 SpD / 18 Spe
+
+Gardevoir @ Sitrus Berry
+Level: 60
+IVs: 18 HP / 18 Atk / 18 Def / 18 SpA / 18 SpD / 18 Spe
 
 === TRAINER_BRENDAN_ROUTE_103_MUDKIP ===
-Name: BRENDAN
+Name: SOREN
 Class: Rival
 Pic: Brendan
 Gender: Male
 Music: Male
 Double Battle: No
-AI: Basic Trainer
+AI: Check Bad Move / Try To Faint / Check Viability / HP Aware
 
 Treecko
 Level: 5
-IVs: 0 HP / 0 Atk / 0 Def / 0 SpA / 0 SpD / 0 Spe
+IVs: 8 HP / 8 Atk / 8 Def / 8 SpA / 8 SpD / 8 Spe
 
 === TRAINER_BRENDAN_ROUTE_110_MUDKIP ===
-Name: BRENDAN
+Name: SOREN
 Class: Rival
 Pic: Brendan
 Gender: Male
 Music: Male
 Double Battle: No
-AI: Basic Trainer
+AI: Check Bad Move / Try To Faint / Check Viability / HP Aware / Smart Switching / Try To 2HKO / PP Stall Prevention / Weigh Ability Prediction / Ace Pokemon
 
-Slugma
-Level: 18
-IVs: 6 HP / 6 Atk / 6 Def / 6 SpA / 6 SpD / 6 Spe
-
-Wingull
-Level: 18
-IVs: 6 HP / 6 Atk / 6 Def / 6 SpA / 6 SpD / 6 Spe
-
-Grovyle
-Level: 20
-IVs: 12 HP / 12 Atk / 12 Def / 12 SpA / 12 SpD / 12 Spe
-
-=== TRAINER_BRENDAN_ROUTE_119_MUDKIP ===
-Name: BRENDAN
-Class: Rival
-Pic: Brendan
-Gender: Male
-Music: Male
-Double Battle: No
-AI: Basic Trainer
-
-Slugma
-Level: 29
-IVs: 12 HP / 12 Atk / 12 Def / 12 SpA / 12 SpD / 12 Spe
-
-Pelipper
-Level: 29
-IVs: 12 HP / 12 Atk / 12 Def / 12 SpA / 12 SpD / 12 Spe
-
-Grovyle
-Level: 31
+Flapple
+Level: 21
 IVs: 18 HP / 18 Atk / 18 Def / 18 SpA / 18 SpD / 18 Spe
 
-=== TRAINER_BRENDAN_ROUTE_103_TREECKO ===
-Name: BRENDAN
+Pawmi
+Level: 20
+IVs: 18 HP / 18 Atk / 18 Def / 18 SpA / 18 SpD / 18 Spe
+
+Grovyle
+Level: 22
+IVs: 18 HP / 18 Atk / 18 Def / 18 SpA / 18 SpD / 18 Spe
+
+=== TRAINER_BRENDAN_ROUTE_119_MUDKIP ===
+Name: SOREN
 Class: Rival
 Pic: Brendan
 Gender: Male
 Music: Male
 Double Battle: No
-AI: Check Bad Move / Try To Faint / Force Setup First Turn
+AI: Check Bad Move / Try To Faint / Check Viability / HP Aware / Smart Switching / Try To 2HKO / PP Stall Prevention / Weigh Ability Prediction / Ace Pokemon
+
+Lucario
+Level: 34
+IVs: 24 HP / 24 Atk / 24 Def / 24 SpA / 24 SpD / 24 Spe
+
+Flapple
+Level: 35
+IVs: 24 HP / 24 Atk / 24 Def / 24 SpA / 24 SpD / 24 Spe
+
+Pawmo
+Level: 34
+IVs: 24 HP / 24 Atk / 24 Def / 24 SpA / 24 SpD / 24 Spe
+
+Sceptile
+Level: 36
+IVs: 24 HP / 24 Atk / 24 Def / 24 SpA / 24 SpD / 24 Spe
+
+=== TRAINER_BRENDAN_ROUTE_103_TREECKO ===
+Name: SOREN
+Class: Rival
+Pic: Brendan
+Gender: Male
+Music: Male
+Double Battle: No
+AI: Check Bad Move / Try To Faint / Check Viability / HP Aware
 
 Torchic
 Level: 5
-IVs: 0 HP / 0 Atk / 0 Def / 0 SpA / 0 SpD / 0 Spe
+IVs: 8 HP / 8 Atk / 8 Def / 8 SpA / 8 SpD / 8 Spe
 
 === TRAINER_BRENDAN_ROUTE_110_TREECKO ===
-Name: BRENDAN
+Name: SOREN
 Class: Rival
 Pic: Brendan
 Gender: Male
 Music: Male
 Double Battle: No
-AI: Basic Trainer
+AI: Check Bad Move / Try To Faint / Check Viability / HP Aware / Smart Switching / Try To 2HKO / PP Stall Prevention / Weigh Ability Prediction / Ace Pokemon
 
-Wingull
-Level: 18
-IVs: 6 HP / 6 Atk / 6 Def / 6 SpA / 6 SpD / 6 Spe
+Numel
+Level: 21
+IVs: 18 HP / 18 Atk / 18 Def / 18 SpA / 18 SpD / 18 Spe
 
-Lombre
-Level: 18
-IVs: 6 HP / 6 Atk / 6 Def / 6 SpA / 6 SpD / 6 Spe
+Corvisquire
+Level: 20
+IVs: 18 HP / 18 Atk / 18 Def / 18 SpA / 18 SpD / 18 Spe
 
 Combusken
-Level: 20
-IVs: 12 HP / 12 Atk / 12 Def / 12 SpA / 12 SpD / 12 Spe
+Level: 22
+IVs: 18 HP / 18 Atk / 18 Def / 18 SpA / 18 SpD / 18 Spe
 
 === TRAINER_BRENDAN_ROUTE_119_TREECKO ===
-Name: BRENDAN
+Name: SOREN
 Class: Rival
 Pic: Brendan
 Gender: Male
 Music: Male
 Double Battle: No
-AI: Basic Trainer
+AI: Check Bad Move / Try To Faint / Check Viability / HP Aware / Smart Switching / Try To 2HKO / PP Stall Prevention / Weigh Ability Prediction / Ace Pokemon
 
-Pelipper
-Level: 29
-IVs: 12 HP / 12 Atk / 12 Def / 12 SpA / 12 SpD / 12 Spe
+Lucario
+Level: 34
+IVs: 18 HP / 18 Atk / 18 Def / 18 SpA / 18 SpD / 18 Spe
 
-Lombre
-Level: 29
-IVs: 12 HP / 12 Atk / 12 Def / 12 SpA / 12 SpD / 12 Spe
+Camerupt
+Level: 35
+IVs: 18 HP / 18 Atk / 18 Def / 18 SpA / 18 SpD / 18 Spe
 
-Combusken
-Level: 31
+Corvisquire
+Level: 34
+IVs: 18 HP / 18 Atk / 18 Def / 18 SpA / 18 SpD / 18 Spe
+
+Blaziken
+Level: 36
 IVs: 18 HP / 18 Atk / 18 Def / 18 SpA / 18 SpD / 18 Spe
 
 === TRAINER_BRENDAN_ROUTE_103_TORCHIC ===
-Name: BRENDAN
+Name: SOREN
 Class: Rival
 Pic: Brendan
 Gender: Male
 Music: Male
 Double Battle: No
-AI: Basic Trainer
+AI: Check Bad Move / Try To Faint / Check Viability / HP Aware
 
 Mudkip
 Level: 5
-IVs: 0 HP / 0 Atk / 0 Def / 0 SpA / 0 SpD / 0 Spe
+IVs: 8 HP / 8 Atk / 8 Def / 8 SpA / 8 SpD / 8 Spe
 
 === TRAINER_BRENDAN_ROUTE_110_TORCHIC ===
-Name: BRENDAN
+Name: SOREN
 Class: Rival
 Pic: Brendan
 Gender: Male
 Music: Male
 Double Battle: No
-AI: Basic Trainer
+AI: Check Bad Move / Try To Faint / Check Viability / HP Aware / Smart Switching / Try To 2HKO / PP Stall Prevention / Weigh Ability Prediction / Ace Pokemon
 
-Lombre
-Level: 18
-IVs: 6 HP / 6 Atk / 6 Def / 6 SpA / 6 SpD / 6 Spe
+Nacli
+Level: 21
+IVs: 18 HP / 18 Atk / 18 Def / 18 SpA / 18 SpD / 18 Spe
 
-Slugma
-Level: 18
-IVs: 6 HP / 6 Atk / 6 Def / 6 SpA / 6 SpD / 6 Spe
+Crabrawler
+Level: 20
+IVs: 18 HP / 18 Atk / 18 Def / 18 SpA / 18 SpD / 18 Spe
 
 Marshtomp
-Level: 20
-IVs: 12 HP / 12 Atk / 12 Def / 12 SpA / 12 SpD / 12 Spe
+Level: 22
+IVs: 18 HP / 18 Atk / 18 Def / 18 SpA / 18 SpD / 18 Spe
 
 === TRAINER_BRENDAN_ROUTE_119_TORCHIC ===
-Name: BRENDAN
+Name: SOREN
 Class: Rival
 Pic: Brendan
 Gender: Male
 Music: Male
 Double Battle: No
-AI: Basic Trainer
+AI: Check Bad Move / Try To Faint / Check Viability / HP Aware / Smart Switching / Try To 2HKO / PP Stall Prevention / Weigh Ability Prediction / Ace Pokemon
 
-Lombre
-Level: 29
-IVs: 12 HP / 12 Atk / 12 Def / 12 SpA / 12 SpD / 12 Spe
+Lucario
+Level: 34
+IVs: 18 HP / 18 Atk / 18 Def / 18 SpA / 18 SpD / 18 Spe
 
-Slugma
-Level: 29
-IVs: 12 HP / 12 Atk / 12 Def / 12 SpA / 12 SpD / 12 Spe
+Naclstack
+Level: 35
+IVs: 18 HP / 18 Atk / 18 Def / 18 SpA / 18 SpD / 18 Spe
 
-Marshtomp
-Level: 31
+Lanturn
+Level: 34
+IVs: 18 HP / 18 Atk / 18 Def / 18 SpA / 18 SpD / 18 Spe
+
+Swampert
+Level: 36
 IVs: 18 HP / 18 Atk / 18 Def / 18 SpA / 18 SpD / 18 Spe
 
 === TRAINER_MAY_ROUTE_103_MUDKIP ===
-Name: MAY
+Name: MIRA
 Class: Rival
 Pic: May
 Gender: Female
 Music: Female
 Double Battle: No
-AI: Basic Trainer
+AI: Check Bad Move / Try To Faint / Check Viability / HP Aware
 
-Treecko
+Shroomish
 Level: 5
-IVs: 0 HP / 0 Atk / 0 Def / 0 SpA / 0 SpD / 0 Spe
+IVs: 8 HP / 8 Atk / 8 Def / 8 SpA / 8 SpD / 8 Spe
 
 === TRAINER_MAY_ROUTE_110_MUDKIP ===
-Name: MAY
+Name: MIRA
 Class: Rival
 Pic: May
 Gender: Female
 Music: Female
 Double Battle: No
-AI: Basic Trainer
+AI: Check Bad Move / Try To Faint / Check Viability / HP Aware / Smart Switching / Try To 2HKO / PP Stall Prevention / Weigh Ability Prediction / Ace Pokemon
 
-Wingull
-Level: 18
-IVs: 6 HP / 6 Atk / 6 Def / 6 SpA / 6 SpD / 6 Spe
+Shroodle
+Level: 21
+IVs: 18 HP / 18 Atk / 18 Def / 18 SpA / 18 SpD / 18 Spe
 
-Slugma
-Level: 18
-IVs: 6 HP / 6 Atk / 6 Def / 6 SpA / 6 SpD / 6 Spe
-
-Grovyle
+Lotad
 Level: 20
-IVs: 12 HP / 12 Atk / 12 Def / 12 SpA / 12 SpD / 12 Spe
+IVs: 18 HP / 18 Atk / 18 Def / 18 SpA / 18 SpD / 18 Spe
+
+Breloom
+Level: 22
+IVs: 18 HP / 18 Atk / 18 Def / 18 SpA / 18 SpD / 18 Spe
 
 === TRAINER_MAY_ROUTE_119_MUDKIP ===
-Name: MAY
+Name: MIRA
 Class: Rival
 Pic: May
 Gender: Female
 Music: Female
 Double Battle: No
-AI: Basic Trainer
+AI: Check Bad Move / Try To Faint / Check Viability / HP Aware / Smart Switching / Try To 2HKO / PP Stall Prevention / Weigh Ability Prediction / Ace Pokemon
 
-Slugma
-Level: 29
-IVs: 12 HP / 12 Atk / 12 Def / 12 SpA / 12 SpD / 12 Spe
+Hattrem
+Level: 34
+IVs: 24 HP / 24 Atk / 24 Def / 24 SpA / 24 SpD / 24 Spe
 
-Lombre
-Level: 29
-IVs: 12 HP / 12 Atk / 12 Def / 12 SpA / 12 SpD / 12 Spe
+Grafaiai
+Level: 35
+IVs: 24 HP / 24 Atk / 24 Def / 24 SpA / 24 SpD / 24 Spe
 
-Grovyle
-Level: 31
-IVs: 18 HP / 18 Atk / 18 Def / 18 SpA / 18 SpD / 18 Spe
+Shiftry
+Level: 34
+IVs: 24 HP / 24 Atk / 24 Def / 24 SpA / 24 SpD / 24 Spe
+
+Breloom
+Level: 36
+IVs: 24 HP / 24 Atk / 24 Def / 24 SpA / 24 SpD / 24 Spe
 
 === TRAINER_MAY_ROUTE_103_TREECKO ===
-Name: MAY
+Name: MIRA
 Class: Rival
 Pic: May
 Gender: Female
 Music: Female
 Double Battle: No
-AI: Basic Trainer
+AI: Check Bad Move / Try To Faint / Check Viability / HP Aware
 
-Torchic
+Houndour
 Level: 5
-IVs: 0 HP / 0 Atk / 0 Def / 0 SpA / 0 SpD / 0 Spe
+IVs: 8 HP / 8 Atk / 8 Def / 8 SpA / 8 SpD / 8 Spe
 
 === TRAINER_MAY_ROUTE_110_TREECKO ===
-Name: MAY
+Name: MIRA
 Class: Rival
 Pic: May
 Gender: Female
 Music: Female
 Double Battle: No
-AI: Basic Trainer
+AI: Check Bad Move / Try To Faint / Check Viability / HP Aware / Smart Switching / Try To 2HKO / PP Stall Prevention / Weigh Ability Prediction / Ace Pokemon
 
-Wingull
-Level: 18
-IVs: 6 HP / 6 Atk / 6 Def / 6 SpA / 6 SpD / 6 Spe
+Slugma
+Level: 21
+IVs: 18 HP / 18 Atk / 18 Def / 18 SpA / 18 SpD / 18 Spe
 
-Lombre
-Level: 18
-IVs: 6 HP / 6 Atk / 6 Def / 6 SpA / 6 SpD / 6 Spe
-
-Combusken
+Tarountula
 Level: 20
-IVs: 12 HP / 12 Atk / 12 Def / 12 SpA / 12 SpD / 12 Spe
+IVs: 18 HP / 18 Atk / 18 Def / 18 SpA / 18 SpD / 18 Spe
+
+Houndoom
+Level: 22
+IVs: 18 HP / 18 Atk / 18 Def / 18 SpA / 18 SpD / 18 Spe
 
 === TRAINER_MAY_ROUTE_119_TREECKO ===
-Name: MAY
+Name: MIRA
 Class: Rival
 Pic: May
 Gender: Female
 Music: Female
 Double Battle: No
-AI: Basic Trainer
+AI: Check Bad Move / Try To Faint / Check Viability / HP Aware / Smart Switching / Try To 2HKO / PP Stall Prevention / Weigh Ability Prediction / Ace Pokemon
 
-Pelipper
-Level: 29
-IVs: 12 HP / 12 Atk / 12 Def / 12 SpA / 12 SpD / 12 Spe
+Hattrem
+Level: 34
+IVs: 24 HP / 24 Atk / 24 Def / 24 SpA / 24 SpD / 24 Spe
 
-Lombre
-Level: 29
-IVs: 12 HP / 12 Atk / 12 Def / 12 SpA / 12 SpD / 12 Spe
+Ninetales
+Level: 35
+IVs: 24 HP / 24 Atk / 24 Def / 24 SpA / 24 SpD / 24 Spe
 
-Combusken
-Level: 31
-IVs: 18 HP / 18 Atk / 18 Def / 18 SpA / 18 SpD / 18 Spe
+Spidops
+Level: 34
+IVs: 24 HP / 24 Atk / 24 Def / 24 SpA / 24 SpD / 24 Spe
+
+Houndoom
+Level: 36
+IVs: 24 HP / 24 Atk / 24 Def / 24 SpA / 24 SpD / 24 Spe
 
 === TRAINER_MAY_ROUTE_103_TORCHIC ===
-Name: MAY
+Name: MIRA
 Class: Rival
 Pic: May
 Gender: Female
 Music: Female
 Double Battle: No
-AI: Basic Trainer
+AI: Check Bad Move / Try To Faint / Check Viability / HP Aware
 
-Mudkip
+Wingull
 Level: 5
-IVs: 0 HP / 0 Atk / 0 Def / 0 SpA / 0 SpD / 0 Spe
+IVs: 8 HP / 8 Atk / 8 Def / 8 SpA / 8 SpD / 8 Spe
 
 === TRAINER_MAY_ROUTE_110_TORCHIC ===
-Name: MAY
+Name: MIRA
 Class: Rival
 Pic: May
 Gender: Female
 Music: Female
 Double Battle: No
-AI: Basic Trainer
+AI: Check Bad Move / Try To Faint / Check Viability / HP Aware / Smart Switching / Try To 2HKO / PP Stall Prevention / Weigh Ability Prediction / Ace Pokemon
 
 Lombre
-Level: 18
-IVs: 6 HP / 6 Atk / 6 Def / 6 SpA / 6 SpD / 6 Spe
+Level: 21
+IVs: 18 HP / 18 Atk / 18 Def / 18 SpA / 18 SpD / 18 Spe
 
-Slugma
-Level: 18
-IVs: 6 HP / 6 Atk / 6 Def / 6 SpA / 6 SpD / 6 Spe
-
-Marshtomp
+Tandemaus
 Level: 20
-IVs: 12 HP / 12 Atk / 12 Def / 12 SpA / 12 SpD / 12 Spe
+IVs: 18 HP / 18 Atk / 18 Def / 18 SpA / 18 SpD / 18 Spe
+
+Pelipper
+Level: 22
+IVs: 18 HP / 18 Atk / 18 Def / 18 SpA / 18 SpD / 18 Spe
 
 === TRAINER_MAY_ROUTE_119_TORCHIC ===
-Name: MAY
+Name: MIRA
 Class: Rival
 Pic: May
 Gender: Female
 Music: Female
 Double Battle: No
-AI: Basic Trainer
+AI: Check Bad Move / Try To Faint / Check Viability / HP Aware / Smart Switching / Try To 2HKO / PP Stall Prevention / Weigh Ability Prediction / Ace Pokemon
 
-Lombre
-Level: 29
-IVs: 12 HP / 12 Atk / 12 Def / 12 SpA / 12 SpD / 12 Spe
+Hattrem
+Level: 34
+IVs: 24 HP / 24 Atk / 24 Def / 24 SpA / 24 SpD / 24 Spe
 
-Slugma
-Level: 29
-IVs: 12 HP / 12 Atk / 12 Def / 12 SpA / 12 SpD / 12 Spe
+Lanturn
+Level: 35
+IVs: 24 HP / 24 Atk / 24 Def / 24 SpA / 24 SpD / 24 Spe
 
-Marshtomp
-Level: 31
-IVs: 18 HP / 18 Atk / 18 Def / 18 SpA / 18 SpD / 18 Spe
+Maushold
+Level: 34
+IVs: 24 HP / 24 Atk / 24 Def / 24 SpA / 24 SpD / 24 Spe
+
+Pelipper
+Level: 36
+IVs: 24 HP / 24 Atk / 24 Def / 24 SpA / 24 SpD / 24 Spe
 
 === TRAINER_ISAAC_1 ===
 Name: ISAAC
@@ -11591,38 +11619,38 @@ Level: 39
 IVs: 0 HP / 0 Atk / 0 Def / 0 SpA / 0 SpD / 0 Spe
 
 === TRAINER_BRENDAN_RUSTBORO_TREECKO ===
-Name: BRENDAN
+Name: SOREN
 Class: Rival
 Pic: Brendan
 Gender: Male
 Music: Male
 Double Battle: No
-AI: Check Bad Move
+AI: Check Bad Move / Try To Faint / Check Viability / HP Aware / Smart Switching / Try To 2HKO / PP Stall Prevention / Weigh Ability Prediction
 
-Lotad
-Level: 13
-IVs: 3 HP / 3 Atk / 3 Def / 3 SpA / 3 SpD / 3 Spe
+Numel
+Level: 14
+IVs: 12 HP / 12 Atk / 12 Def / 12 SpA / 12 SpD / 12 Spe
 
-Torchic
-Level: 15
-IVs: 6 HP / 6 Atk / 6 Def / 6 SpA / 6 SpD / 6 Spe
+Combusken
+Level: 16
+IVs: 12 HP / 12 Atk / 12 Def / 12 SpA / 12 SpD / 12 Spe
 
 === TRAINER_BRENDAN_RUSTBORO_MUDKIP ===
-Name: BRENDAN
+Name: SOREN
 Class: Rival
 Pic: Brendan
 Gender: Male
 Music: Male
 Double Battle: No
-AI: Check Bad Move
+AI: Check Bad Move / Try To Faint / Check Viability / HP Aware / Smart Switching / Try To 2HKO / PP Stall Prevention / Weigh Ability Prediction
 
-Wingull
-Level: 13
-IVs: 3 HP / 3 Atk / 3 Def / 3 SpA / 3 SpD / 3 Spe
+Applin
+Level: 14
+IVs: 12 HP / 12 Atk / 12 Def / 12 SpA / 12 SpD / 12 Spe
 
-Treecko
-Level: 15
-IVs: 6 HP / 6 Atk / 6 Def / 6 SpA / 6 SpD / 6 Spe
+Grovyle
+Level: 16
+IVs: 12 HP / 12 Atk / 12 Def / 12 SpA / 12 SpD / 12 Spe
 
 === TRAINER_PAXTON ===
 Name: PAXTON
@@ -11682,22 +11710,22 @@ Pic: Magma Admin
 Gender: Male
 Music: Magma
 Double Battle: No
-AI: Basic Trainer
+AI: Check Bad Move / Try To Faint / Check Viability / HP Aware / Smart Switching / Try To 2HKO / PP Stall Prevention / Weigh Ability Prediction / Ace Pokemon
 
 Numel
-Level: 18
+Level: 26
 IVs: 6 HP / 6 Atk / 6 Def / 6 SpA / 6 SpD / 6 Spe
 
-Poochyena
-Level: 20
+Charcadet
+Level: 26
 IVs: 6 HP / 6 Atk / 6 Def / 6 SpA / 6 SpD / 6 Spe
 
-Numel
-Level: 22
+Mightyena
+Level: 27
 IVs: 6 HP / 6 Atk / 6 Def / 6 SpA / 6 SpD / 6 Spe
 
-Zubat
-Level: 22
+Golbat
+Level: 28
 IVs: 6 HP / 6 Atk / 6 Def / 6 SpA / 6 SpD / 6 Spe
 
 === TRAINER_JONATHAN ===
@@ -11719,38 +11747,38 @@ Level: 38
 IVs: 0 HP / 0 Atk / 0 Def / 0 SpA / 0 SpD / 0 Spe
 
 === TRAINER_BRENDAN_RUSTBORO_TORCHIC ===
-Name: BRENDAN
+Name: SOREN
 Class: Rival
 Pic: Brendan
 Gender: Male
 Music: Male
 Double Battle: No
-AI: Basic Trainer
+AI: Check Bad Move / Try To Faint / Check Viability / HP Aware / Smart Switching / Try To 2HKO / PP Stall Prevention / Weigh Ability Prediction
 
-Slugma
-Level: 13
-IVs: 3 HP / 3 Atk / 3 Def / 3 SpA / 3 SpD / 3 Spe
+Nacli
+Level: 14
+IVs: 12 HP / 12 Atk / 12 Def / 12 SpA / 12 SpD / 12 Spe
 
-Mudkip
-Level: 15
-IVs: 6 HP / 6 Atk / 6 Def / 6 SpA / 6 SpD / 6 Spe
+Marshtomp
+Level: 16
+IVs: 12 HP / 12 Atk / 12 Def / 12 SpA / 12 SpD / 12 Spe
 
 === TRAINER_MAY_RUSTBORO_MUDKIP ===
-Name: MAY
+Name: MIRA
 Class: Rival
 Pic: May
 Gender: Female
 Music: Female
 Double Battle: No
-AI: Check Bad Move / Try To Faint / Force Setup First Turn
+AI: Check Bad Move / Try To Faint / Check Viability / HP Aware / Smart Switching / Try To 2HKO / PP Stall Prevention / Weigh Ability Prediction
 
-Wingull
-Level: 13
-IVs: 3 HP / 3 Atk / 3 Def / 3 SpA / 3 SpD / 3 Spe
+Lotad
+Level: 14
+IVs: 12 HP / 12 Atk / 12 Def / 12 SpA / 12 SpD / 12 Spe
 
-Treecko
-Level: 15
-IVs: 6 HP / 6 Atk / 6 Def / 6 SpA / 6 SpD / 6 Spe
+Shroomish
+Level: 16
+IVs: 12 HP / 12 Atk / 12 Def / 12 SpA / 12 SpD / 12 Spe
 
 === TRAINER_MAXIE_MAGMA_HIDEOUT ===
 Name: MAXIE
@@ -11760,18 +11788,22 @@ Gender: Male
 Music: Magma
 Items: Super Potion / Super Potion
 Double Battle: No
-AI: Basic Trainer
+AI: Check Bad Move / Try To Faint / Check Viability / HP Aware / Smart Switching / Try To 2HKO / PP Stall Prevention / Weigh Ability Prediction / Ace Pokemon
 
 Mightyena
-Level: 37
+Level: 44
 IVs: 18 HP / 18 Atk / 18 Def / 18 SpA / 18 SpD / 18 Spe
 
 Crobat
-Level: 38
+Level: 44
 IVs: 18 HP / 18 Atk / 18 Def / 18 SpA / 18 SpD / 18 Spe
 
-Camerupt
-Level: 39
+Revavroom
+Level: 45
+IVs: 18 HP / 18 Atk / 18 Def / 18 SpA / 18 SpD / 18 Spe
+
+Camerupt @ Sitrus Berry
+Level: 46
 IVs: 18 HP / 18 Atk / 18 Def / 18 SpA / 18 SpD / 18 Spe
 
 === TRAINER_MAXIE_MT_CHIMNEY ===
@@ -11782,18 +11814,22 @@ Gender: Male
 Music: Magma
 Items: Super Potion / Super Potion
 Double Battle: No
-AI: Basic Trainer
+AI: Check Bad Move / Try To Faint / Check Viability / HP Aware / Smart Switching / Try To 2HKO / PP Stall Prevention / Weigh Ability Prediction / Ace Pokemon
 
 Mightyena
-Level: 24
+Level: 29
 IVs: 18 HP / 18 Atk / 18 Def / 18 SpA / 18 SpD / 18 Spe
 
-Zubat
-Level: 24
+Golbat
+Level: 29
 IVs: 18 HP / 18 Atk / 18 Def / 18 SpA / 18 SpD / 18 Spe
 
-Camerupt
-Level: 25
+Krokorok
+Level: 30
+IVs: 18 HP / 18 Atk / 18 Def / 18 SpA / 18 SpD / 18 Spe
+
+Camerupt @ Sitrus Berry
+Level: 31
 IVs: 18 HP / 18 Atk / 18 Def / 18 SpA / 18 SpD / 18 Spe
 
 === TRAINER_TIANA ===
@@ -11820,7 +11856,7 @@ Pic: Lass
 Gender: Female
 Music: Female
 Double Battle: No
-AI: Check Bad Move / Try To Faint
+AI: Check Bad Move / Try To Faint / Check Viability / HP Aware / Smart Switching / Try To 2HKO / PP Stall Prevention / Weigh Ability Prediction
 
 Lotad
 Level: 6
@@ -12125,7 +12161,7 @@ Pic: Bug Catcher
 Gender: Male
 Music: Male
 Double Battle: No
-AI: Check Bad Move / Try To Faint
+AI: Check Bad Move / Try To Faint / Check Viability / HP Aware / Smart Switching / Try To 2HKO / PP Stall Prevention / Weigh Ability Prediction
 
 Nincada
 Level: 6
@@ -12807,10 +12843,10 @@ Pic: Wally
 Gender: Male
 Music: Male
 Double Battle: No
-AI: Basic Trainer
+AI: Check Bad Move / Try To Faint / Check Viability / HP Aware / Smart Switching / Try To 2HKO / PP Stall Prevention / Weigh Ability Prediction
 
 Ralts
-Level: 16
+Level: 18
 IVs: 3 HP / 3 Atk / 3 Def / 3 SpA / 3 SpD / 3 Spe
 
 === TRAINER_WALLY_VR_2 ===
@@ -12821,47 +12857,31 @@ Gender: Male
 Music: Male
 Items: Full Restore / Full Restore
 Double Battle: No
-AI: Basic Trainer
+AI: Check Bad Move / Try To Faint / Check Viability / HP Aware / Smart Switching / Try To 2HKO / PP Stall Prevention / Weigh Ability Prediction / Ace Pokemon
 
 Altaria
-Level: 47
+Level: 61
 IVs: 18 HP / 18 Atk / 18 Def / 18 SpA / 18 SpD / 18 Spe
-- Aerial Ace
-- Safeguard
-- Dragon Breath
-- Dragon Dance
 
 Delcatty
-Level: 46
+Level: 60
 IVs: 18 HP / 18 Atk / 18 Def / 18 SpA / 18 SpD / 18 Spe
-- Sing
-- Assist
-- Charm
-- Feint Attack
 
-Roselia
-Level: 47
+Roserade
+Level: 61
 IVs: 18 HP / 18 Atk / 18 Def / 18 SpA / 18 SpD / 18 Spe
-- Magical Leaf
-- Leech Seed
-- Giga Drain
-- Toxic
 
 Magneton
-Level: 44
+Level: 60
 IVs: 18 HP / 18 Atk / 18 Def / 18 SpA / 18 SpD / 18 Spe
-- Supersonic
-- Thunderbolt
-- Tri Attack
-- Screech
 
-Gardevoir
-Level: 48
-IVs: 30 HP / 30 Atk / 30 Def / 30 SpA / 30 SpD / 30 Spe
-- Double Team
-- Calm Mind
-- Psychic
-- Future Sight
+Whimsicott
+Level: 61
+IVs: 18 HP / 18 Atk / 18 Def / 18 SpA / 18 SpD / 18 Spe
+
+Gardevoir @ Sitrus Berry
+Level: 63
+IVs: 18 HP / 18 Atk / 18 Def / 18 SpA / 18 SpD / 18 Spe
 
 === TRAINER_WALLY_VR_3 ===
 Name: WALLY
@@ -12871,47 +12891,31 @@ Gender: Male
 Music: Male
 Items: Full Restore / Full Restore
 Double Battle: No
-AI: Basic Trainer
+AI: Check Bad Move / Try To Faint / Check Viability / HP Aware / Smart Switching / Try To 2HKO / PP Stall Prevention / Weigh Ability Prediction / Ace Pokemon
 
 Altaria
-Level: 50
+Level: 64
 IVs: 18 HP / 18 Atk / 18 Def / 18 SpA / 18 SpD / 18 Spe
-- Aerial Ace
-- Safeguard
-- Dragon Breath
-- Dragon Dance
 
 Delcatty
-Level: 49
+Level: 63
 IVs: 18 HP / 18 Atk / 18 Def / 18 SpA / 18 SpD / 18 Spe
-- Sing
-- Assist
-- Charm
-- Feint Attack
 
-Roselia
-Level: 50
+Roserade
+Level: 64
 IVs: 18 HP / 18 Atk / 18 Def / 18 SpA / 18 SpD / 18 Spe
-- Magical Leaf
-- Leech Seed
-- Giga Drain
-- Toxic
 
 Magneton
-Level: 47
+Level: 63
 IVs: 18 HP / 18 Atk / 18 Def / 18 SpA / 18 SpD / 18 Spe
-- Supersonic
-- Thunderbolt
-- Tri Attack
-- Screech
 
-Gardevoir
-Level: 51
-IVs: 30 HP / 30 Atk / 30 Def / 30 SpA / 30 SpD / 30 Spe
-- Double Team
-- Calm Mind
-- Psychic
-- Future Sight
+Whimsicott
+Level: 64
+IVs: 18 HP / 18 Atk / 18 Def / 18 SpA / 18 SpD / 18 Spe
+
+Gardevoir @ Sitrus Berry
+Level: 66
+IVs: 18 HP / 18 Atk / 18 Def / 18 SpA / 18 SpD / 18 Spe
 
 === TRAINER_WALLY_VR_4 ===
 Name: WALLY
@@ -12921,47 +12925,31 @@ Gender: Male
 Music: Male
 Items: Full Restore / Full Restore
 Double Battle: No
-AI: Basic Trainer
+AI: Check Bad Move / Try To Faint / Check Viability / HP Aware / Smart Switching / Try To 2HKO / PP Stall Prevention / Weigh Ability Prediction / Ace Pokemon
 
 Altaria
-Level: 53
+Level: 67
 IVs: 18 HP / 18 Atk / 18 Def / 18 SpA / 18 SpD / 18 Spe
-- Aerial Ace
-- Safeguard
-- Dragon Breath
-- Dragon Dance
 
 Delcatty
-Level: 52
+Level: 66
 IVs: 18 HP / 18 Atk / 18 Def / 18 SpA / 18 SpD / 18 Spe
-- Sing
-- Assist
-- Charm
-- Feint Attack
 
-Roselia
-Level: 53
+Roserade
+Level: 67
 IVs: 18 HP / 18 Atk / 18 Def / 18 SpA / 18 SpD / 18 Spe
-- Magical Leaf
-- Leech Seed
-- Giga Drain
-- Toxic
 
 Magneton
-Level: 50
+Level: 66
 IVs: 18 HP / 18 Atk / 18 Def / 18 SpA / 18 SpD / 18 Spe
-- Supersonic
-- Thunderbolt
-- Tri Attack
-- Screech
 
-Gardevoir
-Level: 54
-IVs: 30 HP / 30 Atk / 30 Def / 30 SpA / 30 SpD / 30 Spe
-- Double Team
-- Calm Mind
-- Psychic
-- Future Sight
+Whimsicott
+Level: 67
+IVs: 18 HP / 18 Atk / 18 Def / 18 SpA / 18 SpD / 18 Spe
+
+Gardevoir @ Sitrus Berry
+Level: 69
+IVs: 18 HP / 18 Atk / 18 Def / 18 SpA / 18 SpD / 18 Spe
 
 === TRAINER_WALLY_VR_5 ===
 Name: WALLY
@@ -12971,197 +12959,181 @@ Gender: Male
 Music: Male
 Items: Full Restore / Full Restore
 Double Battle: No
-AI: Basic Trainer
+AI: Check Bad Move / Try To Faint / Check Viability / HP Aware / Smart Switching / Try To 2HKO / PP Stall Prevention / Weigh Ability Prediction / Ace Pokemon
 
 Altaria
-Level: 56
+Level: 70
 IVs: 18 HP / 18 Atk / 18 Def / 18 SpA / 18 SpD / 18 Spe
-- Aerial Ace
-- Safeguard
-- Dragon Breath
-- Dragon Dance
 
 Delcatty
-Level: 55
+Level: 69
 IVs: 18 HP / 18 Atk / 18 Def / 18 SpA / 18 SpD / 18 Spe
-- Sing
-- Assist
-- Charm
-- Feint Attack
 
-Roselia
-Level: 56
+Roserade
+Level: 70
 IVs: 18 HP / 18 Atk / 18 Def / 18 SpA / 18 SpD / 18 Spe
-- Magical Leaf
-- Leech Seed
-- Giga Drain
-- Toxic
 
 Magneton
-Level: 53
+Level: 69
 IVs: 18 HP / 18 Atk / 18 Def / 18 SpA / 18 SpD / 18 Spe
-- Supersonic
-- Thunderbolt
-- Tri Attack
-- Screech
 
-Gardevoir
-Level: 57
-IVs: 30 HP / 30 Atk / 30 Def / 30 SpA / 30 SpD / 30 Spe
-- Double Team
-- Calm Mind
-- Psychic
-- Future Sight
+Whimsicott
+Level: 70
+IVs: 18 HP / 18 Atk / 18 Def / 18 SpA / 18 SpD / 18 Spe
+
+Gardevoir @ Sitrus Berry
+Level: 72
+IVs: 18 HP / 18 Atk / 18 Def / 18 SpA / 18 SpD / 18 Spe
 
 === TRAINER_BRENDAN_LILYCOVE_MUDKIP ===
-Name: BRENDAN
+Name: SOREN
 Class: Rival
 Pic: Brendan
 Gender: Male
 Music: Male
 Double Battle: No
-AI: Basic Trainer
+AI: Check Bad Move / Try To Faint / Check Viability / HP Aware / Smart Switching / Try To 2HKO / PP Stall Prevention / Weigh Ability Prediction / Ace Pokemon
 
-Tropius
-Level: 31
-IVs: 18 HP / 18 Atk / 18 Def / 18 SpA / 18 SpD / 18 Spe
+Lucario
+Level: 46
+IVs: 28 HP / 28 Atk / 28 Def / 28 SpA / 28 SpD / 28 Spe
 
-Slugma
-Level: 32
-IVs: 18 HP / 18 Atk / 18 Def / 18 SpA / 18 SpD / 18 Spe
+Flapple
+Level: 47
+IVs: 28 HP / 28 Atk / 28 Def / 28 SpA / 28 SpD / 28 Spe
 
-Pelipper
-Level: 32
-IVs: 18 HP / 18 Atk / 18 Def / 18 SpA / 18 SpD / 18 Spe
+Pawmot
+Level: 46
+IVs: 28 HP / 28 Atk / 28 Def / 28 SpA / 28 SpD / 28 Spe
 
-Grovyle
-Level: 34
-IVs: 24 HP / 24 Atk / 24 Def / 24 SpA / 24 SpD / 24 Spe
+Sceptile
+Level: 48
+IVs: 28 HP / 28 Atk / 28 Def / 28 SpA / 28 SpD / 28 Spe
 
 === TRAINER_BRENDAN_LILYCOVE_TREECKO ===
-Name: BRENDAN
+Name: SOREN
 Class: Rival
 Pic: Brendan
 Gender: Male
 Music: Male
 Double Battle: No
-AI: Basic Trainer
+AI: Check Bad Move / Try To Faint / Check Viability / HP Aware / Smart Switching / Try To 2HKO / PP Stall Prevention / Weigh Ability Prediction / Ace Pokemon
 
-Tropius
-Level: 31
+Lucario
+Level: 46
 IVs: 18 HP / 18 Atk / 18 Def / 18 SpA / 18 SpD / 18 Spe
 
-Pelipper
-Level: 32
+Camerupt
+Level: 47
 IVs: 18 HP / 18 Atk / 18 Def / 18 SpA / 18 SpD / 18 Spe
 
-Ludicolo
-Level: 32
+Corviknight
+Level: 46
 IVs: 18 HP / 18 Atk / 18 Def / 18 SpA / 18 SpD / 18 Spe
 
-Combusken
-Level: 34
-IVs: 24 HP / 24 Atk / 24 Def / 24 SpA / 24 SpD / 24 Spe
+Blaziken
+Level: 48
+IVs: 18 HP / 18 Atk / 18 Def / 18 SpA / 18 SpD / 18 Spe
 
 === TRAINER_BRENDAN_LILYCOVE_TORCHIC ===
-Name: BRENDAN
+Name: SOREN
 Class: Rival
 Pic: Brendan
 Gender: Male
 Music: Male
 Double Battle: No
-AI: Basic Trainer
+AI: Check Bad Move / Try To Faint / Check Viability / HP Aware / Smart Switching / Try To 2HKO / PP Stall Prevention / Weigh Ability Prediction / Ace Pokemon
 
-Tropius
-Level: 31
+Lucario
+Level: 46
 IVs: 18 HP / 18 Atk / 18 Def / 18 SpA / 18 SpD / 18 Spe
 
-Ludicolo
-Level: 32
+Garganacl
+Level: 47
 IVs: 18 HP / 18 Atk / 18 Def / 18 SpA / 18 SpD / 18 Spe
 
-Slugma
-Level: 32
+Lanturn
+Level: 46
 IVs: 18 HP / 18 Atk / 18 Def / 18 SpA / 18 SpD / 18 Spe
 
-Marshtomp
-Level: 34
-IVs: 24 HP / 24 Atk / 24 Def / 24 SpA / 24 SpD / 24 Spe
+Swampert
+Level: 48
+IVs: 18 HP / 18 Atk / 18 Def / 18 SpA / 18 SpD / 18 Spe
 
 === TRAINER_MAY_LILYCOVE_MUDKIP ===
-Name: MAY
+Name: MIRA
 Class: Rival
 Pic: May
 Gender: Female
 Music: Female
 Double Battle: No
-AI: Basic Trainer
+AI: Check Bad Move / Try To Faint / Check Viability / HP Aware / Smart Switching / Try To 2HKO / PP Stall Prevention / Weigh Ability Prediction / Ace Pokemon
+
+Hatterene
+Level: 46
+IVs: 18 HP / 18 Atk / 18 Def / 18 SpA / 18 SpD / 18 Spe
 
 Tropius
-Level: 31
+Level: 47
 IVs: 18 HP / 18 Atk / 18 Def / 18 SpA / 18 SpD / 18 Spe
 
-Slugma
-Level: 32
+Shiftry
+Level: 46
 IVs: 18 HP / 18 Atk / 18 Def / 18 SpA / 18 SpD / 18 Spe
 
-Pelipper
-Level: 32
+Breloom
+Level: 48
 IVs: 18 HP / 18 Atk / 18 Def / 18 SpA / 18 SpD / 18 Spe
-
-Grovyle
-Level: 34
-IVs: 24 HP / 24 Atk / 24 Def / 24 SpA / 24 SpD / 24 Spe
 
 === TRAINER_MAY_LILYCOVE_TREECKO ===
-Name: MAY
+Name: MIRA
 Class: Rival
 Pic: May
 Gender: Female
 Music: Female
 Double Battle: No
-AI: Basic Trainer
+AI: Check Bad Move / Try To Faint / Check Viability / HP Aware / Smart Switching / Try To 2HKO / PP Stall Prevention / Weigh Ability Prediction / Ace Pokemon
 
-Tropius
-Level: 31
-IVs: 18 HP / 18 Atk / 18 Def / 18 SpA / 18 SpD / 18 Spe
+Hatterene
+Level: 46
+IVs: 28 HP / 28 Atk / 28 Def / 28 SpA / 28 SpD / 28 Spe
 
-Pelipper
-Level: 32
-IVs: 18 HP / 18 Atk / 18 Def / 18 SpA / 18 SpD / 18 Spe
+Ninetales
+Level: 47
+IVs: 28 HP / 28 Atk / 28 Def / 28 SpA / 28 SpD / 28 Spe
 
-Ludicolo
-Level: 32
-IVs: 18 HP / 18 Atk / 18 Def / 18 SpA / 18 SpD / 18 Spe
+Magcargo
+Level: 46
+IVs: 28 HP / 28 Atk / 28 Def / 28 SpA / 28 SpD / 28 Spe
 
-Combusken
-Level: 34
-IVs: 24 HP / 24 Atk / 24 Def / 24 SpA / 24 SpD / 24 Spe
+Houndoom
+Level: 48
+IVs: 28 HP / 28 Atk / 28 Def / 28 SpA / 28 SpD / 28 Spe
 
 === TRAINER_MAY_LILYCOVE_TORCHIC ===
-Name: MAY
+Name: MIRA
 Class: Rival
 Pic: May
 Gender: Female
 Music: Female
 Double Battle: No
-AI: Basic Trainer
+AI: Check Bad Move / Try To Faint / Check Viability / HP Aware / Smart Switching / Try To 2HKO / PP Stall Prevention / Weigh Ability Prediction / Ace Pokemon
 
-Tropius
-Level: 31
-IVs: 18 HP / 18 Atk / 18 Def / 18 SpA / 18 SpD / 18 Spe
+Hatterene
+Level: 46
+IVs: 28 HP / 28 Atk / 28 Def / 28 SpA / 28 SpD / 28 Spe
 
-Ludicolo
-Level: 32
-IVs: 18 HP / 18 Atk / 18 Def / 18 SpA / 18 SpD / 18 Spe
+Gyarados
+Level: 47
+IVs: 28 HP / 28 Atk / 28 Def / 28 SpA / 28 SpD / 28 Spe
 
-Slugma
-Level: 32
-IVs: 18 HP / 18 Atk / 18 Def / 18 SpA / 18 SpD / 18 Spe
+Sharpedo
+Level: 46
+IVs: 28 HP / 28 Atk / 28 Def / 28 SpA / 28 SpD / 28 Spe
 
-Marshtomp
-Level: 34
-IVs: 24 HP / 24 Atk / 24 Def / 24 SpA / 24 SpD / 24 Spe
+Pelipper
+Level: 48
+IVs: 28 HP / 28 Atk / 28 Def / 28 SpA / 28 SpD / 28 Spe
 
 === TRAINER_JONAH ===
 Name: JONAH
@@ -14330,22 +14302,22 @@ Pic: Magma Admin
 Gender: Male
 Music: Magma
 Double Battle: No
-AI: Check Bad Move
+AI: Check Bad Move / Try To Faint / Check Viability / HP Aware / Smart Switching / Try To 2HKO / PP Stall Prevention / Weigh Ability Prediction / Ace Pokemon
 
-Numel
-Level: 26
+Camerupt
+Level: 40
 IVs: 9 HP / 9 Atk / 9 Def / 9 SpA / 9 SpD / 9 Spe
 
 Mightyena
-Level: 28
+Level: 40
 IVs: 9 HP / 9 Atk / 9 Def / 9 SpA / 9 SpD / 9 Spe
 
-Zubat
-Level: 30
+Armarouge
+Level: 41
 IVs: 9 HP / 9 Atk / 9 Def / 9 SpA / 9 SpD / 9 Spe
 
-Camerupt
-Level: 33
+Crobat @ Sitrus Berry
+Level: 42
 IVs: 9 HP / 9 Atk / 9 Def / 9 SpA / 9 SpD / 9 Spe
 
 === TRAINER_DARCY ===
@@ -14373,19 +14345,23 @@ Pic: Magma Leader Maxie
 Gender: Male
 Music: Magma
 Double Battle: No
-AI: Basic Trainer
+AI: Check Bad Move / Try To Faint / Check Viability / HP Aware / Smart Switching / Try To 2HKO / PP Stall Prevention / Weigh Ability Prediction / Ace Pokemon
 Multi Party: Half
 
 Mightyena
-Level: 42
+Level: 47
 IVs: 18 HP / 18 Atk / 18 Def / 18 SpA / 18 SpD / 18 Spe
 
 Crobat
-Level: 43
+Level: 47
 IVs: 18 HP / 18 Atk / 18 Def / 18 SpA / 18 SpD / 18 Spe
 
-Camerupt
-Level: 44
+Krookodile
+Level: 48
+IVs: 18 HP / 18 Atk / 18 Def / 18 SpA / 18 SpD / 18 Spe
+
+Camerupt @ Sitrus Berry
+Level: 49
 IVs: 18 HP / 18 Atk / 18 Def / 18 SpA / 18 SpD / 18 Spe
 
 === TRAINER_PETE ===
@@ -14981,38 +14957,38 @@ Level: 31
 IVs: 12 HP / 12 Atk / 12 Def / 12 SpA / 12 SpD / 12 Spe
 
 === TRAINER_MAY_RUSTBORO_TREECKO ===
-Name: MAY
+Name: MIRA
 Class: Rival
 Pic: May
 Gender: Female
 Music: Female
 Double Battle: No
-AI: Basic Trainer
+AI: Check Bad Move / Try To Faint / Check Viability / HP Aware / Smart Switching / Try To 2HKO / PP Stall Prevention / Weigh Ability Prediction
 
-Lotad
-Level: 13
-IVs: 3 HP / 3 Atk / 3 Def / 3 SpA / 3 SpD / 3 Spe
+Slugma
+Level: 14
+IVs: 12 HP / 12 Atk / 12 Def / 12 SpA / 12 SpD / 12 Spe
 
-Torchic
-Level: 15
-IVs: 6 HP / 6 Atk / 6 Def / 6 SpA / 6 SpD / 6 Spe
+Houndour
+Level: 16
+IVs: 12 HP / 12 Atk / 12 Def / 12 SpA / 12 SpD / 12 Spe
 
 === TRAINER_MAY_RUSTBORO_TORCHIC ===
-Name: MAY
+Name: MIRA
 Class: Rival
 Pic: May
 Gender: Female
 Music: Female
 Double Battle: No
-AI: Basic Trainer
+AI: Check Bad Move / Try To Faint / Check Viability / HP Aware / Smart Switching / Try To 2HKO / PP Stall Prevention / Weigh Ability Prediction
 
-Torkoal
-Level: 13
-IVs: 3 HP / 3 Atk / 3 Def / 3 SpA / 3 SpD / 3 Spe
+Lotad
+Level: 14
+IVs: 12 HP / 12 Atk / 12 Def / 12 SpA / 12 SpD / 12 Spe
 
-Mudkip
-Level: 15
-IVs: 6 HP / 6 Atk / 6 Def / 6 SpA / 6 SpD / 6 Spe
+Pelipper
+Level: 16
+IVs: 12 HP / 12 Atk / 12 Def / 12 SpA / 12 SpD / 12 Spe
 
 === TRAINER_ROXANNE_2 ===
 Name: ROXANNE
@@ -15022,7 +14998,7 @@ Gender: Female
 Music: Female
 Items: Full Restore / Full Restore / Full Restore
 Double Battle: Yes
-AI: Basic Trainer
+AI: Check Bad Move / Try To Faint / Check Viability / HP Aware / Smart Switching / Try To 2HKO / PP Stall Prevention / Weigh Ability Prediction / Ace Pokemon
 
 Golem
 Level: 32
@@ -15064,7 +15040,7 @@ Gender: Female
 Music: Female
 Items: Full Restore / Full Restore / Full Restore
 Double Battle: Yes
-AI: Basic Trainer
+AI: Check Bad Move / Try To Faint / Check Viability / HP Aware / Smart Switching / Try To 2HKO / PP Stall Prevention / Weigh Ability Prediction / Ace Pokemon
 
 Omanyte
 Level: 37
@@ -15114,7 +15090,7 @@ Gender: Female
 Music: Female
 Items: Full Restore / Full Restore / Full Restore
 Double Battle: Yes
-AI: Basic Trainer
+AI: Check Bad Move / Try To Faint / Check Viability / HP Aware / Smart Switching / Try To 2HKO / PP Stall Prevention / Weigh Ability Prediction / Ace Pokemon
 
 Omastar
 Level: 42
@@ -15164,7 +15140,7 @@ Gender: Female
 Music: Female
 Items: Full Restore / Full Restore / Full Restore
 Double Battle: Yes
-AI: Basic Trainer
+AI: Check Bad Move / Try To Faint / Check Viability / HP Aware / Smart Switching / Try To 2HKO / PP Stall Prevention / Weigh Ability Prediction / Ace Pokemon
 
 Aerodactyl
 Level: 47
@@ -15222,7 +15198,7 @@ Gender: Male
 Music: Male
 Items: Full Restore / Full Restore / Full Restore
 Double Battle: Yes
-AI: Basic Trainer
+AI: Check Bad Move / Try To Faint / Check Viability / HP Aware / Smart Switching / Try To 2HKO / PP Stall Prevention / Weigh Ability Prediction / Ace Pokemon
 
 Machamp @ Sitrus Berry
 Level: 33
@@ -15264,7 +15240,7 @@ Gender: Male
 Music: Male
 Items: Full Restore / Full Restore / Full Restore
 Double Battle: Yes
-AI: Basic Trainer
+AI: Check Bad Move / Try To Faint / Check Viability / HP Aware / Smart Switching / Try To 2HKO / PP Stall Prevention / Weigh Ability Prediction / Ace Pokemon
 
 Machamp @ Sitrus Berry
 Level: 38
@@ -15306,7 +15282,7 @@ Gender: Male
 Music: Male
 Items: Full Restore / Full Restore / Full Restore
 Double Battle: Yes
-AI: Basic Trainer
+AI: Check Bad Move / Try To Faint / Check Viability / HP Aware / Smart Switching / Try To 2HKO / PP Stall Prevention / Weigh Ability Prediction / Ace Pokemon
 
 Hitmonchan
 Level: 40
@@ -15356,7 +15332,7 @@ Gender: Male
 Music: Male
 Items: Full Restore / Full Restore / Full Restore
 Double Battle: Yes
-AI: Basic Trainer
+AI: Check Bad Move / Try To Faint / Check Viability / HP Aware / Smart Switching / Try To 2HKO / PP Stall Prevention / Weigh Ability Prediction / Ace Pokemon
 
 Hitmonlee
 Level: 46
@@ -15414,7 +15390,7 @@ Gender: Male
 Music: Male
 Items: Full Restore / Full Restore / Full Restore
 Double Battle: Yes
-AI: Basic Trainer
+AI: Check Bad Move / Try To Faint / Check Viability / HP Aware / Smart Switching / Try To 2HKO / PP Stall Prevention / Weigh Ability Prediction / Ace Pokemon
 
 Mareep
 Level: 36
@@ -15456,7 +15432,7 @@ Gender: Male
 Music: Male
 Items: Full Restore / Full Restore / Full Restore
 Double Battle: Yes
-AI: Basic Trainer
+AI: Check Bad Move / Try To Faint / Check Viability / HP Aware / Smart Switching / Try To 2HKO / PP Stall Prevention / Weigh Ability Prediction / Ace Pokemon
 
 Pikachu
 Level: 39
@@ -15506,7 +15482,7 @@ Gender: Male
 Music: Male
 Items: Full Restore / Full Restore / Full Restore
 Double Battle: Yes
-AI: Basic Trainer
+AI: Check Bad Move / Try To Faint / Check Viability / HP Aware / Smart Switching / Try To 2HKO / PP Stall Prevention / Weigh Ability Prediction / Ace Pokemon
 
 Raichu
 Level: 44
@@ -15556,7 +15532,7 @@ Gender: Male
 Music: Male
 Items: Full Restore / Full Restore / Full Restore
 Double Battle: Yes
-AI: Basic Trainer
+AI: Check Bad Move / Try To Faint / Check Viability / HP Aware / Smart Switching / Try To 2HKO / PP Stall Prevention / Weigh Ability Prediction / Ace Pokemon
 
 Electabuzz
 Level: 50
@@ -15614,7 +15590,7 @@ Gender: Female
 Music: Female
 Items: Full Restore / Full Restore / Full Restore
 Double Battle: Yes
-AI: Basic Trainer
+AI: Check Bad Move / Try To Faint / Check Viability / HP Aware / Smart Switching / Try To 2HKO / PP Stall Prevention / Weigh Ability Prediction / Ace Pokemon
 
 Magcargo @ White Herb
 Level: 38
@@ -15656,7 +15632,7 @@ Gender: Female
 Music: Female
 Items: Full Restore / Full Restore / Full Restore
 Double Battle: Yes
-AI: Basic Trainer
+AI: Check Bad Move / Try To Faint / Check Viability / HP Aware / Smart Switching / Try To 2HKO / PP Stall Prevention / Weigh Ability Prediction / Ace Pokemon
 
 Growlithe
 Level: 41
@@ -15706,7 +15682,7 @@ Gender: Female
 Music: Female
 Items: Full Restore / Full Restore / Full Restore
 Double Battle: Yes
-AI: Basic Trainer
+AI: Check Bad Move / Try To Faint / Check Viability / HP Aware / Smart Switching / Try To 2HKO / PP Stall Prevention / Weigh Ability Prediction / Ace Pokemon
 
 Houndour
 Level: 46
@@ -15764,7 +15740,7 @@ Gender: Female
 Music: Female
 Items: Full Restore / Full Restore / Full Restore
 Double Battle: Yes
-AI: Basic Trainer
+AI: Check Bad Move / Try To Faint / Check Viability / HP Aware / Smart Switching / Try To 2HKO / PP Stall Prevention / Weigh Ability Prediction / Ace Pokemon
 
 Arcanine
 Level: 51
@@ -15822,7 +15798,7 @@ Gender: Male
 Music: Male
 Items: Full Restore / Full Restore / Full Restore
 Double Battle: Yes
-AI: Basic Trainer
+AI: Check Bad Move / Try To Faint / Check Viability / HP Aware / Smart Switching / Try To 2HKO / PP Stall Prevention / Weigh Ability Prediction / Ace Pokemon
 
 Chansey
 Level: 42
@@ -15864,7 +15840,7 @@ Gender: Male
 Music: Male
 Items: Full Restore / Full Restore / Full Restore
 Double Battle: Yes
-AI: Basic Trainer
+AI: Check Bad Move / Try To Faint / Check Viability / HP Aware / Smart Switching / Try To 2HKO / PP Stall Prevention / Weigh Ability Prediction / Ace Pokemon
 
 Slaking @ Sitrus Berry
 Level: 47
@@ -15914,7 +15890,7 @@ Gender: Male
 Music: Male
 Items: Full Restore / Full Restore / Full Restore
 Double Battle: Yes
-AI: Basic Trainer
+AI: Check Bad Move / Try To Faint / Check Viability / HP Aware / Smart Switching / Try To 2HKO / PP Stall Prevention / Weigh Ability Prediction / Ace Pokemon
 
 Slaking @ Sitrus Berry
 Level: 52
@@ -15964,7 +15940,7 @@ Gender: Male
 Music: Male
 Items: Full Restore / Full Restore / Full Restore
 Double Battle: Yes
-AI: Basic Trainer
+AI: Check Bad Move / Try To Faint / Check Viability / HP Aware / Smart Switching / Try To 2HKO / PP Stall Prevention / Weigh Ability Prediction / Ace Pokemon
 
 Slaking @ Sitrus Berry
 Level: 57
@@ -16022,7 +15998,7 @@ Gender: Female
 Music: Female
 Items: Full Restore / Full Restore / Full Restore
 Double Battle: Yes
-AI: Basic Trainer / Risky
+AI: Check Bad Move / Try To Faint / Check Viability / HP Aware / Smart Switching / Try To 2HKO / PP Stall Prevention / Weigh Ability Prediction / Ace Pokemon
 
 Dratini @ Sitrus Berry
 Level: 40
@@ -16072,7 +16048,7 @@ Gender: Female
 Music: Female
 Items: Full Restore / Full Restore / Full Restore
 Double Battle: Yes
-AI: Basic Trainer / Risky
+AI: Check Bad Move / Try To Faint / Check Viability / HP Aware / Smart Switching / Try To 2HKO / PP Stall Prevention / Weigh Ability Prediction / Ace Pokemon
 
 Hoothoot
 Level: 43
@@ -16130,7 +16106,7 @@ Gender: Female
 Music: Female
 Items: Full Restore / Full Restore / Full Restore
 Double Battle: Yes
-AI: Basic Trainer / Risky
+AI: Check Bad Move / Try To Faint / Check Viability / HP Aware / Smart Switching / Try To 2HKO / PP Stall Prevention / Weigh Ability Prediction / Ace Pokemon
 
 Noctowl
 Level: 48
@@ -16188,7 +16164,7 @@ Gender: Female
 Music: Female
 Items: Full Restore / Full Restore / Full Restore
 Double Battle: Yes
-AI: Basic Trainer / Risky
+AI: Check Bad Move / Try To Faint / Check Viability / HP Aware / Smart Switching / Try To 2HKO / PP Stall Prevention / Weigh Ability Prediction / Ace Pokemon
 
 Noctowl
 Level: 53
@@ -16246,7 +16222,7 @@ Gender: Male
 Music: Female
 Items: Full Restore / Full Restore / Full Restore
 Double Battle: Yes
-AI: Basic Trainer
+AI: Check Bad Move / Try To Faint / Check Viability / HP Aware / Smart Switching / Try To 2HKO / PP Stall Prevention / Weigh Ability Prediction / Ace Pokemon
 
 Slowpoke
 Level: 48
@@ -16296,7 +16272,7 @@ Gender: Male
 Music: Female
 Items: Full Restore / Full Restore / Full Restore
 Double Battle: Yes
-AI: Basic Trainer
+AI: Check Bad Move / Try To Faint / Check Viability / HP Aware / Smart Switching / Try To 2HKO / PP Stall Prevention / Weigh Ability Prediction / Ace Pokemon
 
 Drowzee
 Level: 53
@@ -16354,7 +16330,7 @@ Gender: Male
 Music: Female
 Items: Full Restore / Full Restore / Full Restore
 Double Battle: Yes
-AI: Basic Trainer
+AI: Check Bad Move / Try To Faint / Check Viability / HP Aware / Smart Switching / Try To 2HKO / PP Stall Prevention / Weigh Ability Prediction / Ace Pokemon
 
 Hypno
 Level: 58
@@ -16412,7 +16388,7 @@ Gender: Male
 Music: Female
 Items: Full Restore / Full Restore / Full Restore
 Double Battle: Yes
-AI: Basic Trainer
+AI: Check Bad Move / Try To Faint / Check Viability / HP Aware / Smart Switching / Try To 2HKO / PP Stall Prevention / Weigh Ability Prediction / Ace Pokemon
 
 Hypno
 Level: 63
@@ -16470,7 +16446,7 @@ Gender: Male
 Music: Male
 Items: Full Restore / Full Restore / Full Restore
 Double Battle: Yes
-AI: Basic Trainer
+AI: Check Bad Move / Try To Faint / Check Viability / HP Aware / Smart Switching / Try To 2HKO / PP Stall Prevention / Weigh Ability Prediction / Ace Pokemon
 
 Poliwag
 Level: 46
@@ -16520,7 +16496,7 @@ Gender: Male
 Music: Male
 Items: Full Restore / Full Restore / Full Restore
 Double Battle: Yes
-AI: Basic Trainer
+AI: Check Bad Move / Try To Faint / Check Viability / HP Aware / Smart Switching / Try To 2HKO / PP Stall Prevention / Weigh Ability Prediction / Ace Pokemon
 
 Poliwhirl
 Level: 50
@@ -16570,7 +16546,7 @@ Gender: Male
 Music: Male
 Items: Full Restore / Full Restore / Full Restore
 Double Battle: Yes
-AI: Basic Trainer
+AI: Check Bad Move / Try To Faint / Check Viability / HP Aware / Smart Switching / Try To 2HKO / PP Stall Prevention / Weigh Ability Prediction / Ace Pokemon
 
 Lapras
 Level: 56
@@ -16628,7 +16604,7 @@ Gender: Male
 Music: Male
 Items: Full Restore / Full Restore / Full Restore
 Double Battle: Yes
-AI: Basic Trainer
+AI: Check Bad Move / Try To Faint / Check Viability / HP Aware / Smart Switching / Try To 2HKO / PP Stall Prevention / Weigh Ability Prediction / Ace Pokemon
 
 Lapras
 Level: 61
@@ -17802,7 +17778,7 @@ Pic: Hiker
 Gender: Male
 Music: Hiker
 Double Battle: Yes
-AI: Check Bad Move / Try To Faint / Check Viability / HP Aware / Smart Switching / Try To 2HKO
+AI: Check Bad Move / Try To Faint / Check Viability / HP Aware / Smart Switching / Try To 2HKO / PP Stall Prevention / Weigh Ability Prediction / Ace Pokemon
 
 Anorith
 Level: 15
@@ -17835,7 +17811,7 @@ Pic: Black Belt
 Gender: Male
 Music: Intense
 Double Battle: Yes
-AI: Check Bad Move / Try To Faint / Check Viability / HP Aware / Smart Switching / Try To 2HKO
+AI: Check Bad Move / Try To Faint / Check Viability / HP Aware / Smart Switching / Try To 2HKO / PP Stall Prevention / Weigh Ability Prediction / Ace Pokemon
 
 Meditite
 Ability: Telepathy
@@ -17870,7 +17846,7 @@ Pic: Guitarist
 Gender: Male
 Music: Intense
 Double Battle: Yes
-AI: Check Bad Move / Try To Faint / Check Viability / HP Aware / Smart Switching / Try To 2HKO
+AI: Check Bad Move / Try To Faint / Check Viability / HP Aware / Smart Switching / Try To 2HKO / PP Stall Prevention / Weigh Ability Prediction
 
 Lanturn
 Ability: Volt Absorb
@@ -17906,7 +17882,7 @@ Pic: Kindler
 Gender: Male
 Music: Hiker
 Double Battle: Yes
-AI: Check Bad Move / Try To Faint / Check Viability / HP Aware / Smart Switching / Try To 2HKO
+AI: Check Bad Move / Try To Faint / Check Viability / HP Aware / Smart Switching / Try To 2HKO / PP Stall Prevention / Weigh Ability Prediction
 
 Houndoom
 Ability: Flash Fire
@@ -17942,7 +17918,7 @@ Pic: Lady
 Gender: Female
 Music: Female
 Double Battle: Yes
-AI: Check Bad Move / Try To Faint / Check Viability / HP Aware / Smart Switching / Try To 2HKO
+AI: Check Bad Move / Try To Faint / Check Viability / HP Aware / Smart Switching / Try To 2HKO / PP Stall Prevention / Weigh Ability Prediction
 
 Kecleon
 Level: 40
@@ -17975,7 +17951,7 @@ Pic: Bird Keeper
 Gender: Male
 Music: Cool
 Double Battle: Yes
-AI: Check Bad Move / Try To Faint / Check Viability / HP Aware / Smart Switching / Try To 2HKO
+AI: Check Bad Move / Try To Faint / Check Viability / HP Aware / Smart Switching / Try To 2HKO / PP Stall Prevention / Weigh Ability Prediction
 
 Skarmory
 Level: 46
@@ -18009,7 +17985,7 @@ Pic: Leader Tate And Liza
 Gender: Female
 Music: Female
 Double Battle: Yes
-AI: Check Bad Move / Try To Faint / Check Viability / HP Aware / Smart Switching / Try To 2HKO
+AI: Check Bad Move / Try To Faint / Check Viability / HP Aware / Smart Switching / Try To 2HKO / PP Stall Prevention / Weigh Ability Prediction / Ace Pokemon
 
 Xatu
 Level: 50
@@ -18042,7 +18018,7 @@ Pic: Champion Wallace
 Gender: Male
 Music: Male
 Double Battle: Yes
-AI: Check Bad Move / Try To Faint / Check Viability / HP Aware / Smart Switching / Try To 2HKO
+AI: Check Bad Move / Try To Faint / Check Viability / HP Aware / Smart Switching / Try To 2HKO / PP Stall Prevention / Weigh Ability Prediction / Ace Pokemon
 
 Pelipper
 Ability: Drizzle
@@ -18078,7 +18054,7 @@ Gender: Male
 Music: Male
 Items: Full Restore / Full Restore
 Double Battle: Yes
-AI: Check Bad Move / Try To Faint / Check Viability / HP Aware / Smart Switching / Try To 2HKO
+AI: Check Bad Move / Try To Faint / Check Viability / HP Aware / Smart Switching / Try To 2HKO / PP Stall Prevention / Weigh Ability Prediction
 
 Metagross @ Sitrus Berry
 Level: 66
@@ -18088,13 +18064,14 @@ IVs: 31 HP / 31 Atk / 31 Def / 31 SpA / 31 SpD / 31 Spe
 - Psychic
 - Protect
 
-Skarmory
+Aegislash
+Ability: Stance Change
 Level: 64
 IVs: 31 HP / 31 Atk / 31 Def / 31 SpA / 31 SpD / 31 Spe
-- Steel Wing
-- Aerial Ace
-- Spikes
-- Sand Attack
+- Kings Shield
+- Shadow Ball
+- Flash Cannon
+- Shadow Sneak
 
 Armaldo
 Level: 65
@@ -18112,7 +18089,7 @@ Gender: Male
 Music: Male
 Items: Full Restore / Full Restore
 Double Battle: Yes
-AI: Check Bad Move / Try To Faint / Check Viability / HP Aware / Smart Switching / Try To 2HKO
+AI: Check Bad Move / Try To Faint / Check Viability / HP Aware / Smart Switching / Try To 2HKO / PP Stall Prevention / Weigh Ability Prediction
 
 Milotic @ Sitrus Berry
 Level: 66
@@ -18122,13 +18099,14 @@ IVs: 31 HP / 31 Atk / 31 Def / 31 SpA / 31 SpD / 31 Spe
 - Recover
 - Attract
 
-Wailord
+Basculegion
+Ability: Swift Swim
 Level: 64
 IVs: 31 HP / 31 Atk / 31 Def / 31 SpA / 31 SpD / 31 Spe
-- Water Spout
-- Surf
-- Ice Beam
-- Rest
+- Wave Crash
+- Phantom Force
+- Aqua Jet
+- Protect
 
 Gyarados
 Level: 65
@@ -18261,7 +18239,7 @@ Pic: Brendan
 Gender: Male
 Music: Male
 Double Battle: Yes
-AI: Check Bad Move / Try To Faint / Check Viability / HP Aware
+AI: Check Bad Move / Try To Faint / Check Viability / HP Aware / Smart Switching / Try To 2HKO / PP Stall Prevention / Weigh Ability Prediction
 
 Combusken
 Level: 16
@@ -18286,7 +18264,7 @@ Pic: Brendan
 Gender: Male
 Music: Male
 Double Battle: Yes
-AI: Check Bad Move / Try To Faint / Check Viability / HP Aware
+AI: Check Bad Move / Try To Faint / Check Viability / HP Aware / Smart Switching / Try To 2HKO / PP Stall Prevention / Weigh Ability Prediction
 
 Marshtomp
 Level: 16
@@ -18307,7 +18285,7 @@ Pic: Brendan
 Gender: Male
 Music: Male
 Double Battle: Yes
-AI: Check Bad Move / Try To Faint / Check Viability / HP Aware
+AI: Check Bad Move / Try To Faint / Check Viability / HP Aware / Smart Switching / Try To 2HKO / PP Stall Prevention / Weigh Ability Prediction
 
 Grovyle
 Level: 16
@@ -18328,7 +18306,7 @@ Pic: May
 Gender: Female
 Music: Female
 Double Battle: Yes
-AI: Check Bad Move / Try To Faint / Check Viability / HP Aware
+AI: Check Bad Move / Try To Faint / Check Viability / HP Aware / Smart Switching / Try To 2HKO / PP Stall Prevention / Weigh Ability Prediction
 
 Houndour
 Level: 16
@@ -18353,7 +18331,7 @@ Pic: May
 Gender: Female
 Music: Female
 Double Battle: Yes
-AI: Check Bad Move / Try To Faint / Check Viability / HP Aware
+AI: Check Bad Move / Try To Faint / Check Viability / HP Aware / Smart Switching / Try To 2HKO / PP Stall Prevention / Weigh Ability Prediction
 
 Pelipper
 Level: 16
@@ -18378,7 +18356,7 @@ Pic: May
 Gender: Female
 Music: Female
 Double Battle: Yes
-AI: Check Bad Move / Try To Faint / Check Viability / HP Aware
+AI: Check Bad Move / Try To Faint / Check Viability / HP Aware / Smart Switching / Try To 2HKO / PP Stall Prevention / Weigh Ability Prediction
 
 Shroomish
 Level: 16
@@ -18403,7 +18381,7 @@ Pic: Brendan
 Gender: Male
 Music: Male
 Double Battle: Yes
-AI: Check Bad Move / Try To Faint / Check Viability / HP Aware
+AI: Check Bad Move / Try To Faint / Check Viability / HP Aware / Smart Switching / Try To 2HKO / PP Stall Prevention / Weigh Ability Prediction
 
 Combusken
 Level: 22
@@ -18432,7 +18410,7 @@ Pic: Brendan
 Gender: Male
 Music: Male
 Double Battle: Yes
-AI: Check Bad Move / Try To Faint / Check Viability / HP Aware
+AI: Check Bad Move / Try To Faint / Check Viability / HP Aware / Smart Switching / Try To 2HKO / PP Stall Prevention / Weigh Ability Prediction
 
 Marshtomp
 Level: 22
@@ -18457,7 +18435,7 @@ Pic: Brendan
 Gender: Male
 Music: Male
 Double Battle: Yes
-AI: Check Bad Move / Try To Faint / Check Viability / HP Aware
+AI: Check Bad Move / Try To Faint / Check Viability / HP Aware / Smart Switching / Try To 2HKO / PP Stall Prevention / Weigh Ability Prediction
 
 Grovyle
 Level: 22
@@ -18482,7 +18460,7 @@ Pic: May
 Gender: Female
 Music: Female
 Double Battle: Yes
-AI: Check Bad Move / Try To Faint / Check Viability / HP Aware
+AI: Check Bad Move / Try To Faint / Check Viability / HP Aware / Smart Switching / Try To 2HKO / PP Stall Prevention / Weigh Ability Prediction
 
 Houndoom
 Level: 22
@@ -18511,7 +18489,7 @@ Pic: May
 Gender: Female
 Music: Female
 Double Battle: Yes
-AI: Check Bad Move / Try To Faint / Check Viability / HP Aware
+AI: Check Bad Move / Try To Faint / Check Viability / HP Aware / Smart Switching / Try To 2HKO / PP Stall Prevention / Weigh Ability Prediction
 
 Pelipper
 Level: 22
@@ -18536,7 +18514,7 @@ Pic: May
 Gender: Female
 Music: Female
 Double Battle: Yes
-AI: Check Bad Move / Try To Faint / Check Viability / HP Aware
+AI: Check Bad Move / Try To Faint / Check Viability / HP Aware / Smart Switching / Try To 2HKO / PP Stall Prevention / Weigh Ability Prediction
 
 Breloom
 Level: 22
@@ -18561,7 +18539,7 @@ Pic: Brendan
 Gender: Male
 Music: Male
 Double Battle: Yes
-AI: Check Bad Move / Try To Faint / Check Viability / HP Aware
+AI: Check Bad Move / Try To Faint / Check Viability / HP Aware / Smart Switching / Try To 2HKO / PP Stall Prevention / Weigh Ability Prediction
 
 Blaziken
 Level: 36
@@ -18582,7 +18560,7 @@ Pic: Brendan
 Gender: Male
 Music: Male
 Double Battle: Yes
-AI: Check Bad Move / Try To Faint / Check Viability / HP Aware
+AI: Check Bad Move / Try To Faint / Check Viability / HP Aware / Smart Switching / Try To 2HKO / PP Stall Prevention / Weigh Ability Prediction
 
 Swampert
 Level: 36
@@ -18608,7 +18586,7 @@ Pic: Brendan
 Gender: Male
 Music: Male
 Double Battle: Yes
-AI: Check Bad Move / Try To Faint / Check Viability / HP Aware
+AI: Check Bad Move / Try To Faint / Check Viability / HP Aware / Smart Switching / Try To 2HKO / PP Stall Prevention / Weigh Ability Prediction
 
 Sceptile
 Level: 36
@@ -18633,7 +18611,7 @@ Pic: May
 Gender: Female
 Music: Female
 Double Battle: Yes
-AI: Check Bad Move / Try To Faint / Check Viability / HP Aware
+AI: Check Bad Move / Try To Faint / Check Viability / HP Aware / Smart Switching / Try To 2HKO / PP Stall Prevention / Weigh Ability Prediction
 
 Houndoom
 Ability: Flash Fire
@@ -18664,7 +18642,7 @@ Pic: May
 Gender: Female
 Music: Female
 Double Battle: Yes
-AI: Check Bad Move / Try To Faint / Check Viability / HP Aware
+AI: Check Bad Move / Try To Faint / Check Viability / HP Aware / Smart Switching / Try To 2HKO / PP Stall Prevention / Weigh Ability Prediction
 
 Pelipper
 Level: 36
@@ -18694,7 +18672,7 @@ Pic: May
 Gender: Female
 Music: Female
 Double Battle: Yes
-AI: Check Bad Move / Try To Faint / Check Viability / HP Aware
+AI: Check Bad Move / Try To Faint / Check Viability / HP Aware / Smart Switching / Try To 2HKO / PP Stall Prevention / Weigh Ability Prediction
 
 Breloom
 Level: 36
@@ -18723,7 +18701,7 @@ Pic: Brendan
 Gender: Male
 Music: Male
 Double Battle: Yes
-AI: Check Bad Move / Try To Faint / Check Viability / HP Aware
+AI: Check Bad Move / Try To Faint / Check Viability / HP Aware / Smart Switching / Try To 2HKO / PP Stall Prevention / Weigh Ability Prediction
 
 Blaziken
 Level: 48
@@ -18748,7 +18726,7 @@ Pic: Brendan
 Gender: Male
 Music: Male
 Double Battle: Yes
-AI: Check Bad Move / Try To Faint / Check Viability / HP Aware
+AI: Check Bad Move / Try To Faint / Check Viability / HP Aware / Smart Switching / Try To 2HKO / PP Stall Prevention / Weigh Ability Prediction
 
 Swampert
 Level: 48
@@ -18769,7 +18747,7 @@ Pic: Brendan
 Gender: Male
 Music: Male
 Double Battle: Yes
-AI: Check Bad Move / Try To Faint / Check Viability / HP Aware
+AI: Check Bad Move / Try To Faint / Check Viability / HP Aware / Smart Switching / Try To 2HKO / PP Stall Prevention / Weigh Ability Prediction
 
 Sceptile
 Level: 48
@@ -18794,7 +18772,7 @@ Pic: May
 Gender: Female
 Music: Female
 Double Battle: Yes
-AI: Check Bad Move / Try To Faint / Check Viability / HP Aware
+AI: Check Bad Move / Try To Faint / Check Viability / HP Aware / Smart Switching / Try To 2HKO / PP Stall Prevention / Weigh Ability Prediction
 
 Houndoom
 Ability: Flash Fire
@@ -18820,7 +18798,7 @@ Pic: May
 Gender: Female
 Music: Female
 Double Battle: Yes
-AI: Check Bad Move / Try To Faint / Check Viability / HP Aware
+AI: Check Bad Move / Try To Faint / Check Viability / HP Aware / Smart Switching / Try To 2HKO / PP Stall Prevention / Weigh Ability Prediction
 
 Pelipper
 Ability: Drizzle
@@ -18854,7 +18832,7 @@ Pic: May
 Gender: Female
 Music: Female
 Double Battle: Yes
-AI: Check Bad Move / Try To Faint / Check Viability / HP Aware
+AI: Check Bad Move / Try To Faint / Check Viability / HP Aware / Smart Switching / Try To 2HKO / PP Stall Prevention / Weigh Ability Prediction
 
 Breloom
 Level: 48
@@ -18884,7 +18862,7 @@ Gender: Female
 Music: Female
 Items: Full Restore / Full Restore
 Double Battle: Yes
-AI: Check Bad Move / Try To Faint / Check Viability / HP Aware / Smart Switching / Try To 2HKO
+AI: Check Bad Move / Try To Faint / Check Viability / HP Aware / Smart Switching / Try To 2HKO / PP Stall Prevention / Weigh Ability Prediction
 
 Nosepass
 Level: 68
@@ -18918,7 +18896,7 @@ Gender: Male
 Music: Hiker
 Items: Full Restore / Full Restore
 Double Battle: Yes
-AI: Check Bad Move / Try To Faint / Check Viability / HP Aware / Smart Switching / Try To 2HKO
+AI: Check Bad Move / Try To Faint / Check Viability / HP Aware / Smart Switching / Try To 2HKO / PP Stall Prevention / Weigh Ability Prediction
 
 Lunatone
 Level: 70
@@ -18952,7 +18930,7 @@ Gender: Male
 Music: Male
 Items: Full Restore / Full Restore
 Double Battle: Yes
-AI: Check Bad Move / Try To Faint / Check Viability / HP Aware / Smart Switching / Try To 2HKO
+AI: Check Bad Move / Try To Faint / Check Viability / HP Aware / Smart Switching / Try To 2HKO / PP Stall Prevention / Weigh Ability Prediction
 
 Hariyama @ Flame Orb
 Ability: Guts
@@ -18987,7 +18965,7 @@ Gender: Male
 Music: Intense
 Items: Full Restore / Full Restore
 Double Battle: Yes
-AI: Check Bad Move / Try To Faint / Check Viability / HP Aware / Smart Switching / Try To 2HKO
+AI: Check Bad Move / Try To Faint / Check Viability / HP Aware / Smart Switching / Try To 2HKO / PP Stall Prevention / Weigh Ability Prediction
 
 Skarmory
 Level: 70
@@ -19021,7 +18999,7 @@ Gender: Male
 Music: Male
 Items: Full Restore / Full Restore
 Double Battle: Yes
-AI: Check Bad Move / Try To Faint / Check Viability / HP Aware / Smart Switching / Try To 2HKO
+AI: Check Bad Move / Try To Faint / Check Viability / HP Aware / Smart Switching / Try To 2HKO / PP Stall Prevention / Weigh Ability Prediction
 
 Magneton
 Ability: Magnet Pull
@@ -19057,7 +19035,7 @@ Gender: Male
 Music: Intense
 Items: Full Restore / Full Restore
 Double Battle: Yes
-AI: Check Bad Move / Try To Faint / Check Viability / HP Aware / Smart Switching / Try To 2HKO
+AI: Check Bad Move / Try To Faint / Check Viability / HP Aware / Smart Switching / Try To 2HKO / PP Stall Prevention / Weigh Ability Prediction
 
 Pelipper
 Ability: Drizzle
@@ -19094,7 +19072,7 @@ Gender: Female
 Music: Female
 Items: Full Restore / Full Restore
 Double Battle: Yes
-AI: Check Bad Move / Try To Faint / Check Viability / HP Aware / Smart Switching / Try To 2HKO
+AI: Check Bad Move / Try To Faint / Check Viability / HP Aware / Smart Switching / Try To 2HKO / PP Stall Prevention / Weigh Ability Prediction
 
 Torkoal
 Ability: Drought
@@ -19129,7 +19107,7 @@ Gender: Male
 Music: Hiker
 Items: Full Restore / Full Restore
 Double Battle: Yes
-AI: Check Bad Move / Try To Faint / Check Viability / HP Aware / Smart Switching / Try To 2HKO
+AI: Check Bad Move / Try To Faint / Check Viability / HP Aware / Smart Switching / Try To 2HKO / PP Stall Prevention / Weigh Ability Prediction
 
 Lunatone
 Level: 70
@@ -19165,7 +19143,7 @@ Gender: Male
 Music: Male
 Items: Full Restore / Full Restore
 Double Battle: Yes
-AI: Check Bad Move / Try To Faint / Check Viability / HP Aware / Smart Switching / Try To 2HKO
+AI: Check Bad Move / Try To Faint / Check Viability / HP Aware / Smart Switching / Try To 2HKO / PP Stall Prevention / Weigh Ability Prediction
 
 Slaking @ Sitrus Berry
 Ability: Truant
@@ -19200,7 +19178,7 @@ Gender: Female
 Music: Female
 Items: Full Restore / Full Restore
 Double Battle: Yes
-AI: Check Bad Move / Try To Faint / Check Viability / HP Aware / Smart Switching / Try To 2HKO
+AI: Check Bad Move / Try To Faint / Check Viability / HP Aware / Smart Switching / Try To 2HKO / PP Stall Prevention / Weigh Ability Prediction
 
 Skarmory
 Level: 70
@@ -19234,7 +19212,7 @@ Gender: Female
 Music: Female
 Items: Full Restore / Full Restore
 Double Battle: Yes
-AI: Check Bad Move / Try To Faint / Check Viability / HP Aware / Smart Switching / Try To 2HKO
+AI: Check Bad Move / Try To Faint / Check Viability / HP Aware / Smart Switching / Try To 2HKO / PP Stall Prevention / Weigh Ability Prediction
 
 Altaria @ Sitrus Berry
 Level: 70
@@ -19268,7 +19246,7 @@ Gender: Male
 Music: Cool
 Items: Full Restore / Full Restore
 Double Battle: Yes
-AI: Check Bad Move / Try To Faint / Check Viability / HP Aware / Smart Switching / Try To 2HKO
+AI: Check Bad Move / Try To Faint / Check Viability / HP Aware / Smart Switching / Try To 2HKO / PP Stall Prevention / Weigh Ability Prediction
 
 Lunatone
 Level: 70
@@ -19302,7 +19280,7 @@ Gender: Male
 Music: Female
 Items: Full Restore / Full Restore
 Double Battle: Yes
-AI: Check Bad Move / Try To Faint / Check Viability / HP Aware / Smart Switching / Try To 2HKO
+AI: Check Bad Move / Try To Faint / Check Viability / HP Aware / Smart Switching / Try To 2HKO / PP Stall Prevention / Weigh Ability Prediction
 
 Claydol
 Level: 70
@@ -19336,7 +19314,7 @@ Gender: Female
 Music: Female
 Items: Full Restore / Full Restore
 Double Battle: Yes
-AI: Check Bad Move / Try To Faint / Check Viability / HP Aware / Smart Switching / Try To 2HKO
+AI: Check Bad Move / Try To Faint / Check Viability / HP Aware / Smart Switching / Try To 2HKO / PP Stall Prevention / Weigh Ability Prediction
 
 Pelipper
 Ability: Drizzle
@@ -19372,7 +19350,7 @@ Gender: Male
 Music: Male
 Items: Full Restore / Full Restore
 Double Battle: Yes
-AI: Check Bad Move / Try To Faint / Check Viability / HP Aware / Smart Switching / Try To 2HKO
+AI: Check Bad Move / Try To Faint / Check Viability / HP Aware / Smart Switching / Try To 2HKO / PP Stall Prevention / Weigh Ability Prediction
 
 Torkoal
 Ability: Drought
@@ -19407,7 +19385,7 @@ Gender: Male
 Music: Male
 Items: Full Restore / Full Restore
 Double Battle: Yes
-AI: Check Bad Move / Try To Faint / Check Viability / HP Aware / Smart Switching / Try To 2HKO
+AI: Check Bad Move / Try To Faint / Check Viability / HP Aware / Smart Switching / Try To 2HKO / PP Stall Prevention / Weigh Ability Prediction
 
 Camerupt
 Level: 70
@@ -19442,16 +19420,17 @@ Gender: Male
 Music: Elite Four
 Items: Full Restore / Full Restore
 Double Battle: Yes
-AI: Check Bad Move / Try To Faint / Check Viability / HP Aware / Smart Switching / Try To 2HKO
+AI: Check Bad Move / Try To Faint / Check Viability / HP Aware / Smart Switching / Try To 2HKO / PP Stall Prevention / Weigh Ability Prediction / Ace Pokemon
 Mugshot: Purple
 
-Crawdaunt
+Grimmsnarl
+Ability: Prankster
 Level: 64
 IVs: 31 HP / 31 Atk / 31 Def / 31 SpA / 31 SpD / 31 Spe
-- Surf
-- Crunch
-- Swords Dance
-- Protect
+- Spirit Break
+- Throat Chop
+- Reflect
+- Light Screen
 
 Sharpedo
 Level: 65
@@ -19477,15 +19456,16 @@ Gender: Female
 Music: Elite Four
 Items: Full Restore / Full Restore
 Double Battle: Yes
-AI: Check Bad Move / Try To Faint / Check Viability / HP Aware / Smart Switching / Try To 2HKO
+AI: Check Bad Move / Try To Faint / Check Viability / HP Aware / Smart Switching / Try To 2HKO / PP Stall Prevention / Weigh Ability Prediction / Ace Pokemon
 Mugshot: Green
 
-Banette
+Chandelure
+Ability: Flash Fire
 Level: 64
 IVs: 31 HP / 31 Atk / 31 Def / 31 SpA / 31 SpD / 31 Spe
+- Heat Wave
 - Shadow Ball
-- Will O Wisp
-- Thunderbolt
+- Energy Ball
 - Protect
 
 Dusclops
@@ -19512,31 +19492,33 @@ Gender: Female
 Music: Elite Four
 Items: Full Restore / Full Restore
 Double Battle: Yes
-AI: Check Bad Move / Try To Faint / Check Viability / HP Aware / Smart Switching / Try To 2HKO
+AI: Check Bad Move / Try To Faint / Check Viability / HP Aware / Smart Switching / Try To 2HKO / PP Stall Prevention / Weigh Ability Prediction / Ace Pokemon
 Mugshot: Pink
 
-Glalie
+Abomasnow
+Ability: Snow Warning
 Level: 64
 IVs: 31 HP / 31 Atk / 31 Def / 31 SpA / 31 SpD / 31 Spe
-- Ice Beam
-- Crunch
-- Shadow Ball
+- Blizzard
+- Wood Hammer
+- Ice Shard
 - Protect
 
-Sealeo
+Cetitan
+Ability: Slush Rush
 Level: 65
 IVs: 31 HP / 31 Atk / 31 Def / 31 SpA / 31 SpD / 31 Spe
-- Blizzard
-- Surf
-- Hail
-- Encore
+- Ice Spinner
+- Earthquake
+- Liquidation
+- Protect
 
-Walrein @ Sitrus Berry
+Glalie
 Level: 66
 IVs: 31 HP / 31 Atk / 31 Def / 31 SpA / 31 SpD / 31 Spe
-- Surf
-- Ice Beam
-- Body Slam
+- Freeze Dry
+- Crunch
+- Ice Shard
 - Protect
 
 === TRAINER_WYRM ===
@@ -19547,7 +19529,7 @@ Gender: Male
 Music: Elite Four
 Items: Full Restore / Full Restore
 Double Battle: Yes
-AI: Check Bad Move / Try To Faint / Check Viability / HP Aware / Smart Switching / Try To 2HKO
+AI: Check Bad Move / Try To Faint / Check Viability / HP Aware / Smart Switching / Try To 2HKO / PP Stall Prevention / Weigh Ability Prediction / Ace Pokemon
 Mugshot: Blue
 
 Flygon
@@ -19573,3 +19555,4 @@ IVs: 31 HP / 31 Atk / 31 Def / 31 SpA / 31 SpD / 31 Spe
 - Flamethrower
 - Rock Slide
 - Crunch
+
