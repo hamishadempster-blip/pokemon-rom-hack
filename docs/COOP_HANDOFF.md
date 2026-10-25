@@ -1,3 +1,143 @@
+# Roster, partner menu, QoL, Power Problems: build 0xC0170131
+
+Branch `coop-doorway-scenes-rivals`, on top of `060e0121` (0xC0170130). Keep
+it unmerged. Both games need this build: 0xC0170130 refuses to link with it.
+
+Existing saves load:
+- The co-op save block grows into its spare bytes (layout 2), and older saves get the new fields zeroed on load.
+- A save that already finished New Mauville counts as "power restored".
+
+**Delivered ROM:** built from `7bef09dd`; later commits change only docs.
+- SHA-1 `5bce1e5fe6603ba6b1e9b04a71de69247c1b1175`
+- SHA-256 `6101d18262c502ec1673fe8bee5e0f5a5db0c71bf5b31e9b0169f327b2a76574`
+
+Full test evidence: [COOP_TESTLOG_C0170131.md](COOP_TESTLOG_C0170131.md).
+Quest design and the backlog: [COOP_QUESTS.md](COOP_QUESTS.md).
+
+## 1. Roster: 24 new families
+
+Placed by `tools/coop_roster_audit/place_families_g.py`. Each family is in the Hoenn Pokédex after Frosmoth and is catchable on each save. Levels per spot are in [COOP.md](COOP.md#roster-changes). The field researcher (Petalburg, Mauville, Fortree and Lilycove Pokémon Centers) gives the same hints in game.
+
+| Family | Where | Evolution access |
+| --- | --- | --- |
+| Buizel | Route 104, grass and water | Lv 26 Floatzel |
+| Sewaddle | Petalburg Woods | Lv 20 Swadloon; level up with high friendship: Leavanny |
+| Venipede | Petalburg Woods, Rusturf Tunnel | Lv 22, Lv 30 |
+| Rolycoly | Rusturf Tunnel, New Mauville | Lv 18, Lv 34 |
+| Skiddo | Routes 116, 118 | Lv 32 |
+| Drilbur | Granite Cave | Lv 31 |
+| Fomantis | Routes 117, 123 | Lv 34 by day (6:00–19:59) |
+| Darumaka | Fiery Path | Lv 35 |
+| Sizzlipede | Fiery Path | Lv 28 |
+| Salandit | Fiery Path, Magma Hideout; a woman in Lavaridge gives one female per save | Females only: Lv 33 Salazzle |
+| Scraggy | Route 111 desert | Lv 39 |
+| Mudbray | Route 111 desert, Route 112, Jagged Pass | Lv 30 |
+| Rufflet | Route 112, Jagged Pass | Lv 54 |
+| Vullaby | Route 113, Jagged Pass | Lv 54 |
+| Clobbopus | Route 115 | Level up knowing Taunt (learned at 35) |
+| Clauncher | Good Rod: Routes 106, 107, Dewford | Lv 37 |
+| Skrelp | Surf: Routes 105, 109; Super Rod: Routes 108, 109 | Lv 48 |
+| Grimer (Alolan) | Surf: Slateport harbour, Route 110 | Lv 38 |
+| Pancham | Route 119 | Lv 32 with a Dark type in the party |
+| Solosis | Routes 119, 120 | Lv 32, Lv 41 |
+| Gothita | Route 120 | Lv 32, Lv 41 |
+| Vulpix (Alolan) | Shoal Cave ice rooms, low tide | Ice Stone (Lilycove, Mossdeep, POWER SHOP from 7 badges) |
+| Larvesta | Magma Hideout (rare) | Lv 59 |
+| Deino | Meteor Falls back room (Waterfall) | Lv 50, Lv 64 |
+
+New Hoenn habitats for existing lines: Ledyba (Routes 102, 117), Spinarak (Routes 102, 119), Hoothoot (Routes 116, 121), Sunkern (Routes 116, 123, Safari Zone), Seel (surf: Routes 105, 125, Shoal Cave). New Mauville also gives PORYGON (per save, sealed chamber): its Up-Grade is in the chamber and the POWER SHOP sells both Up-Grade (6 badges) and Dubious Disc (7 badges), each usable from the bag.
+
+## 2. Revamps
+
+Stats are HP/Atk/Def/SpA/SpD/Spe. Full move notes are in [COOP.md](COOP.md#roster-changes).
+
+| Pokémon | Before | After | Role |
+| --- | --- | --- | --- |
+| Ledian | 55/35/50/55/110/85 | 70/105/65/35/95/95, Iron Fist first | Physical puncher: Mach Punch, elemental punches, Drain Punch |
+| Ariados | 70/90/70/60/70/40 | 90/100/85/50/85/40, Stakeout | Trapper: Toxic Thread, Sticky Web, Knock Off |
+| Sunflora | 75/75/55/105/85/30 | 85/50/70/125/90/30, Grass/Fire, hidden Drought | Sun attacker: Weather Ball, Heat Wave, Earth Power |
+| Magcargo | 60/50/120/90/80/30 | 85/45/120/85/105/30, Solid Rock first | Wall: Stealth Rock, Recover 40, Will-O-Wisp, Body Press |
+| Dewgong | 90/70/80/70/95/70 | 100/60/90/80/105/60 | Doubles support: Life Dew, Fake Out, Icy Wind, Encore |
+| Noctowl | 100/50/50/86/96/70 | 110/40/60/95/110/70 | Screens: Light Screen, Reflect, Roost, Hypnosis |
+
+## 3. Features
+
+| Feature | Where | Notes |
+| --- | --- | --- |
+| Partner menu | A facing the linked partner | BATTLE, TRADE, GIVE ITEM, GIVE POKéMON, CANCEL. Replaces the party screen's TRADE. Escrow in the save for trades and gifts (`src/coop_deal.c`). An A press within 20 frames of a message closing is ignored, so mashing through text does not open it. |
+| Friendly battles | Partner menu, BATTLE | Singles or doubles; own levels, Lv 50 or Lv 100; up to 6, 4 or 3; STANDARD (no repeated species or items) or UNRESTRICTED. No rewards; parties restored; a link error ends it for both. |
+| Trades and gifts | Partner menu | Both confirm the exact exchange. Restrictions: last usable Pokémon, eggs, key items, HMs, Mail. Trade evolutions. Saved on both sides before completing; interrupted exchanges settle on the next link of the same saves. |
+| Partner Pokédex | Pokédex list; CO-OP, PARTNER DEX | You, partner, both, or neither; partner name and play time of the last sync; kept offline. |
+| BATTLE SCENE: FAST | OPTION | Skips animations, halves message pauses; shared battles use what both allow. |
+| Save identification | CONTINUE, SAVE window | Location and "Build C0170131". |
+| Practice COACH | Nine Pokémon Centers | AI battle against a copy of your or your partner's team; singles or doubles; own levels or Lv 50; nothing awarded, everything restored. |
+| Quest journal | CO-OP, JOURNAL | Linked and unlinked. The unlinked CO-OP list is now LINK UP / JOURNAL / PARTNER DEX / LEVEL CAP / BACK. |
+| New Mauville: Power Problems | Mauville, New Mauville | Breakers, ROLYCOLY and JOLTIK, VOLT (and FUSE as a duo), MAIN SWITCH, APPLIANCE ROOM ROTOM, sealed chamber, WATTSON's reward, POWER SHOP. Solo or co-op. See [COOP_QUESTS.md](COOP_QUESTS.md). |
+| POWER SHOP | Mauville, by the Gym | Repeatable evolution items, more at 6, 7 and 8 badges. |
+| Duo trainers | VOLT and FUSE | Duo with partner + Beacon on, solo otherwise or on NO. |
+| Per-save rewards and shared milestones | `CoopSave.rewardsClaimed`, story ledger | Defined in [COOP_QUESTS.md](COOP_QUESTS.md#shared-and-personal-state). |
+
+## 4. Deferred quests (backlog)
+
+These are not in this build and are not needed for this update's Pokémon or items. Outlines are in [COOP_QUESTS.md](COOP_QUESTS.md#3-backlog-five-quests-for-later).
+
+| Quest | Place | Core idea |
+| --- | --- | --- |
+| Shoal Cave: the missing researcher | Shoal Cave | Tide-split search; notes shared live |
+| Desert caravan | Route 111 desert, Desert Underpass | Scout and escort; desert duo trainers with a solo option |
+| Mira and Soren: separate ambitions | After Lilycove | Each player follows their own twin; joint finale |
+| Coastal cleanup | Slateport, Routes 105, 109, Dewford | Pooled pickups, per-save tiers |
+| The Twin Beacon's history | Birch's lab, Mossdeep, Sky Pillar | Two beacon sites lit together, or one after the other alone |
+
+## 5. Tests
+
+All play results are from two mGBA 0.10.3 cores on the emulated cable. Details and exact runs are in [COOP_TESTLOG_C0170131.md](COOP_TESTLOG_C0170131.md).
+
+| Kind | What | Result |
+| --- | --- | --- |
+| Data validation | Roster audit (habitats, evolution access, graphics, dex text, learnsets) | 210 species, 0 issues |
+| Data validation | Trainer validator | 852 trainers, 0 errors |
+| Data validation | Text width on new scripts; host protocol test | Pass |
+| Gameplay, fresh saves | Opening, rescue, bedroom, rival scenes (17 scenarios) | 17/17 pass |
+| Gameplay, lab saves | Sessions, wild and trainer co-op, gyms, E4, solo paths (31 scenarios) | 29 pass; 2 timing- or RNG-dependent ones failed once and passed 2/2 on rerun |
+| Gameplay, walking story | story_seg1, whiteout_home, story_seg2, bedroom_reload | 4/4 pass |
+| Gameplay, existing saves (from 0xC0170130) | Partner menu: trades, gifts, interruptions and reloads, friendly battles (13) | 13/13 pass |
+| Gameplay, existing saves | QoL: partner dex (+offline), FAST, practice, save identity (5) | 5/5 pass |
+| Gameplay, both roles | Power Problems: solo, linked split + duo + catch-up, reconnect, staggered, staggered reload (5) | 5/5 pass |
+| Gameplay | Roster: female Salandit gift evolves at 33, Buizel at 26, unlinked level cap toggle | Pass |
+| Source only | Partner menu: eggs, full PC, full pocket, HM gifts; POWER SHOP tiers 6–8; Porygon item evolutions | Not played |
+
+Bugs found by these runs and fixed:
+- A damaged deal block could stall the next exchange.
+- Mashing A through a scene next to the partner opened the partner menu.
+- VOLT's overworld graphic did not exist.
+- The unlinked CO-OP line printed an empty level cap.
+
+## 6. Not tested, and known limits
+
+- **Not run here:**
+  - Real two-PC play: all two-player results are two mGBA 0.10.3 cores on one emulated cable.
+  - Internet netplay.
+  - Physical cable pulls: link loss was tested only by injected errors and stalled frames.
+- **Partner menu, source only:**
+  - eggs offered;
+  - a full PC refusing a received Pokémon;
+  - a full bag pocket refusing a gift;
+  - HM items.
+- **Not built:** practice against AI copies as a co-op multi (both players together against copies).
+- **Escrow:** if a partner's save holding a prepared exchange is lost for good, your side stays pending (the start menu says so).
+- **Both asking at once:** player 1 is told "<name> is busy right now", then asked.
+- **Power Problems:**
+  - The breakers sync whenever both games are linked, even when one player is far from New Mauville.
+  - Partner stops the generator while you are in the same room: it stays running on your screen until you leave the map, and you can also throw the switch yourself.
+  - The sealed chamber can be seen across the void from the generator room before it is opened.
+- **Harness fixtures (in the scenarios):**
+  - New Mauville's stock blue/green barrier maze is skipped with `fixture_warp`.
+  - The evolution checks set EXP one point below the level.
+- **Test input changes:**
+  - The harness's A-mash no longer presses A while facing the partner in the free field (it would open the partner menu).
+  - The unlinked CO-OP list replaced the old link question; `relink.inc` and `deal_dex_offline.txt` follow it.
+
 # Bug-fixing pass: build 0xC0170130
 
 Branch `coop-doorway-scenes-rivals`, on top of the 0xC017012F work. Keep it
