@@ -58,7 +58,7 @@ MossdeepCity_Gym_EventScript_TateAndLiza::
 	faceplayer
 	goto_if_set FLAG_DEFEATED_MOSSDEEP_GYM, MossdeepCity_Gym_EventScript_TateAndLizaAfter
 	msgbox MossdeepCity_Gym_Text_TateAndLizaIntro, MSGBOX_DEFAULT
-	specialvar VAR_RESULT, Coop_PartnerOnSameMap
+	specialvar VAR_RESULT, Coop_MandatoryGate
 	goto_if_eq VAR_RESULT, FALSE, Coop_EventScript_NeedPartner
 	setvar VAR_0x8004, TRAINER_TATE_AND_LIZA_1
 	setvar VAR_0x8005, TRAINER_LIZA_1
@@ -127,7 +127,7 @@ MossdeepCity_Gym_EventScript_GiveCalmMind::
 
 MossdeepCity_Gym_EventScript_TateAndLizaRematch::
 	msgbox MossdeepCity_Gym_Text_TateAndLizaPreRematch, MSGBOX_DEFAULT
-	specialvar VAR_RESULT, Coop_PartnerOnSameMap
+	specialvar VAR_RESULT, Coop_MandatoryGate
 	goto_if_eq VAR_RESULT, FALSE, Coop_EventScript_NeedPartner
 	setvar VAR_0x8004, TRAINER_TATE_COOP
 	setvar VAR_0x8005, TRAINER_LIZA_COOP

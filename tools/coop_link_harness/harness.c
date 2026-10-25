@@ -22,7 +22,7 @@
 #define MAX_CMDS 4096
 #define MAX_SYMS 500000
 
-enum { C_PARTNER, C_GOTO, C_HEX, C_PRESS, C_WAIT, C_SHOT, C_DUMP, C_BARRIER, C_UNTIL_CB2, C_UNTIL_FIELD, C_EXPECT, C_UNTIL_MEM, C_BATTLE, C_MENU, C_PARTY, C_FIXTURE, C_WRITE, C_LEAD, C_MOVE, C_SIX, C_VAR, C_FLAG, C_VS, C_EXPECT_FLAG, C_EXPECT_VAR, C_NO_OBJECT, C_MAP, C_OBJECT, C_TEXT_SPEED, C_PACE, C_MUTE, C_PARTNER_AT, C_ITEM, C_EXPECT_ITEM, C_UNTIL_TEXT, C_WARP, C_PC_COUNT, C_MONS, C_NO_COPIES, C_NOTE_MONEY, C_MONEY_GAIN, C_FORCE_ENC };
+enum { C_PARTNER, C_GOTO, C_HEX, C_PRESS, C_WAIT, C_SHOT, C_DUMP, C_BARRIER, C_UNTIL_CB2, C_UNTIL_FIELD, C_EXPECT, C_UNTIL_MEM, C_BATTLE, C_MENU, C_PARTY, C_FIXTURE, C_WRITE, C_LEAD, C_MOVE, C_SIX, C_VAR, C_FLAG, C_VS, C_EXPECT_FLAG, C_EXPECT_VAR, C_NO_OBJECT, C_MAP, C_OBJECT, C_TEXT_SPEED, C_PACE, C_MUTE, C_PARTNER_AT, C_ITEM, C_EXPECT_ITEM, C_UNTIL_TEXT, C_WARP, C_PC_COUNT, C_MONS, C_NO_COPIES, C_NOTE_MONEY, C_MONEY_GAIN, C_FORCE_ENC, C_EXPECT_RANGE };
 
 struct Cmd {
 	int kind;
@@ -1159,6 +1159,18 @@ static void frameCallback(struct mCoreThread* t) {
 			}
 			break;
 		}
+		case C_EXPECT_RANGE: {
+			unsigned v = rdN(p, c->addr, c->size);
+			if (v < c->value || v > (unsigned)c->frames) {
+				out("[p%d] FAIL expect %s: got %u\n", p->id, c->text, v);
+				dump(p, "fail");
+				sFailures++;
+			} else {
+				out("[p%d] ok %s (%u)\n", p->id, c->text, v);
+			}
+			advance = true;
+			break;
+		}
 		case C_EXPECT: {
 			int nbytes = c->size < 0 ? -c->size : c->size;
 			unsigned v = rdN(p, c->addr, nbytes);
@@ -1427,6 +1439,20 @@ static void loadScript(const char* path, int depth) {
 			c.kind = C_BATTLE;
 			c.value = n >= 3 && !strcmp(a, "moves") ? 1 : n >= 3 && !strcmp(a, "hp") ? 2 : 0;
 			snprintf(c.text, sizeof(c.text), "battle %s", c.value ? "moves" : "roster");
+		} else if (!strcmp(cmd, "expect_range")) {
+			// expect_range SYM[+off]:size LOW HIGH (inclusive)
+			char sym[96]; unsigned off = 0; int size = 1;
+			strncpy(sym, a, sizeof(sym) - 1);
+			char* colon = strchr(sym, ':');
+			if (colon) { size = atoi(colon + 1); *colon = 0; }
+			char* plus = strchr(sym, '+');
+			if (plus) { off = strtoul(plus + 1, NULL, 0); *plus = 0; }
+			c.kind = C_EXPECT_RANGE;
+			c.addr = symAddr(sym) + off;
+			c.size = size;
+			c.value = symValue(b);
+			c.frames = (int)symValue(d);
+			snprintf(c.text, sizeof(c.text), "%s in %s..%s", a, b, d);
 		} else if (!strcmp(cmd, "until_mem") || !strcmp(cmd, "expect") || !strcmp(cmd, "write")) {
 			// until_mem SYM[+off]:size value [timeout]
 			char sym[96]; unsigned off = 0; int size = 1;

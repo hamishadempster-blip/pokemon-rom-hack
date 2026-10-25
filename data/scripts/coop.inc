@@ -308,8 +308,10 @@ Coop_EventScript_BeaconDeclined::
 	end
 
 Coop_Text_NeedPartner:
-	.string "You both have to be here.\n"
-	.string "This isn't a fight you take alone.$"
+	.string "You're linked, so this waits for\n"
+	.string "both of you. Come back together.\p"
+	.string "To face it alone, choose UNLINK\n"
+	.string "in the CO-OP menu first.$"
 
 Coop_Text_PartnerDeclined:
 	.string "The link didn't hold.\n"

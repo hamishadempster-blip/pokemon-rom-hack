@@ -6,7 +6,7 @@ RustboroCity_Gym_EventScript_Roxanne::
 	faceplayer
 	goto_if_set FLAG_DEFEATED_RUSTBORO_GYM, RustboroCity_Gym_EventScript_RoxanneAfter
 	msgbox RustboroCity_Gym_Text_RoxanneIntro, MSGBOX_DEFAULT
-	specialvar VAR_RESULT, Coop_PartnerOnSameMap
+	specialvar VAR_RESULT, Coop_MandatoryGate
 	goto_if_eq VAR_RESULT, FALSE, Coop_EventScript_NeedPartner
 	setvar VAR_0x8004, TRAINER_ROXANNE_1
 	setvar VAR_0x8005, TRAINER_HEATH_1
@@ -51,7 +51,7 @@ RustboroCity_Gym_EventScript_GiveRockTomb::
 
 RustboroCity_Gym_EventScript_RoxanneRematch::
 	msgbox RustboroCity_Gym_Text_RoxannePreRematch, MSGBOX_DEFAULT
-	specialvar VAR_RESULT, Coop_PartnerOnSameMap
+	specialvar VAR_RESULT, Coop_MandatoryGate
 	goto_if_eq VAR_RESULT, FALSE, Coop_EventScript_NeedPartner
 	setvar VAR_0x8004, TRAINER_ROXANNE_COOP
 	setvar VAR_0x8005, TRAINER_HEATH_COOP

@@ -342,7 +342,7 @@ PetalburgCity_Gym_EventScript_GiveFacade2::
 
 PetalburgCity_Gym_EventScript_NormanRematch::
 	msgbox PetalburgCity_Gym_Text_NormanPreRematch, MSGBOX_DEFAULT
-	specialvar VAR_RESULT, Coop_PartnerOnSameMap
+	specialvar VAR_RESULT, Coop_MandatoryGate
 	goto_if_eq VAR_RESULT, FALSE, Coop_EventScript_NeedPartner
 	setvar VAR_0x8004, TRAINER_NORMAN_COOP
 	setvar VAR_0x8005, TRAINER_HANA_COOP
@@ -380,7 +380,7 @@ PetalburgCity_Gym_EventScript_GiveEnigmaBerry::
 
 PetalburgCity_Gym_EventScript_NormanBattle::
 	msgbox PetalburgCity_Gym_Text_NormanIntro, MSGBOX_DEFAULT
-	specialvar VAR_RESULT, Coop_PartnerOnSameMap
+	specialvar VAR_RESULT, Coop_MandatoryGate
 	goto_if_eq VAR_RESULT, FALSE, Coop_EventScript_NeedPartner
 	setvar VAR_0x8004, TRAINER_NORMAN_1
 	setvar VAR_0x8005, TRAINER_HANA_1

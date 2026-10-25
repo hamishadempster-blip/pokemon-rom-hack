@@ -234,9 +234,13 @@ MossdeepCity_SpaceCenter_2F_EventScript_ReadyForBattlePrompt::
 	releaseall
 	end
 
-@ Both players field their first three. Steven stays to talk, and does not take a side.
+@ Linked: both players field their first three. Steven stays to talk, and
+@ does not take a side.
 MossdeepCity_SpaceCenter_2F_EventScript_CoopBattle::
-	specialvar VAR_RESULT, Coop_PartnerOnSameMap
+	@ Not linked: the stock fight, with Steven as partner.
+	specialvar VAR_RESULT, Coop_SessionActive
+	goto_if_eq VAR_RESULT, FALSE, MossdeepCity_SpaceCenter_2F_EventScript_ChoosePartyForMultiBattle
+	specialvar VAR_RESULT, Coop_MandatoryGate
 	goto_if_eq VAR_RESULT, FALSE, Coop_EventScript_NeedPartner
 	setvar VAR_0x8004, TRAINER_MAXIE_MOSSDEEP
 	setvar VAR_0x8005, TRAINER_TABITHA_MOSSDEEP

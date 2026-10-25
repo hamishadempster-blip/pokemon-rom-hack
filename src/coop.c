@@ -2466,6 +2466,10 @@ static bool8 Coop_ClassRequiresPartner(u16 trainerId)
 
 bool8 Coop_ShouldRefuseSolo(u16 trainerId)
 {
+    // Not linked: every fight has a one-player path. Linked, a fight meant
+    // for both waits for the partner (UNLINK first to face it alone).
+    if (!Coop_SessionActive())
+        return FALSE;
     if (Coop_PartnerOnSameMap())
         return FALSE;
     return Coop_ClassRequiresPartner(trainerId) || Coop_RivalStageFromId(trainerId) != 0xFF;
@@ -2589,6 +2593,53 @@ bool8 Coop_TryQueueOrdinaryDouble(void)
     return TRUE;
 }
 
+// Scripts of fights meant for both players: TRUE when the fight can start
+// here, together (partner on this map) or alone (not linked). FALSE while
+// linked with the partner elsewhere: Coop_EventScript_NeedPartner explains.
+u16 Coop_MandatoryGate(void)
+{
+    return Coop_PartnerOnSameMap() || !Coop_SessionActive();
+}
+
+// The solo versions of the rival fights: the stock rival trainer slots, one
+// team per stage for each twin, picked by this save's starter (the case).
+static const u16 sSoloRivalTrainers[5][2][3] = {
+    { { TRAINER_BRENDAN_ROUTE_103_TREECKO, TRAINER_BRENDAN_ROUTE_103_TORCHIC, TRAINER_BRENDAN_ROUTE_103_MUDKIP },
+      { TRAINER_MAY_ROUTE_103_TREECKO, TRAINER_MAY_ROUTE_103_TORCHIC, TRAINER_MAY_ROUTE_103_MUDKIP } },
+    { { TRAINER_BRENDAN_RUSTBORO_TREECKO, TRAINER_BRENDAN_RUSTBORO_TORCHIC, TRAINER_BRENDAN_RUSTBORO_MUDKIP },
+      { TRAINER_MAY_RUSTBORO_TREECKO, TRAINER_MAY_RUSTBORO_TORCHIC, TRAINER_MAY_RUSTBORO_MUDKIP } },
+    { { TRAINER_BRENDAN_ROUTE_110_TREECKO, TRAINER_BRENDAN_ROUTE_110_TORCHIC, TRAINER_BRENDAN_ROUTE_110_MUDKIP },
+      { TRAINER_MAY_ROUTE_110_TREECKO, TRAINER_MAY_ROUTE_110_TORCHIC, TRAINER_MAY_ROUTE_110_MUDKIP } },
+    { { TRAINER_BRENDAN_ROUTE_119_TREECKO, TRAINER_BRENDAN_ROUTE_119_TORCHIC, TRAINER_BRENDAN_ROUTE_119_MUDKIP },
+      { TRAINER_MAY_ROUTE_119_TREECKO, TRAINER_MAY_ROUTE_119_TORCHIC, TRAINER_MAY_ROUTE_119_MUDKIP } },
+    { { TRAINER_BRENDAN_LILYCOVE_TREECKO, TRAINER_BRENDAN_LILYCOVE_TORCHIC, TRAINER_BRENDAN_LILYCOVE_MUDKIP },
+      { TRAINER_MAY_LILYCOVE_TREECKO, TRAINER_MAY_LILYCOVE_TORCHIC, TRAINER_MAY_LILYCOVE_MUDKIP } },
+};
+
+static EWRAM_DATA u8 sSoloRivalStage = 0; // stage + 1, 0 = none
+
+u16 Coop_SoloRivalTrainer(u8 stage)
+{
+    u8 starter = VarGet(VAR_STARTER_MON);
+    u8 twin = Coop_RivalId() == COOP_RIVAL_MIRA ? 1 : 0;
+
+    if (stage > 4)
+        return TRAINER_NONE;
+    if (starter > 2)
+        starter = 0;
+    return sSoloRivalTrainers[stage][twin][starter];
+}
+
+// CB2_EndTrainerBattle, after any won solo trainer fight.
+void Coop_NoteSoloTrainerWin(void)
+{
+    struct CoopSave *save = CoopSave();
+
+    if (sSoloRivalStage != 0 && save != NULL && save->rivalStage < sSoloRivalStage)
+        save->rivalStage = sSoloRivalStage;
+    sSoloRivalStage = 0;
+}
+
 static bool8 Coop_RefuseMandatory(void)
 {
     if (!Coop_PartnerOnSameMap())
@@ -2604,6 +2655,14 @@ static bool8 Coop_RefuseMandatory(void)
 
 u16 Coop_StartGymBattle(void)
 {
+    if (!Coop_SessionActive())
+    {
+        // Gym, Elite Four, champion, alone: both trainers, whole party.
+        sSoloRivalStage = 0;
+        gSpecialVar_Result = TRUE;
+        BattleSetup_StartSoloPairBattle(VarGet(VAR_0x8004), VarGet(VAR_0x8005));
+        return TRUE;
+    }
     if (Coop_RefuseMandatory())
         return FALSE;
     sResumeScript = TRUE;
@@ -2624,8 +2683,29 @@ u16 Coop_StartStoryBattle(void)
     return TRUE;
 }
 
+static EWRAM_DATA bool8 sLegendSolo = FALSE;
+
 u16 Coop_StartLegendaryBattle(void)
 {
+    if (!Coop_SessionActive())
+    {
+        u16 species;
+
+        if (VarGet(VAR_0x8004) == COOP_LEGEND_RAY)
+            species = SPECIES_RAYQUAZA;
+        else if (gSaveBlock1Ptr->location.mapGroup == MAP_GROUP(MAP_MARINE_CAVE_END)
+              && gSaveBlock1Ptr->location.mapNum == MAP_NUM(MAP_MARINE_CAVE_END))
+            species = SPECIES_KYOGRE;
+        else
+            species = SPECIES_GROUDON;
+        sLegendSolo = TRUE;
+        sLegendKind = 0;
+        gSpecialVar_Result = TRUE;
+        CreateScriptedWildMon(species, 70, ITEM_NONE);
+        BattleSetup_StartLegendaryBattle();
+        return TRUE;
+    }
+    sLegendSolo = FALSE;
     if (Coop_RefuseMandatory())
         return FALSE;
     sResumeScript = TRUE;
@@ -4151,6 +4231,18 @@ bool8 Coop_InterceptRival(u16 trainerId)
 
     if (stage == 0xFF || gCoopBattleLaunching)
         return FALSE;
+    // Not linked: this player fights their own twin alone, with the solo
+    // team for this stage. The stock scene then continues.
+    if (!Coop_SessionActive())
+    {
+        u16 solo = Coop_SoloRivalTrainer(stage);
+
+        if (solo != TRAINER_NONE)
+            TRAINER_BATTLE_PARAM.opponentA = solo;
+        TRAINER_BATTLE_PARAM.opponentB = TRAINER_NONE;
+        sSoloRivalStage = stage + 1;
+        return FALSE;
+    }
     // Refused here, the scene has already walked the rival up to this player.
     // Coop_EventScript_RivalWaits says why, then puts the rival back on its
     // own tile with the map's music, so the scene can run again in full.
@@ -4280,4 +4372,27 @@ u16 Nurse_RepeatVisit(void)
 void Nurse_NoteHeal(void)
 {
     sLastNurseMap = Nurse_HereId();
+}
+
+// Route 101 without a link: the opener's starter, then one POOCHYENA.
+u16 Coop_StartSoloRescueBattle(void)
+{
+    u16 caseId = VarGet(VAR_STARTER_MON);
+
+    if (caseId > 2)
+        caseId = 0;
+    Coop_GiveRescueStarter((u8)caseId, TRUE);
+    CreateScriptedWildMon(SPECIES_POOCHYENA, 2, ITEM_NONE);
+    BattleSetup_StartSoloRescueBattle();
+    return TRUE;
+}
+
+// Terra/Marine Cave scripts: a co-op duo fight settles both legends; a solo
+// fight settles only the one in this cave, so the other cave stays open.
+void Coop_MarkDuoLegends(void)
+{
+    if (sLegendSolo)
+        return;
+    FlagSet(FLAG_DEFEATED_GROUDON);
+    FlagSet(FLAG_DEFEATED_KYOGRE);
 }

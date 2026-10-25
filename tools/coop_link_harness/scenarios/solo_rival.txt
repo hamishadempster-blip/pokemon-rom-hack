@@ -1,0 +1,64 @@
+# Not linked: each save meets the Route 103 rival scene and fights its own
+# twin alone (the solo team), then the stock story continues. Both rival
+# assignments: player 0 opened Birch's bag (case starter -> Soren), player 1
+# holds the companion (-> Mira). Two independent unlinked games.
+# From lab saves. FIXTURES: the Oldale adventure gate (as in
+# oldale_reconnect.inc) and strong cached stats on the lead.
+b wait 1100
+b press START 2
+b wait 200
+b until_cb2 CB2_Overworld 8000 A
+b until_field 3000
+b expect coop.sLinkState 0
+b write sWildEncountersDisabled 1
+b fixture_flag 0x74 1
+b fixture_var 0x4051 1
+b press DOWN 200
+b until_field 2000
+b goto 11 1 1500
+b press UP 60
+b until_field 2000
+b goto 7 17 2000
+b goto 7 10 2000
+b goto 15 10 2000
+b goto 15 5 2000
+b goto 9 5 2000
+b goto 9 0 2000
+b press UP 70
+b until_field 2000
+b goto 9 0 2500
+b press UP 70
+b until_field 2000
+0 fixture_lead 255 15 2035
+1 fixture_lead 228 15 4218
+b write gParties+86:2 100
+b write gParties+88:2 100
+b write gParties+90:2 100
+b write gParties+94:2 100
+b goto 10 13 2500
+b goto 14 13 2500
+b goto 14 7 2500
+b goto 12 7 2500
+b goto 12 6 2500
+b goto 5 6 2500
+b goto 5 4 2500
+b goto 10 4 2000
+b press UP 2
+b press A 2
+b until_cb2 BattleMainCB2 12000 A
+b hex gTrainerBattleParameter 4
+b expect gBattlersCount 2
+b expect coop.sInBattle 0
+# The lab saves hold the Torchic case. Soren's solo team for it is the
+# BRENDAN_ROUTE_103_TORCHIC slot (526), Mira's the MAY_ROUTE_103_TORCHIC
+# slot (535).
+0 expect gTrainerBattleParameter+2:2 526
+1 expect gTrainerBattleParameter+2:2 535
+b shot solo-rival
+b mash_field 35000
+b expect gBattleOutcome 1
+b mash_field 12000
+b expect_flag 0x2d3 1
+b expect_var 0x4084 4
+b expect coop.sLinkState 0
+b shot solo-rival-finished

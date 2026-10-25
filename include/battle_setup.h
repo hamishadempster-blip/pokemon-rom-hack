@@ -112,6 +112,8 @@ void SetTrainerFlag(u16 trainerId);
 void ClearTrainerFlag(u16 trainerId);
 void BattleSetup_StartTrainerBattle(void);
 void BattleSetup_ResumeSoloTrainerBattle(void);
+void BattleSetup_StartSoloPairBattle(u16 trainerA, u16 trainerB);
+void BattleSetup_StartSoloRescueBattle(void);
 void BattleSetup_StartCoopWildBattle(void);
 void BattleSetup_StartRematchBattle(void);
 void ShowTrainerIntroSpeech(void);

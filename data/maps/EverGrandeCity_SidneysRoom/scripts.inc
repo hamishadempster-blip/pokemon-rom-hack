@@ -48,7 +48,7 @@ EverGrandeCity_SidneysRoom_EventScript_Sidney::
 	goto_if_set FLAG_DEFEATED_ELITE_4_SIDNEY, EverGrandeCity_SidneysRoom_EventScript_PostBattleSpeech
 	playbgm MUS_ENCOUNTER_ELITE_FOUR, FALSE
 	msgbox EverGrandeCity_SidneysRoom_Text_IntroSpeech, MSGBOX_DEFAULT
-	specialvar VAR_RESULT, Coop_PartnerOnSameMap
+	specialvar VAR_RESULT, Coop_MandatoryGate
 	goto_if_eq VAR_RESULT, FALSE, Coop_EventScript_NeedPartner
 	setvar VAR_0x8004, TRAINER_SIDNEY
 	setvar VAR_0x8005, TRAINER_NOIR

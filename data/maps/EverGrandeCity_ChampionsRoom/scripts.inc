@@ -40,7 +40,7 @@ EverGrandeCity_ChampionsRoom_Movement_PlayerApproachWallace:
 EverGrandeCity_ChampionsRoom_EventScript_Wallace::
 	playbgm MUS_ENCOUNTER_CHAMPION, FALSE
 	msgbox EverGrandeCity_ChampionsRoom_Text_IntroSpeech, MSGBOX_DEFAULT
-	specialvar VAR_RESULT, Coop_PartnerOnSameMap
+	specialvar VAR_RESULT, Coop_MandatoryGate
 	goto_if_eq VAR_RESULT, FALSE, Coop_EventScript_NeedPartner
 	setvar VAR_0x8004, TRAINER_STEVEN_CHAMPION
 	setvar VAR_0x8005, TRAINER_WALLACE_CHAMPION

@@ -1,6 +1,6 @@
 # Emerald Co-op
 
-Two people, two saves, one Hoenn. Each game keeps its own party, bag, money, and catches. The host only hosts the link. Gyms, the rival pair, the Elite Four, the champion pair, and Groudon with Kyogre cannot be cleared alone.
+Two people, two saves, one Hoenn. Each game keeps its own party, bag, money, and catches. The host only hosts the link. While you are linked, gyms, the rival pair, the Elite Four, the champion pair, the villain bosses, and Groudon with Kyogre wait for both of you. Nothing needs a second player: a game that is not linked plays every one of those fights alone (see [Playing alone](#playing-alone)).
 
 This is a non-commercial fan patch. It does not include a ROM.
 
@@ -84,7 +84,7 @@ On the title screen, choose **NEW GAME**. The game asks whether to skip to the c
 - The ball you highlight names both Pokémon: Torchic brings Houndour, Mudkip brings Wingull, Treecko brings Shroomish. You keep the one you highlighted. Your partner gets the other. Both are level 5. Then both of you fight two level 2 Poochyena. Press B on the wait if your partner is still in a menu. After the fight, both games go to the lab on their own. Birch gives the Twin Beacon and nicknames the lead. A full Key Items pocket lets you walk away, make room, and talk to Birch again. The cable does not have to stay up for that gift.
 - Soren and Mira take the case that beats yours. They are the pair in every rival fight (Route 103, Rustboro, Route 110, Route 119, Lilycove), and both stand on the map for those scenes. Both of you have to be there. Soren's team is always led by his starter line (Blaziken, Swampert, or Sceptile by Route 119) and Mira's by her companion line (Houndoom, Pelipper, or Breloom); neither carries the other's signature Pokémon, and the added Pokémon fill the other slots (see [COOP_GYM_AND_ROSTER_AUDIT.md](COOP_GYM_AND_ROSTER_AUDIT.md)).
 - If one of you reaches a rival scene alone, the rival says you both have to be there, walks back to their spot, and the map music returns; the scene plays in full when you are together. The twin who stands beside the rival has a line that changes with how far your rival story has got.
-- Gyms are two leaders, three Pokémon each. You cannot start one alone. Ace levels are 16, 22, 28, 34, 40, 46, 52, 58. Rematches are a second pair around level 70.
+- Gyms are two leaders, three Pokémon each. Linked, you start them together; not linked, you fight both leaders alone in a double battle. Ace levels are 16, 22, 28, 34, 40, 46, 52, 58. Rematches are a second pair around level 70.
 - With the Twin Beacon off, ordinary trainers stay single even on the same map. With it on, an ordinary trainer is a co-op battle while you are together on their map. Two trainers who walk up together both fight, as long as they are different trainers. A couple who already battle as a pair, such as the twins, stay a single-player double. The Battle Frontier, the Safari Zone, the Battle Pyramid, and Trainer Hill stay single-player. Gym levels do not scale.
 - Leaders, the Elite Four, the champion, rivals (Wally included), and the Aqua and Magma bosses always ask for both of you, whether or not the Beacon is on. Archie, Maxie, Shelly at the Weather Institute, and Matt move the guest's story forward too. The person who started the scene still plays the cutscene. After Archie, the guest warps to Route 128 and the host arrives there when the cutscene ends. The guest receives the Dowsing Machine on Route 110 and HM Fly on Route 119 from the shared win. Castform stays with the person who talks to the scientist.
 - At Mossdeep Space Center, Steven asks if you are ready and then both of you fight Maxie and Tabitha. Steven does not take a party slot. Your first three are the team. A win clears Team Magma on both saves.
@@ -348,6 +348,22 @@ This is the pass to run on two PCs. It was not executed in the environment that 
 13. Story, with both players on the same map. Beat the Route 110 rival and confirm the guest received the Dowsing Machine and the rival does not challenge them again. Beat Maxie on Mt. Chimney and confirm Team Magma is gone on the guest's save without knocking any later town state backward. Beat Archie and confirm the guest lands on Route 128, then the host arrives there after the cutscene. At Mossdeep Space Center, confirm the fight is Maxie and Tabitha against both of you, and that Steven does not replace either player.
 14. Post-game. With the Beacon on, enter the Battle Frontier on both games. Fight a facility trainer and confirm it stays a single-player battle. A gym rematch still asks for both of you, and the ace levels are the rematch levels, not a scaled set.
 15. Two PCs, once. Same ROM on both. gpSP Gen 3 link as in step 2. Meet on Route 101 and confirm the sprite. Clear one gym. Record UPnP, direct IP, or Tailscale. If that session fails, write what failed. Do not add a relay in its place until that note exists.
+
+## Playing alone
+
+No part of the game needs a second player. A game that is **not linked** (never linked, or after UNLINK) plays alone:
+
+| Fight | Linked (partner on the map) | Not linked |
+| --- | --- | --- |
+| Birch's rescue, Route 101 | Both players, two POOCHYENA | You pick a case, get its starter, and fight one POOCHYENA |
+| Gyms, Elite Four, champion | Co-op double, each side's first three | Double battle against both trainers with your whole party |
+| Rival twins (Route 103, Rustboro, Routes 110 and 119, Lilycove) | Both twins against both players | A single battle against your own twin (Soren if you hold the case starter, Mira if you hold its companion), with that twin's solo team |
+| Maxie and Tabitha, Space Center | Co-op double | The stock fight with Steven as your partner |
+| Other Aqua/Magma bosses, Wally | Co-op | The stock single battle |
+| Groudon and Kyogre | One co-op double against both | Each cave has its own legend, a stock single battle at level 70 |
+| Rayquaza | Co-op | Stock single battle at level 70 |
+
+While linked with your partner somewhere else, these fights wait and say so: come back together, or choose UNLINK in the CO-OP menu to face one alone. A win alone counts on your save only; linking again does not copy it to your partner, who can still clear it alone or with you.
 
 ## Small conveniences
 

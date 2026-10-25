@@ -33,7 +33,7 @@ TerraCave_End_EventScript_Groudon::
 	delay 40
 	waitmoncry
 	setvar VAR_LAST_TALKED, LOCALID_TERRA_CAVE_GROUDON
-	specialvar VAR_RESULT, Coop_PartnerOnSameMap
+	specialvar VAR_RESULT, Coop_MandatoryGate
 	goto_if_eq VAR_RESULT, FALSE, Coop_EventScript_NeedPartner
 	setvar VAR_0x8004, 0
 	setflag FLAG_SYS_CTRL_OBJ_DELETE
@@ -49,14 +49,14 @@ TerraCave_End_EventScript_Groudon::
 	goto_if_eq VAR_RESULT, B_OUTCOME_PLAYER_TELEPORTED, TerraCave_End_EventScript_RanFromGroudon
 	setvar VAR_SHOULD_END_ABNORMAL_WEATHER, 1
 	setflag FLAG_DEFEATED_GROUDON
-	setflag FLAG_DEFEATED_KYOGRE
+	special Coop_MarkDuoLegends
 	releaseall
 	end
 
 TerraCave_End_EventScript_DefeatedGroudon::
 	setvar VAR_SHOULD_END_ABNORMAL_WEATHER, 1
 	setflag FLAG_DEFEATED_GROUDON
-	setflag FLAG_DEFEATED_KYOGRE
+	special Coop_MarkDuoLegends
 	goto Common_EventScript_RemoveStaticPokemon
 	end
 

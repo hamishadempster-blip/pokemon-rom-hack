@@ -33,7 +33,7 @@ MarineCave_End_EventScript_Kyogre::
 	delay 40
 	waitmoncry
 	setvar VAR_LAST_TALKED, LOCALID_MARINE_CAVE_KYOGRE
-	specialvar VAR_RESULT, Coop_PartnerOnSameMap
+	specialvar VAR_RESULT, Coop_MandatoryGate
 	goto_if_eq VAR_RESULT, FALSE, Coop_EventScript_NeedPartner
 	setvar VAR_0x8004, 0
 	setflag FLAG_SYS_CTRL_OBJ_DELETE
@@ -49,14 +49,14 @@ MarineCave_End_EventScript_Kyogre::
 	goto_if_eq VAR_RESULT, B_OUTCOME_PLAYER_TELEPORTED, MarineCave_End_EventScript_RanFromKyogre
 	setvar VAR_SHOULD_END_ABNORMAL_WEATHER, 1
 	setflag FLAG_DEFEATED_KYOGRE
-	setflag FLAG_DEFEATED_GROUDON
+	special Coop_MarkDuoLegends
 	releaseall
 	end
 
 MarineCave_End_EventScript_DefeatedKyogre::
 	setvar VAR_SHOULD_END_ABNORMAL_WEATHER, 1
 	setflag FLAG_DEFEATED_KYOGRE
-	setflag FLAG_DEFEATED_GROUDON
+	special Coop_MarkDuoLegends
 	goto Common_EventScript_RemoveStaticPokemon
 	end
 

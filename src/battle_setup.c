@@ -1573,6 +1573,43 @@ void BattleSetup_StartTrainerBattle(void)
     ScriptContext_Stop();
 }
 
+// Not linked: a fight that is normally co-op only (a gym, the Elite Four,
+// the champion) is fought by this player alone as a double battle against
+// both trainers. The calling script waits and continues on a win; a loss is
+// the stock white-out.
+void BattleSetup_StartSoloPairBattle(u16 trainerA, u16 trainerB)
+{
+    InitTrainerBattleParameter();
+    TRAINER_BATTLE_PARAM.opponentA = trainerA;
+    TRAINER_BATTLE_PARAM.opponentB = trainerB;
+    gBattleTypeFlags = BATTLE_TYPE_TRAINER;
+    if (trainerB != TRAINER_NONE)
+        gBattleTypeFlags |= BATTLE_TYPE_DOUBLE | BATTLE_TYPE_TWO_OPPONENTS;
+    else if (GetTrainerBattleType(trainerA) == TRAINER_BATTLE_TYPE_DOUBLES)
+        gBattleTypeFlags |= BATTLE_TYPE_DOUBLE;
+    gMain.savedCallback = CB2_EndTrainerBattle;
+    LockPlayerFieldControls();
+    DoTrainerBattle();
+}
+
+// Not linked: Birch's rescue on Route 101 is one Pokemon against one
+// POOCHYENA, healed afterwards win or lose like the stock first battle.
+static void CB2_EndSoloRescueBattle(void)
+{
+    Overworld_ClearSavedMusic();
+    SetMainCallback2(CB2_ReturnToFieldContinueScriptPlayMapMusic);
+}
+
+void BattleSetup_StartSoloRescueBattle(void)
+{
+    LockPlayerFieldControls();
+    gMain.savedCallback = CB2_EndSoloRescueBattle;
+    gBattleTypeFlags = BATTLE_TYPE_FIRST_BATTLE;
+    CreateBattleStartTask(B_TRANSITION_BLUR, 0);
+    IncrementGameStat(GAME_STAT_TOTAL_BATTLES);
+    IncrementGameStat(GAME_STAT_WILD_BATTLES);
+}
+
 // The co-op ask or invite stopped short, so the NPC that was walked into
 // fights this player alone, picking up where the stock trainer path left off.
 void BattleSetup_ResumeSoloTrainerBattle(void)
@@ -1698,6 +1735,7 @@ static void CB2_EndTrainerBattle(void)
             RegisterTrainerInMatchCall();
             SetBattledTrainersFlags();
         }
+        Coop_NoteSoloTrainerWin();
     }
 }
 

@@ -137,7 +137,7 @@ DewfordTown_Gym_EventScript_Brawly::
 	faceplayer
 	goto_if_set FLAG_DEFEATED_DEWFORD_GYM, DewfordTown_Gym_EventScript_BrawlyAfter
 	msgbox DewfordTown_Gym_Text_BrawlyIntro, MSGBOX_DEFAULT
-	specialvar VAR_RESULT, Coop_PartnerOnSameMap
+	specialvar VAR_RESULT, Coop_MandatoryGate
 	goto_if_eq VAR_RESULT, FALSE, Coop_EventScript_NeedPartner
 	setvar VAR_0x8004, TRAINER_BRAWLY_1
 	setvar VAR_0x8005, TRAINER_REED_1
@@ -200,7 +200,7 @@ DewfordTown_Gym_EventScript_GiveBulkUp2:
 
 DewfordTown_Gym_EventScript_BrawlyRematch::
 	msgbox DewfordTown_Gym_Text_BrawlyPreRematch, MSGBOX_DEFAULT
-	specialvar VAR_RESULT, Coop_PartnerOnSameMap
+	specialvar VAR_RESULT, Coop_MandatoryGate
 	goto_if_eq VAR_RESULT, FALSE, Coop_EventScript_NeedPartner
 	setvar VAR_0x8004, TRAINER_BRAWLY_COOP
 	setvar VAR_0x8005, TRAINER_REED_COOP

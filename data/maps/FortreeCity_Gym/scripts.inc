@@ -22,7 +22,7 @@ FortreeCity_Gym_EventScript_Winona::
 	faceplayer
 	goto_if_set FLAG_DEFEATED_FORTREE_GYM, FortreeCity_Gym_EventScript_WinonaAfter
 	msgbox FortreeCity_Gym_Text_WinonaIntro, MSGBOX_DEFAULT
-	specialvar VAR_RESULT, Coop_PartnerOnSameMap
+	specialvar VAR_RESULT, Coop_MandatoryGate
 	goto_if_eq VAR_RESULT, FALSE, Coop_EventScript_NeedPartner
 	setvar VAR_0x8004, TRAINER_WINONA_1
 	setvar VAR_0x8005, TRAINER_GALE_1
@@ -82,7 +82,7 @@ FortreeCity_Gym_EventScript_GiveAerialAce::
 
 FortreeCity_Gym_EventScript_WinonaRematch::
 	msgbox FortreeCity_Gym_Text_WinonaPreRematch, MSGBOX_DEFAULT
-	specialvar VAR_RESULT, Coop_PartnerOnSameMap
+	specialvar VAR_RESULT, Coop_MandatoryGate
 	goto_if_eq VAR_RESULT, FALSE, Coop_EventScript_NeedPartner
 	setvar VAR_0x8004, TRAINER_WINONA_COOP
 	setvar VAR_0x8005, TRAINER_GALE_COOP

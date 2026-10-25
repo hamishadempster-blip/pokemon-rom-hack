@@ -1,0 +1,44 @@
+# Not linked: Roxanne and Heath fight one player alone as a double battle
+# against both trainers (whole party), and the win gives the badge, the
+# leader flag, and the TM on that save. Both games play it independently.
+# Then a lone linked player is told to come back together or UNLINK.
+# From lab saves. FIXTURES: fixture_warp in front of the leader; level-70
+# leads with strong cached stats (flow, not balance).
+b wait 1100
+b press START 2
+b wait 200
+b until_cb2 CB2_Overworld 8000 A
+b until_field 3000
+b expect coop.sLinkState 0
+b write sWildEncountersDisabled 1
+0 fixture_lead 255 70 344960
+1 fixture_lead 228 70 428750
+0 fixture_warp 11 3 5 3
+1 fixture_warp 11 3 5 3
+b until_field 3000
+b write gParties+86:2 999
+b write gParties+88:2 999
+b write gParties+90:2 600
+b write gParties+92:2 600
+b write gParties+94:2 600
+b write gParties+96:2 600
+b write gParties+98:2 600
+b press UP 2
+b wait 20
+b press A 2
+b until_cb2 BattleMainCB2 9000 A
+b expect coop.sInBattle 0
+b expect gBattlersCount 4
+# Both trainers: Roxanne (opponent A) and Heath (opponent B).
+b expect gTrainerBattleParameter+2:2 265
+# opponentB (855) sits unaligned at offset 17 of the packed struct.
+b expect gTrainerBattleParameter+17:1 0x57
+b expect gTrainerBattleParameter+18:1 0x03
+b shot solo-gym
+b mash_field 30000
+b expect gBattleOutcome 1
+b mash_field 8000
+b expect_flag 0x4F0 1
+b expect_flag 0x867 1
+b expect coop.sLinkState 0
+b shot solo-gym-won

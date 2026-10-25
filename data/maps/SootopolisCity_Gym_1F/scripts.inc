@@ -84,7 +84,7 @@ SootopolisCity_Gym_1F_EventScript_Juan::
 	faceplayer
 	goto_if_set FLAG_DEFEATED_SOOTOPOLIS_GYM, SootopolisCity_Gym_1F_EventScript_JuanAfter
 	msgbox SootopolisCity_Gym_1F_Text_JuanIntro, MSGBOX_DEFAULT
-	specialvar VAR_RESULT, Coop_PartnerOnSameMap
+	specialvar VAR_RESULT, Coop_MandatoryGate
 	goto_if_eq VAR_RESULT, FALSE, Coop_EventScript_NeedPartner
 	setvar VAR_0x8004, TRAINER_JUAN_1
 	setvar VAR_0x8005, TRAINER_WALLACE_GYM
@@ -153,7 +153,7 @@ SootopolisCity_Gym_1F_EventScript_GoGetFortreeBadge::
 
 SootopolisCity_Gym_1F_EventScript_JuanRematch::
 	msgbox SootopolisCity_Gym_1F_Text_JuanPreRematch, MSGBOX_DEFAULT
-	specialvar VAR_RESULT, Coop_PartnerOnSameMap
+	specialvar VAR_RESULT, Coop_MandatoryGate
 	goto_if_eq VAR_RESULT, FALSE, Coop_EventScript_NeedPartner
 	setvar VAR_0x8004, TRAINER_WALLACE_GYM_COOP
 	setvar VAR_0x8005, TRAINER_JUAN_COOP

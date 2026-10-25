@@ -48,7 +48,7 @@ LavaridgeTown_Gym_1F_EventScript_Flannery::
 	faceplayer
 	goto_if_set FLAG_DEFEATED_LAVARIDGE_GYM, LavaridgeTown_Gym_1F_EventScript_FlanneryAfter
 	msgbox LavaridgeTown_Gym_1F_Text_FlanneryIntro, MSGBOX_DEFAULT
-	specialvar VAR_RESULT, Coop_PartnerOnSameMap
+	specialvar VAR_RESULT, Coop_MandatoryGate
 	goto_if_eq VAR_RESULT, FALSE, Coop_EventScript_NeedPartner
 	setvar VAR_0x8004, TRAINER_FLANNERY_1
 	setvar VAR_0x8005, TRAINER_COLE_1
@@ -111,7 +111,7 @@ LavaridgeTown_Gym_1F_EventScript_GiveOverheat::
 
 LavaridgeTown_Gym_1F_EventScript_FlanneryRematch::
 	msgbox LavaridgeTown_Gym_1F_Text_FlanneryPreRematch, MSGBOX_DEFAULT
-	specialvar VAR_RESULT, Coop_PartnerOnSameMap
+	specialvar VAR_RESULT, Coop_MandatoryGate
 	goto_if_eq VAR_RESULT, FALSE, Coop_EventScript_NeedPartner
 	setvar VAR_0x8004, TRAINER_FLANNERY_COOP
 	setvar VAR_0x8005, TRAINER_COLE_COOP

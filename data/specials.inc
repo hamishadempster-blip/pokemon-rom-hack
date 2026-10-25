@@ -682,6 +682,9 @@ gSpecials::
 	def_special Coop_ResetRivalScene
 	def_special Nurse_RepeatVisit
 	def_special Nurse_NoteHeal
+	def_special Coop_MandatoryGate
+	def_special Coop_StartSoloRescueBattle, 0, 1
+	def_special Coop_MarkDuoLegends
 	def_special Coop_MenuUseBeacon
 	def_special Coop_ReopenStartMenu
 	def_special Coop_BufferJoinAsk

@@ -218,6 +218,8 @@ Route101_EventScript_RouteSign::
 Route101_EventScript_BirchsBag::
 	lock
 	faceplayer
+	specialvar VAR_RESULT, Coop_SessionActive
+	goto_if_eq VAR_RESULT, FALSE, Route101_EventScript_SoloBag
 	specialvar VAR_RESULT, Coop_PartnerOnSameMap
 	goto_if_eq VAR_RESULT, FALSE, Coop_EventScript_NeedPartner
 	specialvar VAR_RESULT, Coop_BirchBagFree
@@ -238,6 +240,28 @@ Route101_EventScript_RescueTry::
 	specialvar VAR_RESULT, Coop_TakeRescueResult
 	goto_if_eq VAR_RESULT, 2, Route101_EventScript_RescueBusy
 	goto_if_eq VAR_RESULT, FALSE, Coop_EventScript_NeedPartner
+	applymovement LOCALID_ROUTE101_BIRCH, Route101_Movement_BirchApproachPlayer
+	waitmovement 0
+	msgbox Route101_Text_YouSavedMe, MSGBOX_DEFAULT
+	call Route101_EventScript_ApplyRescueState
+	warp MAP_LITTLEROOT_TOWN_PROFESSOR_BIRCHS_LAB, 6, 5
+	waitstate
+	release
+	end
+
+@ Not linked: one player, one POKéMON from the case they highlight, against
+@ one POOCHYENA. The lab then nicknames it as usual; linking later works.
+Route101_EventScript_SoloBag::
+	setflag FLAG_SYS_POKEMON_GET
+	setflag FLAG_RESCUED_BIRCH
+	fadescreen FADE_TO_BLACK
+	removeobject LOCALID_ROUTE101_ZIGZAGOON
+	setobjectxy LOCALID_PLAYER, 6, 13
+	applymovement LOCALID_PLAYER, Common_Movement_WalkInPlaceFasterLeft
+	waitmovement 0
+	special ChooseStarter
+	msgbox Route101_Text_SoloPoochyena, MSGBOX_DEFAULT
+	special Coop_StartSoloRescueBattle
 	applymovement LOCALID_ROUTE101_BIRCH, Route101_Movement_BirchApproachPlayer
 	waitmovement 0
 	msgbox Route101_Text_YouSavedMe, MSGBOX_DEFAULT
@@ -302,6 +326,10 @@ Route101_Text_TwoPoochyena:
 	.string "You two, send out your POKéMON!\p"
 	.string "Your partner just needs to be standing\n"
 	.string "here. Press B to cancel.$"
+
+Route101_Text_SoloPoochyena:
+	.string "PROF. BIRCH: A POOCHYENA!\n"
+	.string "Quick, send out that POKéMON!$"
 
 Route101_Text_RescueBusy:
 	.string "Your partner has to be standing on\n"

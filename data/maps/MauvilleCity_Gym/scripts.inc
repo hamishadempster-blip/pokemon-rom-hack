@@ -78,7 +78,7 @@ MauvilleCity_Gym_EventScript_Wattson::
 	faceplayer
 	goto_if_set FLAG_DEFEATED_MAUVILLE_GYM, MauvilleCity_Gym_EventScript_WattsonAfter
 	msgbox MauvilleCity_Gym_Text_WattsonIntro, MSGBOX_DEFAULT
-	specialvar VAR_RESULT, Coop_PartnerOnSameMap
+	specialvar VAR_RESULT, Coop_MandatoryGate
 	goto_if_eq VAR_RESULT, FALSE, Coop_EventScript_NeedPartner
 	setvar VAR_0x8004, TRAINER_WATTSON_1
 	setvar VAR_0x8005, TRAINER_JOULE_1
@@ -149,7 +149,7 @@ MauvilleCity_Gym_EventScript_CompletedNewMauville::
 
 MauvilleCity_Gym_EventScript_WattsonRematch::
 	msgbox MauvilleCity_Gym_Text_WattsonPreRematch, MSGBOX_DEFAULT
-	specialvar VAR_RESULT, Coop_PartnerOnSameMap
+	specialvar VAR_RESULT, Coop_MandatoryGate
 	goto_if_eq VAR_RESULT, FALSE, Coop_EventScript_NeedPartner
 	setvar VAR_0x8004, TRAINER_WATTSON_COOP
 	setvar VAR_0x8005, TRAINER_JOULE_COOP
