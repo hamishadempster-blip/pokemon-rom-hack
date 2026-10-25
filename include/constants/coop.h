@@ -171,5 +171,13 @@
 #define COOP_MARKER_AUTO         0   // only when both look the same
 #define COOP_MARKER_ALWAYS       1
 #define COOP_MARKER_OFF          2
+#define COOP_MARKER_MODE_MASK    0x0F
+// Bits 4-5 of CoopSave.partnerMarker: the partner's name tag. Zero (older
+// saves) is ON: shown over the partner whenever they are on screen.
+#define COOP_TAG_SHIFT           4
+#define COOP_TAG_MASK            0x30
+#define COOP_TAG_ON              0
+#define COOP_TAG_NEARBY          1   // only within a few steps
+#define COOP_TAG_OFF             2
 
 #endif // GUARD_CONSTANTS_COOP_H

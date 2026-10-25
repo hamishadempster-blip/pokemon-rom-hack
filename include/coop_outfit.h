@@ -24,6 +24,7 @@ void CoopOutfit_FieldFrame(void);
 
 // Specials.
 void CoopOutfit_OpenMenu(void);
+u16 CoopOutfit_CycleNameTag(void);
 
 enum {
     COOP_OUTFIT_POSE_NORMAL,

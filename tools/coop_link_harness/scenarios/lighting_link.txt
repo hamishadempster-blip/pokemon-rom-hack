@@ -1,0 +1,65 @@
+# Outdoor lighting across linking, menus, a Centre visit and unlinking
+# (story_seg6 saves, Rustboro). FIXTURE: each core's clock is set by the
+# runner (RTC_EPOCH0 = 23:00, player 0 at night; RTC_EPOCH1 = 12:00,
+# player 1 at midday), so the two games start at different times of day.
+# Policy: alone, each game shows its own time of day; linked, both show
+# the link master's (player 0's). Nothing is written to either clock.
+include continue.inc
+b no_wild 1
+b wait 60
+0 expect gTimeOfDay 3
+1 expect gTimeOfDay 1
+0 expect_tint 1 own-night
+1 expect_tint 0 own-day
+b shot light-alone
+# Opening the CO-OP menu (not linked) keeps the night tint.
+0 press START 2
+0 wait 40
+0 menu_to COOP
+0 press A 2
+0 wait 60
+0 expect_tint 1 coop-menu-open
+0 shot light-menu
+0 press B 2
+0 wait 30
+0 mash_field 600 B
+0 expect_tint 1 coop-menu-closed
+# Link: player 1 follows player 0's night.
+include relink.inc
+b expect coop.sLinkState 2
+b wait 240
+b expect gTimeOfDay 3
+b expect_tint 1 linked
+b shot light-linked
+# Player 0 heals in the Centre (indoors: no tint) while player 1 waits.
+0 walk 16 39 4000
+0 walk 16 38 2000
+0 until_map 11 5 3000
+0 wait 60
+0 expect_tint 0 indoors
+0 shot light-centre
+0 walk 7 4 2000
+0 press UP 2
+0 press A 2
+0 mash_field 6000
+0 walk 7 7 2000
+0 cross DOWN 0 3 2000
+b wait 120
+b expect_tint 1 both-outside
+b expect gTimeOfDay 3
+b shot light-after-centre
+# Unlink: player 1 returns to its own midday; player 0 stays at night.
+include unlink.inc
+b expect coop.sLinkState 0
+b wait 120
+1 expect gTimeOfDay 1
+1 expect_tint 0 own-day-again
+0 expect_tint 1 still-night
+b shot light-unlinked
+# Relink: shared again.
+include relink.inc
+b expect coop.sLinkState 2
+b wait 240
+b expect gTimeOfDay 3
+b expect_tint 1 relinked
+b shot light-relinked

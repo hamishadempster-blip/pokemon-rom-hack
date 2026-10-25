@@ -334,3 +334,44 @@ messages, battles, story ledger, rewards, and saves are the real code.
 The partner menu ignores an A press that lands within 20 frames of a scene
 or message closing (mashing through text). Scenarios that press A at the
 partner right after a menu closed wait 30 frames first.
+
+## Visual checks and polish runs (build 0xC0170133)
+
+Passing a functional scenario does not prove the screens look right, so
+`run_all.sh` now runs every scenario with `BATTLE_LOG=1` and then
+`visual_check.py` on its log (summary column "visual ok" / "VISUAL FAIL";
+details in `<name>.visual.txt`).
+
+| Aid | Meaning |
+|---|---|
+| `BATTLE_LOG=1` | In battle, print each new battle message on each screen with every battler's species, HP and absent bit: `[fNNN pX battle] text \| b0=species:hp/max ...`. Who acted on what can then be read, not guessed from the picture. |
+| `SNAP_EVERY=N SNAP_DIR=dir` | Every N battle frames, dump VRAM, OAM, palettes and I/O to `dir/p<id>_<frame>.bin` and a PNG. |
+| `RTC_EPOCH0/1=unix seconds` | FIXTURE: that core's cartridge clock starts at that moment (the RTC reads it as local time; 1699963200 is 23:00, 1699923600 is 12:00 AEDT). |
+| `expect_tint 1\|0 LABEL` | The outdoor time-of-day tint is (1) or is not (0) applied: BG palettes 2–6 of `gPlttBufferFaded` against `gPlttBufferUnfaded`. |
+| `writep PTRSYM+off:size VALUE` | Write through a pointer. |
+| `fixture_nick SLOT NAME` | FIXTURE: a nickname for this player's party slot (letters, digits, `_` for a space, 9 at most). Names only; stats untouched. |
+| `until_field_text WORDS [timeout]` | Tap A every 24 frames until a field message containing WORDS (`_` for spaces) is expanded into `gStringVar4`. |
+
+`visual_check.py LOG [SNAPDIR]` checks: `victory-text` (no "You defeated X
+and !"), `send-out-match` (each shared battle announces the same Pokémon on
+both screens), `no-phantom` (no species-0 battler left present at a turn
+start), `no-blank-name` (no message about a nameless Pokémon), 
+`prompt-overlap` (no "Partner choosing" inside "What will … do?"),
+`learn-prompt` (the move-forget question on one screen only), and with
+snaps `bg1-layout` (BG1 never keeps the VS intro's 512x256 layout under the
+battle's own windows: the patterned blocks after level-ups). On build
+0xC0170132 these fail exactly where the user's recordings showed the bugs
+(story_seg3: victory-text, no-blank-name, prompt-overlap; story_seg5:
+send-out-match "Nacli / Marshtomp", prompt-overlap, bg1-layout).
+
+| Scenario | Covers |
+|---|---|
+| `nametag` | seg6 saves: the partner's name tag on both screens, hidden in the start menu, the status window (name, activity, map, "with you"/"inside"), NAME TAG → NEARBY, partner into the Centre (no tag or sprite left outside, one note for in-out-in), UNLINK messages on both sides |
+| `lighting_link` | seg6 saves with the clocks set apart (23:00 / 12:00): own tint alone, kept across the CO-OP menu, shared (host's) when linked, indoor untinted, after the Centre, own again after UNLINK, shared again after relinking |
+| `story_seg3` | now also: the partner who joined the Woods grunt fight gets the catch-up (own GREAT BALL, own scene state) and the scene does not replay |
+| `coop_one_trainer_faints` | seg6 saves: co-op against Bug Catcher Lyle alone; both his Pokémon faint on one turn with one left, which only the left slot sends out; the battle ends normally (FIXTURES: warp, his trainer flag, strong battlers, his fourth Wurmple at 0 HP) |
+| `story_seg3_real`, `story_seg4_real` | UNMODIFIED PARTIES: segments 3 and 4 without the stat fixtures, as balance checks. A loss is a finding, not a harness fault |
+
+Scenarios marked `DEBUG-ONLY` in their first line (`pre_rival`,
+`pre_woods`) only make saves just before a fight for debugging; they are
+not in `run_all.sh`.

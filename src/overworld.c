@@ -1,5 +1,6 @@
 #include "global.h"
 #include "overworld.h"
+#include "coop_deal.h"
 #include "battle_pyramid.h"
 #include "battle_setup.h"
 #include "battle_util.h"
@@ -1733,8 +1734,16 @@ void UpdateTimeOfDay(bool32 updateBlend)
 {
     s32 hours, minutes;
     RtcCalcLocalTime();
-    hours = sHoursOverride ? sHoursOverride : gLocalTime.hours;
-    minutes = sHoursOverride ? 0 : gLocalTime.minutes;
+    hours = gLocalTime.hours;
+    minutes = gLocalTime.minutes;
+    // Linked: the shared world follows the link master's time of day
+    // (src/coop_deal.c). The game's own clock is not changed.
+    CoopDeal_SharedClock(&hours, &minutes);
+    if (sHoursOverride)
+    {
+        hours = sHoursOverride;
+        minutes = 0;
+    }
 
     if (IsBetweenHours(hours, MORNING_HOUR_BEGIN, MORNING_HOUR_MIDDLE)) // night->morning
     {

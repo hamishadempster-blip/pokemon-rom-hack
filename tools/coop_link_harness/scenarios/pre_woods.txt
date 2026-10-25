@@ -1,0 +1,26 @@
+# DEBUG-ONLY (not in run_all): story_seg3 up to the Woods grunt, saved there.
+include continue.inc
+include relink.inc
+b expect coop.sLinkState 2
+b no_wild 1
+b smart_moves 1
+include beacon_on.inc
+b mash_field 2000 B
+b dump beacon
+# Out of the gym and west to Route 104.
+0 walk 4 110 3000
+0 cross DOWN 0 0 3000
+1 walk 5 110 3000
+1 cross DOWN 0 0 3000
+b dump petalburg
+b walk 0 12 3000
+b cross LEFT 0 19 3000
+b dump route104
+0 walk 10 38 6000
+0 until_map 24 11 3000
+1 wait 200
+1 walk 11 38 6000
+1 until_map 24 11 3000
+b dump woods
+b shot seg3-woods
+include save_continue.inc

@@ -39,8 +39,10 @@ b write gParties+98:2 200
 b dump woods
 b shot seg3-woods
 # The Devon researcher stops the player near the middle; the grunt follows.
-# Story state is per save: player 0 plays the scene and player 1 joins the
-# grunt fight from its invite; then player 1 plays it and player 0 joins.
+# Story state is per save. Player 0 plays the scene and player 1 joins the
+# grunt fight from its invite. Having won it together, player 1 gets a
+# short catch-up from its own researcher (its own GREAT BALL, its own
+# VAR_PETALBURG_WOODS_STATE) instead of replaying the scene and the fight.
 0 walk 26 24 4000
 1 walk 27 25 4000
 b sync
@@ -50,23 +52,23 @@ b sync
 b expect coop.sInBattle 1
 b expect gBattlersCount 4
 b shot seg3-grunt-p0-scene
-b mash_field 30000
-b sync
-b mash_field 3000
-0 expect_var 0x4098 1
-1 expect_var 0x4098 0
-0 dump after-grunt
-0 walk 26 21 2000
-1 walk 27 23 3000
-0 until_cb2 BattleMainCB2 15000 A
-1 until_cb2 BattleMainCB2 15000 A
-b expect coop.sInBattle 1
-b shot seg3-grunt-p1-scene
-b mash_field 30000
+0 mash_field 30000
+1 until_field_text drove_that_thug_off 30000
+1 wait 30
+1 shot seg3-woods-catchup
+1 mash_field 3000
 b sync
 b mash_field 3000
 b expect_var 0x4098 1
+b expect_item 1 2 1
+0 dump after-grunt
 1 dump after-grunt
+# Player 1 walks over the scene's trigger tiles: nothing replays.
+1 walk 27 23 3000
+1 walk 26 23 3000
+1 wait 60
+1 expect coop.sInBattle 0
+1 expect_no_object 4
 b expect coop.sLinkState 2
 b shot seg3-after-grunt
 b walk 14 5 6000

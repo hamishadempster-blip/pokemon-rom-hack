@@ -22,7 +22,7 @@
 #define MAX_CMDS 4096
 #define MAX_SYMS 500000
 
-enum { C_PARTNER, C_GOTO, C_HEX, C_PRESS, C_WAIT, C_SHOT, C_DUMP, C_BARRIER, C_UNTIL_CB2, C_UNTIL_FIELD, C_EXPECT, C_UNTIL_MEM, C_BATTLE, C_MENU, C_PARTY, C_FIXTURE, C_WRITE, C_LEAD, C_MOVE, C_SIX, C_VAR, C_FLAG, C_VS, C_EXPECT_FLAG, C_EXPECT_VAR, C_NO_OBJECT, C_MAP, C_OBJECT, C_TEXT_SPEED, C_PACE, C_MUTE, C_PARTNER_AT, C_ITEM, C_EXPECT_ITEM, C_UNTIL_TEXT, C_WARP, C_PC_COUNT, C_MONS, C_NO_COPIES, C_NOTE_MONEY, C_MONEY_GAIN, C_FORCE_ENC, C_EXPECT_RANGE, C_WALK, C_NO_WILD, C_CROSS, C_WALK_BATTLE, C_SMART, C_STRONG, C_UNTIL_TASK, C_MIRROR, C_SPECIES, C_NOTE_PARTY, C_SAME_PARTY, C_PATCH_RET, C_SLOT, C_TXN, C_MONEY_SAME, C_DEX, C_SWAP, C_GENDER, C_FILL, C_UNFILL };
+enum { C_PARTNER, C_GOTO, C_HEX, C_PRESS, C_WAIT, C_SHOT, C_DUMP, C_BARRIER, C_UNTIL_CB2, C_UNTIL_FIELD, C_EXPECT, C_UNTIL_MEM, C_BATTLE, C_MENU, C_PARTY, C_FIXTURE, C_WRITE, C_LEAD, C_MOVE, C_SIX, C_VAR, C_FLAG, C_VS, C_EXPECT_FLAG, C_EXPECT_VAR, C_NO_OBJECT, C_MAP, C_OBJECT, C_TEXT_SPEED, C_PACE, C_MUTE, C_PARTNER_AT, C_ITEM, C_EXPECT_ITEM, C_UNTIL_TEXT, C_WARP, C_PC_COUNT, C_MONS, C_NO_COPIES, C_NOTE_MONEY, C_MONEY_GAIN, C_FORCE_ENC, C_EXPECT_RANGE, C_WALK, C_NO_WILD, C_CROSS, C_WALK_BATTLE, C_SMART, C_STRONG, C_UNTIL_TASK, C_MIRROR, C_SPECIES, C_NOTE_PARTY, C_SAME_PARTY, C_PATCH_RET, C_SLOT, C_TXN, C_MONEY_SAME, C_DEX, C_SWAP, C_GENDER, C_FILL, C_UNFILL, C_WRITEP, C_TINT, C_UNTIL_FTEXT, C_NICK };
 
 struct Cmd {
 	int kind;
@@ -578,6 +578,24 @@ static void battleDump(struct Player* p) {
 		    rd8(p, symAddr("gCurrentActionFuncId")), rd8(p, symAddr("gCurrentTurnActionNumber")), rd8(p, symAddr("gBattlersCount")),
 		    rd8(p, symAddr("gBattlerAttacker")), rd8(p, symAddr("gBattlerTarget")));
 	}
+	{
+		// Animation state, each battler's healthbox flags (BattleHealthboxInfo is
+		// 16 bytes; animationState at +4), active tasks and sprites in use: a move animation
+		// that never ends shows here.
+		unsigned tasks = symAddr("gTasks"), spr = symAddr("gSprites");
+		char tl[400]; int n = 0, used = 0;
+		for (int i = 0; i < 16 && n < (int)sizeof(tl) - 40; i++)
+			if (rd8(p, tasks + i * 0x28 + 4))
+				n += snprintf(tl + n, sizeof(tl) - n, " %s", symName(rd32(p, tasks + i * 0x28)));
+		for (int i = 0; i < 64; i++)
+			if (rd8(p, spr + i * 0x44 + 0x3E) & 1) used++;
+		unsigned hb = rd32(p, rd32(p, symAddr("gBattleSpritesDataPtr")) + 4);
+		for (int b = 0; b < 4; b++)
+			out("[f%06d p%d bhealthbox] b%d flags=%02x %02x state=%u\n", p->frame, p->id, b,
+			    rd8(p, hb + b * 16), rd8(p, hb + b * 16 + 1), rd8(p, hb + b * 16 + 4));
+		out("[f%06d p%d banim] scriptActive=%u visual=%u sound=%u sprites=%d tasks:%s\n", p->frame, p->id,
+		    rd8(p, symAddr("gAnimScriptActive")), rd8(p, symAddr("gAnimVisualTaskCount")), rd8(p, symAddr("gAnimSoundTaskCount")), used, tl);
+	}
 	unsigned ends = symAddr("gBattlerControllerEndFuncs");
 	out("[f%06d p%d bend] vbl1=%u vbl2=%u cb1=%s count=%u end={%s, %s, %s, %s}\n", p->frame, p->id, rd32(p, sMain + 0x20), rd32(p, sMain + 0x24),
 	    symName(rd32(p, sMain)), rd8(p, symAddr("gBattlersCount")),
@@ -797,9 +815,65 @@ static int walkStep(struct Player* p, int tx, int ty) {
 	return 1 << 7;
 }
 
+// Debug aid (SNAP_EVERY=N SNAP_DIR=dir): every N frames in battle, write
+// this core's VRAM (96 KB), OAM, palette RAM and the first 0x60 I/O bytes
+// to dir/p<id>_<frame>.bin, to inspect graphics state offline.
+static void snapVideo(struct Player* p) {
+	static int every = -1;
+	static const char* dir;
+	if (every < 0) {
+		const char* e = getenv("SNAP_EVERY");
+		every = e ? atoi(e) : 0;
+		dir = getenv("SNAP_DIR");
+		if (!dir) every = 0;
+	}
+	if (every <= 0 || p->frame % every) return;
+	if (!(rd8(p, sMain + 0x439) & 2)) return;
+	char path[600];
+	snprintf(path, sizeof(path), "%s/p%d_%06u.bin", dir, p->id, p->frame);
+	FILE* f = fopen(path, "wb");
+	if (!f) return;
+	static const struct { unsigned base, size; } regions[] = {
+		{ 0x06000000, 0x18000 }, { 0x07000000, 0x400 }, { 0x05000000, 0x400 }, { 0x04000000, 0x60 },
+	};
+	for (unsigned r = 0; r < 4; r++)
+		for (unsigned a = 0; a < regions[r].size; a += 4) {
+			uint32_t v = p->core->busRead32(p->core, regions[r].base + a);
+			fwrite(&v, 4, 1, f);
+		}
+	fclose(f);
+	char name[64];
+	snprintf(name, sizeof(name), "snap_%06u", p->frame);
+	writePng(p, name);
+}
+
+// Debug aid (BATTLE_LOG=1): in battle, print every new battle message with
+// each battler's species, HP and absent bit, so who acted on what can be
+// read from the log instead of judged from the screen.
+static void battleLog(struct Player* p) {
+	static int on = -1;
+	static char last[2][440];
+	if (on < 0) on = getenv("BATTLE_LOG") != NULL;
+	if (!on) return;
+	if (!(rd8(p, sMain + 0x439) & 2)) { last[p->id & 1][0] = 0; return; }
+	char text[440];
+	gameText(p, symAddr("gDisplayedStringBattle"), text, sizeof(text));
+	if (!text[0] || !strcmp(text, last[p->id & 1])) return;
+	snprintf(last[p->id & 1], sizeof(last[0]), "%s", text);
+	unsigned mons = symAddr("gBattleMons"), absent = rd8(p, symAddr("gAbsentBattlerFlags"));
+	unsigned count = rd8(p, symAddr("gBattlersCount"));
+	char state[160]; int n = 0;
+	for (unsigned b = 0; b < count && b < 4; b++)
+		n += snprintf(state + n, sizeof(state) - n, " b%u=%u:%u/%u%s", b, rd16(p, mons + b * 0x8C),
+		              rd16(p, mons + b * 0x8C + 42), rd16(p, mons + b * 0x8C + 46), (absent >> b) & 1 ? "(absent)" : "");
+	out("[f%06d p%d battle] %s |%s\n", p->frame, p->id, text, state);
+}
+
 static void frameCallback(struct mCoreThread* t) {
 	struct Player* p = t->userData;
 	p->frame++;
+	snapVideo(p);
+	battleLog(p);
 	// FIXTURE `no_wild 1`: hold wild encounters off (map loads reset it).
 	if (p->noWild) p->core->busWrite8(p->core, symAddr("sWildEncountersDisabled"), 1);
 	// FIXTURE: battle-only stat boost for this player's battlers (0 and 2):
@@ -1202,6 +1276,26 @@ static void frameCallback(struct mCoreThread* t) {
             fixtureLead(p, c->frames && p->id == 0 ? 2 : 0, c->addr, c->size, c->value);
             advance = true;
             break;
+        case C_TINT: {
+            unsigned faded = symAddr("gPlttBufferFaded"), unfaded = symAddr("gPlttBufferUnfaded");
+            unsigned diff = 0;
+            for (unsigned i = 2 * 16; i < 7 * 16; i++)
+                if (rd16(p, faded + i * 2) != rd16(p, unfaded + i * 2)) diff++;
+            unsigned tinted = diff > 8;
+            if (tinted != c->value) { out("[p%d] FAIL tint %s: tinted=%u (%u colours differ), expected %u\n", p->id, c->text, tinted, diff, c->value); sFailures++; }
+            else out("[p%d] ok tint %s: tinted=%u (%u colours differ)\n", p->id, c->text, tinted, diff);
+            advance = true;
+            break;
+        }
+        case C_WRITEP: {
+            unsigned addr = rd32(p, c->addr) + c->frames;
+            if (c->size == 1) p->core->busWrite8(p->core, addr, c->value);
+            else if (c->size == 2) p->core->busWrite16(p->core, addr, c->value);
+            else p->core->busWrite32(p->core, addr, c->value);
+            out("[p%d] fixture write *%s+%u = %u\n", p->id, c->text, c->frames, c->value);
+            advance = true;
+            break;
+        }
         case C_WRITE:
             if (c->size == 1) p->core->busWrite8(p->core, c->addr, c->value);
             else if (c->size == 2) p->core->busWrite16(p->core, c->addr, c->value);
@@ -1413,6 +1507,44 @@ static void frameCallback(struct mCoreThread* t) {
             p->core->busWrite8(p->core, sMain + 0x438, 0);
             out("[p%d] fixture warp to %u.%u (%u,%u)\n", p->id, c->addr >> 8, c->addr & 0xFF, c->value >> 16, c->value & 0xFFFF);
             advance = true;
+            break;
+        }
+        case C_NICK: {
+            // FIXTURE fixture_nick SLOT NAME: this player's party slot gets a
+            // nickname (A-Z a-z 0-9 and '_' as a space, 9 at most). Only the
+            // unencrypted 10-byte field is written; EOS ends it early.
+            unsigned mon = partyMon(0, c->size) + 8;
+            const char* name = c->text + 16;
+            unsigned i;
+            for (i = 0; i < 9 && name[i]; i++) {
+                char ch = name[i];
+                unsigned g = 0x00;
+                if (ch >= 'A' && ch <= 'Z') g = 0xBB + (ch - 'A');
+                else if (ch >= 'a' && ch <= 'z') g = 0xD5 + (ch - 'a');
+                else if (ch >= '0' && ch <= '9') g = 0xA1 + (ch - '0');
+                p->core->busWrite8(p->core, mon + i, g);
+            }
+            for (; i < 10; i++) p->core->busWrite8(p->core, mon + i, 0xFF);
+            out("[p%d] fixture nickname slot %u = %s\n", p->id, c->size, name);
+            advance = true;
+            break;
+        }
+        case C_UNTIL_FTEXT: {
+            // Tap A (every 24 frames) until a field message containing the
+            // text is up; the message text is expanded into gStringVar4.
+            char text[440];
+            gameText(p, symAddr("gStringVar4"), text, sizeof(text));
+            if (strstr(text, c->text + 16)) {
+                out("[p%d] ok field text \"%s\"\n", p->id, text);
+                advance = true;
+            } else if (++p->step >= c->frames) {
+                out("[p%d] FAIL field text never had \"%s\" (last \"%s\")\n", p->id, c->text + 16, text);
+                dump(p, "fail");
+                sFailures++;
+                advance = true;
+            } else if ((p->step % 24) == 0) {
+                keys = 1; // A
+            }
             break;
         }
         case C_UNTIL_TEXT: {
@@ -1913,6 +2045,19 @@ static void loadScript(const char* path, int depth) {
             c.kind = C_WARP;
             c.addr = (atoi(a) << 8) | (atoi(b) & 0xFF);
             c.value = ((unsigned)atoi(d) << 16) | ((unsigned)atoi(e) & 0xFFFF);
+        } else if (!strcmp(cmd, "fixture_nick")) {
+            c.kind = C_NICK;
+            c.size = atoi(a);
+            snprintf(c.text, sizeof(c.text), "fixture_nick");
+            snprintf(c.text + 16, sizeof(c.text) - 16, "%s", b);
+            for (char* q = c.text + 16; *q; q++) if (*q == '_') *q = ' ';
+        } else if (!strcmp(cmd, "until_field_text")) {
+            // until_field_text Some_words_here [timeout]: taps A meanwhile
+            c.kind = C_UNTIL_FTEXT;
+            c.frames = n >= 4 ? atoi(b) : 3000;
+            snprintf(c.text, sizeof(c.text), "until_field_text");
+            snprintf(c.text + 16, sizeof(c.text) - 16, "%s", a);
+            for (char* q = c.text + 16; *q; q++) if (*q == '_') *q = ' ';
         } else if (!strcmp(cmd, "until_battle_text")) {
             // until_battle_text Some_words_here [timeout]
             c.kind = C_UNTIL_TEXT;
@@ -2015,6 +2160,22 @@ static void loadScript(const char* path, int depth) {
 			c.kind = C_MIRROR; c.size = size;
 			c.addr = symAddr(s1) + o1; c.value = symAddr(s2) + o2;
 			snprintf(c.text, sizeof(c.text), "mirror %s ~ %s", a, b);
+		} else if (!strcmp(cmd, "expect_tint")) {
+			// expect_tint 1|0 [LABEL]: whether the shown map palettes (BG 2-6)
+			// differ from the unfaded ones, i.e. carry the time-of-day tint.
+			c.kind = C_TINT; c.value = strtoul(a, NULL, 0);
+			strncpy(c.text, n >= 3 ? b : "", sizeof(c.text) - 1);
+		} else if (!strcmp(cmd, "writep")) {
+			// FIXTURE writep PTRSYM+off:size value: write through a pointer
+			// variable (gSaveBlock1Ptr, gSaveBlock2Ptr), resolved when run.
+			char sym[96]; unsigned off = 0; int size = 1;
+			strncpy(sym, a, sizeof(sym) - 1);
+			char* colon = strchr(sym, ':');
+			if (colon) { size = atoi(colon + 1); *colon = 0; }
+			char* plus = strchr(sym, '+');
+			if (plus) { off = strtoul(plus + 1, NULL, 0); *plus = 0; }
+			c.kind = C_WRITEP; c.addr = symAddr(sym); c.frames = off; c.size = size; c.value = symValue(b);
+			strncpy(c.text, sym, sizeof(c.text) - 1);
 		} else if (!strcmp(cmd, "until_mem") || !strcmp(cmd, "expect") || !strcmp(cmd, "write")) {
 			// until_mem SYM[+off]:size value [timeout]
 			char sym[96]; unsigned off = 0; int size = 1;
@@ -2160,6 +2321,18 @@ int main(int argc, char** argv) {
 		if (!mCoreLoadFile(p->core, argv[1])) { fprintf(stderr, "rom load failed\n"); return 1; }
 		struct VFile* sav = VFileOpen(argv[3 + i], O_CREAT | O_RDWR);
 		if (!sav || !p->core->loadSave(p->core, sav)) { fprintf(stderr, "save load failed\n"); return 1; }
+		// FIXTURE (RTC_EPOCH<i>=unix seconds): this core's cartridge clock
+		// starts at that moment and runs with emulated time, instead of the
+		// host's wall clock. Lets a test pick each game's time of day.
+		{
+			char name[32];
+			snprintf(name, sizeof(name), "RTC_EPOCH%d", i);
+			const char* epoch = getenv(name);
+			if (epoch && epoch[0]) {
+				p->core->rtc.override = RTC_FAKE_EPOCH;
+				p->core->rtc.value = (int64_t)strtoll(epoch, NULL, 0) * 1000;
+			}
+		}
 		GBASIOLockstepNodeCreate(&p->node);
 		GBASIOLockstepAttachNode(&sLockstep, &p->node);
 		struct GBA* gba = p->core->board;

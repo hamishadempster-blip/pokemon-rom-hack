@@ -77,7 +77,9 @@ def main():
               '\tmsgbox Coop_Text_FG_Evo%d, MSGBOX_DEFAULT' % i, '\tgoto Coop_EventScript_FieldGuideMenu']
     L += ['Coop_EventScript_FieldGuideBye::', '\tmsgbox Coop_Text_FieldGuideBye, MSGBOX_DEFAULT',
           '\trelease', '\tend', '']
-    L.append(strblock('Coop_Text_FieldGuideIntro', 'I study the POKéMON that have\nsettled in HOENN lately.'))
+    L.append(strblock('Coop_Text_FieldGuideIntro', 'I study the POKéMON that have\nsettled in HOENN lately.\\p'
+                      'Day and night go by your clock.\nLinked, both of you share the\\l'
+                      "host's time of day."))
     L.append(strblock('Coop_Text_FieldGuideAsk', 'Which one would you like to know\nabout?'))
     L.append(strblock('Coop_Text_FieldGuideBye', 'Each trainer catches their own.\nGood luck out there!'))
     for i, (name, where, evo) in enumerate(GUIDE):

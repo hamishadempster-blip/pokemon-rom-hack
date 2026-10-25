@@ -62,6 +62,7 @@ enum { KIND_OW, KIND_REFLECTION, KIND_TRAINER };
 #define TAG_MARKER_TILES   0xC0B3
 #define TAG_PARTNER_BACK   0xC0B4
 #define TAG_MARKER_PAL     0xC0B5
+#define TAG_NAMETAG_TILES  0xC0B6
 
 static EWRAM_DATA u8 sPartnerOutfit = 0;
 static EWRAM_DATA u8 sPartnerGender = MALE;
@@ -77,7 +78,13 @@ static EWRAM_DATA u8 sMarkerSpriteId = 0;
 static EWRAM_DATA u8 sMarkerTimer = 0;
 EWRAM_DATA bool8 gCoopMarkerShown = FALSE;
 EWRAM_DATA bool8 gCoopCompassShown = FALSE;  // the edge compass is on screen (read by tests)
-static EWRAM_DATA u8 sShownStyle = 0;        // marker palette style + 1 last loaded   // the partner marker is on screen (read by tests)
+static EWRAM_DATA u8 sShownStyle = 0;        // marker palette style + 1 last loaded
+// The partner's name tag: its sprite (checked against the template like the
+// marker), and the name its tiles hold.
+static EWRAM_DATA u8 sTagSpriteId = 0;
+static EWRAM_DATA u8 sTagName[PLAYER_NAME_LENGTH + 1] = {0};
+EWRAM_DATA bool8 gCoopNameTagShown = FALSE;  // the name tag is on screen (read by tests)
+static EWRAM_DATA bool8 sTagShownNow = FALSE;
 
 static u8 Base(u8 gender)
 {
@@ -104,9 +111,20 @@ static u8 MarkerMode(void)
 {
     struct CoopSave *save = Coop_GetSave();
 
-    if (save == NULL || save->partnerMarker > COOP_MARKER_OFF)
+    if (save == NULL || (save->partnerMarker & COOP_MARKER_MODE_MASK) > COOP_MARKER_OFF)
         return COOP_MARKER_AUTO;
-    return save->partnerMarker;
+    return save->partnerMarker & COOP_MARKER_MODE_MASK;
+}
+
+static u8 TagMode(void)
+{
+    struct CoopSave *save = Coop_GetSave();
+    u8 mode;
+
+    if (save == NULL)
+        return COOP_TAG_ON;
+    mode = (save->partnerMarker & COOP_TAG_MASK) >> COOP_TAG_SHIFT;
+    return mode > COOP_TAG_OFF ? COOP_TAG_ON : mode;
 }
 
 const u16 *CoopOutfit_ObjectPalette(u16 tag)
@@ -377,7 +395,7 @@ static void UpdateMarker(void)
         gCoopCompassShown = TRUE;
         return;
     }
-    if (!WantMarker(gender))
+    if (!WantMarker(gender) || sTagShownNow)
     {
         HideMarker();
         return;
@@ -398,6 +416,199 @@ static void UpdateMarker(void)
     gCoopMarkerShown = !marker->invisible;
 }
 
+
+// ------------------------------------------------------------ partner name tag
+//
+// The partner's name in small text on a dark pill just above their head, so
+// two players who look alike (or two Brendans in a crowd) are told apart at
+// a glance. One 64x32 sprite; the text uses the top 16 rows. It shares the
+// marker's palette (14 text, 15 pill). Shown only while this player can
+// move: never over a message box, a menu, a scene, or a warp, and never for
+// a partner who isn't drawn here. A map load frees the sprite and its tiles;
+// the template check below notices and the next frame draws it again.
+
+#define TAG_W 64
+#define TAG_TILES ((TAG_W / 8) * 4)
+static const u32 sNameTagBlank[TAG_TILES * 8] = {0};
+static const struct SpriteSheet sNameTagSheet = {sNameTagBlank, sizeof(sNameTagBlank), TAG_NAMETAG_TILES};
+
+static const struct OamData sNameTagOam = {
+    .shape = SPRITE_SHAPE(64x32),
+    .size = SPRITE_SIZE(64x32),
+    .priority = 1,
+};
+
+static const struct SpriteTemplate sNameTagTemplate = {
+    .tileTag = TAG_NAMETAG_TILES,
+    .paletteTag = TAG_MARKER_PAL,
+    .oam = &sNameTagOam,
+    .anims = gDummySpriteAnimTable,
+    .images = NULL,
+    .affineAnims = gDummySpriteAffineAnimTable,
+    .callback = SpriteCallbackDummy,
+};
+
+static bool8 TagAlive(void)
+{
+    return sTagSpriteId < MAX_SPRITES && gSprites[sTagSpriteId].inUse
+        && gSprites[sTagSpriteId].template == &sNameTagTemplate
+        && GetSpriteTileStartByTag(TAG_NAMETAG_TILES) != 0xFFFF;
+}
+
+static void RemoveTag(void)
+{
+    if (sTagSpriteId < MAX_SPRITES && gSprites[sTagSpriteId].inUse
+     && gSprites[sTagSpriteId].template == &sNameTagTemplate)
+        DestroySprite(&gSprites[sTagSpriteId]);
+    sTagSpriteId = MAX_SPRITES;
+    if (GetSpriteTileStartByTag(TAG_NAMETAG_TILES) != 0xFFFF)
+        FreeSpriteTilesByTag(TAG_NAMETAG_TILES);
+    sTagName[0] = EOS;
+    gCoopNameTagShown = FALSE;
+}
+
+// One 4bpp pixel of the tag's tiles (64x32, 1D mapping).
+static void TagPixel(u8 *tiles, u32 x, u32 y, u8 color)
+{
+    u8 *b = tiles + ((y / 8) * (TAG_W / 8) + x / 8) * TILE_SIZE_4BPP + (y % 8) * 4 + (x % 8) / 2;
+
+    if (x & 1)
+        *b = (*b & 0x0F) | (color << 4);
+    else
+        *b = (*b & 0xF0) | color;
+}
+
+static void DrawTag(const u8 *name)
+{
+    static const union TextColor sColor = { .background = 15, .foreground = 14, .shadow = 15, .accent = 15 };
+    u8 *tiles = (u8 *)(OBJ_VRAM0) + GetSpriteTileStartByTag(TAG_NAMETAG_TILES) * TILE_SIZE_4BPP;
+    s32 width = GetStringWidth(FONT_SMALL, name, 0);
+    u32 x, y, left, right;
+
+    if (width > TAG_W - 6)
+        width = TAG_W - 6;
+    left = (TAG_W - width) / 2 - 2;
+    right = left + width + 4;
+    CpuFill32(0, tiles, TAG_TILES * TILE_SIZE_4BPP);
+    // Rows 1-13: the pill, with its corners cut.
+    for (y = 1; y <= 13; y++)
+    {
+        for (x = left; x < right; x++)
+        {
+            if ((y == 1 || y == 13) && (x == left || x == right - 1))
+                continue;
+            TagPixel(tiles, x, y, 15);
+        }
+    }
+    AddSpriteTextPrinterParameterized6(sTagSpriteId, FONT_SMALL, left + 2, 1, 0, 0, sColor, TEXT_SKIP_DRAW, name);
+}
+
+static bool8 PartnerName(u8 *dest)
+{
+    if (!gReceivedRemoteLinkPlayers || GetMultiplayerId() > 1)
+        return FALSE;
+    StringCopyN(dest, gLinkPlayers[GetMultiplayerId() ^ 1].name, PLAYER_NAME_LENGTH);
+    dest[PLAYER_NAME_LENGTH] = EOS;
+    return dest[0] != EOS;
+}
+
+// TRUE when the tag is drawn over the partner this frame.
+static bool8 UpdateTag(void)
+{
+    u8 gender, slot;
+    u8 partnerSprite = Coop_PartnerSpriteId(&gender);
+    u8 name[PLAYER_NAME_LENGTH + 1];
+    struct SpritePalette pal;
+    struct Sprite *partner, *tag;
+    s16 px, py, dx, dy;
+
+    gCoopNameTagShown = FALSE;
+    if (TagMode() == COOP_TAG_OFF || partnerSprite >= MAX_SPRITES || !PartnerName(name)
+     || !Coop_PartnerMapPos(&px, &py))
+    {
+        RemoveTag();
+        return FALSE;
+    }
+    dx = px - gObjectEvents[gPlayerAvatar.objectEventId].currentCoords.x;
+    dy = py - gObjectEvents[gPlayerAvatar.objectEventId].currentCoords.y;
+    partner = &gSprites[partnerSprite];
+    // Hidden, not freed, while this player is busy or the partner is out of
+    // view or (NEARBY) more than three steps away.
+    if (dx < -7 || dx > 7 || dy < -5 || dy > 4
+     || (TagMode() == COOP_TAG_NEARBY && (dx < -3 || dx > 3 || dy < -3 || dy > 3))
+     || partner->invisible || ArePlayerFieldControlsLocked() || ScriptContext_IsEnabled())
+    {
+        if (TagAlive())
+            gSprites[sTagSpriteId].invisible = TRUE;
+        return FALSE;
+    }
+
+    pal.data = sMarkerPals[MarkerStyle()];
+    pal.tag = TAG_MARKER_PAL;
+    slot = IndexOfSpritePaletteTag(TAG_MARKER_PAL);
+    if (slot == 0xFF)
+        slot = LoadSpritePalette(&pal);
+    else if (sShownStyle != MarkerStyle() + 1)
+        LoadSpritePaletteInSlot(&pal, slot);
+    if (slot == 0xFF)
+        return FALSE;
+    sShownStyle = MarkerStyle() + 1;
+
+    if (!TagAlive())
+    {
+        RemoveTag();
+        LoadSpriteSheet(&sNameTagSheet);
+        if (GetSpriteTileStartByTag(TAG_NAMETAG_TILES) == 0xFFFF)
+            return FALSE;
+        sTagSpriteId = CreateSprite(&sNameTagTemplate, 0, 0, 0);
+        if (sTagSpriteId >= MAX_SPRITES)
+        {
+            FreeSpriteTilesByTag(TAG_NAMETAG_TILES);
+            return FALSE;
+        }
+        gSprites[sTagSpriteId].data[1] = SPRITE_NONE;
+        gSprites[sTagSpriteId].data[2] = SPRITE_NONE;
+    }
+    tag = &gSprites[sTagSpriteId];
+    tag->oam.paletteNum = slot;
+    if (StringCompare(name, sTagName) != 0)
+    {
+        DrawTag(name);
+        StringCopy(sTagName, name);
+    }
+    // Map coordinates, like the partner's own sprite. The pill's bottom
+    // row sits just over the head.
+    tag->coordOffsetEnabled = partner->coordOffsetEnabled;
+    tag->x = partner->x + partner->x2;
+    tag->y = partner->y + partner->y2 - 2;
+    // The partner's layer, so a tree top that hides the partner hides the
+    // tag too; in front of the characters on it, so the name stays readable
+    // when this player stands just north of the partner.
+    tag->oam.priority = partner->oam.priority;
+    tag->subpriority = 0;
+    tag->invisible = FALSE;
+    gCoopNameTagShown = TRUE;
+    return TRUE;
+}
+
+// Special: NAME TAG in the CO-OP menu. ON, NEARBY, OFF in turn; the new
+// setting's line in gStringVar4.
+u16 CoopOutfit_CycleNameTag(void)
+{
+    struct CoopSave *save = Coop_GetSave();
+    u8 mode = (TagMode() + 1) % (COOP_TAG_OFF + 1);
+
+    if (save != NULL)
+        save->partnerMarker = (save->partnerMarker & ~COOP_TAG_MASK) | (mode << COOP_TAG_SHIFT);
+    if (mode == COOP_TAG_ON)
+        StringCopy(gStringVar4, COMPOUND_STRING("Name tag: ON. Your partner's\nname shows over their head."));
+    else if (mode == COOP_TAG_NEARBY)
+        StringCopy(gStringVar4, COMPOUND_STRING("Name tag: NEARBY. Shown when\nyour partner is close by."));
+    else
+        StringCopy(gStringVar4, COMPOUND_STRING("Name tag: OFF."));
+    return mode;
+}
+
 void CoopOutfit_FieldFrame(void)
 {
     u8 gender;
@@ -408,6 +619,8 @@ void CoopOutfit_FieldFrame(void)
     shown = (sPartnerGender << 4) | (sPartnerKnown ? sPartnerOutfit : 0);
     if (sShownLocal != CoopOutfit_Local() || sShownPartner != shown)
         CoopOutfit_RefreshLoaded();
+    // The head arrow is redundant (and would overlap) while the tag shows.
+    sTagShownNow = UpdateTag();
     UpdateMarker();
 }
 
@@ -537,7 +750,7 @@ static void Task_OutfitMenu(u8 taskId)
     if (input == ITEM_MARKER)
     {
         if (save != NULL)
-            save->partnerMarker = (MarkerMode() + 1) % (COOP_MARKER_OFF + 1);
+            save->partnerMarker = (save->partnerMarker & ~COOP_MARKER_MODE_MASK) | ((MarkerMode() + 1) % (COOP_MARKER_OFF + 1));
         BufferMarkerText();
         RedrawListMenu(gTasks[taskId].tListTaskId);
         return;

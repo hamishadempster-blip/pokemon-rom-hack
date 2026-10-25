@@ -3005,6 +3005,8 @@ static bool32 TwoMonsAtSendOut(enum BattlerId battler)
     }
     else
     {
+        if (IsCoopSingleTrainerBattle())
+            return TwoOpponentIntroMons(battler);
         if ((!TwoOpponentIntroMons(battler) || (gBattleTypeFlags & BATTLE_TYPE_MULTI)) && !BATTLE_TWO_VS_ONE_OPPONENT)
             return FALSE;
         else if ((gBattleTypeFlags & BATTLE_TYPE_TWO_OPPONENTS) || (BATTLE_TWO_VS_ONE_OPPONENT && !TwoOpponentIntroMons(battler)))

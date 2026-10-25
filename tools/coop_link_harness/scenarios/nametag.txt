@@ -1,0 +1,124 @@
+# Partner name tag and status window (story_seg6 saves, Rustboro). Gameplay
+# test: no fixtures beyond no_wild. Player 0 is MISTY's save; player 1's
+# partner tag reads player 0's name and the other way round.
+#  - Tag ON (default) over the partner, both screens; hidden while the
+#    start menu is open; the status window names the partner, what they are
+#    doing and where.
+#  - NEARBY (player 0): hidden when the partner is more than three steps
+#    away, while player 1 (ON) still sees it.
+#  - Partner walks into the Centre: no tag and no partner left outside, one
+#    note ("went inside") and no second note for going out and in again;
+#    the status window says "inside".
+#  - Player 0 chooses UNLINK: player 0 reads "You unlinked", player 1 reads
+#    "<name> unlinked" (not "The link dropped"); no tag left on either.
+include continue.inc
+b no_wild 1
+b wait 60
+include relink.inc
+b expect coop.sLinkState 2
+b wait 120
+# Player 1 (16,46) walks next to player 0 (19,50).
+1 walk 18 50 3000
+b sync
+b wait 60
+b expect gCoopNameTagShown 1
+b expect gCoopMarkerShown 0
+b shot tag-on
+# Player 1 just south of player 0: player 0's sprite stays in front of the
+# tag over player 1's head.
+1 walk 19 51 3000
+b sync
+b wait 30
+b expect gCoopNameTagShown 1
+b shot tag-south
+1 walk 18 50 3000
+b sync
+b wait 30
+# Start menu: tag hidden, status window up.
+0 press START 2
+0 wait 60
+0 expect gCoopNameTagShown 0
+0 shot status-together
+0 mash_field 600 B
+0 wait 20
+0 expect gCoopNameTagShown 1
+b sync
+# Player 0: NAME TAG -> NEARBY.
+0 press START 2
+0 wait 40
+0 menu_to COOP
+0 press A 2
+0 wait 40
+0 press DOWN 2
+0 wait 8
+0 press DOWN 2
+0 wait 8
+0 press DOWN 2
+0 wait 8
+0 press DOWN 2
+0 wait 8
+0 shot coop-menu-nametag
+0 press A 2
+0 wait 60
+0 shot nametag-nearby-msg
+0 mash_field 900 B
+0 wait 20
+0 expect gCoopNameTagShown 1
+b sync
+# Player 1 steps away: four rows up and three left of player 0.
+1 walk 16 46 3000
+b sync
+b wait 60
+0 expect gCoopNameTagShown 0
+1 expect gCoopNameTagShown 1
+b shot tag-nearby-far
+# Player 1 goes into the Centre.
+1 walk 16 39 4000
+1 walk 16 38 2000
+1 until_map 11 5 3000
+b sync
+b wait 90
+0 expect_no_partner
+0 expect gCoopNameTagShown 0
+0 expect_nz coop.sPartnerPopupCooldown
+0 shot partner-went-inside
+0 wait 60
+0 press START 2
+0 wait 60
+0 shot status-partner-inside
+0 mash_field 600 B
+b sync
+# Out and straight back in: no second note.
+1 walk 7 8 2000
+1 cross DOWN 0 3 2000
+1 until_map 0 3 3000
+1 wait 30
+1 press UP 4
+1 until_map 11 5 3000
+b sync
+b wait 30
+0 shot partner-in-again
+1 walk 7 8 2000
+1 cross DOWN 0 3 2000
+1 until_map 0 3 3000
+b sync
+b wait 60
+0 expect_partner
+# Player 0 unlinks; player 1 is told who unlinked.
+b sync
+0 press START 2
+0 wait 40
+0 menu_to COOP
+0 press A 2
+0 wait 40
+0 press DOWN 2
+0 wait 10
+0 press A 2
+0 until_mem coop.sLinkState 0 2400 A
+1 until_mem coop.sLinkState 0 2400
+b wait 60
+b shot unlinked-msg
+b mash_field 900 B
+b expect gCoopNameTagShown 0
+b expect coop.sLinkState 0
+b shot unlinked-field

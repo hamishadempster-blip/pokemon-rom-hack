@@ -479,6 +479,19 @@ static void BattleIntroSlideLink(u8 taskId)
             gTasks[taskId].tState++;
             SetBgAttribute(1, BG_ATTR_CHARBASEINDEX, 0);
             SetBgAttribute(2, BG_ATTR_CHARBASEINDEX, 0);
+            // The VS screen switched BG1 to 512x256 in the bg library and
+            // left its frame in the BG1/BG2 tilemap buffers. Stock link
+            // battles never draw on BG1 again, but co-op battles award Exp.:
+            // the level-up box (BG1 at Y 256) re-applied the stale 512x256
+            // size and copied the stale buffer, so the VS frame came back
+            // as patterned blocks. Restore the template size and clear both
+            // buffers before the battle uses them.
+            SetBgAttribute(1, BG_ATTR_SCREENSIZE, 2);
+            SetBgAttribute(2, BG_ATTR_SCREENSIZE, 1);
+            FillBgTilemapBufferRect_Palette0(1, 0, 0, 0, 32, 64);
+            FillBgTilemapBufferRect_Palette0(2, 0, 0, 0, 64, 32);
+            CopyBgTilemapBufferToVram(1);
+            CopyBgTilemapBufferToVram(2);
             SetGpuReg(REG_OFFSET_BG1CNT, BGCNT_PRIORITY(0) | BGCNT_CHARBASE(0) | BGCNT_16COLOR | BGCNT_SCREENBASE(28) | BGCNT_TXT256x512);
             SetGpuReg(REG_OFFSET_BG2CNT, BGCNT_PRIORITY(0) | BGCNT_CHARBASE(0) | BGCNT_16COLOR | BGCNT_SCREENBASE(30) | BGCNT_TXT512x256);
         }

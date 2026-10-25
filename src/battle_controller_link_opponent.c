@@ -281,7 +281,9 @@ static void LinkOpponentHandleDrawTrainerPic(enum BattlerId battler)
 
     if (gBattleTypeFlags & BATTLE_TYPE_MULTI)
     {
-        if ((position & BIT_FLANK) != 0) // second mon
+        if (IsCoopSingleTrainerBattle()) // one trainer, centred
+            xPos = 176;
+        else if ((position & BIT_FLANK) != 0) // second mon
             xPos = 152;
         else // first mon
             xPos = 200;

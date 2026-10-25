@@ -739,6 +739,8 @@ gSpecials::
 	def_special CoopQuest_BufferJournal
 	def_special Coop_BufferUnlinkedMenu
 	def_special CoopOutfit_OpenMenu
+	def_special CoopOutfit_CycleNameTag
+	def_special Coop_BufferUnlinkName
 	def_special CoopQuest_SetBits
 	def_special CoopQuest_CountBits
 	def_special CoopQuest_MilestoneKnown

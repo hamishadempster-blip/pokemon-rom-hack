@@ -20,6 +20,7 @@
 #include "link.h"
 #include "main.h"
 #include "overworld.h"
+#include "field_weather.h"
 #include "palette.h"
 #include "pokeball.h"
 #include "pokemon.h"
@@ -261,6 +262,19 @@ static u8 Coop_RivalId(void);
 static u8 Coop_SoloReasonHere(void);
 static void Coop_PollStory(void);
 static bool8 Coop_GuestBusy(void);
+
+// Frames before another "went inside" note may show.
+static EWRAM_DATA u16 sPartnerPopupCooldown = 0;
+#define COOP_PARTNER_POPUP_COOLDOWN (60 * 20)
+
+#define COOP_FOLLOWUP_WOODS 30
+
+// Field frames the partner has reported COOP_ACT_BUSY in a row.
+static EWRAM_DATA u16 sPartnerBusyFrames = 0;
+#define COOP_STATUS_WIDTH_PX (14 * 8)
+
+// The partner who chose UNLINK, for the message after the link is gone.
+static EWRAM_DATA u8 sUnlinkName[PLAYER_NAME_LENGTH + 1] = {0};
 
 static struct CoopSave *CoopSave(void)
 {
@@ -565,6 +579,10 @@ static void Coop_NotePartnerLeftView(void)
 
     if (FlagGet(FLAG_HIDE_MAP_NAME_POPUP) || gMain.inBattle || !sPartnerValid)
         return;
+    // In and out of a Centre or a shop is one note, not one per door.
+    if (sPartnerPopupCooldown != 0)
+        return;
+    sPartnerPopupCooldown = COOP_PARTNER_POPUP_COOLDOWN;
     header = Overworld_GetMapHeaderByGroupAndId(sPartner.mapGroup, sPartner.mapNum);
     if (header == NULL)
         return;
@@ -964,30 +982,68 @@ static u8 Coop_FightOutlook(void)
     return COOP_SOLO_NONE;
 }
 
-// Four short lines for the start menu: the link and Beacon, where the
-// partner is, whether a fight here would be together (and if not, why),
-// and this player's rival. Read fresh each time the menu opens.
+// The partner is talking to the nurse: their frame names the object, and
+// their map's event table (in ROM) says what that object is.
+static bool8 Coop_PartnerAtNurse(void)
+{
+    const struct MapHeader *header;
+    u32 i;
+
+    if (sPartner.activity != COOP_ACT_TALKING || sPartner.talkLocalId == 0 || sPartner.talkLocalId == 0xFF)
+        return FALSE;
+    header = Overworld_GetMapHeaderByGroupAndId(sPartner.mapGroup, sPartner.mapNum);
+    if (header == NULL || header->events == NULL)
+        return FALSE;
+    for (i = 0; i < header->events->objectEventCount; i++)
+    {
+        if (header->events->objectEvents[i].localId == sPartner.talkLocalId)
+            return header->events->objectEvents[i].graphicsId == OBJ_EVENT_GFX_NURSE;
+    }
+    return FALSE;
+}
+
+// Appends src only if the line (from lineStart) still fits the status
+// window; returns the new end either way.
+static u8 *Coop_AppendIfFits(u8 *lineStart, u8 *end, const u8 *src)
+{
+    u8 *tail = StringCopy(end, src);
+
+    if (GetStringWidth(FONT_NARROW, lineStart, 0) <= COOP_STATUS_WIDTH_PX)
+        return tail;
+    *end = EOS;
+    return end;
+}
+
+// Five short lines for the start menu: the link and Beacon, who the partner
+// is and what they are doing, where they are, whether a fight here would be
+// together (and if not, why), and this player's rival. Read fresh each time
+// the menu opens.
 void Coop_FormatStatus(u8 *dest)
 {
     static const u8 *const sBusy[] = {
         [COOP_ACT_EXPLORING] = COMPOUND_STRING("Fights: solo"),
         [COOP_ACT_TALKING]   = COMPOUND_STRING("Solo: partner talking"),
         [COOP_ACT_MENU]      = COMPOUND_STRING("Solo: partner in menu"),
-        [COOP_ACT_BUSY]      = COMPOUND_STRING("Solo: partner battling"),
+        [COOP_ACT_BUSY]      = COMPOUND_STRING("Solo: partner busy"),
     };
-    u8 *end;
+    u8 *end, *line;
     u8 outlook;
+    const struct MapHeader *header;
 
     if (sLinkState != COOP_LINK_UP)
     {
         StringCopy(dest, COMPOUND_STRING("CO-OP: not linked"));
         return;
     }
-    end = StringCopy(dest, sBeacon.on ? COMPOUND_STRING("LINKED · BEACON ON") : COMPOUND_STRING("LINKED · BEACON OFF"));
+    if (!CheckBagHasItem(ITEM_TWIN_BEACON, 1))
+        end = StringCopy(dest, COMPOUND_STRING("LINKED · no BEACON yet"));
+    else
+        end = StringCopy(dest, sBeacon.on ? COMPOUND_STRING("LINKED · BEACON ON") : COMPOUND_STRING("LINKED · BEACON OFF"));
     *end++ = CHAR_NEWLINE;
     if (!Coop_SessionActive())
     {
-        StringCopy(end, COMPOUND_STRING("Partner unavailable\nRecovering link..."));
+        // Only real trouble: the cable has stalled for a few seconds.
+        StringCopy(end, COMPOUND_STRING("Link trouble:\nretrying..."));
         return;
     }
     if (!sPartnerValid)
@@ -995,21 +1051,56 @@ void Coop_FormatStatus(u8 *dest)
         StringCopy(end, COMPOUND_STRING("Partner: joining…"));
         return;
     }
-    end = StringCopy(end, COMPOUND_STRING("Partner: "));
-    if (Coop_PartnerOnSameMap())
+
+    // Who and what.
+    if (gReceivedRemoteLinkPlayers && gLinkPlayers[GetMultiplayerId() ^ 1].name[0] != EOS)
     {
-        end = StringCopy(end, COMPOUND_STRING("here"));
+        u8 name[PLAYER_NAME_LENGTH + 1];
+
+        StringCopyN(name, gLinkPlayers[GetMultiplayerId() ^ 1].name, PLAYER_NAME_LENGTH);
+        name[PLAYER_NAME_LENGTH] = EOS;
+        end = StringCopy(end, name);
     }
     else
     {
-        const struct MapHeader *header = Overworld_GetMapHeaderByGroupAndId(sPartner.mapGroup, sPartner.mapNum);
-
-        if (header != NULL)
-            end = GetMapName(end, header->regionMapSectionId, 0);
-        else
-            end = StringCopy(end, COMPOUND_STRING("away"));
+        end = StringCopy(end, COMPOUND_STRING("Partner"));
+    }
+    end = StringCopy(end, COMPOUND_STRING(": "));
+    switch (sPartner.activity & 3)
+    {
+    case COOP_ACT_TALKING:
+        end = StringCopy(end, Coop_PartnerAtNurse() ? COMPOUND_STRING("healing") : COMPOUND_STRING("talking"));
+        break;
+    case COOP_ACT_MENU:
+        end = StringCopy(end, COMPOUND_STRING("in a menu"));
+        break;
+    case COOP_ACT_BUSY:
+        // Doors and warps report busy for a moment too; a battle lasts.
+        end = StringCopy(end, sPartnerBusyFrames >= 60 ? COMPOUND_STRING("battling") : COMPOUND_STRING("busy"));
+        break;
+    default:
+        end = StringCopy(end, COMPOUND_STRING("exploring"));
+        break;
     }
     *end++ = CHAR_NEWLINE;
+
+    // Where: the map's name, and whether that is with this player.
+    line = end;
+    header = Overworld_GetMapHeaderByGroupAndId(sPartner.mapGroup, sPartner.mapNum);
+    if (header != NULL)
+    {
+        end = GetMapName(end, header->regionMapSectionId, 0);
+        if (Coop_PartnerOnSameMap())
+            end = Coop_AppendIfFits(line, end, COMPOUND_STRING(", with you"));
+        else if (header->mapType == MAP_TYPE_INDOOR || header->mapType == MAP_TYPE_SECRET_BASE)
+            end = Coop_AppendIfFits(line, end, COMPOUND_STRING(", inside"));
+    }
+    else
+    {
+        end = StringCopy(end, COMPOUND_STRING("Somewhere else"));
+    }
+    *end++ = CHAR_NEWLINE;
+
     outlook = Coop_FightOutlook();
     if (!sBeacon.on)
         end = StringCopy(end, COMPOUND_STRING("Fights: solo"));
@@ -1200,7 +1291,9 @@ static void Coop_HandleFrame(u32 playerId, const u16 *words)
     if (frame.request == COOP_REQ_UNLINK)
     {
         // Deliberate unlink is distinct from a missing heartbeat.
-        Coop_Drop(sUnlinkTimer ? NULL : Coop_EventScript_Disconnected);
+        StringCopyN(sUnlinkName, gLinkPlayers[GetMultiplayerId() ^ 1].name, PLAYER_NAME_LENGTH);
+        sUnlinkName[PLAYER_NAME_LENGTH] = EOS;
+        Coop_Drop(sUnlinkTimer ? NULL : Coop_EventScript_PartnerUnlinked);
         return;
     }
     Coop_AcceptPartner(&frame);
@@ -1771,13 +1864,27 @@ static void Coop_FinishLinkWait(u16 result)
     ScriptContext_Enable();
 }
 
-static void Coop_ForceScreenOn(void)
+// Ends any fade and shows the field's real colours. Copying the unfaded
+// palettes alone dropped the time-of-day tint and the weather colour map,
+// so a night screen turned bright when the link came up or the CO-OP menu
+// opened, and stayed bright until the next map load.
+void Coop_RestoreFieldPalettes(void)
 {
     gPaletteFade.active = FALSE;
     gPaletteFade.y = 0;
     gPaletteFade.targetY = 0;
     gPaletteFade.yDec = FALSE;
     UnfadePlttBuffer(PALETTES_ALL);
+    if (gMain.callback2 == CB2_Overworld || gMain.callback2 == CB2_OverworldBasic)
+    {
+        UpdateTimeOfDay(TRUE);
+        ApplyWeatherColorMapIfIdle(gWeatherPtr->colorMapIndex);
+    }
+}
+
+static void Coop_ForceScreenOn(void)
+{
+    Coop_RestoreFieldPalettes();
     if ((REG_DISPCNT & DISPCNT_BG_ALL_ON) == 0)
         SetGpuRegBits(REG_OFFSET_DISPCNT, DISPCNT_MODE_0 | DISPCNT_OBJ_1D_MAP | DISPCNT_BG_ALL_ON | DISPCNT_OBJ_ON);
 }
@@ -1941,6 +2048,9 @@ static void Coop_Drop(const u8 *message)
     // A pending invite would otherwise leave the field frozen or the
     // trainer script waiting on an answer that can't arrive.
     gCoopHoldLink = FALSE;
+    // The shared time of day ends with the session: re-tint from this
+    // game's own clock on the next overworld frame.
+    gTimeUpdateCounter = 0;
     sBirchBag = FALSE;
     sRescueField = COOP_RESCUE_RETURN_NONE;
     if (sRescueGuestFollow)
@@ -2153,6 +2263,17 @@ u8 Coop_PartnerSpriteId(u8 *gender)
 
 void Coop_OverworldFrame(void)
 {
+    if (sPartnerPopupCooldown != 0)
+        sPartnerPopupCooldown--;
+    if (sPartnerValid && sPartner.activity == COOP_ACT_BUSY)
+    {
+        if (sPartnerBusyFrames < 0xFFFF)
+            sPartnerBusyFrames++;
+    }
+    else
+    {
+        sPartnerBusyFrames = 0;
+    }
     if (ScriptContext_IsEnabled() || ArePlayerFieldControlsLocked())
     {
         if (sFieldFreeFrames != 0)
@@ -2247,6 +2368,16 @@ u16 Coop_ToggleLevelCap(void)
 }
 
 // gStringVar4: the line under the CO-OP list when not linked.
+// gStringVar1: the name of the partner who just chose UNLINK.
+u16 Coop_BufferUnlinkName(void)
+{
+    if (sUnlinkName[0] == EOS)
+        StringCopy(gStringVar1, COMPOUND_STRING("Your partner"));
+    else
+        StringCopy(gStringVar1, sUnlinkName);
+    return TRUE;
+}
+
 u16 Coop_BufferUnlinkedMenu(void)
 {
     u8 *end = StringCopy(gStringVar4, COMPOUND_STRING("Not linked. Level cap: "));
@@ -3113,6 +3244,17 @@ static void Coop_QueueGuestFollowup(void)
     else if (sBattleKind == COOP_KIND_RIVAL && sRivalFightStage <= 4)
     {
         sGuestFollowup = 11 + sRivalFightStage;
+    }
+    else if (sBattleKind == COOP_KIND_TRAINER
+          && TRAINER_BATTLE_PARAM.opponentA == TRAINER_GRUNT_PETALBURG_WOODS
+          && gSaveBlock1Ptr->location.mapGroup == MAP_GROUP(MAP_PETALBURG_WOODS)
+          && gSaveBlock1Ptr->location.mapNum == MAP_NUM(MAP_PETALBURG_WOODS)
+          && VarGet(VAR_PETALBURG_WOODS_STATE) == 0)
+    {
+        // The partner's Devon scene: this player helped beat the grunt, so
+        // this save's scene is done too (its own GREAT BALL, its own var),
+        // and the scene does not replay here. Story flags are not copied.
+        sGuestFollowup = COOP_FOLLOWUP_WOODS;
     }
     else
     {

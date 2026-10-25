@@ -1,0 +1,73 @@
+# UNMODIFIED PARTIES: story_seg3 without the cached-stat fixture, for a
+# representative check of Route 104 and the Woods grunt with the parties the
+# story chain raised. A loss here is a balance finding, not a harness fault.
+# Story run, segment 3 (actual play): CONTINUE the saves story_seg2 made in
+# Norman's gym, link, turn the Beacon ON with the Twin Beacon, walk out of
+# Petalburg to Route 104 (its trainers are co-op fights when they spot the
+# pair), through Petalburg Woods (Devon researcher and the Aqua grunt), up
+# Route 104 to Rustboro, and save there (story_seg4 continues in the gym).
+include continue.inc
+include relink.inc
+b expect coop.sLinkState 2
+b no_wild 1
+b smart_moves 1
+include beacon_on.inc
+b mash_field 2000 B
+b dump beacon
+# Out of the gym and west to Route 104.
+0 walk 4 110 3000
+0 cross DOWN 0 0 3000
+1 walk 5 110 3000
+1 cross DOWN 0 0 3000
+b dump petalburg
+b walk 0 12 3000
+b cross LEFT 0 19 3000
+b dump route104
+0 walk 10 38 6000
+0 until_map 24 11 3000
+1 wait 200
+1 walk 11 38 6000
+1 until_map 24 11 3000
+b dump woods
+b shot seg3-woods
+# The Devon researcher stops the player near the middle; the grunt follows.
+# Story state is per save. Player 0 plays the scene and player 1 joins the
+# grunt fight from its invite. Having won it together, player 1 gets a
+# short catch-up from its own researcher (its own GREAT BALL, its own
+# VAR_PETALBURG_WOODS_STATE) instead of replaying the scene and the fight.
+0 walk 26 24 4000
+1 walk 27 25 4000
+b sync
+0 walk 26 23 2000
+1 until_cb2 BattleMainCB2 15000 A
+0 until_cb2 BattleMainCB2 15000 A
+b expect coop.sInBattle 1
+b expect gBattlersCount 4
+b shot seg3-grunt-p0-scene
+0 mash_field 30000
+1 until_field_text drove_that_thug_off 30000
+1 wait 30
+1 shot seg3-woods-catchup
+1 mash_field 3000
+b sync
+b mash_field 3000
+b expect_var 0x4098 1
+b expect_item 1 2 1
+0 dump after-grunt
+1 dump after-grunt
+# Player 1 walks over the scene's trigger tiles: nothing replays.
+1 walk 27 23 3000
+1 walk 26 23 3000
+1 wait 60
+1 expect coop.sInBattle 0
+1 expect_no_object 4
+b expect coop.sLinkState 2
+b shot seg3-after-grunt
+b walk 14 5 6000
+b cross UP 0 19 3000
+b dump route104-north
+b walk 16 0 5000
+b cross UP 0 3 3000
+b dump rustboro
+b shot seg3-rustboro
+include save_again.inc

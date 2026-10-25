@@ -1008,6 +1008,16 @@ extern u8 gBattleTextBuff1[TEXT_BUFF_ARRAY_COUNT];
 extern u8 gBattleTextBuff2[TEXT_BUFF_ARRAY_COUNT];
 extern u8 gBattleTextBuff3[TEXT_BUFF_ARRAY_COUNT + 13]; //to handle stupidly large z move names
 extern u32 gBattleTypeFlags;
+
+// A co-op battle (two humans, link multi) against ONE NPC trainer: the
+// opponent side is that trainer alone, like a stock double against one
+// trainer (one trainer pic, its party shared by both opponent slots, no
+// second trainer name). The link multi format must not invent a second.
+static inline bool32 IsCoopSingleTrainerBattle(void)
+{
+    return (gBattleTypeFlags & (BATTLE_TYPE_COOP | BATTLE_TYPE_TRAINER | BATTLE_TYPE_TWO_OPPONENTS))
+        == (BATTLE_TYPE_COOP | BATTLE_TYPE_TRAINER);
+}
 extern u8 gBattleEnvironment;
 extern u8 *gBattleAnimBgTileBuffer;
 extern u8 *gBattleAnimBgTilemapBuffer;

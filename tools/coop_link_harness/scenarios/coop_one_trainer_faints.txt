@@ -1,0 +1,36 @@
+# Co-op battle against ONE trainer (Bug Catcher Lyle, four Wurmple) in which
+# both of his Pokemon faint on the same turn with one left in reserve: only
+# the left slot sends it out, and the battle goes on to a normal end. (The
+# right slot used to ask for the same Wurmple and the battle stalled; found
+# in the 0xC0170133 regression's story_seg3, fixed in HasNoMonsToSwitch.)
+# story_seg6 saves.
+# FIXTURES: Lyle's trainer flag cleared and both players warped next to
+# him in Petalburg Woods; strong_battlers (one-hit KOs: the double KO); his
+# fourth Wurmple's HP set to 0 when the battle starts, so a double KO on
+# the first turn leaves exactly one.
+include continue.inc
+include relink.inc
+b expect coop.sLinkState 2
+b no_wild 1
+b smart_moves 1
+b strong_battlers 400
+include beacon_on.inc
+b mash_field 2000 B
+b fixture_flag 0x768 0
+0 fixture_warp 24 11 10 35
+1 fixture_warp 24 11 11 35
+b until_field 3000
+b sync
+b wait 30
+0 walk_battle 7 35 6000
+1 until_cb2 BattleMainCB2 9000 A
+0 until_cb2 BattleMainCB2 9000 A
+b expect gBattlersCount 4
+b wait 60
+b write gParties+986:2 0
+b mash_field 30000
+b expect gBattleOutcome 1
+b sync
+b wait 60
+b shot after-lyle
+b expect coop.sInBattle 0

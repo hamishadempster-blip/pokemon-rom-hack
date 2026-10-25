@@ -51,7 +51,6 @@
 #include "test/battle.h"
 #include "battle_main.h"
 
-static bool32 CoopPrintActionPrompt(enum BattlerId battler, bool32 force);
 
 static void PlayerHandleLoadMonSprite(enum BattlerId battler);
 static void PlayerHandleDrawTrainerPic(enum BattlerId battler);
@@ -242,7 +241,6 @@ static void HandleInputChooseAction(enum BattlerId battler)
 
     DoBounceEffect(battler, BOUNCE_HEALTHBOX, 7, 1);
     DoBounceEffect(battler, BOUNCE_MON, 7, 1);
-    CoopPrintActionPrompt(battler, FALSE);
 
     if (JOY_REPEAT(DPAD_ANY) && gSaveBlock2Ptr->optionsButtonMode == OPTIONS_BUTTON_MODE_L_EQUALS_A)
         gPlayerDpadHoldFrames++;
@@ -1942,8 +1940,17 @@ static void PrintLinkStandbyMsg(void)
     {
         gBattle_BG0_X = 0;
         gBattle_BG0_Y = 0;
-        BattlePutTextOnWindow((gBattleTypeFlags & BATTLE_TYPE_COOP)
-            ? COMPOUND_STRING("Ready. Waiting for partner...") : gText_LinkStandby, B_WIN_MSG);
+        // Co-op: the action prompt stays the stock "What will … do?"; once
+        // this player has chosen, the message box says whom it waits for.
+        if (gBattleTypeFlags & BATTLE_TYPE_COOP)
+        {
+            BattleStringExpandPlaceholdersToDisplayedString(COMPOUND_STRING("Ready. Waiting for {B_LINK_PARTNER_NAME}…"));
+            BattlePutTextOnWindow(gDisplayedStringBattle, B_WIN_MSG);
+        }
+        else
+        {
+            BattlePutTextOnWindow(gText_LinkStandby, B_WIN_MSG);
+        }
     }
 }
 
@@ -2088,30 +2095,6 @@ static void HandleChooseActionAfterDma3(enum BattlerId battler)
     }
 }
 
-static EWRAM_DATA u8 sCoopPartnerPrompt[MAX_BATTLERS_COUNT] = {0};
-
-// The action prompt in a co-op battle names the partner's progress where
-// this game can know it: the link master runs the engine and sees the
-// partner's choice arrive. The other game keeps the stock prompt.
-static bool32 CoopPrintActionPrompt(enum BattlerId battler, bool32 force)
-{
-    enum BattlerId partner = GetPartnerBattler(battler);
-    u8 state;
-
-    if (!(gBattleTypeFlags & BATTLE_TYPE_COOP) || !(gBattleTypeFlags & BATTLE_TYPE_IS_MASTER)
-     || partner >= gBattlersCount || !IsBattlerAlive(partner))
-        return FALSE;
-    state = Coop_BattlePartnerReady(partner) ? 2 : 1;
-    if (!force && sCoopPartnerPrompt[battler] == state)
-        return TRUE;
-    sCoopPartnerPrompt[battler] = state;
-    BattleStringExpandPlaceholdersToDisplayedString(state == 2
-        ? COMPOUND_STRING("Partner ready.\nWhat will {B_BUFF1} do?")
-        : COMPOUND_STRING("Partner choosing…\nWhat will {B_BUFF1} do?"));
-    BattlePutTextOnWindow(gDisplayedStringBattle, B_WIN_ACTION_PROMPT);
-    return TRUE;
-}
-
 static void PlayerHandleChooseAction(enum BattlerId battler)
 {
     s32 i;
@@ -2164,7 +2147,7 @@ static void PlayerHandleChooseAction(enum BattlerId battler)
         }
         BattlePutTextOnWindow(gStringVar1, B_WIN_ACTION_PROMPT);
     }
-    else if (!CoopPrintActionPrompt(battler, TRUE))
+    else
     {
         BattlePutTextOnWindow(gDisplayedStringBattle, B_WIN_ACTION_PROMPT);
     }

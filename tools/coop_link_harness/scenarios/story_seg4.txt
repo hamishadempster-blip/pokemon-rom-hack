@@ -3,7 +3,8 @@
 # trainers as they spot the pair, and beat Roxanne together.
 # FIXTURES: wild encounters off; strong_battlers raises this player's
 # in-battle stats (gBattleMons only, nothing saved), so the run tests the gym
-# flow rather than grinding. With the Beacon off after reload, gym trainers
+# flow rather than grinding (not a balance check); fixture_nick names the
+# first three Pokemon on each save. With the Beacon off after reload, gym trainers
 # who spot one player are that player's solo fights; Roxanne is co-op. smart_moves only steers the driver's move choice.
 include continue.inc
 include relink.inc
@@ -13,6 +14,14 @@ b expect coop.sBeacon+1:1 0
 b no_wild 1
 b smart_moves 1
 b strong_battlers 400
+# FIXTURE: distinct, realistic nicknames (the story saves name every catch
+# "Aaaaaaaaaaaa"), so each screen's names can be told apart in messages.
+0 fixture_nick 0 Emberdash
+0 fixture_nick 1 Pebblet
+0 fixture_nick 2 Mossy
+1 fixture_nick 0 Sootfang
+1 fixture_nick 1 Rillo
+1 fixture_nick 2 Thistle
 0 walk 27 19 5000
 0 until_map 11 3 3000
 1 wait 300

@@ -1,3 +1,61 @@
+# Visual correctness and co-op polish: build 0xC0170133
+
+Branch `coop-doorway-scenes-rivals`, not merged. Both games need this build (0xC0170132 refuses to link with it). Save layout unchanged; the new NAME TAG setting uses spare bits of `CoopSave.partnerMarker` (0 = ON on older saves). Test log: [COOP_TESTLOG_C0170133.md](COOP_TESTLOG_C0170133.md).
+
+## 1. Patterned blocks after a level-up (host screen)
+
+- **Cause, confirmed.** The link VS screen leaves BG1 set to 512x256 in the BG library and its frame in the BG1/BG2 tilemap buffers; `BattleIntroSlideLink` (battle_intro.c) then writes the battle's own BG1CNT/BG2CNT straight to the registers, so library and registers disagree. Stock link battles never draw on BG1 again. When the co-op level-up stat box redraws BG1, the library re-applies the stale 512x256 size (BG1CNT 0x5C00/0x5C01) and copies the stale buffer, so the VS frame comes back as slate blocks for the rest of the battle. Only the host draws level-up boxes in a co-op battle (stock link battles award no Exp.), so only Player 1's screen showed it.
+- **Fix.** Where the slide restores the registers, it also restores the library's screen sizes (BG1 256x512, BG2 512x256) and clears both tilemap buffers, so the two agree and the next window copy starts from empty maps. Level-up boxes, move learning and animations are unchanged.
+- **Evidence.** 0xC0170132, story_seg5 from seg4 saves: BG1CNT 0x5C00/0x5C01 in 159 of 1133 battle snapshots, blocks in the frames after the Rustboro rival level-up box. 0xC0170133, same saves and inputs: 0 of 1167; the box draws and clears (clip `rival_levelup_before_after.mp4`).
+
+## 2. One trainer in a co-op battle
+
+- **Cause.** A co-op fight against one trainer is a multi battle (two players) without `BATTLE_TYPE_TWO_OPPONENTS`, but the intro, the VS screen, the send-out and the victory text assumed a second opponent: a second trainer picture, a send-out for an uninitialised fourth battler (the Lv0 box and the nameless send-out), "You defeated GRUNT and !", and the replacement message read the right flank's buffer ("SOREN sent out Marshtomp!" on Player 2 while Nacli came out).
+- **Fix.** `IsCoopSingleTrainerBattle()` (battle.h) steers the intro (one centred trainer pic, no second send-out animation), `TwoMonsAtSendOut` (the trainer's own two Pokémon), the VS screen, the trainer pic positions, INTROSENDOUT, BATTLEEND ("You defeated TEAM AQUA GRUNT!") and SWITCHINMON (each flank's own name buffer).
+- **Found by this pass's own regression: a stall.** With the second trainer gone, a single trainer's two Pokémon come from one party. When both fainted on the same turn with one left in reserve (story_seg3, Bug Catcher Lyle), both slots asked for that last Pokémon and the battle waited forever. `HasNoMonsToSwitch` (battle_util.c) now lets only the left slot send it out, as the stock 2-vs-1 case does. `coop_one_trainer_faints` reproduces it (stalls with the check disabled, passes with it).
+- **Empty-field actions after a KO, investigated from the battle log, not the picture.** With `BATTLE_LOG`, every case found was the stock doubles rule: when both foes faint before a slower ally acts, that ally's move has no target and fails ("But it failed!"); replacements come at the end of the turn. Example: story_seg4 Roxanne/Heath, Lileep fainted to Emberdash, then Sootfang's Smog failed with both foe slots absent. Not changed. The phantom fourth battler of the old build is gone, so no action resolves against an uninitialised slot.
+
+## 3. Day and night
+
+- **Cause, confirmed: palette restoration, plus two clocks.** The CO-OP menu callback and the link wait called `UnfadePlttBuffer`, which copies the untinted palettes over the tinted ones, so the outdoor night tint vanished after the menu or a link. Separately, each game tinted by its own clock, so two linked players could see night and noon side by side.
+- **Fix.** `Coop_RestoreFieldPalettes()` ends the fade, unfades, and re-applies the time-of-day tint and the weather colour map. While linked, the host sends hours and minutes (`DMSG_CLOCK`, on change) and the guest's `UpdateTimeOfDay` uses them; nothing is written to either clock or save, so berries and daily events keep each game's own clock. Lighting, time-based evolutions and their hints, encounters and night music follow the time shown. Unlinking (or a drop) re-tints from the game's own clock.
+- **Evidence.** lighting_link with the two clocks at 23:00 and 12:00: 11 failed checks on 0xC0170132 (tint lost in the menu, two times of day when linked), 0 on 0xC0170133.
+
+## 4. Battle presentation
+
+- The "Partner choosing…" line that overlapped "What will … do?" is gone. After choosing, the screen says "Ready. Waiting for <partner>…".
+- Only the link host's Pokémon learn moves inside the battle. The other screen used to show the host's YES/NO question ("Should another move be forgotten…?"); it now says "<host> is choosing whether <Pokémon> learns <move>…".
+- Target selection already names the slot and species ("Left foe Nacli", "Partner …", spread moves, "Hits partner!"); unchanged here.
+- Test runs can give distinct, realistic nicknames (`fixture_nick`), so both screens' names are checkable; max-length (12-character) names stay covered by the story saves.
+
+## 5. Partner visibility and status
+
+- **Name tag**: the partner's name in small text on a dark pill above their head (`coop_outfit.c`), shared palette with the marker, one 64x32 sprite. Shown only while this player can move (hidden in menus, messages, scenes, warps), only for a partner drawn on this map and on screen; rebuilt after a map load, removed when the partner leaves or the link ends (no ghost). Drawn on the partner's layer, in front of characters, so the name stays readable when the local player stands just north. CO-OP menu > NAME TAG cycles ON (default), NEARBY (three steps), OFF; saved. The head arrow is suppressed while the tag shows; the edge compass is unchanged.
+- **Status window** (start menu, five lines): link and Beacon ("LINKED · no BEACON yet" before the item), "<name>: exploring / talking / healing / in a menu / busy / battling" ("healing" when the partner's talk target is a nurse in their map's event table; "battling" after a second of BUSY, so doors do not read as battles), "<map>, with you" or "<map>, inside", fights together or solo and why, rival. "Link trouble: retrying..." only when the cable has stalled.
+- **Door notes**: one "<name> went inside" per 20 seconds, not one per door.
+
+## 6. Story flow
+
+- Defined: a fight won together is shared, everything else is personal (state, reward, catch-up). Story flags are never copied wholesale (COOP.md, "Shared and personal outcomes").
+- Petalburg Woods: a partner who joined the grunt fight and won gets a short catch-up from their own researcher, their own GREAT BALL and their own `VAR_PETALBURG_WOODS_STATE`, instead of replaying the scene and the fight (`Coop_QueueGuestFollowup`, `Coop_EventScript_GuestWoods`). A partner who did not join still meets the scene. Ordinary trainers stay independent.
+- UNLINK: "You unlinked. You're playing solo." for the one who chose it, "<name> unlinked. …" for the other; "The link dropped." only for a real fault.
+
+## 7. Known gaps
+
+- **pp_coop stops in the VOLT + FUSE duo battle** (New Mauville) with the regression's seg6 saves: the host waits for the guest's battler to finish a move and it never does. Build 0xC0170132 stops at the same point with the same saves, so it predates this pass; not fixed. Repro: `pp_coop` on story_seg6 saves; the harness's stop dump now includes animation, healthbox and task state.
+- No in-battle state for a partner whose link stalls mid-battle; the stock link-error handling still applies.
+- The tag can be clipped at the top screen edge; when the local player stands just north of the partner it covers the player's legs (readability chosen over layering).
+- Status "healing" covers the nurse only (not a Centre PC or Mum); "battling" is inferred from a lasting BUSY.
+- Only the Woods scene has a joined-fight catch-up; other optional story fights with a scene (none found up to Rustboro) would need their own.
+- Unmodified-party runs: segment 3 passes; segment 4 loses to the first gym trainer (one Torchic/Houndour each against Glimmet's Rock Throw) and whites out home. That is a balance finding of the one-Pokémon walking chain, not changed here.
+- mGBA's GUI could not be run in this environment (no display); all recordings come from the two-core harness built on libmgba 0.10.3. Real hardware, netplay and two PCs were not tested.
+
+## 8. Results on the delivered ROM
+
+- Full regression (`run_all.sh`, `SEG6`, `LONG=1`): 110 runs, 109 pass, `pp_coop` fails (pre-existing, §7). Visual checks on all 110 logs: 0 failures; the same checks fail the 0xC0170132 logs where the user's recordings showed the bugs.
+- New: `nametag`, `lighting_link`, `coop_one_trainer_faints` pass; `story_seg3` now covers the Woods catch-up; `story_seg3_real` passes without stat fixtures; `story_seg4_real` loses (§7).
+- Clips (both screens, same build per side): Woods grunt, Rustboro rival level-up and replacement, lighting across link/menu/Centre/unlink, partner tag and status.
+
 # Rival looks, outfits, five optional quests: build 0xC0170132
 
 Branch `coop-doorway-scenes-rivals`, not merged. Test log: [COOP_TESTLOG_C0170132.md](COOP_TESTLOG_C0170132.md). Quest walkthroughs and data: [COOP_QUESTS.md](COOP_QUESTS.md). Player text: [COOP.md](COOP.md).

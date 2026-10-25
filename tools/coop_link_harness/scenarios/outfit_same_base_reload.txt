@@ -15,4 +15,6 @@ b wait 150
 b expect coop_outfit.sPartnerOutfit 1
 0 expect gCoopMarkerShown 0
 1 expect gCoopMarkerShown 1
+# NAME TAG OFF was saved too.
+b expect gCoopNameTagShown 0
 b shot same-reloaded

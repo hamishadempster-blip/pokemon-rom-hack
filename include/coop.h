@@ -77,6 +77,7 @@ extern const u8 Coop_EventScript_TalkPartner[];
 struct Pokemon;
 
 void Coop_RecordLevelUp(u8 slot, u8 oldLevel);
+void Coop_RestoreFieldPalettes(void);
 u16 Coop_NextProgression(void);
 void Coop_StartProgressionEvolution(void);
 
@@ -132,6 +133,7 @@ u8 Coop_PartnerSpriteId(u8 *gender);
 bool8 Coop_PartnerMapPos(s16 *x, s16 *y);
 u16 Coop_BufferCapText(void);
 u16 Coop_BufferUnlinkedMenu(void);
+u16 Coop_BufferUnlinkName(void);
 u16 Coop_BufferBeaconStatus(void);
 u16 Coop_BufferBeaconAsk(void);
 u16 Coop_PrepareTwinBeacon(void);
@@ -201,6 +203,7 @@ extern const u8 Coop_EventScript_TalkPartner[];
 extern const u8 Coop_EventScript_WarpToLab[];
 extern const u8 Coop_EventScript_ChooseCase[];
 extern const u8 Coop_EventScript_Disconnected[];
+extern const u8 Coop_EventScript_PartnerUnlinked[];
 extern const u8 Coop_EventScript_BuildMismatch[];
 extern const u8 Coop_EventScript_CapMismatch[];
 extern const u8 Coop_EventScript_LegendConflict[];

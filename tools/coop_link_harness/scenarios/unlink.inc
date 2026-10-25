@@ -1,4 +1,4 @@
-# CO-OP list while linked: BEACON, UNLINK, PARTNER DEX, JOURNAL, BACK. UNLINK, then YES drops the
+# CO-OP list while linked: BEACON, UNLINK, PARTNER DEX, JOURNAL, NAME TAG, BACK. UNLINK, then YES drops the
 # link. A is tapped until the link is down, so any text speed works.
 b press START 2
 b wait 40

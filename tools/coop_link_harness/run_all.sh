@@ -18,19 +18,27 @@ mkdir -p "$out"
 summary="$out/summary.txt"
 : > "$summary"
 failed=0
+visualFailed=0
 
 run() {
 	local name="$1"; shift
 	local start=$SECONDS
-	if env "$@" "$here/run_scenario.sh" "$here/scenarios/$name.txt" "$out/$name" > "$out/$name.log" 2>&1; then
+	if env BATTLE_LOG=1 "$@" "$here/run_scenario.sh" "$here/scenarios/$name.txt" "$out/$name" > "$out/$name.log" 2>&1; then
 		status=PASS
 	else
 		status=FAIL
 		failed=$((failed + 1))
 	fi
-	local frames
+	local frames visual
 	frames=$(grep -oE 'frames p0=[0-9]+ p1=[0-9]+ failures=[0-9]+' "$out/$name.log" | tail -1)
-	printf '%-28s %s  %s  (%ss)\n' "$name" "$status" "$frames" $((SECONDS - start)) | tee -a "$summary"
+	# What the screens said in battle (BATTLE_LOG), checked by visual_check.py.
+	if python3 "$here/visual_check.py" "$out/$name.log" > "$out/$name.visual.txt" 2>&1; then
+		visual="visual ok"
+	else
+		visual="VISUAL FAIL ($(grep -c '^FAIL' "$out/$name.visual.txt"))"
+		visualFailed=$((visualFailed + 1))
+	fi
+	printf '%-28s %s  %s  %s  (%ss)\n' "$name" "$status" "$frames" "$visual" $((SECONDS - start)) | tee -a "$summary"
 }
 
 fresh="littleroot doors_stagger rescue guest_move guest_evolution target_navigation spread_selection
@@ -92,6 +100,13 @@ if [ -n "${SEG6:-}" ]; then
 		run "$s" SAVE0="$SEG6/p0.sav" SAVE1="$SEG6/p1.sav"
 	done
 	run outfit_bases_reload SAVE0="$out/outfit_bases/p0.sav" SAVE1="$out/outfit_bases/p1.sav"
+	# Visual polish on the seg6 pair: the partner's name tag, the status
+	# window and UNLINK messages; and the outdoor lighting across linking,
+	# menus and the Centre with the two clocks set apart (23:00 and 12:00).
+	run nametag SAVE0="$SEG6/p0.sav" SAVE1="$SEG6/p1.sav"
+	# One trainer, two of his Pokemon down on one turn, one left in reserve.
+	run coop_one_trainer_faints SAVE0="$SEG6/p0.sav" SAVE1="$SEG6/p1.sav"
+	run lighting_link SAVE0="$SEG6/p0.sav" SAVE1="$SEG6/p1.sav" RTC_EPOCH0=1699963200 RTC_EPOCH1=1699923600
 	for s in shoal coast caravan twins beacon; do
 		run "${s}_reload" SAVE0="$out/${s}_solo/p0.sav" SAVE1="$out/${s}_solo/p1.sav"
 	done
@@ -113,5 +128,5 @@ if [ -n "${ZIG_AFFECTED:-}" ]; then
 	run zigzagoon_reload SAVE0="$ZIG_AFFECTED/p0.sav" SAVE1="$ZIG_AFFECTED/p1.sav"
 fi
 
-echo "failed scenarios: $failed" | tee -a "$summary"
+echo "failed scenarios: $failed; visual-check failures: $visualFailed" | tee -a "$summary"
 exit $failed

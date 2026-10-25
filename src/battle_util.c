@@ -2033,6 +2033,28 @@ bool32 HasNoMonsToSwitch(enum BattlerId battler, u8 partyIdBattlerOn1, u8 partyI
     }
     else if (gBattleTypeFlags & BATTLE_TYPE_MULTI)
     {
+        // A co-op battle against one trainer fields two of that trainer's
+        // Pokémon from one party. When both faint on the same turn with one
+        // left in reserve, only the left slot sends it out; the right slot
+        // would otherwise ask for the same Pokémon and the battle stalls.
+        if (!isPlayerSide && IsCoopSingleTrainerBattle())
+        {
+            enum BattlerId left = GetBattlerAtPosition(B_POSITION_OPPONENT_LEFT);
+            enum BattlerId right = GetBattlerAtPosition(B_POSITION_OPPONENT_RIGHT);
+
+            if (battler == right
+             && (gHitMarker & HITMARKER_FAINTED(left))
+             && (gHitMarker & HITMARKER_FAINTED(right)))
+            {
+                u32 count = 0;
+
+                for (i = 0; i < lastId; i++)
+                    if (IsValidForBattle(&party[i]))
+                        count++;
+                if (count < 2)
+                    return TRUE;
+            }
+        }
         for (i = 0; i < lastId; i++)
         {
             if (!IsValidForBattle(&party[i]))

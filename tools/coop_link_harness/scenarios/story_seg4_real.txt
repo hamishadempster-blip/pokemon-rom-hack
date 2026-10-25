@@ -1,0 +1,48 @@
+# UNMODIFIED PARTIES: story_seg4 without strong_battlers, for a
+# representative balance check of the gym trainers and the co-op Roxanne
+# fight with the parties the story chain actually raised. Only no_wild
+# (walking), smart_moves (the driver's move choice) and fixture_nick
+# (names only) remain. A loss here is a balance finding, not a harness fault.
+# Story run, segment 4 (actual play): CONTINUE the saves story_seg3 made in
+# Rustboro, link, walk into the gym staggered, take the gym
+# trainers as they spot the pair, and beat Roxanne together.
+include continue.inc
+include relink.inc
+b expect coop.sLinkState 2
+# The Beacon is a per-session setting: off again after a reload.
+b expect coop.sBeacon+1:1 0
+b no_wild 1
+b smart_moves 1
+# FIXTURE: distinct, realistic nicknames (the story saves name every catch
+# "Aaaaaaaaaaaa"), so each screen's names can be told apart in messages.
+0 fixture_nick 0 Emberdash
+0 fixture_nick 1 Pebblet
+0 fixture_nick 2 Mossy
+1 fixture_nick 0 Sootfang
+1 fixture_nick 1 Rillo
+1 fixture_nick 2 Thistle
+0 walk 27 19 5000
+0 until_map 11 3 3000
+1 wait 300
+1 walk 27 19 5000
+1 until_map 11 3 3000
+b dump gym
+0 walk 5 3 6000
+1 walk 4 3 6000
+b sync
+b dump before-roxanne
+0 press UP 2
+0 wait 20
+0 press A 2
+b until_cb2 BattleMainCB2 9000 A
+b expect coop.sInBattle 1
+b expect gBattlersCount 4
+b shot seg4-roxanne
+b mash_field 40000
+b expect gBattleOutcome 1
+b mash_field 6000
+b expect_flag 0x4F0 1
+b expect_flag 0x867 1
+b expect coop.sLinkState 2
+b shot seg4-badge
+include save_again.inc

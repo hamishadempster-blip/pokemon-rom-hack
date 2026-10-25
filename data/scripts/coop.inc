@@ -3,6 +3,7 @@
 	.global Coop_EventScript_PartnerDeclined
 	.global Coop_EventScript_NotReady
 	.global Coop_EventScript_Disconnected
+	.global Coop_EventScript_PartnerUnlinked
 	.global Coop_EventScript_BuildMismatch
 	.global Coop_EventScript_CapMismatch
 	.global Coop_EventScript_LegendConflict
@@ -72,6 +73,14 @@ Coop_EventScript_ShowPartnerNotReady::
 Coop_EventScript_Disconnected::
 	lockall
 	msgbox Coop_Text_Disconnected, MSGBOX_DEFAULT
+	releaseall
+	end
+
+@ The partner chose UNLINK: not a fault, so not "The link dropped."
+Coop_EventScript_PartnerUnlinked::
+	lockall
+	special Coop_BufferUnlinkName
+	msgbox Coop_Text_PartnerUnlinked, MSGBOX_DEFAULT
 	releaseall
 	end
 
@@ -213,16 +222,23 @@ Coop_EventScript_MenuLinked::
 	specialvar VAR_RESULT, Coop_BufferMenuExplain
 	messageinstant gStringVar4
 	goto_if_eq VAR_RESULT, TRUE, Coop_EventScript_MenuLinkedBeaconOn
-	dynmultichoice 18, 1, FALSE, 5, 0, DYN_MULTICHOICE_CB_NONE, Coop_Text_OptBeaconOn, Coop_Text_OptUnlink, Coop_Text_OptPartnerDex, Coop_Text_OptJournal, Coop_Text_OptBack
+	dynmultichoice 18, 1, FALSE, 6, 0, DYN_MULTICHOICE_CB_NONE, Coop_Text_OptBeaconOn, Coop_Text_OptUnlink, Coop_Text_OptPartnerDex, Coop_Text_OptJournal, Coop_Text_OptNameTag, Coop_Text_OptBack
 	goto Coop_EventScript_MenuLinkedChoice
 Coop_EventScript_MenuLinkedBeaconOn::
-	dynmultichoice 18, 1, FALSE, 5, 0, DYN_MULTICHOICE_CB_NONE, Coop_Text_OptBeaconOff, Coop_Text_OptUnlink, Coop_Text_OptPartnerDex, Coop_Text_OptJournal, Coop_Text_OptBack
+	dynmultichoice 18, 1, FALSE, 6, 0, DYN_MULTICHOICE_CB_NONE, Coop_Text_OptBeaconOff, Coop_Text_OptUnlink, Coop_Text_OptPartnerDex, Coop_Text_OptJournal, Coop_Text_OptNameTag, Coop_Text_OptBack
 Coop_EventScript_MenuLinkedChoice::
 	switch VAR_RESULT
 	case 0, Coop_EventScript_MenuBeacon
 	case 1, Coop_EventScript_MenuUnlink
 	case 2, Coop_EventScript_MenuPartnerDex
 	case 3, Coop_EventScript_MenuJournal
+	case 4, Coop_EventScript_MenuNameTag
+	goto Coop_EventScript_MenuBack
+
+@ ON, NEARBY, OFF in turn: the partner's name over their head.
+Coop_EventScript_MenuNameTag::
+	special CoopOutfit_CycleNameTag
+	msgbox gStringVar4, MSGBOX_DEFAULT
 	goto Coop_EventScript_MenuBack
 
 @ Whose catches the POKéDEX list shows next to yours, and how fresh.
@@ -246,7 +262,7 @@ Coop_EventScript_MenuUnlink::
 	msgbox Coop_Text_AskUnlink, MSGBOX_YESNO
 	goto_if_eq VAR_RESULT, NO, Coop_EventScript_MenuBack
 	special Coop_Disconnect
-	msgbox Coop_Text_Disconnected, MSGBOX_DEFAULT
+	msgbox Coop_Text_YouUnlinked, MSGBOX_DEFAULT
 	releaseall
 	end
 
@@ -399,6 +415,9 @@ Coop_Text_OptLinkUp:
 Coop_Text_OptJournal:
 	.string "JOURNAL$"
 
+Coop_Text_OptNameTag:
+	.string "NAME TAG$"
+
 Coop_Text_OptLevelCap:
 	.string "LEVEL CAP$"
 
@@ -417,6 +436,14 @@ Coop_Text_NoBeaconYet:
 Coop_Text_Disconnected:
 	.string "The link dropped.\n"
 	.string "Your party is still yours.$"
+
+Coop_Text_YouUnlinked:
+	.string "You unlinked. You're playing solo.\n"
+	.string "Your party is still yours.$"
+
+Coop_Text_PartnerUnlinked:
+	.string "{STR_VAR_1} unlinked. You're playing\n"
+	.string "solo. Your party is still yours.$"
 
 Coop_Text_BuildMismatch:
 	.string "These two games aren't the same build.\n"
@@ -548,8 +575,42 @@ Coop_EventScript_GuestAfterBattle::
 	case 20, Coop_EventScript_GuestCatchUp
 	case 21, Coop_EventScript_GuestCatchUp
 	case 22, Coop_EventScript_GuestCatchUp
+	case 30, Coop_EventScript_GuestWoods
 	releaseall
 	end
+
+@ This player joined the partner's Petalburg Woods fight and won. The
+@ researcher thanks them here too and leaves: this save's scene is done
+@ (VAR_PETALBURG_WOODS_STATE 1, its own GREAT BALL), so it doesn't replay.
+Coop_EventScript_GuestWoods::
+	goto_if_ne VAR_PETALBURG_WOODS_STATE, 0, Coop_EventScript_GuestWoodsEnd
+	special CoopDeal_BufferPartnerName
+	msgbox Coop_Text_WoodsThanks, MSGBOX_DEFAULT
+	giveitem ITEM_GREAT_BALL
+	goto_if_eq VAR_RESULT, FALSE, Coop_EventScript_GuestWoodsBagFull
+	msgbox Coop_Text_WoodsHurry, MSGBOX_DEFAULT
+	goto Coop_EventScript_GuestWoodsLeave
+Coop_EventScript_GuestWoodsBagFull::
+	msgbox PetalburgWoods_Text_YoureLoadedWithItems, MSGBOX_DEFAULT
+Coop_EventScript_GuestWoodsLeave::
+	closemessage
+	removeobject LOCALID_PETALBURG_WOODS_GRUNT
+	removeobject LOCALID_PETALBURG_WOODS_DEVON_EMPLOYEE
+	setvar VAR_PETALBURG_WOODS_STATE, 1
+Coop_EventScript_GuestWoodsEnd::
+	releaseall
+	end
+
+Coop_Text_WoodsThanks:
+	.string "DEVON RESEARCHER: Whew… You and\n"
+	.string "{STR_VAR_1} drove that thug off!\p"
+	.string "He didn't get my important papers.\n"
+	.string "Here, a GREAT BALL for you too!$"
+
+Coop_Text_WoodsHurry:
+	.string "DEVON RESEARCHER: TEAM AQUA is\n"
+	.string "after something in RUSTBORO.\p"
+	.string "I can't waste any more time here!$"
 
 @ The talker keeps playing the cutscene. This only moves the guest's save
 @ forward, and never backward. A 2 from the special warps to Route 128.

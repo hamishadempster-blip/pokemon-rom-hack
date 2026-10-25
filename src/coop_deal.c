@@ -44,6 +44,7 @@
 #include "pokemon.h"
 #include "pokemon_storage_system.h"
 #include "random.h"
+#include "rtc.h"
 #include "save.h"
 #include "script.h"
 #include "sound.h"
@@ -74,7 +75,13 @@ enum
     DMSG_PARTY_MON,     // arg: index, arg2: count, mon: one Pokemon
     DMSG_QUEST,         // arg: COOP_QUEST_*, arg2: value, qty: 1 live change, 0 report
     DMSG_LOOK,          // arg: COOP_OUTFIT preset, arg2: gender (src/coop_outfit.c)
+    DMSG_CLOCK,         // arg: the link master's local hours, arg2: minutes (shared time of day)
 };
+
+// The link master's time of day, received with DMSG_CLOCK (see Clock_Poll).
+static EWRAM_DATA bool8 sPartnerClockValid = FALSE;
+static EWRAM_DATA u8 sPartnerHours = 0;
+static EWRAM_DATA u8 sPartnerMinutes = 0;
 
 // Local deal states.
 enum
@@ -899,6 +906,20 @@ void CoopDeal_HandleBlock(u32 playerId, const u16 *words)
         CoopOutfit_OnPartnerLook(msg.arg, msg.arg2);
         return;
     }
+    if (msg.type == DMSG_CLOCK)
+    {
+        if (msg.arg < 24 && msg.arg2 < 60)
+        {
+            bool8 changed = !sPartnerClockValid || sPartnerHours != msg.arg || sPartnerMinutes != msg.arg2;
+
+            sPartnerHours = msg.arg;
+            sPartnerMinutes = msg.arg2;
+            sPartnerClockValid = TRUE;
+            if (changed)
+                gTimeUpdateCounter = 0; // re-tint on the next overworld frame
+        }
+        return;
+    }
     if (msg.dealId != sDeal.dealId || sDeal.state == DS_IDLE)
     {
         // A READY for a deal this game has escrowed but already gave up
@@ -1091,10 +1112,62 @@ static bool8 Deal_PlayerFree(void)
         && gMain.callback2 == CB2_Overworld && !gPaletteFade.active;
 }
 
+// ------------------------------------------------------------ shared clock
+// Shared-world time of day: while linked, both games show the link master's
+// local time of day (outdoor tint, time-of-day encounters and evolutions).
+// Only hours and minutes are shared and nothing is written to either save:
+// each game's own clock, days, berries and daily events stay its own, and
+// unlinking returns to the game's own time at once.
+static EWRAM_DATA bool8 sClockSent = FALSE;
+static EWRAM_DATA u8 sClockSentHours = 0;
+static EWRAM_DATA u8 sClockSentMinutes = 0;
+static EWRAM_DATA u8 sClockTimer = 0;
+static EWRAM_DATA bool8 sClockWasShared = FALSE;
+
+static void Clock_Poll(void)
+{
+    if (!IsLinkMaster())
+        return;
+    if (++sClockTimer < 30)
+        return;
+    sClockTimer = 0;
+    RtcCalcLocalTime();
+    if (sClockSent && gLocalTime.hours == sClockSentHours && gLocalTime.minutes == sClockSentMinutes)
+        return;
+    if (sLink.count + 1 >= DEAL_QUEUE_SIZE)
+        return;
+    {
+        struct CoopDealMsg *msg = Deal_Push(DMSG_CLOCK, gLocalTime.hours, 0xFFFF, COOP_DEAL_NONE);
+        msg->arg2 = gLocalTime.minutes;
+    }
+    sClockSent = TRUE;
+    sClockSentHours = gLocalTime.hours;
+    sClockSentMinutes = gLocalTime.minutes;
+}
+
+bool8 CoopDeal_SharedClock(s32 *hours, s32 *minutes)
+{
+    bool8 shared = Deal_LinkOk() && !IsLinkMaster() && sPartnerClockValid;
+
+    if (shared != sClockWasShared)
+    {
+        sClockWasShared = shared;
+        gTimeUpdateCounter = 0; // sharing began or ended: re-tint
+    }
+    if (!shared)
+        return FALSE;
+    *hours = sPartnerHours;
+    *minutes = sPartnerMinutes;
+    return TRUE;
+}
+
 void CoopDeal_Poll(void)
 {
     struct CoopDealRecord *rec = Deal_Record();
+    s32 hours, minutes;
 
+    // Notices sharing start or stop (unlink, a dropped cable) at once.
+    CoopDeal_SharedClock(&hours, &minutes);
     if (!Deal_LinkOk())
     {
         // Nothing can be sent or received. A waiting script must not wait
@@ -1110,6 +1183,7 @@ void CoopDeal_Poll(void)
         }
         return;
     }
+    Clock_Poll();
     if (sLookDue && sLink.count + 1 < DEAL_QUEUE_SIZE)
     {
         struct CoopDealMsg *look = Deal_Push(DMSG_LOOK, CoopOutfit_Local(), 0xFFFF, COOP_DEAL_NONE);
@@ -1430,6 +1504,9 @@ u16 CoopDex_BufferSummary(void)
 
 void CoopDeal_OnSessionStart(void)
 {
+    sClockSent = FALSE;
+    sClockTimer = 30;
+    sPartnerClockValid = FALSE;
     sDexSent = FALSE;
     sDexTimer = 0;
     sPartnerSpeedKnown = FALSE;

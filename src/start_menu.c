@@ -168,7 +168,7 @@ static const struct WindowTemplate sWindowTemplate_CoopStatus = {
     .tilemapLeft = 1,
     .tilemapTop = 1,
     .width = 14,
-    .height = 8,
+    .height = 10,
     .paletteNum = 15,
     .baseBlock = 0x8
 };
@@ -833,10 +833,7 @@ static bool8 StartMenuCoopCallback(void)
     RemoveExtraStartMenuWindows();
     HideStartMenu();
     // The menu used to fade out before this ran, and the fade never came back.
-    gPaletteFade.active = FALSE;
-    gPaletteFade.y = 0;
-    gPaletteFade.targetY = 0;
-    UnfadePlttBuffer(PALETTES_ALL);
+    Coop_RestoreFieldPalettes();
     ScriptContext_SetupScript(Coop_EventScript_Menu);
     return TRUE;
 }

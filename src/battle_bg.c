@@ -1181,6 +1181,9 @@ void InitLinkBattleVsScreen(u8 taskId)
                     DrawLinkBattleParticipantPokeballs(taskId, linkPlayer->id, 1, 2, 8);
                     break;
                 case 3:
+                    // A co-op battle against one trainer has no fourth side.
+                    if (IsCoopSingleTrainerBattle())
+                        break;
                     BattlePutTextOnWindow(name, B_WIN_VS_MULTI_PLAYER_4);
                     DrawLinkBattleParticipantPokeballs(taskId, linkPlayer->id, 2, 2, 8);
                     break;

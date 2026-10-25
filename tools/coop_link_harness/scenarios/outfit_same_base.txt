@@ -4,6 +4,8 @@
 # back pics), and surfing. Then player 1 picks FOREST too: the looks match,
 # so the partner marker shows (AUTO); OFF hides it, ALWAYS shows it with
 # different looks. Saved for outfit_same_base_reload.txt.
+# The CO-OP menu's NAME TAG is set to OFF on both (the setting is saved,
+# so the reload test sees it OFF too).
 # FIXTURES: player 1's lab save is the girl, so fixture_gender makes it the
 # boy before linking (the same base is the case under test); fixture_warp
 # between the bedroom, Granite Cave and Route 103's water (landing on water
@@ -16,6 +18,11 @@ b expect coop_outfit.sShownLocal 0
 1 fixture_warp 1 1 6 4
 b until_field 3000
 b wait 60
+# The name tag (ON by default) would stand in for the arrow; this test is
+# about the arrow, so both turn the tag OFF in the CO-OP menu (twice).
+include nametag_cycle.inc
+include nametag_cycle.inc
+b expect gCoopNameTagShown 0
 # Player 0: FOREST (second).
 0 walk 4 2 2000
 0 press UP 2

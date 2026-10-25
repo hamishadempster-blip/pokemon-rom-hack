@@ -2616,7 +2616,8 @@ void BufferStringBattle(enum StringID stringID, enum BattlerId battler)
                 else
                     stringPtr = sText_Trainer1SentOutTwoPkmn;
             }
-            else if (BattlerIsLink(battler) || (BattlerIsRecorded(battler) && BattlerIsOpponent(battler)))
+            else if ((BattlerIsLink(battler) || (BattlerIsRecorded(battler) && BattlerIsOpponent(battler)))
+                  && !(gBattleTypeFlags & BATTLE_TYPE_COOP)) // co-op opponents are NPC trainers: name and class
             {
                 if (TRAINER_BATTLE_PARAM.opponentA == TRAINER_UNION_ROOM)
                     stringPtr = sText_Trainer1SentOutPkmn;
@@ -2726,7 +2727,10 @@ void BufferStringBattle(enum StringID stringID, enum BattlerId battler)
             }
             else // Opponent A
             {
-                stringPtr = sText_Trainer1SentOutPkmn;
+                // The switched-in Pokémon itself (gBattleTextBuff1, from
+                // switchindataupdate), not whoever stands at the left
+                // position: a co-op guest's positions are its own view.
+                stringPtr = sText_Trainer1SentOutPkmn2;
             }
         }
         else // battler 2 and 3
@@ -2802,7 +2806,7 @@ void BufferStringBattle(enum StringID stringID, enum BattlerId battler)
             if (!(BattlerIsPlayer(battler) || BattlerIsPlayer(GetPartnerBattler(battler))) && gBattleTextBuff1[0] != B_OUTCOME_DREW)
                 gBattleTextBuff1[0] ^= (B_OUTCOME_LOST | B_OUTCOME_WON);
 
-            if (gBattleTypeFlags & BATTLE_TYPE_MULTI)
+            if (gBattleTypeFlags & BATTLE_TYPE_MULTI && !IsCoopSingleTrainerBattle())
             {
                 switch (gBattleTextBuff1[0])
                 {
@@ -2820,7 +2824,7 @@ void BufferStringBattle(enum StringID stringID, enum BattlerId battler)
                     break;
                 }
             }
-            else if (TRAINER_BATTLE_PARAM.opponentA == TRAINER_UNION_ROOM)
+            else if (TRAINER_BATTLE_PARAM.opponentA == TRAINER_UNION_ROOM || IsCoopSingleTrainerBattle())
             {
                 switch (gBattleTextBuff1[0])
                 {
@@ -2864,6 +2868,13 @@ void BufferStringBattle(enum StringID stringID, enum BattlerId battler)
         else
         {
             stringPtr = gBattleStringsTable[stringID];
+            // Co-op: only the link master's own Pokémon learn moves in the
+            // battle, and only that player gets the YES/NO and the move list.
+            // The other screen says who is deciding instead of asking a
+            // question nobody there can answer.
+            if ((gBattleTypeFlags & BATTLE_TYPE_COOP) && !(gBattleTypeFlags & BATTLE_TYPE_IS_MASTER)
+             && (stringID == STRINGID_TRYTOLEARNMOVE3 || stringID == STRINGID_STOPLEARNINGMOVE))
+                stringPtr = COMPOUND_STRING("{B_LINK_PARTNER_NAME} is choosing whether {B_BUFF1} learns {B_BUFF2}…");
         }
         break;
     }

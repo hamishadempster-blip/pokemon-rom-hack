@@ -246,7 +246,8 @@ Coop_EventScript_FieldGuideBye::
 
 Coop_Text_FieldGuideIntro:
 	.string "I study the POKéMON that have\n"
-	.string "settled in HOENN lately.$"
+	.string "settled in HOENN lately.\pDay and night go by your clock.\n"
+	.string "Linked, both of you share the\lhost's time of day.$"
 Coop_Text_FieldGuideAsk:
 	.string "Which one would you like to know\n"
 	.string "about?$"

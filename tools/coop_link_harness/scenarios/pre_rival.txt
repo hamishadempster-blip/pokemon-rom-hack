@@ -1,0 +1,153 @@
+# DEBUG-ONLY (not in run_all): story_seg5 up to the Rustboro rival, saved there.
+# Story run, segment 5 (actual play): CONTINUE the saves story_seg4 made in
+# Roxanne's gym, link, and play the Devon goods chain on each save: the
+# thief escapes past the gym, the employee asks for help, Mr. Briney on
+# Route 116, the Aqua grunt in Rusturf Tunnel, the goods returned, Mr. Stone's
+# letter and PokeNav on Devon 3F, then the Rustboro rival on the way south.
+# Player 1 trails player 0 through each step. Beacon off (fresh session):
+# the tunnel grunt is each player's own fight; the rival is co-op.
+# FIXTURES: no_wild; strong_battlers (in-battle stats only); smart_moves.
+include continue.inc
+include relink.inc
+b expect coop.sLinkState 2
+b no_wild 1
+b smart_moves 1
+b strong_battlers 400
+b expect_var 0x405A 1
+0 walk 5 18 3000
+0 cross DOWN 0 3 3000
+1 wait 200
+1 walk 6 18 3000
+1 cross DOWN 0 3 3000
+b dump rustboro
+# The thief runs past the gym (state 1 -> 2), on each save.
+0 walk 23 22 3000
+0 mash_field 8000
+1 wait 300
+1 walk 23 23 3000
+1 mash_field 8000
+b sync
+b expect_var 0x405A 2
+b shot seg5-thief
+# The employee by Devon asks for help (2 -> 3).
+0 walk 30 11 3000
+0 mash_field 8000
+1 wait 200
+1 walk 30 12 3000
+1 mash_field 8000
+b sync
+b expect_var 0x405A 3
+# East to Route 116; Briney stops each player by the tunnel.
+b walk 39 10 4000
+b cross RIGHT 0 31 3000
+b dump route116
+0 walk 47 8 6000
+0 until_map 24 4 6000
+1 wait 300
+1 walk 47 8 6000
+1 until_map 24 4 6000
+b expect_var 0x406F 2
+b dump tunnel
+# The grunt stands at (13,5) with Peeko above. Player 0 first.
+0 walk 12 5 4000
+0 press RIGHT 2
+0 wait 10
+0 press A 2
+0 until_cb2 BattleMainCB2 9000 A
+0 mash_field 30000
+0 dump after-tunnel-grunt
+0 expect_var 0x409A 3
+0 walk 5 10 3000
+b sync
+1 walk 12 5 4000
+1 press RIGHT 2
+1 wait 10
+1 press A 2
+1 until_cb2 BattleMainCB2 9000 A
+1 mash_field 30000
+1 dump after-tunnel-grunt
+1 expect_var 0x409A 3
+b sync
+b expect_item 4 733 1
+b shot seg5-tunnel
+# Back to Rustboro with the goods (state 4 -> 5, warp into Devon 3F).
+b walk 4 10 3000
+b cross DOWN 0 31 3000
+b walk 0 10 5000
+b cross LEFT 0 3 3000
+0 walk 30 11 4000
+0 until_map 11 2 8000
+0 mash_field 15000
+0 expect_var 0x405A 6
+0 dump devon3f
+0 walk 2 1 3000
+0 until_map 11 1 3000
+0 walk 14 1 3000
+0 until_map 11 0 3000
+0 walk 5 7 3000
+0 press DOWN 30
+# The scientist adds Match Call; the tutorial menu only accepts POKENAV.
+0 until_task Task_HandleMultichoiceInput 6000 A
+0 wait 10
+0 press DOWN 2
+0 wait 10
+0 press DOWN 2
+0 wait 10
+0 press DOWN 2
+0 wait 10
+0 press A 2
+# PokeNav tutorial: MATCH CALL, call the first contact, then leave.
+0 wait 150
+0 press DOWN 2
+0 wait 15
+0 press DOWN 2
+0 wait 15
+0 press A 2
+0 wait 150
+0 press A 2
+0 wait 40
+0 press A 2
+0 wait 300
+0 mash_field 9000 B
+0 expect_var 0x405A 7
+b sync
+1 walk 30 11 4000
+1 until_map 11 2 8000
+1 mash_field 15000
+1 expect_var 0x405A 6
+1 walk 2 1 3000
+1 until_map 11 1 3000
+1 walk 14 1 3000
+1 until_map 11 0 3000
+1 walk 5 7 3000
+1 press DOWN 30
+# The scientist adds Match Call; the tutorial menu only accepts POKENAV.
+1 until_task Task_HandleMultichoiceInput 6000 A
+1 wait 10
+1 press DOWN 2
+1 wait 10
+1 press DOWN 2
+1 wait 10
+1 press DOWN 2
+1 wait 10
+1 press A 2
+# PokeNav tutorial: MATCH CALL, call the first contact, then leave.
+1 wait 150
+1 press DOWN 2
+1 wait 15
+1 press DOWN 2
+1 wait 15
+1 press A 2
+1 wait 150
+1 press A 2
+1 wait 40
+1 press A 2
+1 wait 300
+1 mash_field 9000 B
+1 expect_var 0x405A 7
+b sync
+b expect_flag 0xBC 1
+b dump rustboro-after-devon
+b shot seg5-pokenav
+# South through Rustboro: the rival waits by the south exit (state 7).
+include save_continue.inc
