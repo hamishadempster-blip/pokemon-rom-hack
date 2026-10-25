@@ -565,7 +565,7 @@ static void battleDump(struct Player* p) {
 	char ctl[4][64];
 	unsigned funcs = symAddr("gBattlerControllerFuncs");
 	for (int i = 0; i < 4; i++)
-		snprintf(ctl[i], sizeof(ctl[i]), "%s", symName(rd32(p, funcs + i * 4)));
+		snprintf(ctl[i], sizeof(ctl[i]), "%s@%x", symName(rd32(p, funcs + i * 4)), rd32(p, funcs + i * 4));
 	out("[f%06d p%d battle] main=%s exec=%08x comm=%02x %02x %02x %02x ctl={%s, %s, %s, %s} linkState=%u multiId=%u\n",
 	    p->frame, p->id, symName(rd32(p, symAddr("gBattleMainFunc"))), rd32(p, symAddr("gBattleControllerExecFlags")),
 	    rd8(p, symAddr("gBattleCommunication")), rd8(p, symAddr("gBattleCommunication") + 1),
@@ -853,9 +853,33 @@ static void snapVideo(struct Player* p) {
 static void battleLog(struct Player* p) {
 	static int on = -1;
 	static char last[2][440];
-	if (on < 0) on = getenv("BATTLE_LOG") != NULL;
+	if (on < 0) on = getenv("BATTLE_LOG") ? (atoi(getenv("BATTLE_LOG")) == 2 ? 2 : 1) : 0;
 	if (!on) return;
 	if (!(rd8(p, sMain + 0x439) & 2)) { last[p->id & 1][0] = 0; return; }
+	if (on == 2) {
+		// BATTLE_LOG=2: also each controller function and move-animation
+		// state change, per battler.
+		static unsigned lastCtl[2][4], lastState[2][4], lastActive[2];
+		unsigned funcs = symAddr("gBattlerControllerFuncs");
+		unsigned hb = rd32(p, rd32(p, symAddr("gBattleSpritesDataPtr")) + 4);
+		unsigned active = rd8(p, symAddr("gAnimScriptActive"));
+		for (int b = 0; b < 4; b++) {
+			unsigned f = rd32(p, funcs + b * 4), st = hb ? rd8(p, hb + b * 16 + 4) | (rd8(p, hb + b * 16) << 8) : 0;
+			if (f != lastCtl[p->id & 1][b] || st != lastState[p->id & 1][b])
+				out("[f%06d p%d ctl] b%d %s state=%u flags=%02x anim=%u exec=%08x\n", p->frame, p->id, b, symName(f), st & 0xFF, st >> 8,
+				    active, rd32(p, symAddr("gBattleControllerExecFlags")));
+			lastCtl[p->id & 1][b] = f; lastState[p->id & 1][b] = st;
+		}
+		if (active != lastActive[p->id & 1])
+			out("[f%06d p%d ctl] gAnimScriptActive=%u\n", p->frame, p->id, active);
+		if (p->frame % 300 == 0) {
+			struct ARMCore* cpu = ((struct GBA*)p->core->board)->cpu;
+			char pc[120];
+			snprintf(pc, sizeof(pc), "%s", symAt(cpu->gprs[15]));
+			out("[f%06d p%d cpu] pc=%s lr=%s\n", p->frame, p->id, pc, symAt(cpu->gprs[14]));
+		}
+		lastActive[p->id & 1] = active;
+	}
 	char text[440];
 	gameText(p, symAddr("gDisplayedStringBattle"), text, sizeof(text));
 	if (!text[0] || !strcmp(text, last[p->id & 1])) return;

@@ -1102,7 +1102,11 @@ static void AddMovePoints(u8 caseId, u16 arg1, u8 arg2, u8 arg3)
         if (IsBattleMoveSpecial(move) && power != 0 && tvPtr->side[defSide].lightScreenMonId != 0)
         {
             u32 id = (tvPtr->side[defSide].lightScreenMonId - 1) * 4;
-            movePoints->points[defSide][id + tvPtr->side[defSide].lightScreenMoveSlot] += sPointsArray[caseId][0];
+            // sPointsArray has no Light Screen row: reading it was a NULL
+            // dereference (a trap that froze link battles, co-op included,
+            // whenever a special move hit through Light Screen). Same
+            // points as Reflect, as in vanilla.
+            movePoints->points[defSide][id + tvPtr->side[defSide].lightScreenMoveSlot] += 3;
         }
         break;
 #undef move

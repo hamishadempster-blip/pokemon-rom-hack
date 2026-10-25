@@ -3659,6 +3659,10 @@ u32 BattleStringExpandPlaceholders(const u8 *src, u8 *dst, u32 dstSize)
                     default:
                         break;
                     }
+                    // A link partner on the right (co-op) has no trainer
+                    // class here; it used to read through NULL.
+                    if (classString == NULL)
+                        classString = gText_EmptyString2;
                     classLength = 0;
                     nameLength = 0;
                     while (classString[classLength] != EOS)
