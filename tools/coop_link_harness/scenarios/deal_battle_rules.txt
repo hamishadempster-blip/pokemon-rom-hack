@@ -1,0 +1,132 @@
+# Friendly battle rules (actual play from the story_seg6 saves):
+# 1. SINGLES, Lv. 100, 3 each, STANDARD. Player 0 picks three of one
+#    species; the picker refuses, player 0 calls the battle off, and
+#    player 1 (waiting with its team) is told.
+# 2. The same as UNRESTRICTED: the three duplicates are accepted, the fight
+#    starts at Lv. 100, and a link error (FIXTURE: the engine's error flag)
+#    ends it early. Both parties come back unchanged.
+# 3. The partner menu works again afterwards.
+# FIXTURES: six-Pokemon parties made from each lead (player 1's retyped).
+include deal_setup.inc
+0 fixture_six
+1 fixture_six
+1 fixture_slot 1 263
+1 fixture_slot 2 261
+b note_party
+b note_money
+0 press A 2
+0 wait 90
+0 press A 2
+0 wait 90
+0 press A 2
+0 wait 90
+0 press DOWN 2
+0 press DOWN 2
+0 press A 2
+0 wait 90
+0 press DOWN 2
+0 press DOWN 2
+0 press A 2
+0 wait 90
+0 press A 2
+0 wait 90
+0 shot k1
+0 until_mem coop_deal.sDeal 1 900 A
+1 until_mem coop_deal.sDeal 2 4000
+1 until_mem coop_deal.sDeal 4 900 A
+b until_cb2 CB2_UpdatePartyMenu 900 A
+b wait 60
+b press A 2
+b wait 20
+b press A 2
+b wait 20
+b press DOWN 2
+b press A 2
+b wait 20
+b press A 2
+b wait 20
+b press DOWN 2
+b press A 2
+b wait 20
+b press A 2
+b wait 40
+b shot k2
+b press A 2
+b wait 60
+b shot k3
+0 press A 2
+0 wait 30
+0 press B 2
+0 wait 60
+0 shot k4
+0 press A 2
+0 wait 60
+0 shot k5
+b wait 200
+b shot k6
+b mash_field 2000 B
+b expect coop_deal.sDeal 0
+b expect_party_same
+# 2. UNRESTRICTED, Lv. 100, 3 each.
+0 press A 2
+0 wait 90
+0 press A 2
+0 wait 90
+0 press A 2
+0 wait 90
+0 press DOWN 2
+0 press DOWN 2
+0 press A 2
+0 wait 90
+0 press DOWN 2
+0 press DOWN 2
+0 press A 2
+0 wait 90
+0 press DOWN 2
+0 press A 2
+0 wait 90
+0 shot open-ask
+0 until_mem coop_deal.sDeal 1 900 A
+1 until_mem coop_deal.sDeal 2 4000
+1 until_mem coop_deal.sDeal 4 900 A
+b until_cb2 CB2_UpdatePartyMenu 900 A
+b wait 60
+b press A 2
+b wait 20
+b press A 2
+b wait 20
+b press DOWN 2
+b press A 2
+b wait 20
+b press A 2
+b wait 20
+b press DOWN 2
+b press A 2
+b wait 20
+b press A 2
+b wait 40
+b press A 2
+b until_cb2 BattleMainCB2 3000
+b wait 300
+b expect_range gParties+84:1 100 100
+b expect gPartiesCount:1 3
+b shot open-battle
+b write gLinkErrorOccurred:1 1
+b until_cb2 CB2_Overworld 3000
+b wait 90
+b shot open-aborted
+b mash_field 3000 B
+b expect_party_same
+b expect_money_same
+b expect coop_deal.gCoopFriendlyBattle 0
+b expect coop_deal.sDeal 0
+b expect coop.sLinkState 2
+b wait 300
+b expect_partner after-abort
+# 3. The menu opens again; CANCEL.
+0 press A 2
+0 wait 90
+0 shot menu-again
+0 press B 2
+0 mash_field 600 B
+b expect coop_deal.sDeal 0

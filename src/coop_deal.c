@@ -36,6 +36,7 @@
 #include "main.h"
 #include "overworld.h"
 #include "palette.h"
+#include "constants/rgb.h"
 #include "party_menu.h"
 #include "pokedex.h"
 #include "pokemon.h"
@@ -236,6 +237,7 @@ static EWRAM_DATA u16 sSettleDeal = 0;
 static EWRAM_DATA struct Pokemon sFriendlySnap[PARTY_SIZE] = {0};
 static EWRAM_DATA bool8 sFriendlyHasSnap = FALSE;
 static EWRAM_DATA u8 sFriendlyOutcome = 0;
+static EWRAM_DATA bool8 sFriendlyAborting = FALSE;
 static EWRAM_DATA u16 sSavedFacility = 0;
 static EWRAM_DATA const u8 *sDealMessage = NULL;
 static EWRAM_DATA u8 sTeamOrder[PARTY_SIZE] = {0};
@@ -1699,6 +1701,7 @@ static void Deal_RestoreFriendlyParty(void)
 
 static void CB2_EndFriendlyBattle(void)
 {
+    sFriendlyAborting = FALSE;
     sFriendlyOutcome = gBattleOutcome;
     gBattleTypeFlags &= ~BATTLE_TYPE_LINK_IN_BATTLE;
     Deal_RestoreFriendlyParty();
@@ -1712,9 +1715,12 @@ static void CB2_EndFriendlyBattle(void)
 // A cable error mid-fight: no result, the real party back, the field again.
 void CoopDeal_AbortFriendlyBattle(void)
 {
-    if (!gCoopFriendlyBattle)
+    // Called every frame while the error stands: start the exit once.
+    if (!gCoopFriendlyBattle || sFriendlyAborting)
         return;
+    sFriendlyAborting = TRUE;
     gBattleOutcome = B_OUTCOME_LINK_BATTLE_RAN;
+    BeginNormalPaletteFade(PALETTES_ALL, 0, 0, 16, RGB_BLACK);
     gMain.savedCallback = CB2_EndFriendlyBattle;
     SetMainCallback2(CB2_QuitRecordedBattle);
 }
@@ -1749,6 +1755,10 @@ void CoopDeal_StartFriendlyBattle(void)
         gBattleTypeFlags |= BATTLE_TYPE_DOUBLE;
     TRAINER_BATTLE_PARAM.opponentA = TRAINER_LINK_OPPONENT;
     TRAINER_BATTLE_PARAM.opponentB = TRAINER_NONE;
+    // Two players, one side each: battler ids follow the link ids, as in
+    // the cable club. (Co-op fights reassign them for the two-human side.)
+    gLinkPlayers[0].id = 0;
+    gLinkPlayers[1].id = 1;
     gMain.savedCallback = CB2_EndFriendlyBattle;
     BattleSetup_StartCoopFriendlyBattle();
     ScriptContext_Stop();

@@ -1,0 +1,88 @@
+# Partner menu BATTLE: DOUBLES, every Pokemon at Lv. 50, 4 each chosen with
+# the team picker, STANDARD rules (actual play from the story_seg6 saves).
+# The real Lv. 15-17 parties come back unchanged; nothing is earned.
+# FIXTURES: six-Pokemon parties made from each lead, five retyped.
+include deal_setup.inc
+0 fixture_six
+0 fixture_slot 1 263
+0 fixture_slot 2 261
+0 fixture_slot 3 252
+0 fixture_slot 4 258
+0 fixture_slot 5 265
+1 fixture_six
+1 fixture_slot 1 263
+1 fixture_slot 2 261
+1 fixture_slot 3 252
+1 fixture_slot 4 258
+1 fixture_slot 5 265
+0 press A 2
+0 wait 90
+0 press A 2
+0 wait 90
+0 press DOWN 2
+0 press A 2
+0 wait 90
+0 press DOWN 2
+0 press A 2
+0 wait 90
+0 press DOWN 2
+0 press A 2
+0 wait 90
+0 press A 2
+0 wait 90
+0 shot r1
+0 until_mem coop_deal.sDeal 1 900 A
+1 until_mem coop_deal.sDeal 2 4000
+1 wait 60
+1 shot r2
+1 until_mem coop_deal.sDeal 4 900 A
+b note_party
+b note_money
+b smart_moves 1
+0 strong_battlers 400
+b until_cb2 CB2_UpdatePartyMenu 900 A
+b wait 60
+b shot p1
+b press A 2
+b wait 30
+b shot p2
+b press A 2
+b wait 30
+b shot p3
+b press DOWN 2
+b press A 2
+b wait 20
+b press A 2
+b wait 20
+b press DOWN 2
+b press A 2
+b wait 20
+b press A 2
+b wait 20
+b press DOWN 2
+b press A 2
+b wait 20
+b press A 2
+b wait 30
+b shot p4
+# CONFIRM the four.
+b press A 2
+b until_cb2 BattleMainCB2 3000
+b wait 400
+b shot doubles-start
+0 expect gBattleTypeFlags:1 0x2f
+1 expect gBattleTypeFlags:1 0x2b
+b expect_range gParties+84:1 50 50
+b expect_range gParties+384:1 50 50
+b expect gPartiesCount:1 4
+b until_cb2 CB2_Overworld 40000 A
+b wait 90
+b shot doubles-after
+b mash_field 3000 B
+b expect_party_same
+b expect_money_same
+b expect_txn 0
+b expect coop.sLinkState 2
+b expect coop_deal.sDeal 0
+b expect coop_deal.gCoopFriendlyBattle 0
+b expect_partner after-doubles

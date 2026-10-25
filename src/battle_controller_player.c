@@ -436,6 +436,11 @@ static bool32 MoveSelectionCanTarget(enum BattlerId battler, enum BattlerId targ
                 return (selection->validTargets[slot] & (1u << target)) != 0;
         return FALSE;
     }
+    // A two-player link battle's cable slave (a co-op friendly battle) does
+    // not run the battle engine, so its battler data cannot judge targets.
+    // The master redirects a move aimed at a fainted foe, as the stock game.
+    if ((gBattleTypeFlags & BATTLE_TYPE_LINK) && !(gBattleTypeFlags & BATTLE_TYPE_IS_MASTER))
+        return TRUE;
     return CanTargetBattler(battler, target, move);
 }
 

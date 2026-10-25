@@ -22,7 +22,7 @@
 #define MAX_CMDS 4096
 #define MAX_SYMS 500000
 
-enum { C_PARTNER, C_GOTO, C_HEX, C_PRESS, C_WAIT, C_SHOT, C_DUMP, C_BARRIER, C_UNTIL_CB2, C_UNTIL_FIELD, C_EXPECT, C_UNTIL_MEM, C_BATTLE, C_MENU, C_PARTY, C_FIXTURE, C_WRITE, C_LEAD, C_MOVE, C_SIX, C_VAR, C_FLAG, C_VS, C_EXPECT_FLAG, C_EXPECT_VAR, C_NO_OBJECT, C_MAP, C_OBJECT, C_TEXT_SPEED, C_PACE, C_MUTE, C_PARTNER_AT, C_ITEM, C_EXPECT_ITEM, C_UNTIL_TEXT, C_WARP, C_PC_COUNT, C_MONS, C_NO_COPIES, C_NOTE_MONEY, C_MONEY_GAIN, C_FORCE_ENC, C_EXPECT_RANGE, C_WALK, C_NO_WILD, C_CROSS, C_WALK_BATTLE, C_SMART, C_STRONG, C_UNTIL_TASK, C_MIRROR, C_SPECIES, C_NOTE_PARTY, C_SAME_PARTY, C_PATCH_RET, C_SLOT, C_TXN };
+enum { C_PARTNER, C_GOTO, C_HEX, C_PRESS, C_WAIT, C_SHOT, C_DUMP, C_BARRIER, C_UNTIL_CB2, C_UNTIL_FIELD, C_EXPECT, C_UNTIL_MEM, C_BATTLE, C_MENU, C_PARTY, C_FIXTURE, C_WRITE, C_LEAD, C_MOVE, C_SIX, C_VAR, C_FLAG, C_VS, C_EXPECT_FLAG, C_EXPECT_VAR, C_NO_OBJECT, C_MAP, C_OBJECT, C_TEXT_SPEED, C_PACE, C_MUTE, C_PARTNER_AT, C_ITEM, C_EXPECT_ITEM, C_UNTIL_TEXT, C_WARP, C_PC_COUNT, C_MONS, C_NO_COPIES, C_NOTE_MONEY, C_MONEY_GAIN, C_FORCE_ENC, C_EXPECT_RANGE, C_WALK, C_NO_WILD, C_CROSS, C_WALK_BATTLE, C_SMART, C_STRONG, C_UNTIL_TASK, C_MIRROR, C_SPECIES, C_NOTE_PARTY, C_SAME_PARTY, C_PATCH_RET, C_SLOT, C_TXN, C_MONEY_SAME };
 
 struct Cmd {
 	int kind;
@@ -774,9 +774,13 @@ static void frameCallback(struct mCoreThread* t) {
 	if (p->noWild) p->core->busWrite8(p->core, symAddr("sWildEncountersDisabled"), 1);
 	// FIXTURE: battle-only stat boost for this player's battlers (0 and 2):
 	// attack..spDefense in gBattleMons, never written back to the party.
+	// In a two-player link battle (no MULTI) the cable slave's own
+	// battlers are 1 and 3; co-op battles put both humans on 0 and 2.
+	unsigned bflags = rd32(p, sBattleFlags);
+	int own = ((bflags & 2) && !(bflags & 0x40) && !(bflags & 4)) ? 1 : 0;
 	if (p->strongBattlers && (rd8(p, sMain + 0x439) & 2)) {
 		unsigned mons = symAddr("gBattleMons");
-		for (int b = 0; b < 4; b += 2)
+		for (int b = own; b < 4; b += 2)
 			if (rd16(p, mons + b * 0x8C))
 				for (int k = 0; k < 5; k++) p->core->busWrite16(p->core, mons + b * 0x8C + 2 + k * 2, p->strongBattlers);
 	}
@@ -788,7 +792,7 @@ static void frameCallback(struct mCoreThread* t) {
 		// moves u16[4], currentPP u8[4] at +8). Unlike gBattleMons it is
 		// filled on the guest too, which runs controllers only.
 		unsigned res = rd32(p, symAddr("gBattleResources")), cur = symAddr("gMoveSelectionCursor"), info = symAddr("gMovesInfo");
-		for (int b = 0; res && b < 4; b += 2) {
+		for (int b = own; res && b < 4; b += 2) {
 			unsigned m = res + 0x10 + b * 0x200 + 4;
 			int best = -1; unsigned bestPow = 0;
 			for (int i = 0; i < 4; i++) {
@@ -1151,7 +1155,7 @@ static void frameCallback(struct mCoreThread* t) {
 			// mash_field in a battle's party menu (a forced switch after a
 			// faint): step the cursor down before each A, so a fainted
 			// first slot does not hold the masher on "no energy left".
-			if (c->kind == C_UNTIL_FIELD && c->keys == 1) keys = autoKeys(p, p->step);
+			if ((c->kind == C_UNTIL_FIELD || c->kind == C_UNTIL_CB2) && c->keys == 1) keys = autoKeys(p, p->step);
 			if (++p->step >= c->frames) {
 				out("[p%d] FAIL timeout waiting for %s (line cmd %d)\n", p->id, c->text, p->pc);
 				dump(p, "fail");
@@ -1293,12 +1297,16 @@ static void frameCallback(struct mCoreThread* t) {
             break;
         }
         case C_NOTE_MONEY:
+        case C_MONEY_SAME:
         case C_MONEY_GAIN: {
             unsigned key = rd32(p, rd32(p, symAddr("gSaveBlock2Ptr")) + symValue("harness.encryptionKeyOffset"));
             unsigned money = rd32(p, rd32(p, sSave1) + symValue("harness.moneyOffset")) ^ key;
             if (c->kind == C_NOTE_MONEY) {
                 p->moneyBase = money;
                 out("[p%d] money %u\n", p->id, money);
+            } else if (c->kind == C_MONEY_SAME) {
+                if (money != p->moneyBase) { out("[p%d] FAIL money %u, was %u\n", p->id, money, p->moneyBase); sFailures++; }
+                else out("[p%d] ok money unchanged (%u)\n", p->id, money);
             } else {
                 struct Player* o = &P[1 - p->id];
                 unsigned okey = rd32(o, rd32(o, symAddr("gSaveBlock2Ptr")) + symValue("harness.encryptionKeyOffset"));
@@ -1776,6 +1784,8 @@ static void loadScript(const char* path, int depth) {
             c.value = strtoul(b, NULL, 0);
         } else if (!strcmp(cmd, "note_money")) {
             c.kind = C_NOTE_MONEY;
+        } else if (!strcmp(cmd, "expect_money_same")) {
+            c.kind = C_MONEY_SAME;
         } else if (!strcmp(cmd, "expect_same_prize")) {
             c.kind = C_MONEY_GAIN;
         } else if (!strcmp(cmd, "expect_no_copies")) {

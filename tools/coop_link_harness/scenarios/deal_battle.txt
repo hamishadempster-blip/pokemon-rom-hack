@@ -1,0 +1,63 @@
+# Partner menu BATTLE (actual play from the story_seg6 saves): six against
+# six singles at the players' own levels, STANDARD rules. Each side keeps
+# its real party, money and save untouched; the co-op link and Beacon
+# carry on afterwards.
+# FIXTURES: six-Pokemon parties made from each lead, five retyped so the
+# STANDARD no-repeat rule holds.
+include deal_setup.inc
+# The Twin Beacon on first (CO-OP menu, both agree): it must still be on
+# after the friendly battle. Player 1 faces away while it taps A.
+1 press UP 1
+1 wait 20
+0 press START 2
+0 wait 40
+0 menu_to COOP
+0 press A 2
+0 wait 60
+0 press A 2
+1 until_mem coop.sBeacon+1:1 1 3000 A
+0 mash_field 1200 B
+b until_mem coop.sBeacon+1:1 1 1200
+b mash_field 1500 B
+1 press LEFT 1
+b wait 30
+b expect coop.sBeacon+1:1 1
+0 fixture_six
+0 fixture_slot 1 263
+0 fixture_slot 2 261
+0 fixture_slot 3 252
+0 fixture_slot 4 258
+0 fixture_slot 5 265
+1 fixture_six
+1 fixture_slot 1 263
+1 fixture_slot 2 261
+1 fixture_slot 3 252
+1 fixture_slot 4 258
+1 fixture_slot 5 265
+b note_party
+b note_money
+b smart_moves 1
+# FIXTURE: player 0's battlers hit harder, so the fight is short.
+0 strong_battlers 400
+# BATTLE, SINGLES, OWN LEVELS, UP TO 6, STANDARD, YES: the defaults.
+0 until_mem coop_deal.sDeal 1 900 A
+1 until_mem coop_deal.sDeal 2 4000
+1 wait 60
+1 shot battle-incoming
+1 until_mem coop_deal.sDeal 4 900 A
+b until_cb2 BattleMainCB2 3000
+b wait 300
+b shot battle-start
+b expect coop_deal.gCoopFriendlyBattle 1
+b until_cb2 CB2_Overworld 40000 A
+b wait 90
+b shot battle-after
+b mash_field 3000 B
+b expect_party_same
+b expect_money_same
+b expect_txn 0
+b expect coop.sLinkState 2
+b expect coop_deal.sDeal 0
+b expect coop_deal.gCoopFriendlyBattle 0
+b expect_partner after-friendly
+b expect coop.sBeacon+1:1 1
