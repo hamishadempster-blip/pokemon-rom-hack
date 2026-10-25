@@ -1511,12 +1511,12 @@ const struct SpeciesInfo gSpeciesInfoGen4[] =
     [SPECIES_LUXRAY] =
     {
         .baseHP        = 80,
-        .baseAttack    = 120,
+        .baseAttack    = 125,
         .baseDefense   = 79,
-        .baseSpeed     = 70,
-        .baseSpAttack  = 95,
+        .baseSpeed     = 88,
+        .baseSpAttack  = 75,
         .baseSpDefense = 79,
-        .types = MON_TYPES(TYPE_ELECTRIC),
+        .types = MON_TYPES(TYPE_ELECTRIC, TYPE_DARK),
         .catchRate = 45,
     #if P_UPDATED_EXP_YIELDS >= GEN_8
         .expYield = 262,

@@ -410,7 +410,7 @@ for row in ret.splitlines()[2:]:
     st = d['stats']
     have = [st[0], st[1], st[2], st[4], st[5], st[3]]
     abil_want = [a.strip() for a in cells[2].split(',', 1)[1].split('/')]
-    abil_have = [a for a in d['abilities'] if a and a != 'None']
+    abil_have = list(dict.fromkeys(a for a in d['abilities'] if a and a != 'None'))
     ok_stats = want_stats is None or want_stats == have
     ok_abil = [a.lower().replace("-", " ") for a in abil_want] == [a.lower() for a in abil_have]
     flag = 'OK' if ok_stats and ok_abil else 'MISMATCH'
