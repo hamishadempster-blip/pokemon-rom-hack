@@ -1,4 +1,6 @@
 #include "global.h"
+#include "coop_deal.h"
+#include "constants/coop.h"
 #include "battle.h"
 #include "coop.h"
 #include "battle_hold_effects.h"
@@ -1513,6 +1515,9 @@ static void Cmd_waitmessage(void)
         else
         {
             u16 toWait = cmd->time;
+            // BATTLE SCENE FAST: half the pause after each message.
+            if ((gCoopBattleSpeed & COOP_SPEED_SHORT_TEXT) && toWait > 1)
+                toWait /= 2;
             if (gTestRunnerHeadless)
                 gPauseCounterBattle = toWait;
             if (++gPauseCounterBattle >= toWait)

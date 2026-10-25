@@ -1879,6 +1879,7 @@ static void loadScript(const char* path, int depth) {
 			else if (!strcmp(a, "POKEMON")) c.value = 1;
 			else if (!strcmp(a, "COOP")) c.value = 15;
 			else if (!strcmp(a, "POKEDEX")) c.value = 0;
+			else if (!strcmp(a, "OPTION")) c.value = 6;
 			else { fprintf(stderr, "menu_to %s\n", a); exit(1); }
 			snprintf(c.text, sizeof(c.text), "menu %s", a);
 		} else if (!strcmp(cmd, "expect_battle")) {

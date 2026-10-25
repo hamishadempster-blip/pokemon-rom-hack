@@ -9,6 +9,7 @@
 extern bool8 gCoopFriendlyBattle;
 extern u8 gCoopFriendlyRules;
 extern bool8 gCoopPracticeBattle;
+extern u8 gCoopBattleSpeed;  // COOP_SPEED_* in force for the current battle
 
 // Called by coop.c.
 void CoopDeal_HandleBlock(u32 playerId, const u16 *words);
@@ -21,6 +22,8 @@ void CoopDeal_FieldFrame(void);
 void CoopDex_HandleBlock(u32 playerId, const u16 *words);
 bool8 CoopDex_PartnerCaught(u16 nationalNum);
 u16 CoopDex_BufferSummary(void);
+u8 Coop_LocalBattleSpeed(void);
+u8 Coop_BattleSpeed(void);
 #define COOP_DEX_MAGIC 0xC0DE
 
 // Called by coop.c, implemented there.

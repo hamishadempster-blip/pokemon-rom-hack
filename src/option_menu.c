@@ -1,4 +1,6 @@
 #include "global.h"
+#include "coop_deal.h"
+#include "constants/coop.h"
 #include "option_menu.h"
 #include "bg.h"
 #include "gpu_regs.h"
@@ -245,7 +247,8 @@ void CB2_InitOptionMenu(void)
 
         gTasks[taskId].tMenuSelection = 0;
         gTasks[taskId].tTextSpeed = gSaveBlock2Ptr->optionsTextSpeed;
-        gTasks[taskId].tBattleSceneOff = gSaveBlock2Ptr->optionsBattleSceneOff;
+        // 0 ON, 1 OFF, 2 FAST (OFF plus shorter message pauses).
+        gTasks[taskId].tBattleSceneOff = (Coop_LocalBattleSpeed() & COOP_SPEED_SHORT_TEXT) ? 2 : gSaveBlock2Ptr->optionsBattleSceneOff;
         gTasks[taskId].tBattleStyle = gSaveBlock2Ptr->optionsBattleStyle;
         gTasks[taskId].tSound = gSaveBlock2Ptr->optionsSound;
         gTasks[taskId].tButtonMode = gSaveBlock2Ptr->optionsButtonMode;
@@ -367,7 +370,14 @@ static void Task_OptionMenuProcessInput(u8 taskId)
 static void Task_OptionMenuSave(u8 taskId)
 {
     gSaveBlock2Ptr->optionsTextSpeed = gTasks[taskId].tTextSpeed;
-    gSaveBlock2Ptr->optionsBattleSceneOff = gTasks[taskId].tBattleSceneOff;
+    gSaveBlock2Ptr->optionsBattleSceneOff = gTasks[taskId].tBattleSceneOff != 0;
+    if (Coop_GetSave() != NULL)
+    {
+        if (gTasks[taskId].tBattleSceneOff == 2)
+            Coop_GetSave()->battleSpeed |= COOP_SPEED_SHORT_TEXT;
+        else
+            Coop_GetSave()->battleSpeed &= ~COOP_SPEED_SHORT_TEXT;
+    }
     gSaveBlock2Ptr->optionsBattleStyle = gTasks[taskId].tBattleStyle;
     gSaveBlock2Ptr->optionsSound = gTasks[taskId].tSound;
     gSaveBlock2Ptr->optionsButtonMode = gTasks[taskId].tButtonMode;
@@ -459,25 +469,36 @@ static void TextSpeed_DrawChoices(u8 selection)
 
 static u8 BattleScene_ProcessInput(u8 selection)
 {
-    if (JOY_NEW(DPAD_LEFT | DPAD_RIGHT))
+    if (JOY_NEW(DPAD_RIGHT))
     {
-        selection ^= 1;
+        selection = selection < 2 ? selection + 1 : 0;
         sArrowPressed = TRUE;
     }
-
+    if (JOY_NEW(DPAD_LEFT))
+    {
+        selection = selection != 0 ? selection - 1 : 2;
+        sArrowPressed = TRUE;
+    }
     return selection;
 }
 
+// ON, OFF (no animations), FAST (no animations, shorter message pauses).
+// In a co-op or friendly battle each needs both players' choice.
 static void BattleScene_DrawChoices(u8 selection)
 {
-    u8 styles[2];
+    static const u8 sText_Fast[] = _("FAST");
+    u8 styles[3] = {0, 0, 0};
+    s32 widthOn, widthOff, widthFast, xMid;
 
-    styles[0] = 0;
-    styles[1] = 0;
     styles[selection] = 1;
-
     DrawOptionMenuChoice(gText_BattleSceneOn, 104, YPOS_BATTLESCENE, styles[0]);
-    DrawOptionMenuChoice(gText_BattleSceneOff, GetStringRightAlignXOffset(FONT_NORMAL, gText_BattleSceneOff, 198), YPOS_BATTLESCENE, styles[1]);
+    widthOn = GetStringWidth(FONT_NORMAL, gText_BattleSceneOn, 0);
+    widthOff = GetStringWidth(FONT_NORMAL, gText_BattleSceneOff, 0);
+    widthFast = GetStringWidth(FONT_NORMAL, sText_Fast, 0);
+    widthOff -= 94;
+    xMid = (widthOn - widthOff - widthFast) / 2 + 104;
+    DrawOptionMenuChoice(gText_BattleSceneOff, xMid, YPOS_BATTLESCENE, styles[1]);
+    DrawOptionMenuChoice(sText_Fast, GetStringRightAlignXOffset(FONT_NORMAL, sText_Fast, 198), YPOS_BATTLESCENE, styles[2]);
 }
 
 static u8 BattleStyle_ProcessInput(u8 selection)

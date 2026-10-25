@@ -1,0 +1,73 @@
+# BATTLE SCENE FAST and friendly battles (actual play from the story_seg6
+# saves). The link master runs the fight, so it uses only what both
+# players chose: player 0 FAST with player 1 ON fights at normal speed;
+# once player 1 also picks FAST (the choice reaches player 0 over the link)
+# the fight has no animations and shorter pauses. Each fight is ended
+# early (FIXTURE: the engine's link-error flag); the parties come back.
+include deal_setup.inc
+b note_party
+0 press UP 1
+0 wait 20
+0 press START 2
+0 wait 40
+0 menu_to OPTION
+0 press A 2
+0 wait 120
+0 press DOWN 2
+0 wait 10
+0 press RIGHT 2
+0 wait 10
+0 press RIGHT 2
+0 wait 30
+0 shot options-fast
+0 press B 2
+0 wait 120
+0 press B 2
+0 until_field 900
+0 press RIGHT 1
+0 wait 20
+0 expect coop_deal.gCoopBattleSpeed 0
+b wait 300
+0 until_mem coop_deal.sDeal 1 900 A
+1 until_mem coop_deal.sDeal 2 4000
+1 until_mem coop_deal.sDeal 4 900 A
+b until_cb2 BattleMainCB2 3000
+b wait 200
+0 expect coop_deal.gCoopBattleSpeed 0
+b write gLinkErrorOccurred:1 1
+b until_cb2 CB2_Overworld 3000
+b mash_field 3000 B
+b expect_party_same
+1 press UP 1
+1 wait 20
+1 press START 2
+1 wait 40
+1 menu_to OPTION
+1 press A 2
+1 wait 120
+1 press DOWN 2
+1 wait 10
+1 press RIGHT 2
+1 wait 10
+1 press RIGHT 2
+1 wait 30
+1 shot options-fast
+1 press B 2
+1 wait 120
+1 press B 2
+1 until_field 900
+1 press LEFT 1
+1 wait 20
+b wait 300
+0 until_mem coop_deal.sDeal 1 900 A
+1 until_mem coop_deal.sDeal 2 4000
+1 until_mem coop_deal.sDeal 4 900 A
+b until_cb2 BattleMainCB2 3000
+b wait 200
+0 expect coop_deal.gCoopBattleSpeed 3
+b shot fast-battle
+b write gLinkErrorOccurred:1 1
+b until_cb2 CB2_Overworld 3000
+b mash_field 3000 B
+b expect_party_same
+b expect coop.sLinkState 2

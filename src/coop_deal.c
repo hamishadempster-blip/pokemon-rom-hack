@@ -229,6 +229,7 @@ struct CoopDealLink
 EWRAM_DATA bool8 gCoopFriendlyBattle = FALSE;
 EWRAM_DATA u8 gCoopFriendlyRules = 0;
 EWRAM_DATA bool8 gCoopPracticeBattle = FALSE;
+EWRAM_DATA u8 gCoopBattleSpeed = 0;
 
 static EWRAM_DATA struct CoopDealState sDeal = {0};
 static EWRAM_DATA struct CoopDealLink sLink = {0};
@@ -1127,8 +1128,10 @@ struct CoopDexMsg
     u32 otId;
     u8 name[PLAYER_NAME_LENGTH + 1];
     u8 caught[COOP_DEX_FLAG_BYTES];
+    u8 speed;       // the sender's COOP_SPEED_* battle options
+    u8 pad;
     u16 checksum;
-    u16 pad;
+    u16 pad2;
 };
 
 STATIC_ASSERT(sizeof(struct CoopDexMsg) <= BLOCK_BUFFER_SIZE, CoopDexMsgFitsBlock);
@@ -1137,6 +1140,34 @@ STATIC_ASSERT(NUM_DEX_FLAG_BYTES <= COOP_DEX_FLAG_BYTES, CoopDexCacheHoldsCaught
 static EWRAM_DATA u32 sDexSentHash = 0;
 static EWRAM_DATA bool8 sDexSent = FALSE;
 static EWRAM_DATA u16 sDexTimer = 0;
+static EWRAM_DATA u8 sPartnerSpeed = 0;     // this session's partner options
+static EWRAM_DATA bool8 sPartnerSpeedKnown = FALSE;
+
+// This save's own battle options: BATTLE SCENE OFF drops animations,
+// FAST (CoopSave.battleSpeed) also shortens message pauses.
+u8 Coop_LocalBattleSpeed(void)
+{
+    struct CoopSave *save = Coop_GetSave();
+    u8 speed = 0;
+
+    if (gSaveBlock2Ptr->optionsBattleSceneOff)
+        speed |= COOP_SPEED_NO_ANIMS;
+    if (save != NULL && (save->battleSpeed & COOP_SPEED_SHORT_TEXT) && (speed & COOP_SPEED_NO_ANIMS))
+        speed |= COOP_SPEED_SHORT_TEXT;
+    return speed;
+}
+
+// What a battle uses. A battle both games watch (co-op, friendly) is run
+// by the link master, so it takes only what both players chose; a partner
+// not heard from yet counts as normal speed.
+u8 Coop_BattleSpeed(void)
+{
+    if (!(gBattleTypeFlags & BATTLE_TYPE_LINK))
+        return Coop_LocalBattleSpeed();
+    if (!COOP_SESSION_LINK_BATTLE() || !sPartnerSpeedKnown)
+        return 0;
+    return Coop_LocalBattleSpeed() & sPartnerSpeed;
+}
 
 static u16 Dex_Checksum(const struct CoopDexMsg *msg)
 {
@@ -1168,7 +1199,7 @@ static void Dex_Poll(void)
     if (sDeal.state != DS_IDLE || sLink.count != 0 || sLink.needAck || gLinkTransferringData
      || Coop_OtherInteractionBusy() || sDexTimer < DEX_FIRST_SEND)
         return;
-    hash = Dex_Hash();
+    hash = Dex_Hash() ^ (Coop_LocalBattleSpeed() * 0x9E3779B1u);
     if (sDexSent && hash == sDexSentHash && sDexTimer < DEX_REFRESH)
         return;
     memset(&msg, 0, sizeof(msg));
@@ -1177,6 +1208,7 @@ static void Dex_Poll(void)
     msg.otId = Deal_MyOtId();
     StringCopy(msg.name, gSaveBlock2Ptr->playerName);
     memcpy(msg.caught, gSaveBlock1Ptr->dexCaught, NUM_DEX_FLAG_BYTES);
+    msg.speed = Coop_LocalBattleSpeed();
     msg.checksum = Dex_Checksum(&msg);
     if (SendBlock(BitmaskAllOtherLinkPlayers(), &msg, sizeof(msg)))
     {
@@ -1196,6 +1228,8 @@ void CoopDex_HandleBlock(u32 playerId, const u16 *words)
     memcpy(&msg, words, sizeof(msg));
     if (msg.magic != COOP_DEX_MAGIC || msg.checksum != Dex_Checksum(&msg))
         return;
+    sPartnerSpeed = msg.speed;
+    sPartnerSpeedKnown = TRUE;
     // A different partner replaces the old one's catches entirely.
     save->partnerDexOtId = msg.otId;
     StringCopyN(save->partnerDexName, msg.name, PLAYER_NAME_LENGTH);
@@ -1288,6 +1322,7 @@ void CoopDeal_OnSessionStart(void)
 {
     sDexSent = FALSE;
     sDexTimer = 0;
+    sPartnerSpeedKnown = FALSE;
     // A new cable session restarts both sides' sequence numbers.
     memset(&sLink, 0, sizeof(sLink));
     sSessionCount++;

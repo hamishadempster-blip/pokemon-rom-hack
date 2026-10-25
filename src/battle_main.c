@@ -1,6 +1,8 @@
 #include "global.h"
 #include "battle.h"
 #include "coop.h"
+#include "coop_deal.h"
+#include "constants/coop.h"
 #include "battle_anim.h"
 #include "battle_ai_main.h"
 #include "battle_ai_record.h"
@@ -2855,9 +2857,13 @@ static void BattleStartClearSetData(void)
     gBattleWeather = 0;
     gHitMarker = 0;
 
+    gCoopBattleSpeed = 0;
     if (!(gBattleTypeFlags & BATTLE_TYPE_RECORDED))
     {
-        if (!(gBattleTypeFlags & BATTLE_TYPE_LINK) && gSaveBlock2Ptr->optionsBattleSceneOff == TRUE)
+        // BATTLE SCENE OFF/FAST; in a co-op or friendly link battle only when
+        // both players chose it (the link master runs the battle for both).
+        gCoopBattleSpeed = Coop_BattleSpeed();
+        if (gCoopBattleSpeed & COOP_SPEED_NO_ANIMS)
             gHitMarker |= HITMARKER_NO_ANIMATIONS;
     }
     else if (!(gBattleTypeFlags & (BATTLE_TYPE_LINK | BATTLE_TYPE_RECORDED_LINK)) && GetBattleSceneInRecordedBattle())
