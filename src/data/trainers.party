@@ -15011,7 +15011,7 @@ IVs: 31 HP / 31 Atk / 31 Def / 31 SpA / 31 SpD / 31 Spe
 Kabuto @ Sitrus Berry
 Level: 35
 IVs: 31 HP / 31 Atk / 31 Def / 31 SpA / 31 SpD / 31 Spe
-- Swords Dance
+- Aqua Jet
 - Ice Beam
 - Surf
 - Rock Slide
@@ -17923,7 +17923,7 @@ AI: Check Bad Move / Try To Faint / Check Viability / HP Aware / Smart Switching
 Kecleon
 Level: 40
 IVs: 31 HP / 31 Atk / 31 Def / 31 SpA / 31 SpD / 31 Spe
-- Helping Hand
+- Feint
 - Skill Swap
 - Shadow Ball
 - Thief
@@ -18867,7 +18867,7 @@ AI: Check Bad Move / Try To Faint / Check Viability / HP Aware / Smart Switching
 Nosepass
 Level: 68
 IVs: 31 HP / 31 Atk / 31 Def / 31 SpA / 31 SpD / 31 Spe
-- Trick Room
+- Wide Guard
 - Thunder Wave
 - Rock Slide
 - Protect
@@ -19191,7 +19191,7 @@ IVs: 31 HP / 31 Atk / 31 Def / 31 SpA / 31 SpD / 31 Spe
 Kecleon
 Level: 68
 IVs: 31 HP / 31 Atk / 31 Def / 31 SpA / 31 SpD / 31 Spe
-- Helping Hand
+- Feint
 - Skill Swap
 - Shadow Ball
 - Thief

@@ -1,0 +1,10 @@
+# A new family through a co-op battle: the guest's lead is a Shinx one EXP
+# point below level 15 (FIXTURE), wins the rescue fight with its partner,
+# and evolves into Luxio on the guest's own save.
+include rescue_start.inc
+b fixture_guest 403 14 2034
+include rescue_finish.inc
+b mash_field 20000
+1 expect_lead 404 15
+b expect_partner progression-finished
+b shot new-species-evolved

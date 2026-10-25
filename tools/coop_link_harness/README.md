@@ -229,6 +229,17 @@ original code. `wild_simultaneous` uses it on both cores to make two
 encounters land on the same frame. `qol` covers the party cursor memory and
 the quick repeat heal at a nurse.
 
+Build 0xC017012F scenarios: `solo_opening` (fresh saves, never linked:
+rescue, lab), `solo_rival` (unlinked Route 103 fight against each save's own
+twin, both assignments), `solo_gym` (unlinked Roxanne + Heath double),
+`new_species_evo` (a guest's Shinx evolves into Luxio after a co-op win),
+`rotom_catalog` (the New Mauville scientist, one catalog per save),
+`trainer_overhaul` (Tiana's rebuilt team as a co-op battle), and `e4_sidney`
+(co-op Elite Four double against Sidney and Noir). `expect_range SYM:size LO
+HI` checks a range. `mash_field` in a battle's party menu steps the cursor to
+a healthy Pokemon and backs out of a summary screen, so forced switches
+after a faint no longer stall a scenario.
+
 `mute_coop FRAMES` suppresses this core's application frame sender by
 patching its first instruction to `bx lr`, then restores the original
 instruction automatically. It does not disconnect the serial cable. The

@@ -1,0 +1,39 @@
+# Late game, co-op: Sidney with Noir (Kingambit and Grimmsnarl added) as a
+# co-op Elite Four double from both players, then a solo-path check is in
+# solo_gym (same special). From lab saves. FIXTURES: fixture_warp into
+# Sidney's room with the walk-in done (VAR_ELITE_4_STATE 1); level-70
+# leads with strong cached stats, copied to six slots (flow, not balance).
+include beacon_battle.txt
+b mash_field 2000 B
+b write sWildEncountersDisabled 1
+0 fixture_lead 255 70 344960
+1 fixture_lead 228 70 428750
+# Six copies of the strong lead (FIXTURE): co-op uses each player's first
+# three, so both sides field three against the Elite Four's six.
+b write gParties+86:2 5000
+b write gParties+88:2 5000
+b write gParties+90:2 1500
+b write gParties+92:2 1500
+b write gParties+94:2 1500
+b write gParties+96:2 1500
+b write gParties+98:2 1500
+b fixture_six
+b fixture_var 0x409C 1
+0 fixture_warp 16 0 6 6
+1 fixture_warp 16 0 5 7
+b until_field 3000
+b sync
+b wait 40
+b sync
+0 press UP 2
+0 wait 20
+0 press A 2
+b until_cb2 BattleMainCB2 9000 A
+b expect coop.sInBattle 1
+b expect gBattlersCount 4
+b shot e4-sidney
+b mash_field 40000
+b expect gBattleOutcome 1
+b expect_flag 0x4FB 1
+b sync
+b expect coop.sLinkState 2

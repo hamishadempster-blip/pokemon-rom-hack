@@ -55,6 +55,8 @@ def move_const(name):
 
 def learns(species, move):
     mv = move[len('MOVE_'):]
+    if mv == 'FEINT_ATTACK':  # the learnset data still uses the pre-Gen VI name
+        mv = 'FAINT_ATTACK'
     c = species
     seen = set()
     while c and c not in seen:

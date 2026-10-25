@@ -1,0 +1,23 @@
+# New Mauville's entrance scientist gives each save its own Rotom Catalog;
+# talking again explains it and gives no second one. Both games, unlinked.
+# From lab saves. FIXTURE: fixture_warp into the entrance room (reached by
+# Surf on Route 110 in play).
+b wait 1100
+b press START 2
+b wait 200
+b until_cb2 CB2_Overworld 8000 A
+b until_field 3000
+b expect_item 4 694 0
+b fixture_warp 24 52 3 3
+b until_field 3000
+b press LEFT 2
+b wait 20
+b press A 2
+b mash_field 4000
+b until_field 2000
+b expect_item 4 694 1
+b press A 2
+b mash_field 4000
+b until_field 2000
+b expect_item 4 694 1
+b shot rotom-catalog

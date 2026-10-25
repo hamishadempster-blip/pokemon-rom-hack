@@ -830,6 +830,19 @@ static void frameCallback(struct mCoreThread* t) {
 			}
 			if (ok) { p->stable = 0; advance = true; break; }
 			if (c->keys && (p->step % 24) < 2) keys = c->keys;
+			// mash_field in a battle's party menu (a forced switch after a
+			// faint): step the cursor down before each A, so a fainted
+			// first slot does not hold the masher on "no energy left".
+			if (c->kind == C_UNTIL_FIELD && c->keys == 1 && symFind("CB2_UpdatePartyMenu")
+			 && (rd32(p, sMain + 4) & ~1u) == (symFind("CB2_UpdatePartyMenu") & ~1u) && rd8(p, symAddr("gMain") + 0x439) & 2) {
+				unsigned t = p->step % 120;
+				keys = t < 2 ? 0x80 : ((t >= 40 && t < 42) || (t >= 90 && t < 92)) ? 1 : 0;
+			}
+			if (c->kind == C_UNTIL_FIELD && c->keys == 1 && symFind("MainCB2") && symFind("CB2_InitSummaryScreen")
+			 && rd8(p, symAddr("gMain") + 0x439) & 2
+			 && ((rd32(p, sMain + 4) & ~1u) == (symFind("MainCB2") & ~1u) || (rd32(p, sMain + 4) & ~1u) == (symFind("CB2_InitSummaryScreen") & ~1u))) {
+				keys = (p->step % 24) < 2 ? 2 : 0; // B out of a summary screen
+			}
 			if (++p->step >= c->frames) {
 				out("[p%d] FAIL timeout waiting for %s (line cmd %d)\n", p->id, c->text, p->pc);
 				dump(p, "fail");

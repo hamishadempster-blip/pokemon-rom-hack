@@ -1,3 +1,85 @@
+# Roster, revamps, trainers, bosses, solo paths: build 0xC017012F
+
+Branch `coop-doorway-scenes-rivals`, on top of `03e29fd8` (C017012E). Keep it
+unmerged. Both games need this build; 0xC017012E refuses to link with it.
+The save layout is unchanged, so existing saves load.
+
+The reference tables for this build (new Pokémon, revamps, trainer and boss
+changes, co-op and solo coverage) are in
+[COOP_ROSTER_F.md](COOP_ROSTER_F.md). Exact test results are in
+[COOP_REGRESSION_C017012F.md](COOP_REGRESSION_C017012F.md).
+
+## What changed
+
+- **No fight needs a second player** (`3119da59`). A game that is not
+  linked plays the whole story alone:
+  - Birch's rescue: one starter from the case you highlight, against one
+    POOCHYENA.
+  - Gyms, Elite Four, and champion: a double battle against both trainers.
+  - Rivals: a single battle against your own twin's solo team.
+  - Space Center: the stock multi battle with Steven.
+  - Legendaries: stock single battles; a solo catch settles only that
+    cave's legend.
+
+  While linked, these fights still wait for the partner, and the message
+  now names UNLINK as the way to face them alone. A solo win counts only on
+  that save. Linking does not copy it, because `jointBadges` holds co-op
+  wins only.
+- **Fourteen new families** (`5103ae26`):
+  - Wild slots via `place_new_families.py`, plus Hoenn Pokédex entries.
+  - The New Mauville scientist gives each save a Rotom Catalog.
+  - Own Tempo Rockruff becomes Dusk Lycanroc at level 25 at any hour.
+  - The roster audit now covers forms and reports excluded ones.
+- **Eleven revamps** (`029b55fe`) via `revamps.py`, checked against the ROM
+  by the audit.
+- **Ordinary trainers** (`1d742b0c`): 728 rebuilt by
+  `tools/coop_trainers/overhaul.py` from a fixed base commit (rerunnable),
+  and validated by `validate.py`.
+- **Bosses** (`20c296c3`), via `bosses.py`:
+  - Solo rival teams in the stock BRENDAN and MAY slots.
+  - Villains and Wally rebuilt.
+  - One added Pokémon per Elite Four and champion side.
+  - Smarter AI for bosses, without omniscience.
+- **Harness**:
+  - `expect_range`.
+  - `mash_field` now handles a forced switch in battle (steps to a healthy
+    slot, backs out of summaries).
+  - New scenarios: `solo_opening`, `solo_rival`, `solo_gym`,
+    `new_species_evo`, `rotom_catalog`, `trainer_overhaul`, `e4_sidney`.
+
+## Decisions taken
+
+- **Linked games keep waiting for the partner in mandatory fights.** The
+  way to fight alone is UNLINK. This keeps one player from clearing a gym
+  or rival scene while the partner is on the way. A game that is not linked
+  never waits.
+- **The solo rival fight is your own twin, in a single battle.** Soren for
+  the case-starter holder, Mira for the companion holder, so the
+  counter-pick stays meaningful.
+- **Ordinary trainers' levels rise only modestly** (+0 to +5). Most of the
+  extra difficulty comes from team composition, partners, items, and AI,
+  as asked. Wild levels are unchanged.
+- **Couples and twins stay solo-only**, as before. A one-Pokémon trainer
+  stays one Pokémon as a co-op opponent; nothing is duplicated to pad a
+  double battle.
+
+## Known gaps
+
+- Not exercised in an emulator: the solo legendaries, the solo Space
+  Center multi battle, solo Elite Four and champion fights (they use the
+  same special as `solo_gym`), and the solo Rustboro, Route 110/119, and
+  Lilycove rival fights. Their source paths are shared with tested ones.
+- The added Pokémon have not been caught in play, except through random
+  wild doubles. Only Shinx → Luxio was evolved in play.
+- Ordinary trainer teams were validated by the tool. Only Tiana was fought
+  in play, plus the stage-0 trainers already in older tests. Difficulty
+  was not play-tested.
+- Unchanged from earlier builds: the partner's open YES/NO is not closed
+  automatically when the inviter gives up; a physical cable pull and
+  internet play are untested.
+
+---
+
 # Seamless overworld, battles, Beacon, rivals, roster: build 0xC017012E
 
 Branch `coop-doorway-scenes-rivals`, on top of `672331ea` (C017012D). Keep it

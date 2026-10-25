@@ -1,0 +1,33 @@
+# An overhauled ordinary trainer as a co-op battle: Tiana on Route 102
+# (stock Zigzagoon and Shroomish; now Zigzagoon and Lechonk, an added
+# species). Beacon on, partner on the map: both humans fight, both saves
+# get her flag and the same prize. From lab saves (Oldale gate fixture).
+include route102_reconnect_start.inc
+1 fixture_lead 228 5 156
+# Calvin is marked beaten (FIXTURE) so the walk west is not his fight.
+b fixture_flag 0x63e 1
+0 goto 36 14 2000
+0 goto 36 16 2000
+b write sWildEncountersDisabled 1
+0 goto 18 16 3000
+0 goto 18 13 2000
+0 goto 17 13 2000
+0 goto 17 7 2000
+0 goto 18 7 2000
+0 goto 18 5 2000
+0 goto 8 5 3000
+0 press DOWN 2
+0 wait 20
+0 press A 2
+b note_money
+b until_cb2 BattleMainCB2 8000 A
+b expect coop.sInBattle 1
+b expect gBattlersCount 4
+b shot overhaul-trainer
+b mash_field 25000
+b expect gBattleOutcome 1
+b sync
+b expect_same_prize
+b expect_flag 0x75B 1
+b expect coop.sLinkState 2
+b shot overhaul-trainer-finished
