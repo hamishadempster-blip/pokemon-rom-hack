@@ -26,7 +26,7 @@ gcc -O2 -Wall -Wno-stringop-truncation -DM_CORE_GBA -DUSE_PTHREADS -I"$mgba/incl
 # Global symbols, then the RAM statics of a few objects as <file>.<name>,
 # placed through the section bases in the linker map.
 arm-none-eabi-nm -S "$root/pokeemerald.elf" | grep -vE ' [a-zA-Z] [_.$]' > "$out/syms.txt"
-for obj in coop link battle_controllers battle_main start_menu menu; do
+for obj in coop link battle_controllers battle_main start_menu menu overworld; do
 	arm-none-eabi-objdump -t "$root/build/emerald/src/$obj.o" | while read -r off scope kind sect size name; do
 		[ "$kind" = O ] || continue
 		case "$sect" in .bss|.sbss|.data) ;; *) continue ;; esac
@@ -36,9 +36,9 @@ for obj in coop link battle_controllers battle_main start_menu menu; do
 done >> "$out/syms.txt"
 python3 - "$out/layout.bin" "$out/syms.txt" <<'PY_LAYOUT'
 import struct, sys
-values = struct.unpack('<II', open(sys.argv[1], 'rb').read())
+values = struct.unpack('<IIIII', open(sys.argv[1], 'rb').read())
 with open(sys.argv[2], 'a') as f:
-    for name, value in zip(('saveVarsOffset', 'saveFlagsOffset'), values):
+    for name, value in zip(('saveVarsOffset', 'saveFlagsOffset', 'encryptionKeyOffset', 'storageBoxesOffset', 'boxMonSize'), values):
         f.write(f'{value:08x} 00000004 a harness.{name}\n')
 PY_LAYOUT
 echo "$out/coop_link_harness"

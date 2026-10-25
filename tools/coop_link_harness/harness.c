@@ -22,7 +22,7 @@
 #define MAX_CMDS 4096
 #define MAX_SYMS 500000
 
-enum { C_PARTNER, C_GOTO, C_HEX, C_PRESS, C_WAIT, C_SHOT, C_DUMP, C_BARRIER, C_UNTIL_CB2, C_UNTIL_FIELD, C_EXPECT, C_UNTIL_MEM, C_BATTLE, C_MENU, C_PARTY, C_FIXTURE, C_WRITE, C_LEAD, C_MOVE, C_SIX, C_VAR, C_FLAG, C_VS, C_EXPECT_FLAG, C_EXPECT_VAR, C_NO_OBJECT, C_MAP, C_OBJECT, C_TEXT_SPEED, C_PACE, C_MUTE, C_PARTNER_AT };
+enum { C_PARTNER, C_GOTO, C_HEX, C_PRESS, C_WAIT, C_SHOT, C_DUMP, C_BARRIER, C_UNTIL_CB2, C_UNTIL_FIELD, C_EXPECT, C_UNTIL_MEM, C_BATTLE, C_MENU, C_PARTY, C_FIXTURE, C_WRITE, C_LEAD, C_MOVE, C_SIX, C_VAR, C_FLAG, C_VS, C_EXPECT_FLAG, C_EXPECT_VAR, C_NO_OBJECT, C_MAP, C_OBJECT, C_TEXT_SPEED, C_PACE, C_MUTE, C_PARTNER_AT, C_ITEM, C_EXPECT_ITEM, C_UNTIL_TEXT, C_WARP, C_PC_COUNT, C_MONS, C_NO_COPIES };
 
 struct Cmd {
 	int kind;
@@ -295,6 +295,58 @@ static int bagHas(struct Player* p, unsigned item) {
 		if (id == 0) break;
 	}
 	return 0;
+}
+
+// A game string as ASCII: letters, digits, space, and a little punctuation;
+// anything else is '~'. Control codes and line breaks become a space.
+static void gameText(struct Player* p, unsigned addr, char* out, int max) {
+	int n = 0;
+	for (int i = 0; i < 420 && n < max - 1; i++) {
+		unsigned c = rd8(p, addr + i);
+		char ch;
+		if (c == 0xFF) break;
+		if (c >= 0xBB && c <= 0xD4) ch = 'A' + (c - 0xBB);
+		else if (c >= 0xD5 && c <= 0xEE) ch = 'a' + (c - 0xD5);
+		else if (c >= 0xA1 && c <= 0xAA) ch = '0' + (c - 0xA1);
+		else if (c == 0x00) ch = ' ';
+		else if (c == 0xAB) ch = '!';
+		else if (c == 0xAD) ch = '.';
+		else if (c == 0xAE) ch = '-';
+		else if (c == 0xB4) ch = '\'';
+		else if (c == 0xF0) ch = ':';
+		else if (c == 0xB8) ch = ',';
+		else if (c == 0x1B) ch = 'e';
+		else if (c >= 0xF9) { ch = ' '; if (c == 0xFC || c == 0xFD) i++; }
+		else ch = '~';
+		out[n++] = ch;
+	}
+	out[n] = 0;
+}
+
+// Species of each local party slot, decrypted (0 = empty).
+static void showPartySpecies(struct Player* p) {
+	char line[120]; int o = 0;
+	for (int slot = 0; slot < 6; slot++) {
+		unsigned mon = partyMon(0, slot), personality = rd32(p, mon), key = personality ^ rd32(p, mon + 4);
+		unsigned w = rd32(p, mon + 32 + sSub0[personality % 24] * 12) ^ key;
+		o += snprintf(line + o, sizeof(line) - o, "%u ", (rd8(p, mon + 19) & 2) ? (w & 0x7FF) : 0);
+	}
+	out("[f%06d p%d party-species] %s count=%u\n", p->frame, p->id, line, rd8(p, symAddr("gPartiesCount")));
+}
+
+// Species and moves of a party slot of any trainer, decrypted.
+static void showMonAddr(struct Player* p, unsigned mon, int trainer, int slot) {
+	static const unsigned char sub1[24] = {1,1,2,3,2,3,0,0,0,0,0,0,2,3,1,1,3,2,2,3,1,1,3,2};
+	unsigned pid = rd32(p, mon), key = pid ^ rd32(p, mon + 4);
+	unsigned w[12];
+	for (int i = 0; i < 12; i++) w[i] = rd32(p, mon + 32 + i * 4) ^ key;
+	unsigned a = sSub0[pid % 24] * 3, b = sub1[pid % 24] * 3;
+	out("[f%06d p%d mon %d.%d] species=%u moves=%u,%u,%u,%u pid=%08x flags=%02x\n", p->frame, p->id, trainer, slot,
+	    w[a] & 0x7FF, w[b] & 0xFFFF, w[b] >> 16, w[b + 1] & 0xFFFF, w[b + 1] >> 16, pid, rd8(p, mon + 19));
+}
+
+static void showMonAt(struct Player* p, int trainer, int slot) {
+	showMonAddr(p, partyMon(trainer, slot), trainer, slot);
 }
 
 static void showParty(struct Player* p) {
@@ -873,6 +925,132 @@ static void frameCallback(struct mCoreThread* t) {
             advance = true;
             break;
         }
+        case C_MONS: {
+            // Every party and PC Pokemon decrypts with a matching checksum and
+            // a real species (no bad eggs); count how many are SPECIES.
+            unsigned storage = rd32(p, symAddr("gPokemonStoragePtr"));
+            unsigned boxes = storage + symValue("harness.storageBoxesOffset"), size = symValue("harness.boxMonSize");
+            unsigned bad = 0, total = 0, match = 0, badAt = 0;
+            for (unsigned i = 0; i < 6 + 14 * 30; i++) {
+                unsigned mon = i < 6 ? partyMon(0, i) : boxes + (i - 6) * size;
+                unsigned flags = rd8(p, mon + 19);
+                if (!(flags & 2)) continue;
+                unsigned pid = rd32(p, mon), key = pid ^ rd32(p, mon + 4), sum = 0, w[12];
+                for (int k = 0; k < 12; k++) { w[k] = rd32(p, mon + 32 + k * 4) ^ key; sum += (w[k] & 0xFFFF) + (w[k] >> 16); }
+                unsigned species = w[sSub0[pid % 24] * 3] & 0x7FF;
+                total++;
+                if ((sum & 0xFFFF) != rd16(p, mon + 28) || (flags & 1) || species == 0 || species >= 1600) { bad++; badAt = i; }
+                if (species == c->value) match++;
+            }
+            if (bad) { out("[p%d] FAIL %u of %u Pokemon corrupt (first at slot %u)\n", p->id, bad, total, badAt); sFailures++; }
+            else if (c->size >= 0 && match != (unsigned)c->size) { out("[p%d] FAIL species %u count %u, expected %d\n", p->id, c->value, match, c->size); sFailures++; }
+            else out("[p%d] ok %u Pokemon intact, species %u x%u\n", p->id, total, c->value, match);
+            advance = true;
+            break;
+        }
+        case C_NO_COPIES: {
+            // No Pokemon on this save (party or PC) shares a personality value
+            // with one on the other save: nothing was duplicated across.
+            struct Player* o = &P[1 - p->id];
+            unsigned shared = 0, mine = 0;
+            for (unsigned i = 0; i < 6 + 14 * 30; i++) {
+                unsigned sm = rd32(p, symAddr("gPokemonStoragePtr")) + symValue("harness.storageBoxesOffset");
+                unsigned a = i < 6 ? partyMon(0, i) : sm + (i - 6) * symValue("harness.boxMonSize");
+                if (!(rd8(p, a + 19) & 2)) continue;
+                mine++;
+                unsigned pid = rd32(p, a);
+                for (unsigned j = 0; j < 6 + 14 * 30; j++) {
+                    unsigned so = rd32(o, symAddr("gPokemonStoragePtr")) + symValue("harness.storageBoxesOffset");
+                    unsigned b = j < 6 ? partyMon(0, j) : so + (j - 6) * symValue("harness.boxMonSize");
+                    if ((rd8(o, b + 19) & 2) && rd32(o, b) == pid) { shared++; break; }
+                }
+            }
+            if (shared) { out("[p%d] FAIL %u of %u Pokemon also on the other save\n", p->id, shared, mine); sFailures++; }
+            else out("[p%d] ok none of %u Pokemon copied from the other save\n", p->id, mine);
+            advance = true;
+            break;
+        }
+        case C_PC_COUNT: {
+            // Occupied PC slots across all boxes (BoxPokemon.hasSpecies).
+            unsigned storage = rd32(p, symAddr("gPokemonStoragePtr")), count = 0;
+            unsigned boxes = storage + symValue("harness.storageBoxesOffset"), size = symValue("harness.boxMonSize");
+            for (unsigned i = 0; i < 14 * 30; i++)
+                if (rd8(p, boxes + i * size + 19) & 2) count++;
+            if (count != c->value) {
+                out("[p%d] FAIL pc count %u, expected %u\n", p->id, count, c->value);
+                sFailures++;
+            } else out("[p%d] ok pc count %u\n", p->id, count);
+            advance = true;
+            break;
+        }
+        case C_WARP: {
+            // Fixture teleport: the engine's own map load to a tile (no warp
+            // event). Landing on water starts surfing, as a Dive exit would.
+            unsigned dest = symAddr("overworld.sWarpDestination");
+            p->core->busWrite8(p->core, dest, c->addr >> 8);
+            p->core->busWrite8(p->core, dest + 1, c->addr & 0xFF);
+            p->core->busWrite8(p->core, dest + 2, 0xFF);
+            p->core->busWrite16(p->core, dest + 4, c->value >> 16);
+            p->core->busWrite16(p->core, dest + 6, c->value & 0xFFFF);
+            // What WarpIntoMap would have done: the save's location and pos.
+            {
+                unsigned save = rd32(p, sSave1);
+                p->core->busWrite16(p->core, save + 0, c->value >> 16);
+                p->core->busWrite16(p->core, save + 2, c->value & 0xFFFF);
+                p->core->busWrite8(p->core, save + 4, c->addr >> 8);
+                p->core->busWrite8(p->core, save + 5, c->addr & 0xFF);
+                p->core->busWrite8(p->core, save + 6, 0xFF);
+                p->core->busWrite16(p->core, save + 8, c->value >> 16);
+                p->core->busWrite16(p->core, save + 10, c->value & 0xFFFF);
+            }
+            p->core->busWrite32(p->core, sMain + 4, symAddr("CB2_LoadMap") | 1);
+            p->core->busWrite8(p->core, sMain + 0x438, 0);
+            out("[p%d] fixture warp to %u.%u (%u,%u)\n", p->id, c->addr >> 8, c->addr & 0xFF, c->value >> 16, c->value & 0xFFFF);
+            advance = true;
+            break;
+        }
+        case C_UNTIL_TEXT: {
+            // Wait for a battle message containing the text (spaces as '_').
+            char text[440];
+            gameText(p, symAddr("gDisplayedStringBattle"), text, sizeof(text));
+            if (strstr(text, c->text + 16)) {
+                out("[p%d] ok battle text \"%s\"\n", p->id, text);
+                advance = true;
+            } else if (++p->step >= c->frames) {
+                out("[p%d] FAIL battle text never had \"%s\" (last \"%s\")\n", p->id, c->text + 16, text);
+                dump(p, "fail");
+                sFailures++;
+                advance = true;
+            }
+            break;
+        }
+        case C_ITEM:
+        case C_EXPECT_ITEM: {
+            // gBagPockets[pocket] = { ItemSlot *slots; u8 capacity; u8 id; }.
+            // Quantities in the bag are XORed with the save's encryption key.
+            unsigned pocket = symAddr("gBagPockets") + c->size * 8;
+            unsigned slots = rd32(p, pocket), cap = rd16(p, pocket + 4) & 0x3FF;
+            unsigned key = rd16(p, rd32(p, symAddr("gSaveBlock2Ptr")) + symValue("harness.encryptionKeyOffset"));
+            unsigned i, have = 0, freeSlot = 0xFFFF;
+            for (i = 0; i < cap; i++) {
+                unsigned id = rd16(p, slots + i * 4);
+                if (id == c->addr) { have = rd16(p, slots + i * 4 + 2) ^ key; freeSlot = i; break; }
+                if (id == 0 && freeSlot == 0xFFFF) freeSlot = i;
+            }
+            if (c->kind == C_ITEM) {
+                if (freeSlot == 0xFFFF) { out("[p%d] FAIL fixture_item: pocket full\n", p->id); sFailures++; }
+                else {
+                    p->core->busWrite16(p->core, slots + freeSlot * 4, c->addr);
+                    p->core->busWrite16(p->core, slots + freeSlot * 4 + 2, (c->value ^ key) & 0xFFFF);
+                    out("[p%d] fixture item %u x%u in pocket %d\n", p->id, c->addr, c->value, c->size);
+                }
+            } else if (have != c->value) {
+                out("[p%d] FAIL item %u: have %u, expected %u\n", p->id, c->addr, have, c->value);
+                sFailures++;
+            } else out("[p%d] ok item %u x%u\n", p->id, c->addr, have);
+            advance = true;
+            break;
+        }
         case C_SIX:
             for (unsigned slot = 1; slot < 6; slot++)
                 for (unsigned off = 0; off < 100; off++)
@@ -900,6 +1078,12 @@ static void frameCallback(struct mCoreThread* t) {
         }
 		case C_PARTY:
 			showParty(p);
+			showPartySpecies(p);
+			showMonAt(p, 0, 0);
+			showMonAt(p, 1, 0);
+			showMonAt(p, 1, 1);
+			showMonAddr(p, coopStatic("sCatches"), 9, 0);
+			showMonAddr(p, coopStatic("sCatches") + 100, 9, 1);
 			advance = true;
 			break;
 		case C_BATTLE:
@@ -1129,6 +1313,34 @@ static void loadScript(const char* path, int depth) {
             c.kind = !strcmp(cmd, "fixture_var") ? C_VAR : C_FLAG;
             c.addr = strtoul(a, NULL, 0);
             c.value = strtoul(b, NULL, 0);
+        } else if (!strcmp(cmd, "expect_no_copies")) {
+            c.kind = C_NO_COPIES;
+        } else if (!strcmp(cmd, "expect_mons_intact")) {
+            // expect_mons_intact [SPECIES COUNT]
+            c.kind = C_MONS;
+            c.value = n >= 3 ? strtoul(a, NULL, 0) : 0xFFFF;
+            c.size = n >= 4 ? atoi(b) : -1;
+        } else if (!strcmp(cmd, "expect_pc_count")) {
+            c.kind = C_PC_COUNT;
+            c.value = strtoul(a, NULL, 0);
+        } else if (!strcmp(cmd, "fixture_warp")) {
+            // fixture_warp GROUP NUM X Y
+            c.kind = C_WARP;
+            c.addr = (atoi(a) << 8) | (atoi(b) & 0xFF);
+            c.value = ((unsigned)atoi(d) << 16) | ((unsigned)atoi(e) & 0xFFFF);
+        } else if (!strcmp(cmd, "until_battle_text")) {
+            // until_battle_text Some_words_here [timeout]
+            c.kind = C_UNTIL_TEXT;
+            c.frames = n >= 4 ? atoi(b) : 3000;
+            snprintf(c.text, sizeof(c.text), "until_battle_text%s", "");
+            snprintf(c.text + 16, sizeof(c.text) - 16, "%s", a);
+            for (char* q = c.text + 16; *q; q++) if (*q == '_') *q = ' ';
+        } else if (!strcmp(cmd, "fixture_item") || !strcmp(cmd, "expect_item")) {
+            // POCKET (0 items, 1 balls, 2 TM/HM, 3 berries, 4 key) ITEM QTY
+            c.kind = !strcmp(cmd, "fixture_item") ? C_ITEM : C_EXPECT_ITEM;
+            c.size = atoi(a);
+            c.addr = strtoul(b, NULL, 0);
+            c.value = strtoul(d, NULL, 0);
         } else if (!strcmp(cmd, "fixture_six")) {
             c.kind = C_SIX;
         } else if (!strcmp(cmd, "expect_move") || !strcmp(cmd, "expect_no_move")) {

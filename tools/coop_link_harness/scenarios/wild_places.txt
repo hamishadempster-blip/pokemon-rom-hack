@@ -1,0 +1,135 @@
+# Twin Beacon wild doubles in a cave and while surfing, with captures.
+# Start from lab saves made by save_lab.txt. FIXTURES (not gameplay):
+#   - fixture_warp places both players (the engine's own map load; landing
+#     on water starts surfing). Granite Cave and Surf are far past the lab.
+#   - strong-stat leads isolate encounter flow from battle balance.
+#   - Poke Balls are put in the bag.
+# The encounters, invitations, battles, throws, and deliveries are real.
+include beacon_battle.txt
+b mash_field 2000 B
+b write sWildEncountersDisabled 1
+# Level-40 leads (exact EXP for each growth rate) plus cached strong stats.
+0 fixture_lead 255 40 56660
+1 fixture_lead 228 40 80000
+b write gParties+86:2 500
+b write gParties+88:2 500
+b write gParties+90:2 400
+b write gParties+92:2 300
+b write gParties+94:2 400
+b write gParties+96:2 400
+b write gParties+98:2 300
+
+# --- Granite Cave 1F (cave floor, land encounters).
+0 fixture_warp 24 7 6 7
+1 fixture_warp 24 7 8 8
+b until_field 3000
+b expect_map 24 7
+b sync
+b wait 30
+b sync
+b expect_partner granite-cave
+b shot granite-cave
+0 write sWildEncountersDisabled 0
+0 pace_until_battle 9000
+0 write sWildEncountersDisabled 1
+0 until_cb2 BattleMainCB2 6000
+1 until_cb2 BattleMainCB2 6000 A
+b expect gBattlersCount 4
+b expect coop.sInBattle 1
+b shot cave-double
+b mash_field 25000
+b expect gBattleOutcome 1
+b expect coop.sLinkState 2
+b expect coop.sBeacon+1:1 1
+b sync
+b wait 30
+b sync
+b expect_partner after-cave-double
+
+# --- Route 103 water: surfing encounters.
+b write gParties+86:2 500
+b write gParties+88:2 500
+b write gParties+90:2 400
+b write gParties+92:2 300
+b write gParties+94:2 400
+b write gParties+96:2 400
+b write gParties+98:2 300
+0 fixture_warp 0 18 30 9
+1 fixture_warp 0 18 33 9
+b until_field 3000
+b expect_map 0 18
+b hex gPlayerAvatar 1
+b sync
+b wait 30
+b sync
+b expect_partner surfing
+b shot surfing
+# Captures (FIXTURE: one Master Ball each; player 1's party is filled to six
+# so its catch must go to the PC). Strong stats again: the cave fight's
+# level-ups recalculated them.
+0 fixture_item 1 4 1
+1 fixture_item 1 4 1
+1 fixture_six
+b write gParties+86:2 500
+b write gParties+88:2 500
+b write gParties+90:2 400
+b write gParties+92:2 300
+b write gParties+94:2 400
+b write gParties+96:2 400
+b write gParties+98:2 300
+b expect_pc_count 0
+0 write sWildEncountersDisabled 0
+0 pace_until_battle 9000
+0 write sWildEncountersDisabled 1
+0 until_cb2 BattleMainCB2 6000
+1 until_cb2 BattleMainCB2 6000 A
+b expect gBattlersCount 4
+b expect coop.sInBattle 1
+# Player 0 (left) throws at the left wild Pokemon; player 1 at the right.
+0 until_mem gBattlerControllerFuncs:4 HandleInputChooseAction 6000 A
+1 until_mem gBattlerControllerFuncs+8:4 HandleInputChooseAction 6000 A
+0 wait 60
+1 wait 60
+b press RIGHT 2
+b wait 10
+b press A 2
+b until_cb2 CB2_BagMenuRun 600
+b wait 40
+# The bag opens on the last pocket used; step to POKe BALLS (pocket 1).
+b until_mem gBagPosition+5:1 1 600 RIGHT
+b wait 30
+b shot balls-pocket
+b press A 2
+b wait 30
+b shot ball-context
+b press A 2
+b until_cb2 BattleMainCB2 600
+0 until_mem gBattlerControllerFuncs:4 HandleInputChooseBallTarget 600
+1 until_mem gBattlerControllerFuncs+8:4 HandleInputChooseBallTarget 600
+b wait 20
+1 press RIGHT 2
+b wait 20
+b shot ball-target
+b press A 2
+b mash_field 25000
+b expect gBattleOutcome 7
+b expect coop.sLinkState 2
+b expect coop.sBeacon+1:1 1
+# Ball ownership: each thrower used its own Master Ball.
+b expect_item 1 4 0
+# Delivery: player 0's catch joined the party; player 1's full party sent
+# its catch to the PC. No copies on the other save.
+0 expect gPartiesCount:1 2
+0 expect_pc_count 0
+1 expect gPartiesCount:1 6
+1 expect_pc_count 1
+# Every Pokemon on both saves decrypts cleanly (a guest catch used to be
+# re-keyed wrongly), and neither catch was copied to the other save.
+b expect_mons_intact
+b sync
+b expect_no_copies
+b sync
+b wait 30
+b sync
+b expect_partner after-captures
+b shot after-captures

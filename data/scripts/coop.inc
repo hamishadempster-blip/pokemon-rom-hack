@@ -151,7 +151,17 @@ Coop_EventScript_AskToggleCap::
 @ are in the start menu's status window just before. B or BACK returns to
 @ the start menu, like the other entries.
 Coop_EventScript_MenuLinked::
-	dynmultichoice 21, 1, FALSE, 3, 0, DYN_MULTICHOICE_CB_NONE, Coop_Text_OptBeacon, Coop_Text_OptUnlink, Coop_Text_OptBack
+	@ Say what the link and the Beacon mean right now, then offer the switch
+	@ named by what it will do.
+	specialvar VAR_RESULT, Coop_BufferMenuExplain
+	message gStringVar4
+	waitmessage
+	goto_if_eq VAR_RESULT, TRUE, Coop_EventScript_MenuLinkedBeaconOn
+	dynmultichoice 21, 1, FALSE, 3, 0, DYN_MULTICHOICE_CB_NONE, Coop_Text_OptBeaconOn, Coop_Text_OptUnlink, Coop_Text_OptBack
+	goto Coop_EventScript_MenuLinkedChoice
+Coop_EventScript_MenuLinkedBeaconOn::
+	dynmultichoice 21, 1, FALSE, 3, 0, DYN_MULTICHOICE_CB_NONE, Coop_Text_OptBeaconOff, Coop_Text_OptUnlink, Coop_Text_OptBack
+Coop_EventScript_MenuLinkedChoice::
 	switch VAR_RESULT
 	case 0, Coop_EventScript_MenuBeacon
 	case 1, Coop_EventScript_MenuUnlink
@@ -302,6 +312,12 @@ Coop_Text_PartnerNotReady:
 Coop_Text_OptBeacon:
 	.string "BEACON$"
 
+Coop_Text_OptBeaconOn:
+	.string "BEACON ON$"
+
+Coop_Text_OptBeaconOff:
+	.string "BEACON OFF$"
+
 Coop_Text_OptUnlink:
 	.string "UNLINK$"
 
@@ -385,12 +401,14 @@ Coop_Text_BeaconAsk:
 	.string "Turn the Twin Beacon {STR_VAR_1}?$"
 
 Coop_Text_BeaconOn:
-	.string "Twin Beacon is on.\n"
-	.string "Ordinary fights can be together.$"
+	.string "Twin Beacon is on. Wild Pokémon\n"
+	.string "and trainers can be co-op when\l"
+	.string "you're both on the same map.$"
 
 Coop_Text_BeaconOff:
-	.string "Twin Beacon is off.\n"
-	.string "Ordinary fights stay solo.$"
+	.string "Twin Beacon is off. Optional\n"
+	.string "fights are solo. Story battles\l"
+	.string "still need you both.$"
 
 Coop_Text_BeaconDeclined:
 	.string "Your partner said no.\n"

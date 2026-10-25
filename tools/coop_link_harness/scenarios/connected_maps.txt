@@ -146,9 +146,11 @@ b shot offset-across
 0 write sWildEncountersDisabled 0
 0 pace_until_battle 9000
 0 write sWildEncountersDisabled 1
-0 until_cb2 BattleMainCB2 6000 A
+0 until_cb2 BattleMainCB2 6000
+0 until_battle_text Solo:_partner_is_on_another_map. 2000
 0 expect gBattlersCount 2
 0 expect coop.sWaitKind 0
+0 wait 100
 0 shot solo-across-boundary
 0 mash_field 25000
 0 expect coop.sLinkState 2

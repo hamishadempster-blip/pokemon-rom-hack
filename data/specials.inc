@@ -677,6 +677,7 @@ gSpecials::
 	def_special Coop_TwinIdentity
 	def_special Coop_BufferRivalTaunt
 	def_special Coop_BufferMenuStatus
+	def_special Coop_BufferMenuExplain
 	def_special Coop_MenuUseBeacon
 	def_special Coop_ReopenStartMenu
 	def_special Coop_BufferJoinAsk

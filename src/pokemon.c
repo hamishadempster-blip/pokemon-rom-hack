@@ -1907,6 +1907,22 @@ static void DecryptBoxMon(struct BoxPokemon *boxMon)
     }
 }
 
+// SetMonData(MON_DATA_OT_ID) only writes the field, and the OT id is half of
+// the encryption key, so a Pokémon that came from another save (a co-op
+// catch made by the partner's game) would decrypt as garbage afterwards.
+// Re-key it instead, keeping its data, checksum, and shininess.
+void SetBoxMonOtIdKeepData(struct BoxPokemon *boxMon, u32 otId)
+{
+    bool32 shiny = GetBoxMonData(boxMon, MON_DATA_IS_SHINY, NULL);
+
+    if (boxMon->otId == otId)
+        return;
+    DecryptBoxMon(boxMon);
+    boxMon->otId = otId;
+    EncryptBoxMon(boxMon);
+    SetBoxMonData(boxMon, MON_DATA_IS_SHINY, &shiny);
+}
+
 static const u8 sSubstructOffsets[4][24] =
 {
     [SUBSTRUCT_TYPE_0] = {0, 0, 0, 0, 0, 0, 1, 1, 2, 3, 2, 3, 1, 1, 2, 3, 2, 3, 1, 1, 2, 3, 2, 3},

@@ -57,6 +57,20 @@ extern const u8 Coop_EventScript_TalkPartner[];
 #define COOP_REFUSE_SELF_NOT_READY  1
 #define COOP_REFUSE_PARTNER_NOT_READY 2
 
+// Why an ordinary fight stayed solo while linked with the Beacon on. Sent in
+// a NACK's badge byte and shown under the battle's first message.
+#define COOP_SOLO_NONE              0
+#define COOP_SOLO_ELSEWHERE         1
+#define COOP_SOLO_BUSY              2
+#define COOP_SOLO_NO_ANSWER         3
+#define COOP_SOLO_DECLINED          4
+#define COOP_SOLO_PARTNER_NOT_READY 5
+#define COOP_SOLO_SELF_NOT_READY    6
+#define COOP_SOLO_RECOVERING        7
+#define COOP_SOLO_PLACE             8
+#define COOP_SOLO_KIND              9
+#define COOP_SOLO_COUNT             10
+
 #define COOP_LEGEND_DUO 0
 #define COOP_LEGEND_RAY 1
 
@@ -95,6 +109,9 @@ u16 Coop_TakeRescueResult(void);
 u8 Coop_RescueReturn(void);
 u16 Coop_BufferPartnerLocation(void);
 u16 Coop_PartnerChatOk(void);
+const u8 *Coop_TakeSoloNote(void);
+void Coop_NoteSoloOnlyEncounter(void);
+u16 Coop_BufferMenuExplain(void);
 u16 Coop_BufferCapText(void);
 u16 Coop_BufferBeaconStatus(void);
 u16 Coop_BufferBeaconAsk(void);

@@ -754,6 +754,7 @@ bool8 StandardWildEncounter(u16 curMetatileBehavior, u16 prevMetatileBehavior)
                 return FALSE;
 
             GenerateBattlePyramidWildMon(SPECIES_NONE);
+            Coop_NoteSoloOnlyEncounter();
             BattleSetup_StartWildBattle();
             return TRUE;
         }
@@ -777,6 +778,7 @@ bool8 StandardWildEncounter(u16 curMetatileBehavior, u16 prevMetatileBehavior)
                 if (!IsWildLevelAllowedByRepel(roamer->level))
                     return FALSE;
 
+                Coop_NoteSoloOnlyEncounter();
                 BattleSetup_StartRoamerBattle();
                 return TRUE;
             }
@@ -784,6 +786,7 @@ bool8 StandardWildEncounter(u16 curMetatileBehavior, u16 prevMetatileBehavior)
             {
                 if (DoMassOutbreakEncounterTest() == TRUE && SetUpMassOutbreakEncounter(WILD_CHECK_REPEL | WILD_CHECK_KEEN_EYE) == TRUE)
                 {
+                    Coop_NoteSoloOnlyEncounter();
                     BattleSetup_StartWildBattle();
                     return TRUE;
                 }
@@ -836,6 +839,7 @@ bool8 StandardWildEncounter(u16 curMetatileBehavior, u16 prevMetatileBehavior)
                 if (!IsWildLevelAllowedByRepel(roamer->level))
                     return FALSE;
 
+                Coop_NoteSoloOnlyEncounter();
                 BattleSetup_StartRoamerBattle();
                 return TRUE;
             }
@@ -902,6 +906,7 @@ void RockSmashWildEncounter(void)
                 gSpecialVar_Result = TRUE;
             }
             else {
+                Coop_NoteSoloOnlyEncounter();
                 BattleSetup_StartWildBattle();
                 gSpecialVar_Result = TRUE;
             }
@@ -948,6 +953,7 @@ bool8 SweetScentWildEncounter(void)
                 return FALSE;
 
             GenerateBattlePyramidWildMon(SPECIES_NONE);
+            Coop_NoteSoloOnlyEncounter();
             BattleSetup_StartWildBattle();
             return TRUE;
         }
@@ -963,6 +969,7 @@ bool8 SweetScentWildEncounter(void)
 
             if (TryStartRoamerEncounter())
             {
+                Coop_NoteSoloOnlyEncounter();
                 BattleSetup_StartRoamerBattle();
                 return TRUE;
             }
@@ -972,6 +979,7 @@ bool8 SweetScentWildEncounter(void)
             else
                 TryGenerateWildMon(gWildMonHeaders[headerId].encounterTypes[timeOfDay].landMonsInfo, WILD_AREA_LAND, 0);
 
+            Coop_NoteSoloOnlyEncounter();
             BattleSetup_StartWildBattle();
             return TRUE;
         }
@@ -986,11 +994,13 @@ bool8 SweetScentWildEncounter(void)
 
             if (TryStartRoamerEncounter())
             {
+                Coop_NoteSoloOnlyEncounter();
                 BattleSetup_StartRoamerBattle();
                 return TRUE;
             }
 
             TryGenerateWildMon(gWildMonHeaders[headerId].encounterTypes[timeOfDay].waterMonsInfo, WILD_AREA_WATER, 0);
+            Coop_NoteSoloOnlyEncounter();
             BattleSetup_StartWildBattle();
             return TRUE;
         }
@@ -1035,6 +1045,7 @@ void FishingWildEncounter(u8 rod)
 
     IncrementGameStat(GAME_STAT_FISHING_ENCOUNTERS);
     SetPokemonAnglerSpecies(species);
+    Coop_NoteSoloOnlyEncounter();
     BattleSetup_StartWildBattle();
 }
 

@@ -37,6 +37,7 @@
 #include "constants/trainers.h"
 #include "constants/trainer_hill.h"
 #include "constants/weather.h"
+#include "coop.h"
 
 struct BattleWindowText
 {
@@ -89,6 +90,29 @@ static const u8 sText_CoopWildLost[] = _("You and your partner are out of usable
 static const u8 sText_TwoWildFled[] = _("{PLAY_SE SE_FLEE}{B_LINK_OPPONENT1_NAME} and {B_LINK_OPPONENT2_NAME} fled!"); //not in gen 5+, replaced with match was forfeited text
 static const u8 sText_PlayerDefeatedLinkTrainerTrainer1[] = _("You defeated {B_TRAINER1_NAME_WITH_CLASS}!\p");
 static const u8 sText_OpponentMon1Appeared[] = _("{B_OPPONENT_MON1_NAME} appeared!\p");
+static EWRAM_DATA u8 sCoopIntroText[160] = {0};
+
+// The intro template with the co-op note added before its final prompt.
+static const u8 *AppendCoopSoloNote(const u8 *intro, const u8 *note)
+{
+    u32 len = StringLength(intro), i;
+    bool32 twoLines = FALSE;
+
+    if (len == 0 || len + StringLength(note) + 3 >= sizeof(sCoopIntroText) || intro[len - 1] != CHAR_PROMPT_CLEAR)
+        return intro;
+    for (i = 0; i < len; i++)
+    {
+        if (intro[i] == CHAR_NEWLINE || intro[i] == CHAR_PROMPT_SCROLL)
+            twoLines = TRUE;
+    }
+    memcpy(sCoopIntroText, intro, len - 1);
+    sCoopIntroText[len - 1] = twoLines ? CHAR_PROMPT_CLEAR : CHAR_NEWLINE;
+    i = StringCopy(&sCoopIntroText[len], note) - sCoopIntroText;
+    sCoopIntroText[i++] = CHAR_PROMPT_CLEAR;
+    sCoopIntroText[i] = EOS;
+    return sCoopIntroText;
+}
+
 static const u8 sText_WildPkmnAppeared[] = _("You encountered a wild {B_OPPONENT_MON1_NAME}!\p");
 static const u8 sText_LegendaryPkmnAppeared[] = _("You encountered a wild {B_OPPONENT_MON1_NAME}!\p");
 static const u8 sText_WildPkmnAppearedPause[] = _("You encountered a wild {B_OPPONENT_MON1_NAME}!{PAUSE 127}");
@@ -2529,6 +2553,15 @@ void BufferStringBattle(enum StringID stringID, enum BattlerId battler)
                 stringPtr = sText_WildPkmnAppearedPause;
             else
                 stringPtr = sText_WildPkmnAppeared;
+        }
+        // Linked with the Twin Beacon on but fighting alone: say why, under
+        // the first message (a one-line intro) or on its own page.
+        if (!(gBattleTypeFlags & BATTLE_TYPE_COOP))
+        {
+            const u8 *note = Coop_TakeSoloNote();
+
+            if (note != NULL)
+                stringPtr = AppendCoopSoloNote(stringPtr, note);
         }
         break;
     case STRINGID_INTROSENDOUT: // poke first send-out

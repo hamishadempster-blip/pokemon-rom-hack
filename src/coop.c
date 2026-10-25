@@ -51,6 +51,9 @@
 #include "constants/maps.h"
 #include "data.h"
 #include "map_name_popup.h"
+#include "field_effect_helpers.h"
+#include "constants/field_effects.h"
+#include "field_effect.h"
 
 #define COOP_INVITE_MAGIC 0xC0A1
 #define COOP_MON_MAGIC    0xC0B0
@@ -191,6 +194,7 @@ static EWRAM_DATA u8 sBeaconQueued = 0;
 static EWRAM_DATA u8 sBeaconPrompted = 0;
 static EWRAM_DATA u8 sBeaconBagWarned = 0;
 static EWRAM_DATA u8 sRefusal = COOP_REFUSE_NONE;
+static EWRAM_DATA u8 sSoloNote = COOP_SOLO_NONE;
 static EWRAM_DATA u16 sStorySeq = 0;
 static EWRAM_DATA u16 sStoryLastSeq = 0;
 static EWRAM_DATA bool8 sStorySeqKnown = FALSE;
@@ -262,6 +266,7 @@ static bool8 Coop_PartnerInBirchLab(void);
 static void Coop_HandleStoryMsg(u32 playerId, const struct CoopStoryMsg *msg);
 static void Coop_PollSharedItems(void);
 static u8 Coop_RivalId(void);
+static u8 Coop_SoloReasonHere(void);
 static void Coop_PollStory(void);
 static bool8 Coop_GuestBusy(void);
 
@@ -408,6 +413,53 @@ static u8 Coop_FindPartnerObject(void)
     return found;
 }
 
+// A surfing partner sits on a surf blob, as the player does; the sitting
+// sprite alone looks like someone standing on the water. The blob belongs to
+// the partner object through fieldEffectSpriteId. A battle or a map load
+// frees every sprite, so a stored id is trusted only while that sprite is
+// still this object's blob.
+static bool8 Coop_PartnerBlobLive(u8 objectId)
+{
+    u8 id = gObjectEvents[objectId].fieldEffectSpriteId;
+
+    return id != 0 && id < MAX_SPRITES && gSprites[id].inUse
+        && gSprites[id].callback == UpdateSurfBlobFieldEffect
+        && gSprites[id].data[2] == objectId;
+}
+
+static void Coop_DropPartnerBlob(u8 objectId)
+{
+    if (Coop_PartnerBlobLive(objectId))
+        DestroySprite(&gSprites[gObjectEvents[objectId].fieldEffectSpriteId]);
+    gObjectEvents[objectId].fieldEffectSpriteId = 0;
+}
+
+static void Coop_SyncPartnerBlob(u8 objectId)
+{
+    struct ObjectEvent *obj = &gObjectEvents[objectId];
+    u8 id;
+
+    if (!sPartner.surf)
+    {
+        if (obj->fieldEffectSpriteId != 0)
+            Coop_DropPartnerBlob(objectId);
+        return;
+    }
+    if (Coop_PartnerBlobLive(objectId))
+        return;
+    gFieldEffectArguments[0] = obj->currentCoords.x;
+    gFieldEffectArguments[1] = obj->currentCoords.y;
+    gFieldEffectArguments[2] = objectId;
+    id = FieldEffectStart(FLDEFF_SURF_BLOB);
+    if (id >= MAX_SPRITES)
+    {
+        obj->fieldEffectSpriteId = 0;
+        return;
+    }
+    obj->fieldEffectSpriteId = id;
+    SetSurfBlob_BobState(id, BOB_PLAYER_AND_MON);
+}
+
 static void Coop_RemoveSprite(void)
 {
     u8 i;
@@ -416,7 +468,10 @@ static void Coop_RemoveSprite(void)
     for (i = 0; i < OBJECT_EVENTS_COUNT; i++)
     {
         if (gObjectEvents[i].active && gObjectEvents[i].localId == OBJ_EVENT_ID_COOP_PARTNER)
+        {
+            Coop_DropPartnerBlob(i);
             RemoveObjectEvent(&gObjectEvents[i]);
+        }
     }
 }
 
@@ -690,6 +745,8 @@ static void Coop_UpdateSprite(void)
         objectId = SpawnSpecialObjectEvent(&template);
         if (objectId < OBJECT_EVENTS_COUNT)
         {
+            gObjectEvents[objectId].fieldEffectSpriteId = 0;
+            Coop_SyncPartnerBlob(objectId);
             Coop_ShowPartner(&gObjectEvents[objectId]);
             if (sPartner.facing != DIR_NONE)
                 ObjectEventTurn(&gObjectEvents[objectId], (enum Direction)sPartner.facing);
@@ -698,6 +755,7 @@ static void Coop_UpdateSprite(void)
     }
 
     obj = &gObjectEvents[objectId];
+    Coop_SyncPartnerBlob(objectId);
     Coop_PartnerTarget(&tx, &ty);
     // A released script only needs a resettle when the sprite is off its
     // tile or stuck mid-step. Re-placing a partner who is already standing
@@ -875,17 +933,34 @@ static void Coop_FillFrame(struct CoopFrame *frame)
     frame->activity = Coop_LocalActivity();
 }
 
-// Three short lines for the start menu: the link and Beacon, where the
-// partner is, and what they are doing. Read fresh each time the menu opens.
+// What the partner's state means for an ordinary fight right now, from this
+// game's side: COOP_SOLO_NONE when it would ask them to join.
+static u8 Coop_FightOutlook(void)
+{
+    u8 why = Coop_SoloReasonHere();
+
+    if (why != COOP_SOLO_NONE)
+        return why;
+    if (!sBeacon.on)
+        return COOP_SOLO_NONE;
+    if (sPartner.activity != COOP_ACT_EXPLORING)
+        return COOP_SOLO_BUSY;
+    return COOP_SOLO_NONE;
+}
+
+// Four short lines for the start menu: the link and Beacon, where the
+// partner is, whether a fight here would be together (and if not, why),
+// and this player's rival. Read fresh each time the menu opens.
 void Coop_FormatStatus(u8 *dest)
 {
-    static const u8 *const sActivity[] = {
-        [COOP_ACT_EXPLORING] = COMPOUND_STRING("Exploring"),
-        [COOP_ACT_TALKING]   = COMPOUND_STRING("Talking"),
-        [COOP_ACT_MENU]      = COMPOUND_STRING("In a menu"),
-        [COOP_ACT_BUSY]      = COMPOUND_STRING("Busy"),
+    static const u8 *const sBusy[] = {
+        [COOP_ACT_EXPLORING] = COMPOUND_STRING("Fights: solo"),
+        [COOP_ACT_TALKING]   = COMPOUND_STRING("Solo: partner talking"),
+        [COOP_ACT_MENU]      = COMPOUND_STRING("Solo: partner in menu"),
+        [COOP_ACT_BUSY]      = COMPOUND_STRING("Solo: partner battling"),
     };
     u8 *end;
+    u8 outlook;
 
     if (sLinkState != COOP_LINK_UP)
     {
@@ -904,9 +979,10 @@ void Coop_FormatStatus(u8 *dest)
         StringCopy(end, COMPOUND_STRING("Partner: joining…"));
         return;
     }
+    end = StringCopy(end, COMPOUND_STRING("Partner: "));
     if (Coop_PartnerOnSameMap())
     {
-        end = StringCopy(end, COMPOUND_STRING("Partner: here"));
+        end = StringCopy(end, COMPOUND_STRING("here"));
     }
     else
     {
@@ -915,10 +991,24 @@ void Coop_FormatStatus(u8 *dest)
         if (header != NULL)
             end = GetMapName(end, header->regionMapSectionId, 0);
         else
-            end = StringCopy(end, COMPOUND_STRING("Partner: away"));
+            end = StringCopy(end, COMPOUND_STRING("away"));
     }
     *end++ = CHAR_NEWLINE;
-    end = StringCopy(end, sActivity[sPartner.activity & 3]);
+    outlook = Coop_FightOutlook();
+    if (!sBeacon.on)
+        end = StringCopy(end, COMPOUND_STRING("Fights: solo"));
+    else if (outlook == COOP_SOLO_NONE)
+        end = StringCopy(end, COMPOUND_STRING("Fights: together"));
+    else if (outlook == COOP_SOLO_BUSY && sPartner.activity != COOP_ACT_EXPLORING)
+        end = StringCopy(end, sBusy[sPartner.activity & 3]);
+    else if (outlook == COOP_SOLO_ELSEWHERE)
+        end = StringCopy(end, COMPOUND_STRING("Fights: solo (apart)"));
+    else if (outlook == COOP_SOLO_SELF_NOT_READY)
+        end = StringCopy(end, COMPOUND_STRING("Solo: front 3 fainted"));
+    else if (outlook == COOP_SOLO_PLACE)
+        end = StringCopy(end, COMPOUND_STRING("Fights: solo here"));
+    else
+        end = StringCopy(end, COMPOUND_STRING("Fights: solo (busy)"));
     *end++ = CHAR_NEWLINE;
     end = StringCopy(end, COMPOUND_STRING("Your rival: "));
     if (Coop_RivalId() == COOP_RIVAL_SOREN)
@@ -927,6 +1017,33 @@ void Coop_FormatStatus(u8 *dest)
         StringCopy(end, COMPOUND_STRING("MIRA"));
     else
         StringCopy(end, COMPOUND_STRING("not yet"));
+}
+
+// The CO-OP menu's opening line in gStringVar4: what linking does, what the
+// Beacon does, and why fights here would be solo. TRUE when the Beacon is on.
+u16 Coop_BufferMenuExplain(void)
+{
+    const u8 *text;
+    u8 outlook;
+
+    if (!Coop_SessionActive() || !sPartnerValid)
+        text = COMPOUND_STRING("The link is recovering. Wait,\nor choose UNLINK to stop.");
+    else if (!CheckBagHasItem(ITEM_TWIN_BEACON, 1))
+        text = COMPOUND_STRING("Linked: you explore together.\nNo TWIN BEACON yet.");
+    else if (!sBeacon.on)
+        text = COMPOUND_STRING("Linked: you explore together.\nBEACON OFF: optional fights solo.");
+    else if ((outlook = Coop_FightOutlook()) == COOP_SOLO_NONE)
+        text = COMPOUND_STRING("BEACON ON: fights here can be\nco-op with your partner.");
+    else if (outlook == COOP_SOLO_ELSEWHERE)
+        text = COMPOUND_STRING("BEACON ON, but you're on\ndifferent maps: fights are solo.");
+    else if (outlook == COOP_SOLO_SELF_NOT_READY)
+        text = COMPOUND_STRING("BEACON ON, but your first three\ncan't fight: fights are solo.");
+    else if (outlook == COOP_SOLO_PLACE)
+        text = COMPOUND_STRING("BEACON ON, but battles here\nare always one-player.");
+    else
+        text = COMPOUND_STRING("BEACON ON. Your partner is busy,\nso fights are solo for now.");
+    StringCopy(gStringVar4, text);
+    return sBeacon.on ? TRUE : FALSE;
 }
 
 // Field play with the cable up: link.c may read a receive backlog at once.
@@ -1223,8 +1340,11 @@ static u16 Coop_InviteTimeout(u8 kind)
 // the inviter then sat out its whole timeout. Replies now wait their turn.
 static EWRAM_DATA u8 sReplyKind = 0;
 static EWRAM_DATA u16 sReplySeq = 0;
+static EWRAM_DATA u8 sReplyReason = 0;
 
-static bool8 Coop_TrySendReply(u8 kind, u16 seq)
+// A NACK carries why (COOP_SOLO_*) in the badge byte, for the inviter's
+// solo note.
+static bool8 Coop_TrySendReply(u8 kind, u16 seq, u8 reason)
 {
     struct CoopInvite reply;
 
@@ -1234,21 +1354,28 @@ static bool8 Coop_TrySendReply(u8 kind, u16 seq)
     reply.magic = COOP_INVITE_MAGIC;
     reply.kind = kind;
     reply.seq = seq;
+    reply.badge = reason;
     reply.checksum = Coop_InviteChecksum(&reply);
     return SendBlock(BitmaskAllOtherLinkPlayers(), &reply, sizeof(reply));
 }
 
-static void Coop_SendReply(u8 kind, u16 seq)
+static void Coop_SendReplyWhy(u8 kind, u16 seq, u8 reason)
 {
-    if (Coop_TrySendReply(kind, seq))
+    if (Coop_TrySendReply(kind, seq, reason))
         return;
     sReplyKind = kind;
     sReplySeq = seq;
+    sReplyReason = reason;
+}
+
+static void Coop_SendReply(u8 kind, u16 seq)
+{
+    Coop_SendReplyWhy(kind, seq, COOP_SOLO_NONE);
 }
 
 static void Coop_FlushReply(void)
 {
-    if (sReplyKind != 0 && Coop_TrySendReply(sReplyKind, sReplySeq))
+    if (sReplyKind != 0 && Coop_TrySendReply(sReplyKind, sReplySeq, sReplyReason))
         sReplyKind = 0;
 }
 
@@ -1292,6 +1419,8 @@ static void Coop_HandleInvite(u32 playerId, const struct CoopInvite *invite)
                 return;
             }
             sRefusal = COOP_REFUSE_PARTNER_NOT_READY;
+            sSoloNote = invite->badge < COOP_SOLO_COUNT && invite->badge != COOP_SOLO_NONE
+                      ? invite->badge : COOP_SOLO_DECLINED;
             Coop_FailWait();
         }
         return;
@@ -1337,13 +1466,23 @@ static void Coop_HandleInvite(u32 playerId, const struct CoopInvite *invite)
     // else is a quiet no and the inviter fights alone.
     if (Coop_IsOptionalKind(invite->kind))
     {
-        if (Coop_GuestBusy() || !Coop_HasBattleReadyLead() || sGuestPairPending
-         || !sBeacon.on || !Coop_PartnerNearby()
-         || (invite->kind == COOP_KIND_PAIR && Coop_PairBeatenLocally())
+        u8 why = COOP_SOLO_NONE;
+
+        if (Coop_GuestBusy() || sGuestPairPending)
+            why = COOP_SOLO_BUSY;
+        else if (!Coop_HasBattleReadyLead())
+            why = COOP_SOLO_PARTNER_NOT_READY;
+        else if (!sBeacon.on)
+            why = COOP_SOLO_DECLINED;
+        else if (!Coop_PartnerNearby())
+            why = COOP_SOLO_ELSEWHERE;
+        else if ((invite->kind == COOP_KIND_PAIR && Coop_PairBeatenLocally())
          || (invite->kind == COOP_KIND_WILD && (invite->trainerA == SPECIES_NONE || invite->trainerA >= NUM_SPECIES
                                              || invite->trainerB == SPECIES_NONE || invite->trainerB >= NUM_SPECIES)))
+            why = COOP_SOLO_KIND;
+        if (why != COOP_SOLO_NONE)
         {
-            Coop_SendReply(COOP_KIND_NACK, invite->seq);
+            Coop_SendReplyWhy(COOP_KIND_NACK, invite->seq, why);
             return;
         }
         sGuestPairInvite = *invite;
@@ -1477,7 +1616,11 @@ static void Coop_PollInviteTimeout(void)
         ShowFieldMessage(sText_CallingPartner);
     Coop_SendInvite();
     if (++sInviteTimer >= Coop_InviteTimeout(sBattleKind))
+    {
+        if (Coop_IsOptionalKind(sBattleKind))
+            sSoloNote = COOP_SOLO_NO_ANSWER;
         Coop_FailWait();
+    }
 }
 
 // The rescue used to travel as a link block, then the other game refused
@@ -2409,6 +2552,15 @@ bool8 Coop_TryQueueOrdinaryDouble(void)
     u16 trainerB;
     int category;
 
+    // Only ordinary trainers get a note; story fights have their own rules.
+    sSoloNote = COOP_SOLO_NONE;
+    if (trainerA != TRAINER_NONE && trainerA < TRAINERS_COUNT && !IsSpecialTrainer(trainerA)
+     && Coop_RivalStageFromId(trainerA) == 0xFF && !Coop_ClassRequiresPartner(trainerA))
+    {
+        sSoloNote = Coop_SoloReasonHere();
+        if (sSoloNote == COOP_SOLO_NONE && sBeacon.on && Coop_SessionActive() && Coop_CoupleStaysSolo(trainerA))
+            sSoloNote = COOP_SOLO_KIND;
+    }
     if (!Coop_SessionActive() || !Coop_PartnerOnSameMap())
         return FALSE;
     if (trainerA == TRAINER_NONE || trainerA >= TRAINERS_COUNT || IsSpecialTrainer(trainerA))
@@ -3468,6 +3620,9 @@ static void Coop_DeliverCatches(void)
         }
         HandleSetPokedexFlagFromMon(mon, FLAG_SET_SEEN);
         HandleSetPokedexFlagFromMon(mon, FLAG_SET_CAUGHT);
+        // The link master's game made both wild Pokémon, with its own OT id
+        // in their encryption key; the stock capture rewrites only the field.
+        SetBoxMonOtIdKeepData(&mon->box, READ_OTID_FROM_SAVE);
         result = GiveCapturedMonToPlayer(mon);
         if (result == MON_GIVEN_TO_PARTY)
         {
@@ -3597,16 +3752,63 @@ void Coop_AbortBattle(void)
     SetMainCallback2(CB2_QuitRecordedBattle);
 }
 
-bool8 Coop_WildPairReady(void)
+// Why an ordinary fight here would stay solo, from this game's side, when
+// linked with the Beacon on (otherwise solo is simply expected: NONE).
+static u8 Coop_SoloReasonHere(void)
 {
+    if (sLinkState != COOP_LINK_UP || !sBeacon.on)
+        return COOP_SOLO_NONE;
     // Special facilities have their own encounter and party rules.
     if (Coop_PlaceStaysSolo())
+        return COOP_SOLO_PLACE;
+    if (!Coop_SessionActive() || !sPartnerValid)
+        return COOP_SOLO_RECOVERING;
+    if (!Coop_PartnerOnSameMap())
+        return COOP_SOLO_ELSEWHERE;
+    if (!Coop_HasBattleReadyLead())
+        return COOP_SOLO_SELF_NOT_READY;
+    if (Coop_InteractionBusy() || sPendingMessage != NULL)
+        return COOP_SOLO_BUSY;
+    return COOP_SOLO_NONE;
+}
+
+bool8 Coop_WildPairReady(void)
+{
+    sSoloNote = Coop_SoloReasonHere();
+    if (sSoloNote != COOP_SOLO_NONE)
         return FALSE;
-    if (!Coop_SessionActive() || !sBeacon.on || !Coop_PartnerOnSameMap())
-        return FALSE;
-    if (!Coop_HasBattleReadyLead() || Coop_InteractionBusy() || sPendingMessage != NULL)
-        return FALSE;
-    return TRUE;
+    return Coop_SessionActive() && sBeacon.on;
+}
+
+// Fishing, Rock Smash, roamers, outbreaks, and scripted encounters keep
+// their stock one-player path. Say so when co-op was otherwise possible.
+void Coop_NoteSoloOnlyEncounter(void)
+{
+    sSoloNote = Coop_SoloReasonHere();
+    if (sSoloNote == COOP_SOLO_NONE && Coop_SessionActive() && sBeacon.on)
+        sSoloNote = COOP_SOLO_KIND;
+}
+
+// The note for the first battle message of a solo fight, read once.
+const u8 *Coop_TakeSoloNote(void)
+{
+    static const u8 *const sNotes[COOP_SOLO_COUNT] = {
+        [COOP_SOLO_ELSEWHERE]         = COMPOUND_STRING("Solo: partner is on another map."),
+        [COOP_SOLO_BUSY]              = COMPOUND_STRING("Solo: your partner is busy."),
+        [COOP_SOLO_NO_ANSWER]         = COMPOUND_STRING("Solo: your partner didn't answer."),
+        [COOP_SOLO_DECLINED]          = COMPOUND_STRING("Solo: your partner said no."),
+        [COOP_SOLO_PARTNER_NOT_READY] = COMPOUND_STRING("Solo: partner's team can't fight."),
+        [COOP_SOLO_SELF_NOT_READY]    = COMPOUND_STRING("Solo: your front three can't fight."),
+        [COOP_SOLO_RECOVERING]        = COMPOUND_STRING("Solo: the link is recovering."),
+        [COOP_SOLO_PLACE]             = COMPOUND_STRING("Solo: no co-op battles here."),
+        [COOP_SOLO_KIND]              = COMPOUND_STRING("Solo: a one-player encounter."),
+    };
+    u8 note = sSoloNote;
+
+    sSoloNote = COOP_SOLO_NONE;
+    if (note == COOP_SOLO_NONE || note >= COOP_SOLO_COUNT || (gBattleTypeFlags & BATTLE_TYPE_COOP))
+        return NULL;
+    return sNotes[note];
 }
 
 // The two wild Pokémon are already in the enemy party. The invite carries
@@ -3848,13 +4050,13 @@ u16 Coop_PairGuestAnswer(void)
     if (sGuestPairTimer >= (kind == COOP_KIND_PAIR ? COOP_PAIR_ANSWER_LIMIT : COOP_JOIN_ANSWER_LIMIT)
      || !Coop_SessionActive() || !Coop_PartnerOnSameMap())
     {
-        Coop_SendReply(COOP_KIND_NACK, seq);
+        Coop_SendReplyWhy(COOP_KIND_NACK, seq, COOP_SOLO_NO_ANSWER);
         return 2;
     }
     if (!accepted || !Coop_HasBattleReadyLead()
      || (kind == COOP_KIND_PAIR && Coop_PairPlanFromHere(TRUE, accepted) != COOP_PAIR_JOINT))
     {
-        Coop_SendReply(COOP_KIND_NACK, seq);
+        Coop_SendReplyWhy(COOP_KIND_NACK, seq, !accepted ? COOP_SOLO_DECLINED : COOP_SOLO_PARTNER_NOT_READY);
         return 0;
     }
     sBattleKind = kind;
