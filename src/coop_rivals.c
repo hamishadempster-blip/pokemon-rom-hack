@@ -44,6 +44,11 @@ static bool8 Coop_IsRivalGfx(u16 gfx)
         || (gfx >= OBJ_EVENT_GFX_RIVAL_MAY_NORMAL && gfx <= OBJ_EVENT_GFX_RIVAL_MAY_FIELD_MOVE);
 }
 
+bool8 Coop_IsRivalGraphics(u16 gfx)
+{
+    return Coop_IsRivalGfx(gfx);
+}
+
 // Same pose, other twin: Brendan's look is Soren, May's look is Mira.
 static u16 Coop_TwinGfx(u16 primaryGfx)
 {
@@ -79,6 +84,23 @@ static bool8 Coop_IsWarpTile(s16 x, s16 y)
     return FALSE;
 }
 
+static EWRAM_DATA u8 sTwinOverlap = 0;
+
+static bool8 Coop_PartnerStandsOn(s16 x, s16 y)
+{
+    u8 i;
+
+    for (i = 0; i < OBJECT_EVENTS_COUNT; i++)
+    {
+        struct ObjectEvent *obj = &gObjectEvents[i];
+
+        if (obj->active && obj->localId == OBJ_EVENT_ID_COOP_PARTNER
+         && obj->currentCoords.x == x && obj->currentCoords.y == y && !obj->heldMovementActive)
+            return TRUE;
+    }
+    return FALSE;
+}
+
 static bool8 Coop_TwinTileFree(s16 x, s16 y)
 {
     s16 px, py;
@@ -89,8 +111,10 @@ static bool8 Coop_TwinTileFree(s16 x, s16 y)
     PlayerGetDestCoords(&px, &py);
     if (x == px && y == py)
         return FALSE;
+    // The partner's sprite is not solid, but a twin standing on it hides
+    // one of them, and each game would then place the twin differently.
     objectId = GetObjectEventIdByXY(x, y);
-    return objectId >= OBJECT_EVENTS_COUNT || gObjectEvents[objectId].localId == OBJ_EVENT_ID_COOP_PARTNER;
+    return objectId >= OBJECT_EVENTS_COUNT;
 }
 
 static u8 Coop_FindTwin(void)
@@ -338,6 +362,22 @@ void Coop_UpdateRivalTwin(void)
         sTwinPending = FALSE;
         Coop_TwinStepTo(twin, primary, sTwinPendingX, sTwinPendingY);
         return;
+    }
+    // The twin was placed before the partner arrived and the partner has
+    // stopped on its tile: one would hide the other, and the two screens
+    // would disagree. Outside scenes, move it to another free side.
+    if (!ScriptContext_IsEnabled() && Coop_PartnerStandsOn(twin->currentCoords.x, twin->currentCoords.y))
+    {
+        if (++sTwinOverlap >= 30)
+        {
+            sTwinOverlap = 0;
+            Coop_RemoveTwin();
+            return;
+        }
+    }
+    else
+    {
+        sTwinOverlap = 0;
     }
     Coop_TwinFace(twin, primary);
 }

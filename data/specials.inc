@@ -678,6 +678,8 @@ gSpecials::
 	def_special Coop_BufferRivalTaunt
 	def_special Coop_BufferMenuStatus
 	def_special Coop_BufferMenuExplain
+	def_special Coop_TwinLineStage
+	def_special Coop_ResetRivalScene
 	def_special Coop_MenuUseBeacon
 	def_special Coop_ReopenStartMenu
 	def_special Coop_BufferJoinAsk

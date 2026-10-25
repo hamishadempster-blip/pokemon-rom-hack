@@ -17267,13 +17267,9 @@ IVs: 12 HP / 12 Atk / 12 Def / 12 SpA / 12 SpD / 12 Spe
 - Rock Tomb
 - Protect
 
-Wingull
+Nacli
 Level: 14
-IVs: 12 HP / 12 Atk / 12 Def / 12 SpA / 12 SpD / 12 Spe
-- Thunder Wave
-- Water Gun
-- Wing Attack
-- Supersonic
+IVs: 18 HP / 18 Atk / 18 Def / 18 SpA / 18 SpD / 18 Spe
 
 === TRAINER_SOREN_RUSTBORO_GRASS ===
 Name: SOREN
@@ -17292,13 +17288,9 @@ IVs: 12 HP / 12 Atk / 12 Def / 12 SpA / 12 SpD / 12 Spe
 - Quick Attack
 - Pursuit
 
-Shroomish
+Applin
 Level: 14
-IVs: 12 HP / 12 Atk / 12 Def / 12 SpA / 12 SpD / 12 Spe
-- Absorb
-- Stun Spore
-- Leech Seed
-- Tackle
+IVs: 18 HP / 18 Atk / 18 Def / 18 SpA / 18 SpD / 18 Spe
 
 === TRAINER_MIRA_RUSTBORO_FIRE ===
 Name: MIRA
@@ -17400,13 +17392,9 @@ IVs: 18 HP / 18 Atk / 18 Def / 18 SpA / 18 SpD / 18 Spe
 - Rock Tomb
 - Focus Energy
 
-Houndour
+Corvisquire
 Level: 20
 IVs: 18 HP / 18 Atk / 18 Def / 18 SpA / 18 SpD / 18 Spe
-- Ember
-- Bite
-- Howl
-- Smog
 
 === TRAINER_SOREN_R110_WATER ===
 Name: SOREN
@@ -17425,21 +17413,13 @@ IVs: 18 HP / 18 Atk / 18 Def / 18 SpA / 18 SpD / 18 Spe
 - Mud Shot
 - Rock Tomb
 
-Wingull
+Nacli
 Level: 21
 IVs: 18 HP / 18 Atk / 18 Def / 18 SpA / 18 SpD / 18 Spe
-- Water Gun
-- Wing Attack
-- Protect
-- Supersonic
 
-Lotad
+Crabrawler
 Level: 20
 IVs: 18 HP / 18 Atk / 18 Def / 18 SpA / 18 SpD / 18 Spe
-- Fake Out
-- Absorb
-- Water Gun
-- Growl
 
 === TRAINER_SOREN_R110_GRASS ===
 Name: SOREN
@@ -17458,21 +17438,13 @@ IVs: 18 HP / 18 Atk / 18 Def / 18 SpA / 18 SpD / 18 Spe
 - Quick Attack
 - Pursuit
 
-Shroomish
+Flapple
 Level: 21
 IVs: 18 HP / 18 Atk / 18 Def / 18 SpA / 18 SpD / 18 Spe
-- Absorb
-- Stun Spore
-- Leech Seed
-- Headbutt
 
-Lotad
+Pawmi
 Level: 20
 IVs: 18 HP / 18 Atk / 18 Def / 18 SpA / 18 SpD / 18 Spe
-- Fake Out
-- Absorb
-- Water Gun
-- Growl
 
 === TRAINER_MIRA_R110_FIRE ===
 Name: MIRA
@@ -17499,13 +17471,9 @@ IVs: 18 HP / 18 Atk / 18 Def / 18 SpA / 18 SpD / 18 Spe
 - Smog
 - Harden
 
-Numel
+Tarountula
 Level: 20
 IVs: 18 HP / 18 Atk / 18 Def / 18 SpA / 18 SpD / 18 Spe
-- Ember
-- Tackle
-- Magnitude
-- Focus Energy
 
 === TRAINER_MIRA_R110_WATER ===
 Name: MIRA
@@ -17524,21 +17492,13 @@ IVs: 18 HP / 18 Atk / 18 Def / 18 SpA / 18 SpD / 18 Spe
 - Wing Attack
 - Protect
 
-Marshtomp
+Lombre
 Level: 21
 IVs: 18 HP / 18 Atk / 18 Def / 18 SpA / 18 SpD / 18 Spe
-- Water Gun
-- Mud Shot
-- Rock Tomb
-- Growl
 
-Wingull
+Tandemaus
 Level: 20
 IVs: 18 HP / 18 Atk / 18 Def / 18 SpA / 18 SpD / 18 Spe
-- Water Gun
-- Wing Attack
-- Supersonic
-- Quick Attack
 
 === TRAINER_MIRA_R110_GRASS ===
 Name: MIRA
@@ -17557,21 +17517,13 @@ IVs: 18 HP / 18 Atk / 18 Def / 18 SpA / 18 SpD / 18 Spe
 - Mach Punch
 - Stun Spore
 
-Grovyle
+Shroodle
 Level: 21
 IVs: 18 HP / 18 Atk / 18 Def / 18 SpA / 18 SpD / 18 Spe
-- Absorb
-- Quick Attack
-- Pursuit
-- Leer
 
-Shroomish
+Lotad
 Level: 20
 IVs: 18 HP / 18 Atk / 18 Def / 18 SpA / 18 SpD / 18 Spe
-- Absorb
-- Leech Seed
-- Headbutt
-- Stun Spore
 
 === TRAINER_SOREN_R119_FIRE ===
 Name: SOREN
@@ -17582,31 +17534,17 @@ Music: Male
 Double Battle: Yes
 AI: Check Bad Move / Try To Faint / Check Viability / HP Aware
 
-Torkoal
-Ability: Drought
+Blaziken
 Level: 36
-IVs: 24 HP / 24 Atk / 24 Def / 24 SpA / 24 SpD / 24 Spe
-- Eruption
-- Body Slam
-- Protect
-- Attract
+IVs: 18 HP / 18 Atk / 18 Def / 18 SpA / 18 SpD / 18 Spe
 
-Houndoom
-Ability: Flash Fire
+Camerupt
 Level: 35
-IVs: 24 HP / 24 Atk / 24 Def / 24 SpA / 24 SpD / 24 Spe
-- Flamethrower
-- Bite
-- Protect
-- Howl
+IVs: 18 HP / 18 Atk / 18 Def / 18 SpA / 18 SpD / 18 Spe
 
-Combusken
+Corvisquire
 Level: 34
-IVs: 24 HP / 24 Atk / 24 Def / 24 SpA / 24 SpD / 24 Spe
-- Ember
-- Double Kick
-- Peck
-- Bulk Up
+IVs: 18 HP / 18 Atk / 18 Def / 18 SpA / 18 SpD / 18 Spe
 
 === TRAINER_SOREN_R119_WATER ===
 Name: SOREN
@@ -17617,31 +17555,22 @@ Music: Male
 Double Battle: Yes
 AI: Check Bad Move / Try To Faint / Check Viability / HP Aware
 
-Pelipper
+Swampert
 Level: 36
-IVs: 24 HP / 24 Atk / 24 Def / 24 SpA / 24 SpD / 24 Spe
-- Surf
-- Aerial Ace
-- Protect
-- Rain Dance
+IVs: 18 HP / 18 Atk / 18 Def / 18 SpA / 18 SpD / 18 Spe
+
+Naclstack
+Level: 35
+IVs: 18 HP / 18 Atk / 18 Def / 18 SpA / 18 SpD / 18 Spe
 
 Lanturn
 Ability: Volt Absorb
-Level: 35
+Level: 34
 IVs: 24 HP / 24 Atk / 24 Def / 24 SpA / 24 SpD / 24 Spe
 - Spark
 - Surf
 - Thunder Wave
 - Confuse Ray
-
-Manectric
-Ability: Lightning Rod
-Level: 34
-IVs: 24 HP / 24 Atk / 24 Def / 24 SpA / 24 SpD / 24 Spe
-- Shock Wave
-- Quick Attack
-- Howl
-- Thunder Wave
 
 === TRAINER_SOREN_R119_GRASS ===
 Name: SOREN
@@ -17660,21 +17589,13 @@ IVs: 24 HP / 24 Atk / 24 Def / 24 SpA / 24 SpD / 24 Spe
 - Pursuit
 - Detect
 
-Breloom
+Flapple
 Level: 35
-IVs: 24 HP / 24 Atk / 24 Def / 24 SpA / 24 SpD / 24 Spe
-- Mach Punch
-- Absorb
-- Stun Spore
-- Leech Seed
+IVs: 18 HP / 18 Atk / 18 Def / 18 SpA / 18 SpD / 18 Spe
 
-Grovyle
+Pawmo
 Level: 34
-IVs: 24 HP / 24 Atk / 24 Def / 24 SpA / 24 SpD / 24 Spe
-- Absorb
-- Quick Attack
-- Pursuit
-- Screech
+IVs: 18 HP / 18 Atk / 18 Def / 18 SpA / 18 SpD / 18 Spe
 
 === TRAINER_MIRA_R119_FIRE ===
 Name: MIRA
@@ -17685,31 +17606,27 @@ Music: Female
 Double Battle: Yes
 AI: Check Bad Move / Try To Faint / Check Viability / HP Aware
 
-Ninetales
-Ability: Flash Fire
-Level: 36
-IVs: 24 HP / 24 Atk / 24 Def / 24 SpA / 24 SpD / 24 Spe
-- Flamethrower
-- Will O Wisp
-- Confuse Ray
-- Quick Attack
-
 Houndoom
 Ability: Flash Fire
-Level: 35
+Level: 36
 IVs: 24 HP / 24 Atk / 24 Def / 24 SpA / 24 SpD / 24 Spe
 - Flamethrower
 - Bite
 - Howl
 - Protect
 
-Camerupt
-Level: 34
+Ninetales
+Ability: Flash Fire
+Level: 35
 IVs: 24 HP / 24 Atk / 24 Def / 24 SpA / 24 SpD / 24 Spe
-- Overheat
-- Rock Slide
-- Tackle
-- Attract
+- Flamethrower
+- Will O Wisp
+- Confuse Ray
+- Quick Attack
+
+Spidops
+Level: 34
+IVs: 18 HP / 18 Atk / 18 Def / 18 SpA / 18 SpD / 18 Spe
 
 === TRAINER_MIRA_R119_WATER ===
 Name: MIRA
@@ -17720,30 +17637,26 @@ Music: Female
 Double Battle: Yes
 AI: Check Bad Move / Try To Faint / Check Viability / HP Aware
 
-Lanturn
-Ability: Volt Absorb
-Level: 36
-IVs: 24 HP / 24 Atk / 24 Def / 24 SpA / 24 SpD / 24 Spe
-- Surf
-- Spark
-- Thunder Wave
-- Confuse Ray
-
 Pelipper
-Level: 35
+Level: 36
 IVs: 24 HP / 24 Atk / 24 Def / 24 SpA / 24 SpD / 24 Spe
 - Surf
 - Wing Attack
 - Protect
 - Rain Dance
 
-Magneton
-Level: 34
+Lanturn
+Ability: Volt Absorb
+Level: 35
 IVs: 24 HP / 24 Atk / 24 Def / 24 SpA / 24 SpD / 24 Spe
-- Discharge
+- Surf
+- Spark
 - Thunder Wave
-- Shock Wave
-- Sonic Boom
+- Confuse Ray
+
+Maushold
+Level: 34
+IVs: 18 HP / 18 Atk / 18 Def / 18 SpA / 18 SpD / 18 Spe
 
 === TRAINER_MIRA_R119_GRASS ===
 Name: MIRA
@@ -17762,13 +17675,9 @@ IVs: 24 HP / 24 Atk / 24 Def / 24 SpA / 24 SpD / 24 Spe
 - Leech Seed
 - Stun Spore
 
-Sceptile
+Grafaiai
 Level: 35
-IVs: 24 HP / 24 Atk / 24 Def / 24 SpA / 24 SpD / 24 Spe
-- Giga Drain
-- Quick Attack
-- Pursuit
-- Detect
+IVs: 18 HP / 18 Atk / 18 Def / 18 SpA / 18 SpD / 18 Spe
 
 Shiftry
 Level: 34
@@ -17787,13 +17696,9 @@ Music: Male
 Double Battle: Yes
 AI: Check Bad Move / Try To Faint / Check Viability / HP Aware
 
-Skarmory
+Blaziken
 Level: 48
-IVs: 28 HP / 28 Atk / 28 Def / 28 SpA / 28 SpD / 28 Spe
-- Tailwind
-- Steel Wing
-- Aerial Ace
-- Spikes
+IVs: 18 HP / 18 Atk / 18 Def / 18 SpA / 18 SpD / 18 Spe
 
 Camerupt
 Level: 47
@@ -17803,14 +17708,9 @@ IVs: 28 HP / 28 Atk / 28 Def / 28 SpA / 28 SpD / 28 Spe
 - Overheat
 - Attract
 
-Houndoom
-Ability: Flash Fire
+Corviknight
 Level: 46
-IVs: 28 HP / 28 Atk / 28 Def / 28 SpA / 28 SpD / 28 Spe
-- Flamethrower
-- Bite
-- Protect
-- Howl
+IVs: 18 HP / 18 Atk / 18 Def / 18 SpA / 18 SpD / 18 Spe
 
 === TRAINER_SOREN_LILYCOVE_WATER ===
 Name: SOREN
@@ -17821,29 +17721,17 @@ Music: Male
 Double Battle: Yes
 AI: Check Bad Move / Try To Faint / Check Viability / HP Aware
 
-Skarmory
+Swampert
 Level: 48
-IVs: 28 HP / 28 Atk / 28 Def / 28 SpA / 28 SpD / 28 Spe
-- Tailwind
-- Steel Wing
-- Aerial Ace
-- Spikes
+IVs: 18 HP / 18 Atk / 18 Def / 18 SpA / 18 SpD / 18 Spe
 
-Whiscash
+Garganacl
 Level: 47
-IVs: 28 HP / 28 Atk / 28 Def / 28 SpA / 28 SpD / 28 Spe
-- Earthquake
-- Surf
-- Rock Tomb
-- Amnesia
+IVs: 18 HP / 18 Atk / 18 Def / 18 SpA / 18 SpD / 18 Spe
 
-Pelipper
+Lanturn
 Level: 46
-IVs: 28 HP / 28 Atk / 28 Def / 28 SpA / 28 SpD / 28 Spe
-- Surf
-- Aerial Ace
-- Protect
-- Rain Dance
+IVs: 18 HP / 18 Atk / 18 Def / 18 SpA / 18 SpD / 18 Spe
 
 === TRAINER_SOREN_LILYCOVE_GRASS ===
 Name: SOREN
@@ -17854,29 +17742,21 @@ Music: Male
 Double Battle: Yes
 AI: Check Bad Move / Try To Faint / Check Viability / HP Aware
 
-Skarmory
-Level: 48
-IVs: 28 HP / 28 Atk / 28 Def / 28 SpA / 28 SpD / 28 Spe
-- Tailwind
-- Steel Wing
-- Aerial Ace
-- Spikes
-
-Breloom
-Level: 47
-IVs: 28 HP / 28 Atk / 28 Def / 28 SpA / 28 SpD / 28 Spe
-- Mach Punch
-- Sky Uppercut
-- Leech Seed
-- Stun Spore
-
 Sceptile
-Level: 46
+Level: 48
 IVs: 28 HP / 28 Atk / 28 Def / 28 SpA / 28 SpD / 28 Spe
 - Giga Drain
 - Quick Attack
 - Pursuit
 - Detect
+
+Flapple
+Level: 47
+IVs: 18 HP / 18 Atk / 18 Def / 18 SpA / 18 SpD / 18 Spe
+
+Pawmot
+Level: 46
+IVs: 18 HP / 18 Atk / 18 Def / 18 SpA / 18 SpD / 18 Spe
 
 === TRAINER_MIRA_LILYCOVE_FIRE ===
 Name: MIRA
@@ -17887,30 +17767,22 @@ Music: Female
 Double Battle: Yes
 AI: Check Bad Move / Try To Faint / Check Viability / HP Aware
 
-Skarmory
-Level: 48
-IVs: 28 HP / 28 Atk / 28 Def / 28 SpA / 28 SpD / 28 Spe
-- Tailwind
-- Steel Wing
-- Aerial Ace
-- Sand Attack
-
 Houndoom
 Ability: Flash Fire
-Level: 47
+Level: 48
 IVs: 28 HP / 28 Atk / 28 Def / 28 SpA / 28 SpD / 28 Spe
 - Flamethrower
 - Bite
 - Protect
 - Howl
 
-Camerupt
+Ninetales
+Level: 47
+IVs: 18 HP / 18 Atk / 18 Def / 18 SpA / 18 SpD / 18 Spe
+
+Magcargo
 Level: 46
-IVs: 28 HP / 28 Atk / 28 Def / 28 SpA / 28 SpD / 28 Spe
-- Rock Slide
-- Overheat
-- Attract
-- Tackle
+IVs: 18 HP / 18 Atk / 18 Def / 18 SpA / 18 SpD / 18 Spe
 
 === TRAINER_MIRA_LILYCOVE_WATER ===
 Name: MIRA
@@ -17955,21 +17827,17 @@ Music: Female
 Double Battle: Yes
 AI: Check Bad Move / Try To Faint / Check Viability / HP Aware
 
-Tropius
+Breloom
 Level: 48
+IVs: 18 HP / 18 Atk / 18 Def / 18 SpA / 18 SpD / 18 Spe
+
+Tropius
+Level: 47
 IVs: 28 HP / 28 Atk / 28 Def / 28 SpA / 28 SpD / 28 Spe
 - Earthquake
 - Aerial Ace
 - Giga Drain
 - Synthesis
-
-Skarmory
-Level: 47
-IVs: 28 HP / 28 Atk / 28 Def / 28 SpA / 28 SpD / 28 Spe
-- Tailwind
-- Steel Wing
-- Spikes
-- Sand Attack
 
 Shiftry
 Level: 46

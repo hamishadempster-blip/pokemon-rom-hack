@@ -1,0 +1,112 @@
+# Later rival scenes: Route 110 (Dowsing Machine) and Lilycove, both twins,
+# paired fight, both saves' story state, the guest's shared item.
+# Start from lab saves made by save_lab.txt. FIXTURES (not gameplay):
+#   - fixture_warp places both players near each scene;
+#   - level-60 leads with strong cached stats (story handoff, not balance);
+#   - the Route 103 and Rustboro rival stages are marked won, as a real
+#     save would have them by then (rival stage in the save, story flags).
+include beacon_battle.txt
+b mash_field 2000 B
+b write sWildEncountersDisabled 1
+0 fixture_lead 255 60 233990
+1 fixture_lead 228 60 270000
+b fixture_flag 0x4F0 1
+b fixture_flag 0x867 1
+
+b sync
+# --- Route 110 alone first: player 0 arrives while player 1 is still in the
+# lab. The scene runs, says both are needed, and puts the rival (local id 28)
+# back on its own tile; a second try plays the same way.
+0 fixture_warp 0 25 34 58
+0 until_field 3000
+0 goto 34 57 600
+0 press UP 20
+0 wait 120
+0 mash_field 4000
+0 expect coop.sInBattle 0
+0 expect_object 28 34 54
+0 goto 34 58 600
+0 goto 34 57 600
+0 press UP 20
+0 wait 120
+0 mash_field 4000
+0 expect coop.sInBattle 0
+0 expect_object 28 34 54
+0 goto 34 58 600
+
+# --- Route 110 together: the rival waits at (34,54); the trigger row is y=56.
+b sync
+1 fixture_warp 0 25 35 58
+b until_field 3000
+b sync
+b wait 40
+b sync
+b expect_map 0 25
+b expect_any_object 246
+b shot r110-before
+b write gParties+86:2 999
+b write gParties+88:2 999
+b write gParties+90:2 600
+b write gParties+92:2 600
+b write gParties+94:2 600
+b write gParties+96:2 600
+b write gParties+98:2 600
+0 goto 34 57 600
+0 press UP 20
+b until_cb2 BattleMainCB2 12000 A
+b expect coop.sInBattle 1
+b expect gBattlersCount 4
+b expect coop.sRivalFightStage 2
+b shot r110-battle
+b mash_field 40000
+b expect gBattleOutcome 1
+b mash_field 3000
+b sync
+b wait 60
+b sync
+b expect_flag 0x397 1
+b expect_var 0x4069 1
+b expect_item 4 712 1
+b expect coop.sLinkState 2
+b shot r110-after
+# Both can leave the corridor.
+b goto 34 60 1200
+
+# --- Lilycove: the rival stands at (27,7); talk from below.
+0 fixture_warp 0 5 27 8
+1 fixture_warp 0 5 26 8
+b until_field 3000
+b sync
+b wait 40
+b sync
+b expect_any_object 246
+# The twin takes the same free tile beside the rival on both screens, not
+# the tile a partner is standing on.
+b expect_object 246 26 7
+b shot lilycove-before
+b write gParties+86:2 999
+b write gParties+88:2 999
+b write gParties+90:2 600
+b write gParties+92:2 600
+b write gParties+94:2 600
+b write gParties+96:2 600
+b write gParties+98:2 600
+0 press UP 2
+0 wait 10
+0 press A 2
+b until_cb2 BattleMainCB2 12000 A
+b expect coop.sInBattle 1
+b expect gBattlersCount 4
+b expect coop.sRivalFightStage 4
+b shot lilycove-battle
+b mash_field 40000
+b expect gBattleOutcome 1
+b mash_field 3000
+b sync
+b wait 60
+b sync
+b expect_flag 0x3CB 1
+b expect coop.sLinkState 2
+b expect_mons_intact
+b shot lilycove-after
+b goto 27 10 1200

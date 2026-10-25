@@ -112,6 +112,9 @@ u16 Coop_PartnerChatOk(void);
 const u8 *Coop_TakeSoloNote(void);
 void Coop_NoteSoloOnlyEncounter(void);
 u16 Coop_BufferMenuExplain(void);
+u16 Coop_TwinLineStage(void);
+u16 Coop_ResetRivalScene(void);
+bool8 Coop_IsRivalGraphics(u16 gfx);
 u16 Coop_BufferCapText(void);
 u16 Coop_BufferBeaconStatus(void);
 u16 Coop_BufferBeaconAsk(void);
@@ -177,6 +180,7 @@ u16 Coop_BufferJoinAsk(void);
 u16 Coop_BufferPairNames(void);
 
 extern const u8 Coop_EventScript_NeedPartner[];
+extern const u8 Coop_EventScript_RivalWaits[];
 extern const u8 Coop_EventScript_Menu[];
 extern const u8 Coop_EventScript_TalkPartner[];
 extern const u8 Coop_EventScript_WarpToLab[];

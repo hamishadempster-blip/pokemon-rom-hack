@@ -3217,6 +3217,17 @@ u16 Coop_PrepareRivalJoin(void)
 
 // The rival who answers this player's case. Set when the starter is handed
 // out; older saves work it out from the party once.
+// 0 before the Route 103 fight, then one more for each rival fight won on
+// this save (Rustboro, Route 110, Route 119, Lilycove), up to 5.
+u16 Coop_TwinLineStage(void)
+{
+    struct CoopSave *save = CoopSave();
+
+    if (save == NULL)
+        return 0;
+    return save->rivalStage > 5 ? 5 : save->rivalStage;
+}
+
 static u8 Coop_RivalId(void)
 {
     struct CoopSave *save = CoopSave();
@@ -4140,19 +4151,48 @@ bool8 Coop_InterceptRival(u16 trainerId)
 
     if (stage == 0xFF || gCoopBattleLaunching)
         return FALSE;
+    // Refused here, the scene has already walked the rival up to this player.
+    // Coop_EventScript_RivalWaits says why, then puts the rival back on its
+    // own tile with the map's music, so the scene can run again in full.
     if (!Coop_PartnerOnSameMap())
     {
-        ScriptContext_SetupScript(Coop_EventScript_NeedPartner);
+        sRefusal = COOP_REFUSE_NONE;
+        ScriptContext_SetupScript(Coop_EventScript_RivalWaits);
         return TRUE;
     }
     if (!Coop_HasBattleReadyLead())
     {
-        ScriptContext_SetupScript(Coop_EventScript_NotReady);
+        sRefusal = COOP_REFUSE_SELF_NOT_READY;
+        ScriptContext_SetupScript(Coop_EventScript_RivalWaits);
         return TRUE;
     }
     Coop_QueueRival(stage);
     ScriptContext_Stop();
     return TRUE;
+}
+
+// After a refused rival scene: every rival-looking object on this map goes
+// back to the tile and facing it was spawned with, and the twin re-forms.
+extern const u8 gInitialMovementTypeFacingDirections[];
+
+u16 Coop_ResetRivalScene(void)
+{
+    u8 i;
+
+    for (i = 0; i < OBJECT_EVENTS_COUNT; i++)
+    {
+        struct ObjectEvent *obj = &gObjectEvents[i];
+
+        if (!obj->active || obj->isPlayer || obj->localId >= LOCALID_CAMERA
+         || obj->localId == OBJ_EVENT_ID_COOP_PARTNER || obj->localId == OBJ_EVENT_ID_COOP_TWIN
+         || !Coop_IsRivalGraphics(obj->graphicsId))
+            continue;
+        ObjectEventClearHeldMovementIfActive(obj);
+        if (obj->currentCoords.x != obj->initialCoords.x || obj->currentCoords.y != obj->initialCoords.y)
+            MoveObjectEventToMapCoords(obj, obj->initialCoords.x, obj->initialCoords.y);
+        ObjectEventTurn(obj, gInitialMovementTypeFacingDirections[obj->movementType]);
+    }
+    return 0;
 }
 
 // The guest has no battle script engine. Its own controller records every

@@ -1,4 +1,5 @@
 .global Coop_EventScript_NeedPartner
+.global Coop_EventScript_RivalWaits
 	.global Coop_EventScript_PartnerDeclined
 	.global Coop_EventScript_NotReady
 	.global Coop_EventScript_Disconnected
@@ -28,6 +29,22 @@ Coop_EventScript_NeedPartner::
 	goto_if_eq VAR_RESULT, 1, Coop_EventScript_ShowNotReady
 	goto_if_eq VAR_RESULT, 2, Coop_EventScript_ShowPartnerNotReady
 	msgbox Coop_Text_NeedPartner, MSGBOX_DEFAULT
+	releaseall
+	end
+
+@ A rival scene that needs both players, started alone (or with the first
+@ three down): say why, then reset the scene so it plays again in full.
+Coop_EventScript_RivalWaits::
+	lockall
+	specialvar VAR_RESULT, Coop_TakeRefusal
+	goto_if_eq VAR_RESULT, 1, Coop_EventScript_RivalWaitsNotReady
+	msgbox Coop_Text_NeedPartner, MSGBOX_DEFAULT
+	goto Coop_EventScript_RivalWaitsReset
+Coop_EventScript_RivalWaitsNotReady::
+	msgbox Coop_Text_NotReady, MSGBOX_DEFAULT
+Coop_EventScript_RivalWaitsReset::
+	special Coop_ResetRivalScene
+	fadedefaultbgm
 	releaseall
 	end
 
@@ -781,17 +798,82 @@ Coop_Text_JoinSoren:
 
 @ The second twin beside the story's rival. Soren is brash and keen to
 @ win; Mira is warm and curious. Their sibling is the one with the plan.
+@ The twin who walks beside the scene's rival. The line moves on with the
+@ rival fights this save has won, so it is not the same at every scene.
 Coop_EventScript_TalkTwin::
 	lock
 	faceplayer
+	specialvar VAR_0x8004, Coop_TwinLineStage
 	specialvar VAR_RESULT, Coop_TwinIdentity
 	goto_if_eq VAR_RESULT, COOP_RIVAL_SOREN, Coop_EventScript_TalkSoren
+	switch VAR_0x8004
+	case 1, Coop_EventScript_TalkMira1
+	case 2, Coop_EventScript_TalkMira2
+	case 3, Coop_EventScript_TalkMira3
+	case 4, Coop_EventScript_TalkMira4
+	case 5, Coop_EventScript_TalkMira5
 	msgbox Coop_Text_TalkMira, MSGBOX_DEFAULT
 	release
 	end
 
 Coop_EventScript_TalkSoren::
+	switch VAR_0x8004
+	case 1, Coop_EventScript_TalkSoren1
+	case 2, Coop_EventScript_TalkSoren2
+	case 3, Coop_EventScript_TalkSoren3
+	case 4, Coop_EventScript_TalkSoren4
+	case 5, Coop_EventScript_TalkSoren5
 	msgbox Coop_Text_TalkSoren, MSGBOX_DEFAULT
+	release
+	end
+
+Coop_EventScript_TalkMira1::
+	msgbox Coop_Text_TalkMira1, MSGBOX_DEFAULT
+	release
+	end
+
+Coop_EventScript_TalkMira2::
+	msgbox Coop_Text_TalkMira2, MSGBOX_DEFAULT
+	release
+	end
+
+Coop_EventScript_TalkMira3::
+	msgbox Coop_Text_TalkMira3, MSGBOX_DEFAULT
+	release
+	end
+
+Coop_EventScript_TalkMira4::
+	msgbox Coop_Text_TalkMira4, MSGBOX_DEFAULT
+	release
+	end
+
+Coop_EventScript_TalkMira5::
+	msgbox Coop_Text_TalkMira5, MSGBOX_DEFAULT
+	release
+	end
+
+Coop_EventScript_TalkSoren1::
+	msgbox Coop_Text_TalkSoren1, MSGBOX_DEFAULT
+	release
+	end
+
+Coop_EventScript_TalkSoren2::
+	msgbox Coop_Text_TalkSoren2, MSGBOX_DEFAULT
+	release
+	end
+
+Coop_EventScript_TalkSoren3::
+	msgbox Coop_Text_TalkSoren3, MSGBOX_DEFAULT
+	release
+	end
+
+Coop_EventScript_TalkSoren4::
+	msgbox Coop_Text_TalkSoren4, MSGBOX_DEFAULT
+	release
+	end
+
+Coop_EventScript_TalkSoren5::
+	msgbox Coop_Text_TalkSoren5, MSGBOX_DEFAULT
 	release
 	end
 
@@ -834,6 +916,56 @@ Coop_Text_TalkMira:
 	.string "MIRA: Hi, {PLAYER}{KUN}!\n"
 	.string "SOREN gets so excited…\p"
 	.string "Go on, he has something to say!$"
+
+Coop_Text_TalkSoren1:
+	.string "SOREN: You got lucky on Route 103.\p"
+	.string "I'm off to RUSTBORO.\n"
+	.string "Try to keep up!$"
+
+Coop_Text_TalkSoren2:
+	.string "SOREN: I've been training nonstop\n"
+	.string "since RUSTBORO!\p"
+	.string "You won't win so easily now!$"
+
+Coop_Text_TalkSoren3:
+	.string "SOREN: Fine, you're good.\p"
+	.string "But my team's still growing.\n"
+	.string "Just watch me up north!$"
+
+Coop_Text_TalkSoren4:
+	.string "SOREN: I'll beat you in LILYCOVE.\n"
+	.string "That's a promise!$"
+
+Coop_Text_TalkSoren5:
+	.string "SOREN: We've both come a long way.\p"
+	.string "I'm not done yet, {PLAYER}.\n"
+	.string "One day I'll catch up!$"
+
+Coop_Text_TalkMira1:
+	.string "MIRA: Your partner fought so well\n"
+	.string "on Route 103!\p"
+	.string "I'm filling in Dad's notes on the\n"
+	.string "Pokémon around OLDALE.$"
+
+Coop_Text_TalkMira2:
+	.string "MIRA: RUSTBORO is so busy!\p"
+	.string "I met Pokémon there that came\n"
+	.string "from really far away!$"
+
+Coop_Text_TalkMira3:
+	.string "MIRA: The new Pokémon on these\n"
+	.string "routes keep surprising me!\p"
+	.string "I want to befriend every one.$"
+
+Coop_Text_TalkMira4:
+	.string "MIRA: The sea routes to the east\n"
+	.string "are full of Pokémon to meet!$"
+
+Coop_Text_TalkMira5:
+	.string "MIRA: Thank you both for battling\n"
+	.string "with us all this way.\p"
+	.string "Dad says you two make\n"
+	.string "a great team!$"
 
 Coop_Text_TauntSorenIntro:
 	.string "SOREN: And I'm SOREN, MIRA's twin!\p"
