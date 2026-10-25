@@ -1473,11 +1473,18 @@ u8 GetPartyMenuType(void)
     return gPartyMenu.menuType;
 }
 
+// The last Pokemon highlighted in the start menu's party screen. Closing
+// moves the cursor to CANCEL, so the screen remembers this instead.
+static EWRAM_DATA s8 sLastFieldPartySlot = 0;
+
 void Task_HandleChooseMonInput(u8 taskId)
 {
     if (!gPaletteFade.active && MenuHelpers_ShouldWaitForLinkRecv() != TRUE)
     {
         s8 *slotPtr = GetCurrentPartySlotPtr();
+
+        if (gPartyMenu.menuType == PARTY_MENU_TYPE_FIELD && *slotPtr >= 0 && *slotPtr < PARTY_SIZE)
+            sLastFieldPartySlot = *slotPtr;
 
         switch (PartyMenuButtonHandler(slotPtr))
         {
@@ -7110,7 +7117,8 @@ static void TryTutorSelectedMon(u8 taskId)
 
 void CB2_PartyMenuFromStartMenu(void)
 {
-    InitPartyMenu(PARTY_MENU_TYPE_FIELD, PARTY_LAYOUT_SINGLE, PARTY_ACTION_CHOOSE_MON, FALSE, PARTY_MSG_CHOOSE_MON, Task_HandleChooseMonInput, CB2_ReturnToFieldWithOpenMenu);
+    gPartyMenu.slotId = sLastFieldPartySlot;
+    InitPartyMenu(PARTY_MENU_TYPE_FIELD, PARTY_LAYOUT_SINGLE, PARTY_ACTION_CHOOSE_MON, TRUE, PARTY_MSG_CHOOSE_MON, Task_HandleChooseMonInput, CB2_ReturnToFieldWithOpenMenu);
 }
 
 // Giving an item by selecting Give from the bag menu

@@ -680,6 +680,8 @@ gSpecials::
 	def_special Coop_BufferMenuExplain
 	def_special Coop_TwinLineStage
 	def_special Coop_ResetRivalScene
+	def_special Nurse_RepeatVisit
+	def_special Nurse_NoteHeal
 	def_special Coop_MenuUseBeacon
 	def_special Coop_ReopenStartMenu
 	def_special Coop_BufferJoinAsk

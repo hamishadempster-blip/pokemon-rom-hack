@@ -6,10 +6,27 @@ Common_EventScript_PkmnCenterNurse::
 	specialvar VAR_RESULT, CountPlayerTrainerStars
 	goto_if_eq VAR_RESULT, 4, EventScript_PkmnCenterNurse_GoldCard
 .endif
+	@ Coming back to the nurse who healed you last this session skips
+	@ the welcome and the question: she heals right away.
+	specialvar VAR_RESULT, Nurse_RepeatVisit
+	goto_if_eq VAR_RESULT, TRUE, EventScript_PkmnCenterNurse_QuickHeal
 	msgbox gText_WouldYouLikeToRestYourPkmn, MSGBOX_YESNO
 	goto_if_eq VAR_RESULT, YES, EventScript_PkmnCenterNurse_HealPkmn
 	goto_if_eq VAR_RESULT, NO, EventScript_PkmnCenterNurse_Goodbye
 	end
+
+EventScript_PkmnCenterNurse_QuickHeal::
+	incrementgamestat GAME_STAT_USED_POKECENTER
+	message EventScript_PkmnCenterNurse_Text_QuickHeal
+	waitmessage
+	call EventScript_PkmnCenterNurse_TakeAndHealPkmn
+	@ The Center's own script waits for a button and releases.
+	message gText_RestoredPkmnToFullHealth
+	return
+
+EventScript_PkmnCenterNurse_Text_QuickHeal:
+	.string "Welcome back!\n"
+	.string "I'll heal them right away.$"
 
 EventScript_PkmnCenterNurse_Goodbye::
 	message gText_WeHopeToSeeYouAgain
@@ -48,6 +65,7 @@ EventScript_PkmnCenterNurse_TakeAndHealPkmn::
 	applymovement VAR_0x800B, Common_Movement_WalkInPlaceFasterDown
 	waitmovement 0
 	special HealPlayerParty
+	special Nurse_NoteHeal
 	callnative UpdateFollowingPokemon
 	return
 

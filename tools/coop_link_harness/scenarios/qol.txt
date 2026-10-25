@@ -1,0 +1,50 @@
+# Small conveniences, from lab saves: the party menu reopens on the slot last
+# chosen, and a second visit to the same nurse heals without the question.
+include oldale_reconnect.inc
+# --- Party cursor: pick slot 2, close, reopen: the cursor is still there.
+0 fixture_six
+0 press START 2
+0 wait 40
+0 menu_to POKEMON
+0 press A 2
+0 until_cb2 CB2_UpdatePartyMenu 600
+0 wait 60
+0 press DOWN 2
+0 wait 10
+0 press DOWN 2
+0 wait 10
+0 expect gPartyMenu+9:1 2
+0 press B 2
+0 wait 60
+0 press B 2
+0 until_field 1200
+0 press START 2
+0 wait 40
+0 menu_to POKEMON
+0 press A 2
+0 until_cb2 CB2_UpdatePartyMenu 600
+0 wait 60
+0 expect gPartyMenu+9:1 2
+0 shot party-cursor-kept
+0 press B 2
+0 wait 60
+0 press B 2
+0 until_field 1200
+# --- Nurse: first visit asks; the second (after a scratch) heals at once.
+b goto 9 17 1500
+b goto 6 17 2500
+0 press UP 35
+0 until_field 2500
+0 goto 7 4 1500
+0 press UP 2
+0 press A 2
+0 mash_field 5000
+0 until_field 1500
+0 write gParties+88:2 50
+0 write gParties+86:2 1
+0 press A 2
+# One press: no YES/NO, the heal runs, and the closing line waits for A.
+0 until_mem gParties+86:2 50 900
+0 shot nurse-quick
+0 mash_field 3000
+0 expect gParties+86:2 50

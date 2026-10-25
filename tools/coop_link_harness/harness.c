@@ -1397,6 +1397,7 @@ static void loadScript(const char* path, int depth) {
 			c.kind = C_MENU;
 			if (!strcmp(a, "SAVE")) c.value = 5;
 			else if (!strcmp(a, "BAG")) c.value = 2;
+			else if (!strcmp(a, "POKEMON")) c.value = 1;
 			else if (!strcmp(a, "COOP")) c.value = 15;
 			else { fprintf(stderr, "menu_to %s\n", a); exit(1); }
 			snprintf(c.text, sizeof(c.text), "menu %s", a);

@@ -114,6 +114,8 @@ void Coop_NoteSoloOnlyEncounter(void);
 u16 Coop_BufferMenuExplain(void);
 u16 Coop_TwinLineStage(void);
 u16 Coop_ResetRivalScene(void);
+u16 Nurse_RepeatVisit(void);
+void Nurse_NoteHeal(void);
 bool8 Coop_IsRivalGraphics(u16 gfx);
 u16 Coop_BufferCapText(void);
 u16 Coop_BufferBeaconStatus(void);

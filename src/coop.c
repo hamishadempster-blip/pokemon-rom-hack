@@ -4261,3 +4261,23 @@ void Coop_StartProgressionEvolution(void)
     gCB2_AfterEvolution = CB2_ReturnToFieldContinueScript;
     BeginEvolutionScene(mon, sProgressEvolution, canStop, sProgressSlot);
 }
+
+// Pokemon Center nurse: TRUE when the last heal this session was at this same
+// Center, so the nurse skips her welcome and the YES/NO question. The first
+// visit after a power-on, after declining, or after another Center asks.
+static EWRAM_DATA u16 sLastNurseMap = 0; // map + 1, 0 = none yet
+
+static u16 Nurse_HereId(void)
+{
+    return ((gSaveBlock1Ptr->location.mapGroup << 8) | gSaveBlock1Ptr->location.mapNum) + 1;
+}
+
+u16 Nurse_RepeatVisit(void)
+{
+    return sLastNurseMap == Nurse_HereId();
+}
+
+void Nurse_NoteHeal(void)
+{
+    sLastNurseMap = Nurse_HereId();
+}
