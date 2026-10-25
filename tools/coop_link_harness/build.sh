@@ -36,9 +36,9 @@ for obj in coop link battle_controllers battle_main start_menu menu overworld; d
 done >> "$out/syms.txt"
 python3 - "$out/layout.bin" "$out/syms.txt" <<'PY_LAYOUT'
 import struct, sys
-values = struct.unpack('<IIIII', open(sys.argv[1], 'rb').read())
+values = struct.unpack('<IIIIII', open(sys.argv[1], 'rb').read())
 with open(sys.argv[2], 'a') as f:
-    for name, value in zip(('saveVarsOffset', 'saveFlagsOffset', 'encryptionKeyOffset', 'storageBoxesOffset', 'boxMonSize'), values):
+    for name, value in zip(('saveVarsOffset', 'saveFlagsOffset', 'encryptionKeyOffset', 'storageBoxesOffset', 'boxMonSize', 'moneyOffset'), values):
         f.write(f'{value:08x} 00000004 a harness.{name}\n')
 PY_LAYOUT
 echo "$out/coop_link_harness"

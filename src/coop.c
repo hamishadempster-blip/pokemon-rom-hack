@@ -50,6 +50,7 @@
 #include "constants/coop.h"
 #include "constants/maps.h"
 #include "data.h"
+#include "money.h"
 #include "map_name_popup.h"
 #include "field_effect_helpers.h"
 #include "constants/field_effects.h"
@@ -195,6 +196,7 @@ static EWRAM_DATA u8 sBeaconPrompted = 0;
 static EWRAM_DATA u8 sBeaconBagWarned = 0;
 static EWRAM_DATA u8 sRefusal = COOP_REFUSE_NONE;
 static EWRAM_DATA u8 sSoloNote = COOP_SOLO_NONE;
+static EWRAM_DATA u32 sMoneyAtLaunch = 0;
 static EWRAM_DATA u16 sStorySeq = 0;
 static EWRAM_DATA u16 sStoryLastSeq = 0;
 static EWRAM_DATA bool8 sStorySeqKnown = FALSE;
@@ -2845,6 +2847,7 @@ void Coop_OnBattleLaunched(void)
 {
     u32 i;
 
+    sMoneyAtLaunch = GetMoney(&gSaveBlock1Ptr->money);
     Coop_ClearCatchState();
     memset(sProgressLevels, 0, sizeof(sProgressLevels));
     memset(sProgressMoves, 0, sizeof(sProgressMoves));
@@ -3518,6 +3521,23 @@ u16 Coop_ApplyGuestStory(void)
     return result;
 }
 
+// The stock prize for one trainer (battle_script_commands.c), without the
+// Amulet Coin: 4 x last Pokemon's level x class rate, doubled for a single
+// trainer's double battle.
+static u32 Coop_TrainerPrize(u16 trainerId, bool8 twoOpponents)
+{
+    const struct TrainerMon *party;
+    u32 rate;
+
+    if (trainerId == TRAINER_NONE || trainerId >= TRAINERS_COUNT || IsSpecialTrainer(trainerId))
+        return 0;
+    party = GetTrainerPartyFromId(trainerId);
+    if (party == NULL || GetTrainerPartySizeFromId(trainerId) == 0)
+        return 20;
+    rate = gTrainerClasses[GetTrainerClassFromId(trainerId)].money ?: 5;
+    return 4 * party[GetTrainerPartySizeFromId(trainerId) - 1].lvl * rate * (twoOpponents ? 1 : 2);
+}
+
 bool8 Coop_FinishTrainerBattle(void)
 {
     bool8 won = gBattleOutcome == B_OUTCOME_WON || gBattleOutcome == B_OUTCOME_CAUGHT;
@@ -3527,6 +3547,19 @@ bool8 Coop_FinishTrainerBattle(void)
     sInBattle = FALSE;
     if (won)
         Coop_GiveJointWin();
+    // A co-op fight is a link battle, and the link win script pays no prize,
+    // so neither save earned one. Each pays itself the stock prize, once,
+    // and only if nothing was paid during the battle.
+    if (won && GetMoney(&gSaveBlock1Ptr->money) == sMoneyAtLaunch)
+    {
+        bool8 two = (gBattleTypeFlags & BATTLE_TYPE_TWO_OPPONENTS) != 0;
+        u32 prize = Coop_TrainerPrize(TRAINER_BATTLE_PARAM.opponentA, two);
+
+        if (two)
+            prize += Coop_TrainerPrize(TRAINER_BATTLE_PARAM.opponentB, two);
+        if (prize != 0)
+            AddMoney(&gSaveBlock1Ptr->money, prize);
+    }
     if (sBattleKind == COOP_KIND_PAIR)
     {
         u8 beat[2], fought[2];

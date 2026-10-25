@@ -1,0 +1,42 @@
+# RUN in a co-op wild double. One player picking RUN does not end the fight
+# (both must agree on the same turn); both picking RUN ends it on both games
+# with both parties intact. From lab saves.
+include route102_reconnect_start.inc
+include wild_steps.inc
+0 until_cb2 BattleMainCB2 6000
+1 until_cb2 BattleMainCB2 6000 A
+b expect gBattlersCount 4
+# Turn 1: player 0 picks RUN, player 1 fights.
+0 until_mem gBattlerControllerFuncs:4 HandleInputChooseAction 6000 A
+1 until_mem gBattlerControllerFuncs+8:4 HandleInputChooseAction 6000 A
+b wait 60
+0 press RIGHT 2
+0 wait 6
+0 press DOWN 2
+0 wait 6
+0 press A 2
+1 press A 2
+1 wait 30
+1 press A 2
+1 wait 30
+1 press A 2
+0 until_battle_text wants_to_run 3000
+0 expect gBattleOutcome 0
+# Turn 2: both pick RUN.
+0 until_mem gBattlerControllerFuncs:4 HandleInputChooseAction 6000 A
+1 until_mem gBattlerControllerFuncs+8:4 HandleInputChooseAction 6000 A
+b wait 60
+b press RIGHT 2
+b wait 6
+b press DOWN 2
+b wait 6
+b press A 2
+b mash_field 12000
+b expect gBattleOutcome 4
+b expect coop.sLinkState 2
+b expect coop.sBeacon+1:1 1
+b expect_mons_intact
+b sync
+b wait 30
+b sync
+b expect_partner after-run

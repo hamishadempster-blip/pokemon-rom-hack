@@ -7,4 +7,5 @@ const u32 harnessSaveLayout[] = {
     offsetof(struct SaveBlock2, encryptionKey),
     offsetof(struct PokemonStorage, boxes),
     sizeof(struct BoxPokemon),
+    offsetof(struct SaveBlock1, money),
 };

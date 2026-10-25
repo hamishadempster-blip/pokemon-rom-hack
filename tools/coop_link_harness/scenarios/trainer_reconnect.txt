@@ -6,6 +6,7 @@ include route102_reconnect_start.inc
 0 goto 34 14 2000
 0 press LEFT 2
 0 press A 2
+b note_money
 b until_cb2 BattleMainCB2 8000 A
 b expect coop.sInBattle 1
 0 until_mem gBattlerControllerFuncs:4 HandleInputChooseTarget 6000 A
@@ -16,6 +17,8 @@ b expect_vs_party 1 1
 1 shot one-foe-target
 b mash_field 25000
 b expect gBattleOutcome 1
+b sync
+b expect_same_prize
 b expect_flag 0x63e 1
 b expect coop.sLinkState 2
 b shot trainer-finished

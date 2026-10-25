@@ -22,7 +22,7 @@
 #define MAX_CMDS 4096
 #define MAX_SYMS 500000
 
-enum { C_PARTNER, C_GOTO, C_HEX, C_PRESS, C_WAIT, C_SHOT, C_DUMP, C_BARRIER, C_UNTIL_CB2, C_UNTIL_FIELD, C_EXPECT, C_UNTIL_MEM, C_BATTLE, C_MENU, C_PARTY, C_FIXTURE, C_WRITE, C_LEAD, C_MOVE, C_SIX, C_VAR, C_FLAG, C_VS, C_EXPECT_FLAG, C_EXPECT_VAR, C_NO_OBJECT, C_MAP, C_OBJECT, C_TEXT_SPEED, C_PACE, C_MUTE, C_PARTNER_AT, C_ITEM, C_EXPECT_ITEM, C_UNTIL_TEXT, C_WARP, C_PC_COUNT, C_MONS, C_NO_COPIES };
+enum { C_PARTNER, C_GOTO, C_HEX, C_PRESS, C_WAIT, C_SHOT, C_DUMP, C_BARRIER, C_UNTIL_CB2, C_UNTIL_FIELD, C_EXPECT, C_UNTIL_MEM, C_BATTLE, C_MENU, C_PARTY, C_FIXTURE, C_WRITE, C_LEAD, C_MOVE, C_SIX, C_VAR, C_FLAG, C_VS, C_EXPECT_FLAG, C_EXPECT_VAR, C_NO_OBJECT, C_MAP, C_OBJECT, C_TEXT_SPEED, C_PACE, C_MUTE, C_PARTNER_AT, C_ITEM, C_EXPECT_ITEM, C_UNTIL_TEXT, C_WARP, C_PC_COUNT, C_MONS, C_NO_COPIES, C_NOTE_MONEY, C_MONEY_GAIN };
 
 struct Cmd {
 	int kind;
@@ -50,6 +50,7 @@ struct Player {
 	int barrierReached;
 	int stable;
 	int done;
+	unsigned moneyBase;
     unsigned vsFlags;
     unsigned muteFrames, mutedOpcode;
 };
@@ -844,6 +845,8 @@ static void frameCallback(struct mCoreThread* t) {
         }
         case C_PACE: {
             if ((rd32(p, sMain + 4) & ~1u) == (symAddr("BattleMainCB2") & ~1u)) { advance = true; break; }
+            // pace_until_mem: stop when the value matches instead.
+            if (c->addr && ((c->size == 1 ? rd8(p, c->addr) : c->size == 2 ? rd16(p, c->addr) : rd32(p, c->addr)) == c->value)) { advance = true; break; }
             keys = ((p->step / 24) & 1) ? (1u << 7) : (1u << 6);
             if (++p->step >= c->frames) {
                 out("[p%d] FAIL no battle while pacing\n", p->id);
@@ -945,6 +948,26 @@ static void frameCallback(struct mCoreThread* t) {
             if (bad) { out("[p%d] FAIL %u of %u Pokemon corrupt (first at slot %u)\n", p->id, bad, total, badAt); sFailures++; }
             else if (c->size >= 0 && match != (unsigned)c->size) { out("[p%d] FAIL species %u count %u, expected %d\n", p->id, c->value, match, c->size); sFailures++; }
             else out("[p%d] ok %u Pokemon intact, species %u x%u\n", p->id, total, c->value, match);
+            advance = true;
+            break;
+        }
+        case C_NOTE_MONEY:
+        case C_MONEY_GAIN: {
+            unsigned key = rd32(p, rd32(p, symAddr("gSaveBlock2Ptr")) + symValue("harness.encryptionKeyOffset"));
+            unsigned money = rd32(p, rd32(p, sSave1) + symValue("harness.moneyOffset")) ^ key;
+            if (c->kind == C_NOTE_MONEY) {
+                p->moneyBase = money;
+                out("[p%d] money %u\n", p->id, money);
+            } else {
+                struct Player* o = &P[1 - p->id];
+                unsigned okey = rd32(o, rd32(o, symAddr("gSaveBlock2Ptr")) + symValue("harness.encryptionKeyOffset"));
+                unsigned omoney = rd32(o, rd32(o, sSave1) + symValue("harness.moneyOffset")) ^ okey;
+                int mine = (int)(money - p->moneyBase), theirs = (int)(omoney - o->moneyBase);
+                if (mine <= 0 || mine != theirs) {
+                    out("[p%d] FAIL prize: this save +%d, other save +%d\n", p->id, mine, theirs);
+                    sFailures++;
+                } else out("[p%d] ok prize +%d on both saves\n", p->id, mine);
+            }
             advance = true;
             break;
         }
@@ -1281,6 +1304,19 @@ static void loadScript(const char* path, int depth) {
         } else if (!strcmp(cmd, "mute_coop")) {
             c.kind = C_MUTE;
             c.frames = atoi(a);
+        } else if (!strcmp(cmd, "pace_until_mem")) {
+            // pace_until_mem SYM[:size] VALUE [timeout]
+            char sym[96]; unsigned off = 0; int size = 1;
+            snprintf(sym, sizeof(sym), "%s", a);
+            char* colon = strchr(sym, ':');
+            if (colon) { size = atoi(colon + 1); *colon = 0; }
+            char* plus = strchr(sym, '+');
+            if (plus) { off = strtoul(plus + 1, NULL, 0); *plus = 0; }
+            c.kind = C_PACE;
+            c.addr = symAddr(sym) + off;
+            c.size = size;
+            c.value = strtoul(b, NULL, 0);
+            c.frames = n >= 5 ? atoi(d) : 6000;
         } else if (!strcmp(cmd, "pace_until_battle")) {
             // Walk up and down in place (grass) until a battle starts.
             c.kind = C_PACE;
@@ -1313,6 +1349,10 @@ static void loadScript(const char* path, int depth) {
             c.kind = !strcmp(cmd, "fixture_var") ? C_VAR : C_FLAG;
             c.addr = strtoul(a, NULL, 0);
             c.value = strtoul(b, NULL, 0);
+        } else if (!strcmp(cmd, "note_money")) {
+            c.kind = C_NOTE_MONEY;
+        } else if (!strcmp(cmd, "expect_same_prize")) {
+            c.kind = C_MONEY_GAIN;
         } else if (!strcmp(cmd, "expect_no_copies")) {
             c.kind = C_NO_COPIES;
         } else if (!strcmp(cmd, "expect_mons_intact")) {
