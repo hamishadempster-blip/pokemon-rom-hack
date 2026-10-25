@@ -9,8 +9,11 @@
 void HideMapNamePopUpWindow(void);
 void ShowMapNamePopup(void);
 u8 *GetPopUpMapName(u8 *dest, const struct MapHeader *mapHeader);
+void ShowCoopPopup(void);
 
 #define MAP_POPUP_STRING_BUFFER_LENGTH 27
 #define MAP_POPUP_PREFIX_BUFFER_LENGTH 6
+
+extern u8 gCoopPopupText[MAP_POPUP_STRING_BUFFER_LENGTH + 8];
 
 #endif //GUARD_MAP_NAME_POPUP_H

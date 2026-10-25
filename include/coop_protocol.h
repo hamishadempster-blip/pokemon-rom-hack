@@ -339,6 +339,41 @@ static inline void CoopProtocol_PickPartnerTile(s16 playerX, s16 playerY, s16 *x
     }
 }
 
+// A tile on a connected map, in this map's grid. Directions are the engine's
+// CONNECTION_* values; x and y include MAP_OFFSET on both sides, so only the
+// map-relative shift applies. This inverts the camera's crossing rule in
+// SetPositionFromConnection. FALSE for dive/emerge or anything unknown.
+#define COOP_CONN_SOUTH 1
+#define COOP_CONN_NORTH 2
+#define COOP_CONN_WEST  3
+#define COOP_CONN_EAST  4
+
+static inline int CoopProtocol_ConnectionToLocal(int direction, int offset,
+    int localWidth, int localHeight, int otherWidth, int otherHeight,
+    int otherX, int otherY, int *x, int *y)
+{
+    switch (direction)
+    {
+    case COOP_CONN_SOUTH:
+        *x = otherX + offset;
+        *y = otherY + localHeight;
+        return 1;
+    case COOP_CONN_NORTH:
+        *x = otherX + offset;
+        *y = otherY - otherHeight;
+        return 1;
+    case COOP_CONN_WEST:
+        *x = otherX - otherWidth;
+        *y = otherY + offset;
+        return 1;
+    case COOP_CONN_EAST:
+        *x = otherX + localWidth;
+        *y = otherY + offset;
+        return 1;
+    }
+    return 0;
+}
+
 // Story ledger. Each save keeps the milestones it has (done) and the ones
 // whose story state it has already written (applied). The cable only ever
 // adds milestones, so a lost or repeated message cannot undo anything.

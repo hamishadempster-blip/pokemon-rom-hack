@@ -1,0 +1,233 @@
+# Partner drawn across directly connected outdoor maps, in both roles.
+# Start from lab saves made by save_lab.txt (Oldale gate fixture, see README).
+# Offsets below come from data/maps/*/map.json, not from the game code:
+#   Oldale (20x20) west -> Route 102 (50x20), offset 0
+#   Oldale south -> Route 101 (20x20), offset 0
+#   Route 102 west -> Petalburg (30x30), offset -10
+include route102_reconnect_start.inc
+# Route 102 trainers on the walk west are marked beaten (fixture), so the
+# walk is not a trainer test: Calvin, Allen, Tiana, Rick.
+b fixture_flag 0x63e 1
+b fixture_flag 0x64d 1
+b fixture_flag 0x75b 1
+b fixture_flag 0x767 1
+
+# --- East/west, offset 0. Player 0 steps back into Oldale; player 1 waits
+# on Route 102 two tiles from the edge.
+1 goto 47 10 2000
+0 goto 49 10 2000
+0 press RIGHT 20
+0 until_field 2000
+0 goto 2 10 2000
+0 expect_map 0 10
+1 expect_map 0 17
+b sync
+b wait 30
+b sync
+0 expect_partner_at -50 0 oldale-sees-route102
+1 expect_partner_at 50 0 route102-sees-oldale
+b shot ew-across
+
+# Player 1 crosses first, stops on the far side, turns round, crosses back.
+1 goto 49 10 2000
+1 press RIGHT 20
+1 until_field 2000
+1 goto 1 10 2000
+b sync
+b wait 30
+b sync
+b expect_partner both-in-oldale
+1 press LEFT 2
+1 wait 10
+1 goto 0 10 2000
+1 press LEFT 20
+1 until_field 2000
+1 goto 48 10 2000
+b sync
+b wait 30
+b sync
+0 expect_partner_at -50 0 back-on-route102
+1 expect_partner_at 50 0 back-on-route102
+# Repeated crossing: three quick round trips on the edge, then still.
+1 press RIGHT 20
+1 press LEFT 20
+1 press RIGHT 20
+1 press LEFT 20
+1 press RIGHT 20
+1 press LEFT 20
+1 until_field 2000
+b sync
+b wait 40
+b sync
+b dump after-round-trips
+0 expect_partner_at -50 0 after-round-trips
+1 expect_partner_at 50 0 after-round-trips
+
+# Now player 0 crosses into player 1's map while being watched.
+0 goto 0 10 2000
+0 press LEFT 20
+0 until_field 2000
+0 goto 46 10 2000
+b sync
+b wait 30
+b sync
+b expect_partner both-on-route102
+
+# --- North/south, offset 0: Oldale and Route 101.
+b goto 49 10 2000
+b press RIGHT 20
+b until_field 2000
+b goto 10 10 2000
+1 goto 10 19 2000
+1 press DOWN 20
+1 until_field 2000
+1 goto 10 1 2000
+0 goto 10 17 2000
+b sync
+b wait 30
+b sync
+1 expect_map 0 16
+0 expect_partner_at 0 20 oldale-sees-route101
+1 expect_partner_at 0 -20 route101-sees-oldale
+b shot ns-across
+# Player 0 goes south past player 1; then both turn and come back north.
+0 goto 10 19 2000
+0 press DOWN 20
+0 until_field 2000
+0 goto 10 3 2000
+b sync
+b wait 30
+b sync
+b expect_partner both-on-route101
+b goto 10 0 2000
+b press UP 20
+b until_field 2000
+b goto 10 15 2000
+b sync
+b wait 30
+b sync
+b expect_partner both-back-in-oldale
+
+# --- Offset connection: Route 102 and Petalburg, both roles.
+b goto 10 10 2000
+b goto 1 10 2000
+b press LEFT 30
+b until_field 2000
+b goto 39 10 2000
+b goto 39 16 2000
+b goto 18 16 2000
+b goto 18 12 2000
+b goto 16 12 2000
+b goto 16 7 2000
+b goto 18 7 2000
+b goto 18 4 2000
+b goto 2 4 2000
+b goto 2 6 2000
+b sync
+b wait 30
+b sync
+b expect_partner west-end-of-route102
+1 goto 0 6 2000
+1 press LEFT 20
+1 until_field 2000
+1 goto 27 16 2000
+1 expect_map 0 0
+0 goto 4 5 2000
+b sync
+b wait 30
+b sync
+0 expect_partner_at -30 -10 route102-sees-petalburg
+1 expect_partner_at 30 10 petalburg-sees-route102
+b shot offset-across
+
+# Visible is not eligible: player 0 meets a wild Pokemon in the grass with
+# the partner in sight across the boundary. The Beacon is on; the fight is
+# solo, no invitation is sent, and the link stays up.
+0 write sWildEncountersDisabled 0
+0 pace_until_battle 9000
+0 write sWildEncountersDisabled 1
+0 until_cb2 BattleMainCB2 6000 A
+0 expect gBattlersCount 2
+0 expect coop.sWaitKind 0
+0 shot solo-across-boundary
+0 mash_field 25000
+0 expect coop.sLinkState 2
+0 expect coop.sBeacon+1:1 1
+b sync
+b wait 30
+b sync
+0 goto 4 5 2000
+b sync
+b wait 30
+b sync
+0 expect_partner_at -30 -10 after-solo-battle
+b sync
+
+# Player 1 goes into the house just inside the boundary: hidden, with a note.
+0 goto 2 4 2000
+1 goto 27 13 2000
+1 goto 25 13 2000
+b sync
+b wait 30
+b sync
+0 expect_partner_at -30 -10 before-door
+b sync
+1 press UP 30
+1 until_field 3000
+b sync
+0 wait 20
+0 expect_no_partner partner-went-inside
+0 expect_nz gCoopPopupText:1
+0 hex gCoopPopupText 24
+0 shot partner-went-inside
+b sync
+1 press DOWN 30
+1 until_field 3000
+1 goto 27 13 2000
+1 goto 27 16 2000
+b sync
+b wait 30
+b sync
+0 expect_partner_at -30 -10 partner-came-out
+b sync
+
+# Player 0 crosses into Petalburg first this time, then both return.
+0 goto 2 6 2000
+0 goto 0 6 2000
+0 press LEFT 20
+0 until_field 2000
+0 goto 26 16 2000
+b sync
+b wait 30
+b sync
+b expect_partner both-in-petalburg
+b goto 29 16 2000
+b press RIGHT 20
+b until_field 2000
+b goto 4 5 2000
+b sync
+b wait 30
+b sync
+b expect_partner both-back-on-route102
+
+# A co-op wild double after all the crossings, house, and solo fight.
+# Player 1 stands apart, facing open ground, so its A taps answer the
+# question instead of greeting the partner first (that would make it busy).
+1 goto 9 6 2000
+b sync
+0 write sWildEncountersDisabled 0
+0 pace_until_battle 9000
+0 write sWildEncountersDisabled 1
+0 until_cb2 BattleMainCB2 6000
+1 until_cb2 BattleMainCB2 6000 A
+b expect gBattlersCount 4
+b expect coop.sInBattle 1
+b mash_field 25000
+b expect gBattleOutcome 1
+b expect coop.sLinkState 2
+b expect coop.sBeacon+1:1 1
+b sync
+b wait 30
+b sync
+b expect_partner after-coop-battle
+b shot connected-finished

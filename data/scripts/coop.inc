@@ -90,11 +90,18 @@ Coop_EventScript_TradeDone::
 	end
 
 Coop_EventScript_TalkPartner::
+	@ A join question or a battle start is in flight: A presses near the
+	@ partner must not open a chat that holds the field and stalls it.
+	specialvar VAR_RESULT, Coop_PartnerChatOk
+	goto_if_eq VAR_RESULT, FALSE, Coop_EventScript_TalkPartnerSkip
 	lockall
 	faceplayer
 	special Coop_BufferPartnerLocation
 	msgbox Coop_Text_PartnerHello, MSGBOX_DEFAULT
 	releaseall
+	end
+
+Coop_EventScript_TalkPartnerSkip::
 	end
 
 Coop_EventScript_Menu::

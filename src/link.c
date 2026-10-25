@@ -483,6 +483,21 @@ u16 LinkMain2(const u16 *heldKeys)
     if (gLinkStatus & LINK_STAT_CONN_ESTABLISHED)
     {
         ProcessRecvCmds(SIO_MULTI_CNT->id);
+        // Co-op field play reads one command a frame, but a door, a map load,
+        // or a battle on the other game can leave dozens queued. Read once a
+        // frame, the partner then walks the queue's age behind, up to a
+        // second late and growing. Catch up in order, so a block still
+        // arrives whole and the newest position wins.
+        if (gWirelessCommType == 0 && Coop_FieldLinkCatchUp())
+        {
+            u8 extra = 0;
+
+            while (gLink.recvQueue.count > 1 && extra++ < 16)
+            {
+                DequeueRecvCmds(gRecvCmds);
+                ProcessRecvCmds(SIO_MULTI_CNT->id);
+            }
+        }
         if (gLinkCallback != NULL)
             gLinkCallback();
         TrySetLinkErrorBuffer();

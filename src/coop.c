@@ -50,6 +50,7 @@
 #include "constants/coop.h"
 #include "constants/maps.h"
 #include "data.h"
+#include "map_name_popup.h"
 
 #define COOP_INVITE_MAGIC 0xC0A1
 #define COOP_MON_MAGIC    0xC0B0
@@ -143,6 +144,10 @@ static EWRAM_DATA u8 sPartnerValid = FALSE;
 static EWRAM_DATA struct CoopFrame sPartner = {0};
 static EWRAM_DATA u16 sSpriteGfx = OBJ_EVENT_GFX_BRENDAN_NORMAL;
 static EWRAM_DATA u8 sPartnerStepWait = 0;
+// The partner was drawn last frame, and on which of their maps.
+static EWRAM_DATA bool8 sPartnerDrawn = FALSE;
+static EWRAM_DATA u8 sPartnerDrawnGroup = 0;
+static EWRAM_DATA u8 sPartnerDrawnNum = 0;
 static EWRAM_DATA bool8 sPartnerResettle = FALSE;
 static EWRAM_DATA bool8 sIsGuest = FALSE;
 static EWRAM_DATA bool8 sInBattle = FALSE;
@@ -238,6 +243,8 @@ STATIC_ASSERT(sizeof(struct CoopMonBlock) <= BLOCK_BUFFER_SIZE, CoopTradeBlockFi
 STATIC_ASSERT(COOP_BATTLE_SLOTS == MULTI_PARTY_SIZE, CoopFieldsTheStockMultiHalf);
 STATIC_ASSERT(COOP_ROSTER_SLOTS == PARTY_SIZE, CoopSnapshotCoversWholeParty);
 STATIC_ASSERT(COOP_PAIR_LEFT_ID == TRAINER_RICK, CoopPairLeftIsRick);
+STATIC_ASSERT(COOP_CONN_SOUTH == CONNECTION_SOUTH && COOP_CONN_NORTH == CONNECTION_NORTH
+           && COOP_CONN_WEST == CONNECTION_WEST && COOP_CONN_EAST == CONNECTION_EAST, CoopConnectionsMatchEngine);
 STATIC_ASSERT(COOP_PAIR_RIGHT_ID == TRAINER_ALLEN, CoopPairRightIsAllen);
 
 static void Task_CoopSession(u8 taskId);
@@ -375,10 +382,141 @@ static u16 Coop_PartnerGfx(const struct CoopFrame *frame)
     return female ? OBJ_EVENT_GFX_MAY_NORMAL : OBJ_EVENT_GFX_BRENDAN_NORMAL;
 }
 
+// The partner object keeps the map it was spawned on. Crossing a connection
+// changes this game's map but keeps the object (the camera shifts it into the
+// new grid), so look it up by id alone and adopt it into the current map. A
+// second copy is never wanted.
+static u8 Coop_FindPartnerObject(void)
+{
+    u8 i, found = OBJECT_EVENTS_COUNT;
+
+    for (i = 0; i < OBJECT_EVENTS_COUNT; i++)
+    {
+        struct ObjectEvent *obj = &gObjectEvents[i];
+
+        if (!obj->active || obj->localId != OBJ_EVENT_ID_COOP_PARTNER)
+            continue;
+        if (found < OBJECT_EVENTS_COUNT)
+        {
+            RemoveObjectEvent(obj);
+            continue;
+        }
+        found = i;
+        obj->mapNum = gSaveBlock1Ptr->location.mapNum;
+        obj->mapGroup = gSaveBlock1Ptr->location.mapGroup;
+    }
+    return found;
+}
+
 static void Coop_RemoveSprite(void)
 {
+    u8 i;
+
     sPartnerStepWait = 0;
-    RemoveObjectEventByLocalIdAndMap(OBJ_EVENT_ID_COOP_PARTNER, gSaveBlock1Ptr->location.mapNum, gSaveBlock1Ptr->location.mapGroup);
+    for (i = 0; i < OBJECT_EVENTS_COUNT; i++)
+    {
+        if (gObjectEvents[i].active && gObjectEvents[i].localId == OBJ_EVENT_ID_COOP_PARTNER)
+            RemoveObjectEvent(&gObjectEvents[i]);
+    }
+}
+
+// Where the partner stands in this game's map grid (MAP_OFFSET included).
+// The same map is direct. A map joined to this one by a north, south, east,
+// or west connection is translated with the camera's own crossing rule, and
+// shown only inside the strip of it this game has loaded around the edge,
+// which is all the screen can reach. Interiors, warps, and maps further away
+// have no position here. Drawing only; battles still need the same map.
+static bool8 Coop_PartnerLocalCoords(s16 *x, s16 *y)
+{
+    const struct MapConnections *connections = gMapHeader.connections;
+    const struct MapHeader *partnerMap;
+    int i, lx, ly;
+
+    if (!Coop_SessionActive() || !sPartnerValid)
+        return FALSE;
+    if (CoopProtocol_SameMap(sPartner.mapGroup, sPartner.mapNum,
+        gSaveBlock1Ptr->location.mapGroup, gSaveBlock1Ptr->location.mapNum))
+    {
+        *x = sPartner.x;
+        *y = sPartner.y;
+        return TRUE;
+    }
+    if (connections == NULL || connections->connections == NULL)
+        return FALSE;
+    partnerMap = Overworld_GetMapHeaderByGroupAndId(sPartner.mapGroup, sPartner.mapNum);
+    if (partnerMap == NULL || partnerMap->mapLayout == NULL)
+        return FALSE;
+    for (i = 0; i < connections->count; i++)
+    {
+        const struct MapConnection *c = &connections->connections[i];
+
+        if (c->mapGroup != sPartner.mapGroup || c->mapNum != sPartner.mapNum)
+            continue;
+        if (!CoopProtocol_ConnectionToLocal(c->direction, c->offset,
+                gMapHeader.mapLayout->width, gMapHeader.mapLayout->height,
+                partnerMap->mapLayout->width, partnerMap->mapLayout->height,
+                sPartner.x, sPartner.y, &lx, &ly))
+            continue;
+        if (lx < 0 || ly < 0 || lx >= gBackupMapLayout.width || ly >= gBackupMapLayout.height)
+            return FALSE;
+        *x = lx;
+        *y = ly;
+        return TRUE;
+    }
+    return FALSE;
+}
+
+// A north, south, east, or west connection joins the two maps.
+static bool8 Coop_MapsConnected(u8 groupA, u8 numA, u8 groupB, u8 numB)
+{
+    const struct MapHeader *header = Overworld_GetMapHeaderByGroupAndId(groupA, numA);
+    int i;
+
+    if (header == NULL || header->connections == NULL || header->connections->connections == NULL)
+        return FALSE;
+    for (i = 0; i < header->connections->count; i++)
+    {
+        const struct MapConnection *c = &header->connections->connections[i];
+
+        if (c->mapGroup == groupB && c->mapNum == numB
+         && c->direction >= CONNECTION_SOUTH && c->direction <= CONNECTION_EAST)
+            return TRUE;
+    }
+    return FALSE;
+}
+
+// A short note when the partner leaves the part of the world drawn here:
+// through a door, into a cave, or by a warp or Fly.
+static void Coop_NotePartnerLeftView(void)
+{
+    const struct MapHeader *header;
+    u8 *end;
+
+    if (FlagGet(FLAG_HIDE_MAP_NAME_POPUP) || gMain.inBattle || !sPartnerValid)
+        return;
+    header = Overworld_GetMapHeaderByGroupAndId(sPartner.mapGroup, sPartner.mapNum);
+    if (header == NULL)
+        return;
+    end = StringCopy(gCoopPopupText, gLinkPlayers[GetMultiplayerId() ^ 1].name);
+    switch (header->mapType)
+    {
+    case MAP_TYPE_INDOOR:
+    case MAP_TYPE_SECRET_BASE:
+        StringCopy(end, COMPOUND_STRING(" went inside"));
+        break;
+    case MAP_TYPE_UNDERGROUND:
+        StringCopy(end, COMPOUND_STRING(" went in"));
+        break;
+    case MAP_TYPE_UNDERWATER:
+        StringCopy(end, COMPOUND_STRING(" dived"));
+        break;
+    default:
+        *end++ = CHAR_COLON;
+        *end++ = CHAR_SPACE;
+        GetMapName(end, header->regionMapSectionId, 0);
+        break;
+    }
+    ShowCoopPopup();
 }
 
 // Where the partner should be drawn. The link frame can share the player's
@@ -402,8 +540,11 @@ static void Coop_PartnerTarget(s16 *x, s16 *y)
     u8 freeMask = 0;
 
     PlayerGetDestCoords(&px, &py);
-    *x = sPartner.x;
-    *y = sPartner.y;
+    if (!Coop_PartnerLocalCoords(x, y))
+    {
+        *x = sPartner.x;
+        *y = sPartner.y;
+    }
     if (*x != px || *y != py)
         return;
     if (Coop_PartnerTileFree(px, py + 1))
@@ -499,14 +640,26 @@ static void Coop_UpdateSprite(void)
     // paints a character onto a blank screen and the next map wipe deletes it.
     if (gMain.callback2 != CB2_Overworld)
         return;
-    if (!Coop_PartnerOnSameMap() || gMain.inBattle)
+    if (gMain.inBattle || !Coop_PartnerLocalCoords(&tx, &ty))
     {
+        // Judge only live frames: a quiet link or a battle says nothing about
+        // where the partner went. Seen a moment ago and now on a map that is
+        // not drawn here means a door, a cave, or a warp.
+        if (!gMain.inBattle && sPartnerValid && Coop_SessionActive())
+        {
+            if (sPartnerDrawn && (sPartner.mapGroup != sPartnerDrawnGroup || sPartner.mapNum != sPartnerDrawnNum))
+                Coop_NotePartnerLeftView();
+            sPartnerDrawn = FALSE;
+        }
         Coop_RemoveSprite();
         return;
     }
+    sPartnerDrawn = TRUE;
+    sPartnerDrawnGroup = sPartner.mapGroup;
+    sPartnerDrawnNum = sPartner.mapNum;
 
     gfx = Coop_PartnerGfx(&sPartner);
-    objectId = GetObjectEventIdByLocalIdAndMap(OBJ_EVENT_ID_COOP_PARTNER, gSaveBlock1Ptr->location.mapNum, gSaveBlock1Ptr->location.mapGroup);
+    objectId = Coop_FindPartnerObject();
     if (objectId < OBJECT_EVENTS_COUNT
      && (gObjectEvents[objectId].spriteId >= MAX_SPRITES || !gSprites[gObjectEvents[objectId].spriteId].inUse))
     {
@@ -522,9 +675,13 @@ static void Coop_UpdateSprite(void)
         template.kind = OBJ_KIND_NORMAL;
         // Spawn adds MAP_OFFSET itself. The link frame already includes it.
         Coop_PartnerTarget(&template.x, &template.y);
+        // The tile's own height, so a partner across a connection or on a
+        // ledge or bridge is drawn at their level, not at this player's.
+        template.elevation = MapGridGetElevationAt(template.x, template.y);
+        if (template.elevation == 0 || template.elevation == ELEVATION_MULTI_LEVEL)
+            template.elevation = PlayerGetElevation();
         template.x -= MAP_OFFSET;
         template.y -= MAP_OFFSET;
-        template.elevation = PlayerGetElevation();
         template.movementType = MOVEMENT_TYPE_NONE;
         template.trainerType = TRAINER_TYPE_NONE;
         template.script = Coop_EventScript_TalkPartner;
@@ -772,6 +929,13 @@ void Coop_FormatStatus(u8 *dest)
         StringCopy(end, COMPOUND_STRING("not yet"));
 }
 
+// Field play with the cable up: link.c may read a receive backlog at once.
+bool8 Coop_FieldLinkCatchUp(void)
+{
+    return sLinkState == COOP_LINK_UP && gMain.callback2 == CB2_Overworld
+        && !gMain.inBattle && !gCoopBattleLaunching && !sInBattle;
+}
+
 void Coop_LinkCallback(void)
 {
     struct CoopFrame frame;
@@ -827,8 +991,17 @@ static void Coop_AcceptPartner(const struct CoopFrame *frame)
             dx = -dx;
         if (dy < 0)
             dy = -dy;
-        if (sPartner.mapGroup != frame->mapGroup || sPartner.mapNum != frame->mapNum || dx > 1 || dy > 1)
+        // Walking over a map connection changes the map but is one step;
+        // the sprite keeps walking (Coop_PartnerLocalCoords translates it).
+        if (sPartner.mapGroup != frame->mapGroup || sPartner.mapNum != frame->mapNum)
+        {
+            if (!Coop_MapsConnected(sPartner.mapGroup, sPartner.mapNum, frame->mapGroup, frame->mapNum))
+                sPartnerResettle = TRUE;
+        }
+        else if (dx > 1 || dy > 1)
+        {
             sPartnerResettle = TRUE;
+        }
     }
     sPartner = *frame;
     sPartnerValid = TRUE;
@@ -1098,6 +1271,13 @@ static void Coop_HandleInvite(u32 playerId, const struct CoopInvite *invite)
         // The inviter stopped waiting; the open question becomes too late.
         if (sGuestPairPending && invite->seq == sGuestPairInvite.seq)
             sGuestPairTimer = 0xFFFF;
+        // A YES that crossed the withdrawal: the inviter is fighting alone.
+        if (sJoinLaunchPending && invite->seq == sGuestPairInvite.seq)
+        {
+            sJoinLaunchPending = FALSE;
+            sInBattle = FALSE;
+            sPendingMessage = Coop_EventScript_PartnerDeclined;
+        }
         return;
     }
 
@@ -1722,20 +1902,24 @@ static void Task_CoopSession(u8 taskId)
     }
     if (sJoinLaunchPending && !ScriptContext_IsEnabled())
     {
+        if (sReplyKind == 0 && (gLinkCallback == NULL || gLinkCallback == Coop_LinkCallback))
+        {
+            // A queued ACK has to leave the cable before battle code takes
+            // ownership of its block buffer and stops flushing field replies.
+            // Once it has left, the inviter is already starting the fight and
+            // has stopped sending field frames, so a quiet partner here is
+            // expected, not a reason to back out. (A withdrawn invite cancels
+            // this in Coop_HandleInvite.)
+            sJoinLaunchPending = FALSE;
+            Coop_LaunchBattle(TRUE);
+            return;
+        }
         if (!Coop_SessionActive() || !sPartnerValid)
         {
             sJoinLaunchPending = FALSE;
             sInBattle = FALSE;
             sReplyKind = 0;
             sPendingMessage = Coop_EventScript_PartnerDeclined;
-        }
-        else if (sReplyKind == 0 && (gLinkCallback == NULL || gLinkCallback == Coop_LinkCallback))
-        {
-            // A queued ACK has to leave the cable before battle code takes
-            // ownership of its block buffer and stops flushing field replies.
-            sJoinLaunchPending = FALSE;
-            Coop_LaunchBattle(TRUE);
-            return;
         }
     }
     if (sPendingMessage != NULL && !gMain.inBattle && !ScriptContext_IsEnabled() && !ArePlayerFieldControlsLocked())
@@ -1887,6 +2071,17 @@ u16 Coop_BufferCapText(void)
     {
         StringCopy(gStringVar1, COMPOUND_STRING("Off"));
     }
+    return TRUE;
+}
+
+// Talking to the partner sprite is only a greeting. Not while a question,
+// an invitation, or a battle start is pending on either side.
+u16 Coop_PartnerChatOk(void)
+{
+    if (Coop_InteractionBusy() || sJoinLaunchPending || gCoopBattleLaunching)
+        return FALSE;
+    if (sPartnerValid && sPartner.activity == COOP_ACT_BUSY)
+        return FALSE;
     return TRUE;
 }
 

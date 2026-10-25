@@ -363,6 +363,19 @@ enum {
 #define tIncomingPopUp data[3]
 #define tPrintTimer    data[4]
 
+// Co-op: one line about the partner, drawn in the map name window. Skipped
+// while this game's own map name is showing; that one matters more.
+EWRAM_DATA u8 gCoopPopupText[MAP_POPUP_STRING_BUFFER_LENGTH + 8] = {0};
+static EWRAM_DATA bool8 sCoopPopupPending = FALSE;
+
+void ShowCoopPopup(void)
+{
+    if (FuncIsActiveTask(Task_MapNamePopUpWindow) || FlagGet(FLAG_HIDE_MAP_NAME_POPUP))
+        return;
+    sCoopPopupPending = TRUE;
+    ShowMapNamePopup();
+}
+
 void ShowMapNamePopup(void)
 {
     if (FlagGet(FLAG_HIDE_MAP_NAME_POPUP) != TRUE)
@@ -574,13 +587,19 @@ u8 *GetPopUpMapName(u8 *dest, const struct MapHeader *mapHeader)
 
 static void ShowMapNamePopUpWindow(void)
 {
-    u8 mapDisplayHeader[MAP_POPUP_STRING_BUFFER_LENGTH];
+    u8 mapDisplayHeader[MAP_POPUP_STRING_BUFFER_LENGTH + 8];
     u8 *withoutPrefixPtr;
     u8 x;
     const u8 *mapDisplayHeaderSource;
     u8 mapNamePopUpWindowId, secondaryPopUpWindowId;
 
-    if (CurrentBattlePyramidLocation() != PYRAMID_LOCATION_NONE)
+    if (sCoopPopupPending)
+    {
+        sCoopPopupPending = FALSE;
+        withoutPrefixPtr = &(mapDisplayHeader[MAP_POPUP_PREFIX_BUFFER_LENGTH]);
+        StringCopy(withoutPrefixPtr, gCoopPopupText);
+    }
+    else if (CurrentBattlePyramidLocation() != PYRAMID_LOCATION_NONE)
     {
         if (gMapHeader.mapLayoutId == LAYOUT_BATTLE_FRONTIER_BATTLE_PYRAMID_TOP)
         {

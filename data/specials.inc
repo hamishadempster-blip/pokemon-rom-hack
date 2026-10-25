@@ -658,6 +658,7 @@ gSpecials::
 	def_special Coop_StartRescueBattle
 	def_special Coop_TakeRescueResult
 	def_special Coop_BufferPartnerLocation
+	def_special Coop_PartnerChatOk
 	def_special Coop_BufferCapText
 	def_special Coop_BufferBeaconStatus
 	def_special Coop_BufferBeaconAsk

@@ -414,6 +414,36 @@ int main(void)
     Expect(CoopProtocol_RivalForSlot(0) == COOP_RIVAL_SOREN, "starter holder faces Soren");
     Expect(CoopProtocol_RivalForSlot(1) == COOP_RIVAL_MIRA, "companion holder faces Mira");
 
+    // Connected maps. Coordinates include MAP_OFFSET (7) on both sides.
+    // Data from data/maps: Oldale (20x20) west to Route 102 (50x20), offset 0;
+    // Route 102 west to Petalburg (30x30), offset -10; Petalburg east to
+    // Route 102, offset 10; Oldale south to Route 101 (20x20).
+    {
+        int x, y;
+
+        // Route 102's east column x=49 is the tile just west of Oldale's x=0.
+        Expect(CoopProtocol_ConnectionToLocal(COOP_CONN_WEST, 0, 20, 20, 50, 20, 49 + 7, 10 + 7, &x, &y)
+               && x == -1 + 7 && y == 10 + 7, "west connection, offset 0");
+        // Oldale's x=0 is the tile just east of Route 102's x=49.
+        Expect(CoopProtocol_ConnectionToLocal(COOP_CONN_EAST, 0, 50, 20, 20, 20, 0 + 7, 10 + 7, &x, &y)
+               && x == 50 + 7 && y == 10 + 7, "east connection, offset 0");
+        // Route 102 (0,6) steps west onto Petalburg (29,16), and back.
+        Expect(CoopProtocol_ConnectionToLocal(COOP_CONN_WEST, -10, 50, 20, 30, 30, 29 + 7, 16 + 7, &x, &y)
+               && x == -1 + 7 && y == 6 + 7, "west connection, offset -10");
+        Expect(CoopProtocol_ConnectionToLocal(COOP_CONN_EAST, 10, 30, 30, 50, 20, 0 + 7, 6 + 7, &x, &y)
+               && x == 30 + 7 && y == 16 + 7, "east connection, offset 10");
+        // Oldale y=19 sits just north of Route 101 y=0, both ways.
+        Expect(CoopProtocol_ConnectionToLocal(COOP_CONN_SOUTH, 0, 20, 20, 20, 20, 10 + 7, 0 + 7, &x, &y)
+               && x == 10 + 7 && y == 20 + 7, "south connection");
+        Expect(CoopProtocol_ConnectionToLocal(COOP_CONN_NORTH, 0, 20, 20, 20, 20, 10 + 7, 19 + 7, &x, &y)
+               && x == 10 + 7 && y == -1 + 7, "north connection");
+        // Route 104 (40x80) east to Petalburg, offset 50: Petalburg (0,0) is
+        // beside Route 104 (40,50).
+        Expect(CoopProtocol_ConnectionToLocal(COOP_CONN_EAST, 50, 40, 80, 30, 30, 0 + 7, 0 + 7, &x, &y)
+               && x == 40 + 7 && y == 50 + 7, "east connection, large offset");
+        Expect(!CoopProtocol_ConnectionToLocal(5, 0, 20, 20, 20, 20, 7, 7, &x, &y), "dive is not drawn");
+    }
+
     if (sFails != 0)
     {
         printf("%d failed\n", sFails);

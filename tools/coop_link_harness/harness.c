@@ -22,7 +22,7 @@
 #define MAX_CMDS 4096
 #define MAX_SYMS 500000
 
-enum { C_PARTNER, C_GOTO, C_HEX, C_PRESS, C_WAIT, C_SHOT, C_DUMP, C_BARRIER, C_UNTIL_CB2, C_UNTIL_FIELD, C_EXPECT, C_UNTIL_MEM, C_BATTLE, C_MENU, C_PARTY, C_FIXTURE, C_WRITE, C_LEAD, C_MOVE, C_SIX, C_VAR, C_FLAG, C_VS, C_EXPECT_FLAG, C_EXPECT_VAR, C_NO_OBJECT, C_MAP, C_OBJECT, C_TEXT_SPEED, C_PACE, C_MUTE };
+enum { C_PARTNER, C_GOTO, C_HEX, C_PRESS, C_WAIT, C_SHOT, C_DUMP, C_BARRIER, C_UNTIL_CB2, C_UNTIL_FIELD, C_EXPECT, C_UNTIL_MEM, C_BATTLE, C_MENU, C_PARTY, C_FIXTURE, C_WRITE, C_LEAD, C_MOVE, C_SIX, C_VAR, C_FLAG, C_VS, C_EXPECT_FLAG, C_EXPECT_VAR, C_NO_OBJECT, C_MAP, C_OBJECT, C_TEXT_SPEED, C_PACE, C_MUTE, C_PARTNER_AT };
 
 struct Cmd {
 	int kind;
@@ -452,11 +452,12 @@ static void dump(struct Player* p, const char* tag) {
 	}
 	unsigned remote = coopStatic("sPartner");
 	out("[f%06d p%d %s] cb1=%s(%08x) cb2=%s(%08x) map=%d.%d pos=(%d,%d) partner=%s lock=%u script=%u battle=%08x linkErr=%u"
-	    " linkId=%u remote=%u.%u@(%u,%u) coop{state=%u req=%u wait=%u slot=%u kind=%u inBattle=%u valid=%u guest=%u hold=%u}\n",
+	    " linkId=%u remote=%u.%u@(%u,%u) q=%u/%u coop{state=%u req=%u wait=%u slot=%u kind=%u inBattle=%u valid=%u guest=%u hold=%u}\n",
 	    p->frame, p->id, tag, symName(cb1), cb1, symName(cb2), cb2, mg, mn, px, py, partner, rd8(p, sLockCtl),
 	    sScriptStatus ? rd8(p, sScriptStatus) : 0, rd32(p, sBattleFlags), rd8(p, sLinkErr),
 	    rd8(p, symAddr("gLink") + 2),
 	    rd8(p, remote + 2), rd8(p, remote + 3), rd8(p, remote + 4), rd8(p, remote + 5),
+	    rd8(p, symAddr("gLink") + 0x339), rd8(p, symAddr("gLink") + 0x33c + 0xC81),
 	    rd8(p, coopStatic("sLinkState")), rd8(p, coopStatic("sRequest")), rd8(p, coopStatic("sWaitKind")),
 	    rd8(p, coopStatic("sSlot")), rd8(p, coopStatic("sBattleKind")), rd8(p, coopStatic("sInBattle")),
 	    rd8(p, coopStatic("sPartnerValid")), rd8(p, coopStatic("sIsGuest")), rd8(p, symAddr("gCoopHoldLink")));
@@ -619,13 +620,15 @@ static void frameCallback(struct mCoreThread* t) {
 			int omg = (int8_t)rd8(o, rd32(o, sSave1) + 4), omn = (int8_t)rd8(o, rd32(o, sSave1) + 5);
 			int mg = (int8_t)rd8(p, rd32(p, sSave1) + 4), mn = (int8_t)rd8(p, rd32(p, sSave1) + 5);
 			bool want = (omg == mg && omn == mn) == (c->value != 0);
-			int found = -1;
+			int found = -1, count = 0;
 			for (int i = 0; i < 16; i++) {
 				unsigned ob = sObjEvents + i * 0x24;
-				if ((rd8(p, ob) & 1) && rd8(p, ob + 8) == 0xFC) found = i;
+				if ((rd8(p, ob) & 1) && rd8(p, ob + 8) == 0xFC) { found = i; count++; }
 			}
 			char why[160] = "";
-			if (c->value == 0) {
+			if (count > 1) {
+				snprintf(why, sizeof(why), "%d partner sprites", count);
+			} else if (c->value == 0) {
 				if (found >= 0) snprintf(why, sizeof(why), "partner sprite still shown");
 			} else if (!want) {
 				snprintf(why, sizeof(why), "players not on the same map (%d.%d vs %d.%d)", mg, mn, omg, omn);
@@ -657,6 +660,39 @@ static void frameCallback(struct mCoreThread* t) {
 			} else {
 				out("[p%d] ok %s\n", p->id, c->text);
 			}
+			advance = true;
+			break;
+		}
+		case C_PARTNER_AT: {
+			struct Player* o = &P[1 - p->id];
+			unsigned oobj = sObjEvents + rd8(o, sAvatar + 5) * 0x24;
+			int ox = (int16_t)rd16(o, oobj + 0x10), oy = (int16_t)rd16(o, oobj + 0x12);
+			int ex = ox + (int)c->addr, ey = oy + (int)c->value;
+			int found = -1, count = 0;
+			for (int i = 0; i < 16; i++) {
+				unsigned ob = sObjEvents + i * 0x24;
+				if ((rd8(p, ob) & 1) && rd8(p, ob + 8) == 0xFC) { found = i; count++; }
+			}
+			char why[160] = "";
+			if (found < 0) snprintf(why, sizeof(why), "no partner sprite");
+			else if (count > 1) snprintf(why, sizeof(why), "%d partner sprites", count);
+			else {
+				unsigned ob = sObjEvents + found * 0x24;
+				unsigned spr = symAddr("gSprites") + rd8(p, ob + 0x23) * 0x44;
+				int sx = (int16_t)rd16(p, ob + 0x10), sy = (int16_t)rd16(p, ob + 0x12);
+				unsigned objFlags = rd16(p, ob), sprFlags = rd16(p, spr + 0x3E);
+				unsigned save = rd32(p, sSave1);
+				if (rd8(p, ob + 9) != rd8(p, save + 5) || rd8(p, ob + 10) != rd8(p, save + 4))
+					snprintf(why, sizeof(why), "partner object tagged %u.%u, not this map", rd8(p, ob + 10), rd8(p, ob + 9));
+				else if (objFlags & (1u << 13)) snprintf(why, sizeof(why), "partner object invisible");
+				else if (!(sprFlags & 1) || (sprFlags & 4)) snprintf(why, sizeof(why), "partner sprite hidden (flags %04x)", sprFlags);
+				else if (sx != ex || sy != ey) snprintf(why, sizeof(why), "partner at (%d,%d), expected (%d,%d)", sx, sy, ex, ey);
+			}
+			if (why[0]) {
+				out("[p%d] FAIL %s: %s\n", p->id, c->text, why);
+				dump(p, "fail");
+				sFailures++;
+			} else out("[p%d] ok %s\n", p->id, c->text);
 			advance = true;
 			break;
 		}
@@ -1001,6 +1037,17 @@ static void loadScript(const char* path, int depth) {
 			snprintf(c.text, sizeof(c.text), "%s %s", cmd, n >= 3 ? a : "");
 			if (w == 2) {
 				// Both stand still for the whole check: barrier, check, barrier.
+				addCmd(w, c);
+				struct Cmd bar = { .kind = C_BARRIER, .barrier = ++sBarrierCount };
+				addCmd(2, bar);
+				continue;
+			}
+		} else if (!strcmp(cmd, "expect_partner_at")) {
+			// The partner drawn at the other player's own tile shifted by DX,DY:
+			// the connection offset into this map's grid, taken from the map data.
+			c.kind = C_PARTNER_AT; c.addr = (unsigned)atoi(a); c.value = (unsigned)atoi(b);
+			snprintf(c.text, sizeof(c.text), "expect_partner_at %s %s %s", a, b, n >= 5 ? d : "");
+			if (w == 2) {
 				addCmd(w, c);
 				struct Cmd bar = { .kind = C_BARRIER, .barrier = ++sBarrierCount };
 				addCmd(2, bar);
