@@ -111,12 +111,8 @@ Coop_EventScript_TalkPartner::
 	@ partner must not open a chat that holds the field and stalls it.
 	specialvar VAR_RESULT, Coop_PartnerChatOk
 	goto_if_eq VAR_RESULT, FALSE, Coop_EventScript_TalkPartnerSkip
-	lockall
-	faceplayer
-	special Coop_BufferPartnerLocation
-	msgbox Coop_Text_PartnerHello, MSGBOX_DEFAULT
-	releaseall
-	end
+	@ BATTLE, TRADE, GIVE ITEM, GIVE POKéMON (data/scripts/coop_deal.inc).
+	goto CoopDeal_EventScript_PartnerMenu
 
 Coop_EventScript_TalkPartnerSkip::
 	end

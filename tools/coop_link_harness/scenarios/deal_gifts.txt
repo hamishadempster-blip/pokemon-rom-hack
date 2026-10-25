@@ -1,0 +1,102 @@
+# Partner menu GIVE ITEM and GIVE POKEMON (actual play from the story_seg6
+# saves), plus the restrictions: a lone Pokemon can't be given, a key item
+# can't leave the bag, a Pokemon holding Mail can't be given.
+include deal_setup.inc
+0 party
+1 party
+# 1. GIVE POKEMON with one Pokemon: refused before anything is sent.
+0 press A 2
+0 wait 40
+0 press DOWN 2
+0 press DOWN 2
+0 press DOWN 2
+0 press A 2
+0 until_cb2 CB2_UpdatePartyMenu 600 A
+0 wait 30
+0 press A 2
+0 wait 60
+0 shot gift-last-one
+0 until_cb2 CB2_UpdatePartyMenu 600 A
+0 wait 30
+0 press B 2
+0 mash_field 1200 B
+1 expect coop_deal.sDeal 0
+0 expect gPartiesCount 1
+# 2. GIVE ITEM: a key item stays; then 2 of 5 POKE BALLS.
+0 press A 2
+0 wait 40
+0 press DOWN 2
+0 press DOWN 2
+0 press A 2
+0 until_cb2 CB2_BagMenuRun 600 A
+0 wait 60
+0 press LEFT 2
+0 wait 30
+0 press A 2
+0 wait 60
+0 shot gift-key-item
+0 press A 2
+0 wait 30
+0 press RIGHT 2
+0 wait 30
+0 press RIGHT 2
+0 wait 30
+0 press A 2
+0 wait 40
+0 press UP 2
+0 wait 20
+0 shot gift-count
+0 press A 2
+0 until_cb2 CB2_Overworld 600
+0 wait 60
+0 shot gift-ask
+0 until_mem coop_deal.sDeal 1 600 A
+1 until_mem coop_deal.sDeal 2 4000
+1 wait 90
+1 shot gift-incoming
+1 until_mem coop_deal.sDeal+13 1 600 A
+# B would call off a wait: press it only once each deal has ended.
+b until_mem coop_deal.sDeal 0 3000
+b mash_field 4000 B
+b expect_txn 0
+0 expect_item 1 1 3
+1 expect_item 1 1 7
+1 expect coop_deal.sDeal 0
+1 shot gift-items-done
+# 3. GIVE POKEMON: slot 1 Zigzagoon; slot 2 holds Mail and is refused.
+0 fixture_six
+0 fixture_slot 1 263
+0 fixture_slot 2 252 199
+0 press A 2
+0 wait 40
+0 press DOWN 2
+0 press DOWN 2
+0 press DOWN 2
+0 press A 2
+0 until_cb2 CB2_UpdatePartyMenu 600 A
+0 wait 30
+0 press DOWN 2
+0 press DOWN 2
+0 press A 2
+0 wait 90
+0 shot gift-mail
+0 until_cb2 CB2_UpdatePartyMenu 600 A
+0 wait 30
+0 press DOWN 2
+0 press A 2
+0 until_mem coop_deal.sDeal 1 900 A
+1 until_mem coop_deal.sDeal 2 4000
+1 wait 90
+1 shot gift-mon-incoming
+1 until_mem coop_deal.sDeal+13 1 600 A
+# B would call off a wait: press it only once each deal has ended.
+b until_mem coop_deal.sDeal 0 3000
+b mash_field 4000 B
+b expect_txn 0
+0 expect gPartiesCount 5
+1 expect gPartiesCount 2
+1 expect_species 1 263
+0 expect_mons_intact 263 0
+b expect_no_copies
+b expect coop.sLinkState 2
+b expect coop_deal.sDeal 0

@@ -693,3 +693,30 @@ gSpecials::
 	def_special Coop_NextProgression
 	def_special Coop_StartProgressionEvolution
 	def_special CanTeachLevelUpMove
+	def_special CoopDeal_CanStart
+	def_special CoopDeal_BufferPartnerName
+	def_special CoopDeal_CheckOfferMon
+	def_special CoopDeal_CheckGiftItem
+	def_special CoopDeal_BufferItemCount
+	def_special CoopDeal_StartRequest
+	def_special CoopDeal_Wait
+	def_special CoopDeal_BufferIncoming
+	def_special CoopDeal_BufferPartnerOffer
+	def_special CoopDeal_BufferMyOffer
+	def_special CoopDeal_Answer
+	def_special CoopDeal_Confirm
+	def_special CoopDeal_Prepare
+	def_special CoopDeal_Commit
+	def_special CoopDeal_TryTradeEvolution
+	def_special CoopDeal_SaveAfterEvolution
+	def_special CoopDeal_BufferRules
+	def_special CoopDeal_TeamNeedsPicker
+	def_special CoopDeal_OpenTeamPicker
+	def_special CoopDeal_ValidateTeam
+	def_special CoopDeal_TeamReady
+	def_special CoopDeal_StartFriendlyBattle
+	def_special CoopDeal_BattleOutcome
+	def_special CoopDeal_Cancel
+	def_special CoopDeal_BufferPending
+	def_special CoopDeal_OpenGiftBag
+	def_special CoopDeal_Settle

@@ -1,0 +1,22 @@
+# Player 0 escrows and sends READY, then (FIXTURE) stops reading deal
+# messages, so it never learns that player 1 committed. Power is cut once
+# player 1's commit is on the flash. deal_cut_after_commit_reload.txt
+# continues: player 0 must complete the same trade, not undo it.
+include deal_setup.inc
+0 fixture_six
+0 fixture_slot 1 67
+1 fixture_six
+1 fixture_slot 1 261
+include deal_trade_offer.inc
+1 text_speed 0
+0 until_mem coop_deal.sDeal+13 1 900 A
+0 until_mem coop_deal.sDeal 5 900
+0 patch_ret CoopDeal_HandleBlock 0
+1 until_mem coop_deal.sDeal+13 1 3000 A
+1 until_mem coop_deal.sDeal 5 3000
+1 until_mem coop_deal.sDeal 0 3000
+1 until_mem coop_deal.sSaver 0 600
+1 expect_txn 0
+1 expect_species 5 67
+0 expect_txn 1
+0 expect coop_deal.sDeal 5

@@ -1,0 +1,28 @@
+# Partner menu TRADE (actual play from the story_seg6 saves in Rustboro):
+# player 0 offers a Machoke, player 1 a Poochyena. Both confirm the exact
+# exchange; each save escrows, saves, then commits. The Machoke evolves by
+# trade on player 1's side and is saved again.
+# FIXTURES: six-Pokemon parties made from each lead; slot 1 retyped.
+include deal_setup.inc
+0 fixture_six
+0 fixture_slot 1 67
+1 fixture_six
+1 fixture_slot 1 261
+b party
+include deal_trade_offer.inc
+1 until_mem coop_deal.sDeal+13 1 900 A
+0 until_mem coop_deal.sDeal+13 1 900 A
+b mash_field 9000 B
+b party
+b expect_txn 0
+b expect_mons_intact
+b expect_no_copies
+0 expect_species 1 256
+0 expect_species 5 261
+1 expect_species 1 228
+1 expect_species 5 68
+b expect gPartiesCount 6
+b expect coop.sLinkState 2
+b expect coop_deal.sDeal 0
+b expect coop_deal.sSessionCount 1
+b shot deal-trade-done

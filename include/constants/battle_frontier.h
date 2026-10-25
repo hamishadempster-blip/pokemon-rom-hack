@@ -18,6 +18,7 @@
 #define FACILITY_LINK_CONTEST      7
 #define FACILITY_UNION_ROOM        8
 #define FACILITY_MULTI_OR_EREADER  9  // Direct Corner multi battles, multi battle with Steven, and e-Reader battles
+#define FACILITY_COOP_FRIENDLY     10 // team pick for a co-op friendly battle (src/coop_deal.c)
 
 // Battle Frontier battle modes.
 #define FRONTIER_MODE_SINGLES      0

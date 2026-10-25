@@ -1,0 +1,24 @@
+# After deal_cut_before_partner.txt: player 0's save holds the escrow,
+# player 1's save never escrowed. On linking, player 1 reports no record,
+# so player 0's Machoke comes back. Nothing is traded or copied.
+include continue.inc
+0 expect_txn 1
+1 expect_txn 0
+0 expect gPartiesCount 5
+# Face north first: relink.inc taps A, which must not reach the partner.
+b press UP 1
+b wait 20
+include relink.inc
+b expect coop.sLinkState 2
+0 until_mem coop_deal.sSaver 0 3000 B
+b wait 600
+b mash_field 3000 B
+b expect_txn 0
+0 expect gPartiesCount 6
+0 expect_species 5 67
+# Player 1 never saved its fixture party: its save still has one Pokemon.
+1 expect gPartiesCount 1
+b expect_mons_intact
+b expect_no_copies
+0 expect_mons_intact 67 1
+1 expect_mons_intact 67 0

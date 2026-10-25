@@ -11,6 +11,8 @@
 #include "bg.h"
 #include "contest.h"
 #include "coop.h"
+#include "coop_deal.h"
+#include "constants/coop.h"
 #include "data.h"
 #include "decompress.h"
 #include "easy_chat.h"
@@ -111,7 +113,6 @@ enum {
     MENU_CATALOG_MOWER,
     MENU_CHANGE_FORM,
     MENU_CHANGE_ABILITY,
-    MENU_COOP_TRADE,
     MENU_FIELD_MOVES
 };
 
@@ -484,7 +485,6 @@ static void CursorCb_CatalogFan(u8);
 static void CursorCb_CatalogMower(u8);
 static void CursorCb_ChangeForm(u8);
 static void CursorCb_ChangeAbility(u8);
-static void CursorCb_CoopTrade(u8);
 void TryItemHoldFormChange(struct Pokemon *mon, s8 slotId, enum BattleTrainer trainer);
 static void ShowMoveSelectWindow(u8 slot);
 static void Task_HandleWhichMoveInput(u8 taskId);
@@ -2988,9 +2988,6 @@ static void SetPartyMonFieldSelectionActions(struct Pokemon *mons, u8 slotId)
         }
     }
 
-    if (Coop_SessionActive())
-        AppendToList(sPartyMenuInternal->actions, &sPartyMenuInternal->numActions, MENU_COOP_TRADE);
-
     if (!InBattlePike())
     {
         if (GetMonData(&mons[1], MON_DATA_SPECIES) != SPECIES_NONE)
@@ -4020,25 +4017,6 @@ static void CursorCb_Register(u8 taskId)
     PlaySE(SE_FAILURE);
     PartyMenuRemoveWindow(&sPartyMenuInternal->windowId[0]);
     PartyMenuRemoveWindow(&sPartyMenuInternal->windowId[1]);
-    StringAppend(gStringVar4, gText_PauseUntilPress);
-    DisplayPartyMenuMessage(gStringVar4, TRUE);
-    gTasks[taskId].func = Task_ReturnToChooseMonAfterText;
-}
-
-static void CursorCb_CoopTrade(u8 taskId)
-{
-    PartyMenuRemoveWindow(&sPartyMenuInternal->windowId[0]);
-    PartyMenuRemoveWindow(&sPartyMenuInternal->windowId[1]);
-    if (!Coop_OfferTrade(gPartyMenu.slotId))
-    {
-        StringExpandPlaceholders(gStringVar4, COMPOUND_STRING("That POKéMON can't be traded."));
-        PlaySE(SE_FAILURE);
-    }
-    else
-    {
-        StringExpandPlaceholders(gStringVar4, COMPOUND_STRING("Offer sent. Your partner\nhas to offer one too."));
-        PlaySE(SE_SELECT);
-    }
     StringAppend(gStringVar4, gText_PauseUntilPress);
     DisplayPartyMenuMessage(gStringVar4, TRUE);
     gTasks[taskId].func = Task_ReturnToChooseMonAfterText;
@@ -7366,6 +7344,7 @@ static bool8 GetBattleEntryEligibility(struct Pokemon *mon)
             return TRUE;
         return FALSE;
     case FACILITY_UNION_ROOM:
+    case FACILITY_COOP_FRIENDLY: // healed for the fight; eggs are already out
         return TRUE;
     default: // Battle Frontier
         species = GetMonData(mon, MON_DATA_SPECIES);
@@ -7395,6 +7374,26 @@ static u8 CheckBattleEntriesAndGetMessage(void)
     facility = VarGet(VAR_FRONTIER_FACILITY);
     if (facility == FACILITY_UNION_ROOM || facility == FACILITY_MULTI_OR_EREADER)
         return 0xFF;
+    if (facility == FACILITY_COOP_FRIENDLY)
+    {
+        // Friendly battles may field fewer than the limit; check only the
+        // picks made, and only under the standard clauses.
+        if (gCoopFriendlyRules & COOP_RULE_OPEN)
+            return 0xFF;
+        for (i = 0; i < ARRAY_COUNT(gSelectedOrderFromParty) && order[i] != 0; i++)
+        {
+            enum Species species = GetMonData(&party[order[i] - 1], MON_DATA_SPECIES);
+            enum Item item = GetMonData(&party[order[i] - 1], MON_DATA_HELD_ITEM);
+            for (j = i + 1; j < ARRAY_COUNT(gSelectedOrderFromParty) && order[j] != 0; j++)
+            {
+                if (species == GetMonData(&party[order[j] - 1], MON_DATA_SPECIES))
+                    return PARTY_MSG_MONS_CANT_BE_SAME;
+                if (item != ITEM_NONE && item == GetMonData(&party[order[j] - 1], MON_DATA_HELD_ITEM))
+                    return PARTY_MSG_NO_SAME_HOLD_ITEMS;
+            }
+        }
+        return 0xFF;
+    }
 
     maxBattlers = GetMaxBattleEntries();
     for (i = 0; i < maxBattlers - 1; i++)
@@ -7460,7 +7459,7 @@ static u8 GetMaxBattleEntries(void)
         return MULTI_PARTY_SIZE;
     case FACILITY_UNION_ROOM:
         return UNION_ROOM_PARTY_SIZE;
-    default: // Battle Frontier
+    default: // Battle Frontier, co-op friendly battles
         return gSpecialVar_0x8005;
     }
 }
@@ -7471,6 +7470,8 @@ static u8 GetMinBattleEntries(void)
     {
     case FACILITY_MULTI_OR_EREADER:
         return 1;
+    case FACILITY_COOP_FRIENDLY:
+        return (gCoopFriendlyRules & COOP_RULE_DOUBLES) ? 2 : 1;
     case FACILITY_UNION_ROOM:
         return UNION_ROOM_PARTY_SIZE;
     default: // Battle Frontier
@@ -7483,6 +7484,7 @@ static u8 GetBattleEntryLevelCap(void)
     switch (VarGet(VAR_FRONTIER_FACILITY))
     {
     case FACILITY_MULTI_OR_EREADER:
+    case FACILITY_COOP_FRIENDLY:
         return MAX_LEVEL;
     case FACILITY_UNION_ROOM:
         return UNION_ROOM_MAX_LEVEL;
@@ -7497,7 +7499,7 @@ static const u8 *GetFacilityCancelString(void)
 {
     u8 facilityNum = VarGet(VAR_FRONTIER_FACILITY);
 
-    if (!(facilityNum != FACILITY_UNION_ROOM && facilityNum != FACILITY_MULTI_OR_EREADER))
+    if (!(facilityNum != FACILITY_UNION_ROOM && facilityNum != FACILITY_MULTI_OR_EREADER && facilityNum != FACILITY_COOP_FRIENDLY))
         return gText_CancelBattle;
     else if (facilityNum == FRONTIER_FACILITY_DOME && gSpecialVar_0x8005 == 2)
         return gText_ReturnToWaitingRoom;

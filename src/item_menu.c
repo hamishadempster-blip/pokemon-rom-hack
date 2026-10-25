@@ -1,6 +1,7 @@
 #include "global.h"
 #include "item_menu.h"
 #include "coop.h"
+#include "coop_deal.h"
 #include "battle.h"
 #include "battle_controllers.h"
 #include "battle_pyramid.h"
@@ -211,6 +212,7 @@ static void Task_ItemContext_GiveToParty(u8);
 static void Task_ItemContext_Sell(u8);
 static void Task_ItemContext_Deposit(u8);
 static void Task_ItemContext_GiveToPC(u8);
+static void Task_ItemContext_CoopGift(u8);
 static void ConfirmToss(u8);
 static void CancelToss(u8);
 static void ConfirmSell(u8);
@@ -385,6 +387,7 @@ static const TaskFunc sContextMenuFuncs[] =
     [ITEMMENULOCATION_PCBOX]                    = Task_ItemContext_GiveToPC,
     [ITEMMENULOCATION_BERRY_TREE_MULCH]         = Task_FadeAndCloseBagMenuIfMulch,
     [ITEMMENULOCATION_RAIDEND]                  = Task_ItemContext_Normal,
+    [ITEMMENULOCATION_COOP_GIFT]                = Task_ItemContext_CoopGift,
 };
 
 static const struct YesNoFuncTable sYesNoTossFunctions = {ConfirmToss, CancelToss};
@@ -2414,6 +2417,66 @@ static void TryDepositItem(u8 taskId)
         // No room to deposit
         BagMenu_Print(WIN_DESCRIPTION, FONT_NORMAL, sText_NoRoomForItems, 3, 1, 0, 0, 0, COLORID_NORMAL);
         gTasks[taskId].func = WaitDepositErrorMessage;
+    }
+}
+
+// Co-op gift: only items that may leave this save, and how many to give.
+static void FinishCoopGift(u8 taskId)
+{
+    s16 *data = gTasks[taskId].data;
+
+    gSpecialVar_0x8007 = tItemCount;
+    gSpecialVar_Result = TRUE;
+    Task_FadeAndCloseBagMenu(taskId);
+}
+
+static void Task_ChooseHowManyToGift(u8 taskId)
+{
+    s16 *data = gTasks[taskId].data;
+
+    if (AdjustQuantityAccordingToDPadInput(&tItemCount, tQuantity) == TRUE)
+    {
+        PrintItemQuantity(gBagMenu->windowIds[ITEMWIN_QUANTITY], tItemCount);
+    }
+    else if (JOY_NEW(A_BUTTON))
+    {
+        PlaySE(SE_SELECT);
+        BagMenu_RemoveWindow(ITEMWIN_QUANTITY);
+        FinishCoopGift(taskId);
+    }
+    else if (JOY_NEW(B_BUTTON))
+    {
+        PlaySE(SE_SELECT);
+        PrintItemDescription(tListPosition);
+        BagMenu_PrintCursor(tListTaskId, COLORID_NORMAL);
+        BagMenu_RemoveWindow(ITEMWIN_QUANTITY);
+        ReturnToItemList(taskId);
+    }
+}
+
+static void Task_ItemContext_CoopGift(u8 taskId)
+{
+    s16 *data = gTasks[taskId].data;
+
+    tItemCount = 1;
+    FillWindowPixelBuffer(WIN_DESCRIPTION, PIXEL_FILL(0));
+    if (!CoopDeal_ItemGiftable(gSpecialVar_ItemId))
+    {
+        BagMenu_Print(WIN_DESCRIPTION, FONT_NORMAL, COMPOUND_STRING("This item can't\nbe given."), 3, 1, 0, 0, 0, COLORID_NORMAL);
+        gTasks[taskId].func = WaitDepositErrorMessage;
+    }
+    else if (tQuantity == 1)
+    {
+        FinishCoopGift(taskId);
+    }
+    else
+    {
+        u8 *end = CopyItemNameHandlePlural(gSpecialVar_ItemId, gStringVar1, 2);
+        WrapFontIdToFit(gStringVar1, end, FONT_NORMAL, WindowWidthPx(WIN_DESCRIPTION) - 10 - 6);
+        StringExpandPlaceholders(gStringVar4, COMPOUND_STRING("Give how many\n{STR_VAR_1}?"));
+        BagMenu_Print(WIN_DESCRIPTION, FONT_NORMAL, gStringVar4, 3, 1, 0, 0, 0, COLORID_NORMAL);
+        AddItemQuantityWindow(ITEMWIN_QUANTITY);
+        gTasks[taskId].func = Task_ChooseHowManyToGift;
     }
 }
 

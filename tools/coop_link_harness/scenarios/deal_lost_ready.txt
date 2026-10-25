@@ -1,0 +1,33 @@
+# Live recovery without a power cut: player 0 escrows, then (FIXTURE) stops
+# reading deal messages for 40 seconds, so its wait for READY ends with
+# "The link was interrupted". Player 1 commits meanwhile. When player 0
+# reads messages again, the two games settle: player 0 completes the trade.
+include deal_setup.inc
+0 fixture_six
+0 fixture_slot 1 67
+1 fixture_six
+1 fixture_slot 1 261
+include deal_trade_offer.inc
+1 text_speed 0
+0 until_mem coop_deal.sDeal+13 1 900 A
+0 until_mem coop_deal.sDeal 5 900
+0 patch_ret CoopDeal_HandleBlock 2400
+1 until_mem coop_deal.sDeal+13 1 3000 A
+1 until_mem coop_deal.sDeal 0 3000
+1 mash_field 3000 B
+1 expect_txn 0
+1 expect_species 5 68
+# Player 0 gives up waiting (25 s) and is told the exchange will settle.
+0 until_mem coop_deal.sDeal 0 3000
+0 expect_txn 1
+0 shot lost-ready-interrupted
+0 mash_field 3000 B
+0 until_mem coop_deal.sSaver+2 0 4000 B
+0 mash_field 3000 B
+b wait 300
+b expect_txn 0
+0 expect_species 5 261
+b expect_mons_intact
+b expect_no_copies
+b expect coop.sLinkState 2
+b expect coop_deal.sDeal 0

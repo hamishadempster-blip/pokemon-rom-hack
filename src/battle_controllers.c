@@ -137,7 +137,7 @@ void HandleLinkBattleSetup(void)
         // lobby and, on a mismatch, closes the link and shows the
         // "turn the power OFF and ON" screen. That fired on the first
         // Poochyena fight.
-        if ((gBattleTypeFlags & BATTLE_TYPE_COOP) && gReceivedRemoteLinkPlayers)
+        if (COOP_SESSION_LINK_BATTLE() && gReceivedRemoteLinkPlayers)
         {
             Coop_YieldLinkToBattle();
             CreateTasksForSendRecvLinkBuffers();

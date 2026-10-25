@@ -255,6 +255,28 @@ struct NPCFollower
 #define ITEM_FLAGS_COUNT ((ITEMS_COUNT / 8) + ((ITEMS_COUNT % 8) ? 1 : 0))
 
 // Kept in global.h so the save layout does not include coop.h.
+// One escrowed transfer between two saves (see src/coop_deal.c). The outgoing
+// side is held here, not in the party or bag, until both games commit.
+struct CoopDealRecord
+{
+    u8 state;           // COOP_TXN_*
+    u8 kind;            // COOP_DEAL_*
+    u8 outSlot;         // party slot the outgoing Pokemon came from, or 0xFF
+    u8 hasMons;         // bit 0: outMon set, bit 1: inMon set
+    u16 dealId;
+    u16 lastDoneId;     // the last deal this save committed...
+    u32 partnerOtId;
+    u32 lastDoneOtId;   // ...and with whom
+    u16 outItem;
+    u16 outQty;
+    u16 inItem;
+    u16 inQty;
+    u32 outMon[20];     // struct BoxPokemon (80 bytes, asserted in coop_deal.c)
+    u32 inMon[20];
+};
+
+#define COOP_DEX_FLAG_BYTES 132
+
 struct CoopSave
 {
     u8 magic;
@@ -270,6 +292,18 @@ struct CoopSave
     u8 rivalId;         // COOP_RIVAL_*: the twin who answers this player's case
     u8 sharedItems;     // shared progression items already received
     u8 unused[2];
+    // Layout 2 (build 0xC0170131).
+    struct CoopDealRecord deal;    // an escrowed trade or gift waiting to settle
+    u32 partnerDexOtId;            // whose catches partnerCaught holds
+    u8 partnerDexName[PLAYER_NAME_LENGTH + 1];
+    u16 partnerDexHours;           // this save's play time at the last sync
+    u8 partnerDexMinutes;
+    u8 partnerDexValid;
+    u8 partnerCaught[COOP_DEX_FLAG_BYTES];
+    u8 battleSpeed;                // COOP_SPEED_* bits (fast battle options)
+    u8 questFlags;                 // reserved for quest foundations
+    u8 rewardsClaimed[4];          // COOP_REWARD_* bits claimed on this save
+    u16 dealHistory[3];            // earlier committed deal ids, newest first
 };
 
 struct SaveBlock3

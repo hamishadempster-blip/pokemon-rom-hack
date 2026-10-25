@@ -544,6 +544,16 @@ void BattleSetup_StartCoopWildBattle(void)
     IncrementDailyWildBattles();
 }
 
+// A friendly battle against the linked co-op partner. src/coop_deal.c has
+// already set the battle flags, the team and gMain.savedCallback.
+void BattleSetup_StartCoopFriendlyBattle(void)
+{
+    LockPlayerFieldControls();
+    FreezeObjectEvents();
+    StopPlayerAvatar();
+    CreateBattleStartTask(B_TRANSITION_SLICE, MUS_VS_TRAINER);
+}
+
 void BattleSetup_StartScriptedWildBattle(void)
 {
     LockPlayerFieldControls();

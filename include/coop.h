@@ -84,6 +84,11 @@ extern bool8 gCoopBattleLaunching;
 extern bool8 gCoopArmWild;
 // Set while a co-op session should survive a one-off link glitch, such as a door.
 extern bool8 gCoopHoldLink;
+// A friendly battle between the two partners (src/coop_deal.c).
+extern bool8 gCoopFriendlyBattle;
+// Battles that borrow the co-op cable and hand it back open afterwards.
+#define COOP_SESSION_LINK_BATTLE() ((gBattleTypeFlags & BATTLE_TYPE_COOP) || gCoopFriendlyBattle)
+void CoopDeal_AbortFriendlyBattle(void);
 
 u16 Coop_PartnerOnSameMap(void);
 u16 Coop_PartnerOnSameTile(void);
@@ -132,7 +137,6 @@ u16 Coop_TakeRefusal(void);
 bool8 Coop_HasBattleReadyLead(void);
 const u8 *Coop_UseTwinBeacon(void);
 bool8 Coop_BeaconActive(void);
-bool8 Coop_OfferTrade(u8 slot);
 
 void Coop_OverworldFrame(void);
 void Coop_ApplyPendingStory(void);

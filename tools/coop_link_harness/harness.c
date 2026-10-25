@@ -22,7 +22,7 @@
 #define MAX_CMDS 4096
 #define MAX_SYMS 500000
 
-enum { C_PARTNER, C_GOTO, C_HEX, C_PRESS, C_WAIT, C_SHOT, C_DUMP, C_BARRIER, C_UNTIL_CB2, C_UNTIL_FIELD, C_EXPECT, C_UNTIL_MEM, C_BATTLE, C_MENU, C_PARTY, C_FIXTURE, C_WRITE, C_LEAD, C_MOVE, C_SIX, C_VAR, C_FLAG, C_VS, C_EXPECT_FLAG, C_EXPECT_VAR, C_NO_OBJECT, C_MAP, C_OBJECT, C_TEXT_SPEED, C_PACE, C_MUTE, C_PARTNER_AT, C_ITEM, C_EXPECT_ITEM, C_UNTIL_TEXT, C_WARP, C_PC_COUNT, C_MONS, C_NO_COPIES, C_NOTE_MONEY, C_MONEY_GAIN, C_FORCE_ENC, C_EXPECT_RANGE, C_WALK, C_NO_WILD, C_CROSS, C_WALK_BATTLE, C_SMART, C_STRONG, C_UNTIL_TASK, C_MIRROR };
+enum { C_PARTNER, C_GOTO, C_HEX, C_PRESS, C_WAIT, C_SHOT, C_DUMP, C_BARRIER, C_UNTIL_CB2, C_UNTIL_FIELD, C_EXPECT, C_UNTIL_MEM, C_BATTLE, C_MENU, C_PARTY, C_FIXTURE, C_WRITE, C_LEAD, C_MOVE, C_SIX, C_VAR, C_FLAG, C_VS, C_EXPECT_FLAG, C_EXPECT_VAR, C_NO_OBJECT, C_MAP, C_OBJECT, C_TEXT_SPEED, C_PACE, C_MUTE, C_PARTNER_AT, C_ITEM, C_EXPECT_ITEM, C_UNTIL_TEXT, C_WARP, C_PC_COUNT, C_MONS, C_NO_COPIES, C_NOTE_MONEY, C_MONEY_GAIN, C_FORCE_ENC, C_EXPECT_RANGE, C_WALK, C_NO_WILD, C_CROSS, C_WALK_BATTLE, C_SMART, C_STRONG, C_UNTIL_TASK, C_MIRROR, C_SPECIES, C_NOTE_PARTY, C_SAME_PARTY, C_PATCH_RET, C_SLOT, C_TXN };
 
 struct Cmd {
 	int kind;
@@ -58,6 +58,8 @@ struct Player {
     unsigned smartMoves;
     unsigned strongBattlers;
     unsigned offField;
+    unsigned char partyNote[600];
+    unsigned patchAddr, patchOpcode, patchFrames;
 };
 
 static struct Player P[2];
@@ -802,6 +804,10 @@ static void frameCallback(struct mCoreThread* t) {
     // Patch only this emulated core's callback, and always restore its opcode.
     if (p->muteFrames && --p->muteFrames == 0)
         p->core->rawWrite16(p->core, symAddr("Coop_LinkCallback"), -1, p->mutedOpcode);
+    if (p->patchAddr && p->patchFrames && --p->patchFrames == 0) {
+        p->core->rawWrite16(p->core, p->patchAddr, -1, p->patchOpcode);
+        p->patchAddr = 0;
+    }
 	if (sMain) {
 		unsigned cb2 = rd32(p, sMain + 4);
 		if (cb2 != sLastCb2[p->id]) {
@@ -894,6 +900,42 @@ static void frameCallback(struct mCoreThread* t) {
             advance = true;
             break;
         }
+        case C_SPECIES: {
+            // expect_species SLOT SPECIES (0 = empty slot)
+            unsigned mon = partyMon(0, c->size), pid = rd32(p, mon), key = pid ^ rd32(p, mon + 4);
+            unsigned w = rd32(p, mon + 32 + sSub0[pid % 24] * 12) ^ key;
+            unsigned species = (rd8(p, mon + 19) & 2) ? (w & 0x7FF) : 0;
+            if (species != c->value) { out("[p%d] FAIL slot %d species %u, expected %u\n", p->id, c->size, species, c->value); sFailures++; }
+            else out("[p%d] ok slot %d species %u\n", p->id, c->size, species);
+            advance = true;
+            break;
+        }
+        case C_NOTE_PARTY:
+        case C_SAME_PARTY: {
+            // The whole local party, byte for byte (encrypted data, stats, HP, PP).
+            unsigned char now[600];
+            for (int i = 0; i < 600; i++) now[i] = rd8(p, partyMon(0, 0) + i);
+            if (c->kind == C_NOTE_PARTY) { memcpy(p->partyNote, now, 600); out("[p%d] party noted\n", p->id); }
+            else {
+                int diff = -1;
+                for (int i = 0; i < 600; i++) if (now[i] != p->partyNote[i]) { diff = i; break; }
+                if (diff >= 0) { out("[p%d] FAIL party differs at byte %d (slot %d +%d)\n", p->id, diff, diff / 100, diff % 100); sFailures++; }
+                else out("[p%d] ok party unchanged\n", p->id);
+            }
+            advance = true;
+            break;
+        }
+        case C_PATCH_RET:
+            // Make a function return at once for N frames (0: until the run
+            // ends), on this core only: a controlled loss of one code path.
+            if (p->patchAddr) p->core->rawWrite16(p->core, p->patchAddr, -1, p->patchOpcode);
+            p->patchAddr = c->addr & ~1u;
+            p->patchOpcode = rd16(p, p->patchAddr);
+            p->core->rawWrite16(p->core, p->patchAddr, -1, 0x4770); // bx lr
+            p->patchFrames = c->frames;
+            out("[p%d] patched %s for %d frames\n", p->id, c->text, c->frames);
+            advance = true;
+            break;
         case C_MUTE:
             if (!p->muteFrames) {
                 unsigned addr = symAddr("Coop_LinkCallback");
@@ -1375,6 +1417,45 @@ static void frameCallback(struct mCoreThread* t) {
             advance = true;
             break;
         }
+        case C_TXN: {
+            // expect_txn STATE: this save's escrow record (0 none, 1 prepared).
+            unsigned rec = rd32(p, symAddr("gSaveBlock3Ptr")) + symValue("harness.dealOffset");
+            unsigned st = rd8(p, rec);
+            if (st != c->value) { out("[p%d] FAIL deal record state %u, expected %u (deal %04x, last %04x)\n", p->id, st, c->value, rd16(p, rec + 4), rd16(p, rec + 6)); sFailures++; }
+            else out("[p%d] ok deal record state %u (deal %04x, last %04x)\n", p->id, st, rd16(p, rec + 4), rd16(p, rec + 6));
+            advance = true;
+            break;
+        }
+        case C_SLOT: {
+            // fixture_slot SLOT SPECIES [HELD]: give an occupied party slot a
+            // new species, held item and personality (re-encrypted, checksum
+            // fixed), so a fixture party holds distinct Pokemon.
+            static const char* order[24] = {"GAEM","GAME","GEAM","GEMA","GMAE","GMEA","AGEM","AGME","AEGM","AEMG","AMGE","AMEG",
+                                             "EGAM","EGMA","EAGM","EAMG","EMGA","EMAG","MGAE","MGEA","MAGE","MAEG","MEGA","MEAG"};
+            unsigned mon = partyMon(0, c->size), pid = rd32(p, mon), ot = rd32(p, mon + 4), key = pid ^ ot;
+            unsigned w[12], sub[4][3];
+            for (int i = 0; i < 12; i++) w[i] = rd32(p, mon + 32 + i * 4) ^ key;
+            for (int t = 0; t < 4; t++) {
+                int pos = (int)(strchr(order[pid % 24], "GAEM"[t]) - order[pid % 24]);
+                for (int k = 0; k < 3; k++) sub[t][k] = w[pos * 3 + k];
+            }
+            sub[0][0] = (sub[0][0] & ~0x7FFu) | (c->value & 0x7FF);
+            if (c->frames >= 0) sub[0][0] = (sub[0][0] & ~(0x3FFu << 16)) | (((unsigned)c->frames & 0x3FF) << 16);
+            unsigned npid = pid ^ (0x00010001u * (c->size + 1)) ^ (c->value << 8);
+            unsigned nkey = npid ^ ot, sum = 0;
+            for (int t = 0; t < 4; t++) {
+                int pos = (int)(strchr(order[npid % 24], "GAEM"[t]) - order[npid % 24]);
+                for (int k = 0; k < 3; k++) {
+                    sum += (sub[t][k] & 0xFFFF) + (sub[t][k] >> 16);
+                    p->core->busWrite32(p->core, mon + 32 + (pos * 3 + k) * 4, sub[t][k] ^ nkey);
+                }
+            }
+            p->core->busWrite32(p->core, mon, npid);
+            p->core->busWrite16(p->core, mon + 28, sum & 0xFFFF);
+            out("[p%d] fixture slot %d species %u held %d\n", p->id, c->size, c->value, c->frames);
+            advance = true;
+            break;
+        }
         case C_SIX:
             for (unsigned slot = 1; slot < 6; slot++)
                 for (unsigned off = 0; off < 100; off++)
@@ -1725,6 +1806,25 @@ static void loadScript(const char* path, int depth) {
             c.size = atoi(a);
             c.addr = strtoul(b, NULL, 0);
             c.value = strtoul(d, NULL, 0);
+        } else if (!strcmp(cmd, "expect_txn")) {
+            c.kind = C_TXN;
+            c.value = strtoul(a, NULL, 0);
+        } else if (!strcmp(cmd, "fixture_slot")) {
+            c.kind = C_SLOT;
+            c.size = atoi(a);
+            c.value = strtoul(b, NULL, 0);
+            c.frames = n >= 5 ? (int)strtoul(d, NULL, 0) : -1;
+        } else if (!strcmp(cmd, "expect_species")) {
+            c.kind = C_SPECIES;
+            c.size = atoi(a);
+            c.value = strtoul(b, NULL, 0);
+        } else if (!strcmp(cmd, "note_party") || !strcmp(cmd, "expect_party_same")) {
+            c.kind = !strcmp(cmd, "note_party") ? C_NOTE_PARTY : C_SAME_PARTY;
+        } else if (!strcmp(cmd, "patch_ret")) {
+            c.kind = C_PATCH_RET;
+            c.addr = symAddr(a);
+            c.frames = n >= 4 ? atoi(b) : 0;
+            snprintf(c.text, sizeof(c.text), "%s", a);
         } else if (!strcmp(cmd, "fixture_six")) {
             c.kind = C_SIX;
         } else if (!strcmp(cmd, "expect_move") || !strcmp(cmd, "expect_no_move")) {

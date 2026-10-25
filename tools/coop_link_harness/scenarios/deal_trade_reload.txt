@@ -1,0 +1,16 @@
+# Continue the two saves deal_trade.txt wrote: the traded and evolved
+# Pokemon are in the saved parties, no escrow is left, and the pair links.
+include continue.inc
+b expect_txn 0
+b expect_mons_intact
+b expect_no_copies
+0 expect_species 5 261
+1 expect_species 5 68
+# Face north first: relink.inc taps A, which must not reach the partner.
+b press UP 1
+b wait 20
+include relink.inc
+b expect coop.sLinkState 2
+b wait 300
+b expect_txn 0
+b expect coop_deal.sDeal 0

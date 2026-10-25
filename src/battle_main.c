@@ -2051,7 +2051,7 @@ static void EndLinkBattleInSteps(void)
 
             for (i = 0; i < battlerCount && (gLinkPlayers[i].version & 0xFF) == VERSION_EMERALD; i++);
 
-            if (!gSaveBlock2Ptr->frontier.disableRecordBattle && i == battlerCount && !(gBattleTypeFlags & BATTLE_TYPE_COOP))
+            if (!gSaveBlock2Ptr->frontier.disableRecordBattle && i == battlerCount && !COOP_SESSION_LINK_BATTLE())
             {
                 if (FlagGet(FLAG_SYS_FRONTIER_PASS))
                 {
@@ -2783,6 +2783,8 @@ static void BattleMainCB1(void)
 {
     if (gBattleTypeFlags & BATTLE_TYPE_COOP && HasLinkErrorOccurred())
         Coop_AbortBattle();
+    else if (gCoopFriendlyBattle && HasLinkErrorOccurred())
+        CoopDeal_AbortFriendlyBattle();
     gBattleMainFunc();
     for (enum BattlerId battler = 0; battler < gBattlersCount; battler++)
         gBattlerControllerFuncs[battler](battler);

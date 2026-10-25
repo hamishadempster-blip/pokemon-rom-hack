@@ -55,9 +55,9 @@
 #include "field_effect_helpers.h"
 #include "constants/field_effects.h"
 #include "field_effect.h"
+#include "coop_deal.h"
 
 #define COOP_INVITE_MAGIC 0xC0A1
-#define COOP_MON_MAGIC    0xC0B0
 #define COOP_SAVE_MAGIC   0xC0
 #define COOP_ACK_TIMEOUT  600
 // A wild encounter has the screen frozen while it waits, and the guest
@@ -75,7 +75,7 @@
 // need time to say yes. 30 seconds at 60 frames.
 #define COOP_LINK_WAIT_LIMIT 1800
 #define COOP_CASE_NONE    0xFF
-#define COOP_SAVE_LAYOUT  1
+#define COOP_SAVE_LAYOUT  2
 // A ledger is re-sent this often while linked, so a dropped block heals.
 #define COOP_STORY_RESEND 300
 
@@ -95,14 +95,6 @@ struct CoopInvite
     u16 aux;
     u16 seq;
     u16 checksum;
-};
-
-struct CoopMonBlock
-{
-    u16 magic;
-    u8 slot;
-    u8 pad;
-    struct Pokemon mon;
 };
 
 enum
@@ -171,10 +163,6 @@ static EWRAM_DATA u8 sProposedCase = 0;
 static EWRAM_DATA u8 sClaim = 0;
 static EWRAM_DATA u8 sWaitKind = 0;
 static EWRAM_DATA u8 sRescueEcho = 0;
-static EWRAM_DATA u8 sTradeSlot = 0;
-static EWRAM_DATA u8 sTradeSent = FALSE;
-static EWRAM_DATA u8 sTradeGot = FALSE;
-static EWRAM_DATA struct Pokemon sTradeMon = {0};
 static EWRAM_DATA struct Pokemon sPartySnap[PARTY_SIZE] = {0};
 static EWRAM_DATA struct CoopInvite sInvite = {0};
 static EWRAM_DATA const u8 *sPendingMessage = NULL;
@@ -245,7 +233,6 @@ static const u8 sText_BeaconQueued[] = _("The request waits until this\nbattle o
 static const u8 sText_BeaconSent[] = _("Asking your partner.\nBoth of you have to agree.{PAUSE_UNTIL_PRESS}");
 static const u8 sText_CallingPartner[] = _("Calling your partner over…\nB: battle alone.");
 
-STATIC_ASSERT(sizeof(struct CoopMonBlock) <= BLOCK_BUFFER_SIZE, CoopTradeBlockFitsLinkBlock);
 STATIC_ASSERT(COOP_BATTLE_SLOTS == MULTI_PARTY_SIZE, CoopFieldsTheStockMultiHalf);
 STATIC_ASSERT(COOP_ROSTER_SLOTS == PARTY_SIZE, CoopSnapshotCoversWholeParty);
 STATIC_ASSERT(COOP_PAIR_LEFT_ID == TRAINER_RICK, CoopPairLeftIsRick);
@@ -304,7 +291,30 @@ static struct CoopSave *CoopSave(void)
         save->unused[0] = 0;
         save->unused[1] = 0;
     }
+    // Layout 2: escrow record, partner Pokedex cache, battle speed, rewards.
+    if (save->layout < 2)
+    {
+        save->layout = 2;
+        memset(&save->deal, 0, sizeof(save->deal));
+        save->deal.outSlot = 0xFF;
+        save->partnerDexOtId = 0;
+        memset(save->partnerDexName, 0, sizeof(save->partnerDexName));
+        save->partnerDexName[0] = EOS;
+        save->partnerDexHours = 0;
+        save->partnerDexMinutes = 0;
+        save->partnerDexValid = FALSE;
+        memset(save->partnerCaught, 0, sizeof(save->partnerCaught));
+        save->battleSpeed = 0;
+        save->questFlags = 0;
+        memset(save->rewardsClaimed, 0, sizeof(save->rewardsClaimed));
+        memset(save->dealHistory, 0, sizeof(save->dealHistory));
+    }
     return save;
+}
+
+struct CoopSave *Coop_GetSave(void)
+{
+    return CoopSave();
 }
 
 u16 Coop_IsLevelCapOn(void)
@@ -1513,14 +1523,6 @@ static void Coop_HandleInvite(u32 playerId, const struct CoopInvite *invite)
     Coop_LaunchBattle(TRUE);
 }
 
-static void Coop_HandleMonBlock(u32 playerId, const struct CoopMonBlock *block)
-{
-    if (playerId == GetMultiplayerId() || block->magic != COOP_MON_MAGIC)
-        return;
-    sTradeMon = block->mon;
-    sTradeGot = TRUE;
-}
-
 static void Coop_PollBlocks(void)
 {
     u8 status = GetBlockReceivedStatus();
@@ -1533,8 +1535,8 @@ static void Coop_PollBlocks(void)
             u16 magic = gBlockRecvBuffer[i][0];
             if (magic == COOP_INVITE_MAGIC)
                 Coop_HandleInvite(i, (const struct CoopInvite *)gBlockRecvBuffer[i]);
-            else if (magic == COOP_MON_MAGIC)
-                Coop_HandleMonBlock(i, (const struct CoopMonBlock *)gBlockRecvBuffer[i]);
+            else if (magic == COOP_DEAL_MAGIC)
+                CoopDeal_HandleBlock(i, gBlockRecvBuffer[i]);
             else if (magic == COOP_STORY_MAGIC)
                 Coop_HandleStoryMsg(i, (const struct CoopStoryMsg *)gBlockRecvBuffer[i]);
             else
@@ -1732,38 +1734,6 @@ static void Coop_PollScriptWaits(void)
     }
 }
 
-static void Coop_PollTrade(void)
-{
-    struct CoopMonBlock block;
-
-    if (sTradeSlot == 0xFF || !Coop_SessionActive())
-    {
-        sTradeSent = FALSE;
-        sTradeGot = FALSE;
-        return;
-    }
-    if (!sPartnerValid || sPartner.request != COOP_REQ_TRADE_YES || sRequest != COOP_REQ_TRADE_YES)
-        return;
-    if (!sTradeSent && !gLinkTransferringData)
-    {
-        memset(&block, 0, sizeof(block));
-        block.magic = COOP_MON_MAGIC;
-        block.slot = sTradeSlot;
-        block.mon = gParties[B_TRAINER_PLAYER][sTradeSlot];
-        if (SendBlock(BitmaskAllOtherLinkPlayers(), &block, sizeof(block)))
-            sTradeSent = TRUE;
-    }
-    if (sTradeSent && sTradeGot && GetMonData(&sTradeMon, MON_DATA_SPECIES) != SPECIES_NONE)
-    {
-        gParties[B_TRAINER_PLAYER][sTradeSlot] = sTradeMon;
-        sTradeSlot = 0xFF;
-        sTradeSent = FALSE;
-        sTradeGot = FALSE;
-        sRequest = COOP_REQ_NONE;
-        sPendingMessage = Coop_EventScript_TradeDone;
-    }
-}
-
 static void Coop_MaintainCallback(void)
 {
     if (!gMain.inBattle && gReceivedRemoteLinkPlayers && !gLinkTransferringData && gLinkCallback == NULL)
@@ -1850,12 +1820,12 @@ static void Coop_PollHandshake(void)
             gCoopHoldLink = TRUE;
             sLinkErrorStreak = 0;
             sRescueDone = FALSE;
-            sTradeSlot = 0xFF;
             sRivalFightStage = 0xFF;
             sProposedCase = COOP_CASE_NONE;
             sClaim = COOP_CASE_NONE;
             gLinkCallback = Coop_LinkCallback;
             SetSuppressLinkErrorMessage(TRUE);
+            CoopDeal_OnSessionStart();
         }
         break;
     }
@@ -1917,7 +1887,7 @@ static void Coop_NoteLinkHealth(void)
     if (sLinkState != COOP_LINK_UP)
         return;
     // A co-op fight still needs a real error to reach the battle abort.
-    if (gMain.inBattle && (gBattleTypeFlags & BATTLE_TYPE_COOP))
+    if (gMain.inBattle && COOP_SESSION_LINK_BATTLE())
         return;
 
     // Transport error bits and idle serial words are not a peer heartbeat.
@@ -1968,7 +1938,6 @@ static void Coop_Drop(const u8 *message)
     sWaitingAck = FALSE;
     sResumeScript = FALSE;
     sRequest = COOP_REQ_NONE;
-    sTradeSlot = 0xFF;
     memset(&sBeacon, 0, sizeof(sBeacon));
     sBeaconQueued = 0;
     sBeaconPrompted = 0;
@@ -2018,7 +1987,7 @@ static void Task_CoopSession(u8 taskId)
         Coop_PollBlocks();
         Coop_PollRescue();
         Coop_PollScriptWaits();
-        Coop_PollTrade();
+        CoopDeal_Poll();
         Coop_PollBeacon();
         Coop_PollInviteTimeout();
         Coop_PollStory();
@@ -2124,6 +2093,7 @@ void Coop_SettlePartner(void)
 
 void Coop_OverworldFrame(void)
 {
+    CoopDeal_FieldFrame();
     Coop_PollSharedItems();
     if (sLinkState != COOP_LINK_IDLE || sPendingMessage != NULL)
         Coop_EnsureTask();
@@ -2318,7 +2288,7 @@ bool8 Coop_BeaconActive(void)
 
 static bool8 Coop_InteractionBusy(void)
 {
-    return sProgressPending || sInBattle || gMain.inBattle || sTradeSlot != 0xFF || sTradeSent || sWaitingAck || sWaitKind != 0 || sGuestPairPending;
+    return sProgressPending || sInBattle || gMain.inBattle || CoopDeal_Busy() || sWaitingAck || sWaitKind != 0 || sGuestPairPending;
 }
 
 static void Coop_SyncBeaconRequest(void)
@@ -2848,33 +2818,6 @@ u16 Coop_RequestLabWarp(void)
     Coop_QueueInvite(COOP_KIND_WARP, 0, 0, 0, 0);
     sWaitingAck = FALSE;
     Coop_SendInvite();
-    return TRUE;
-}
-
-bool8 Coop_OfferTrade(u8 slot)
-{
-    u8 i, usable = 0;
-    struct Pokemon *mon;
-
-    if (!Coop_SessionActive() || slot >= PARTY_SIZE)
-        return FALSE;
-    mon = &gParties[B_TRAINER_PLAYER][slot];
-    if (GetMonData(mon, MON_DATA_SPECIES) == SPECIES_NONE || GetMonData(mon, MON_DATA_IS_EGG))
-        return FALSE;
-    for (i = 0; i < PARTY_SIZE; i++)
-    {
-        if (GetMonData(&gParties[B_TRAINER_PLAYER][i], MON_DATA_SPECIES) != SPECIES_NONE
-         && !GetMonData(&gParties[B_TRAINER_PLAYER][i], MON_DATA_IS_EGG)
-         && GetMonData(&gParties[B_TRAINER_PLAYER][i], MON_DATA_HP) != 0)
-            usable++;
-    }
-    if (usable <= 1 && GetMonData(mon, MON_DATA_HP) != 0)
-        return FALSE;
-    sTradeSlot = slot;
-    sTradeSent = FALSE;
-    sTradeGot = FALSE;
-    sRequest = COOP_REQ_TRADE_YES;
-    sSlot = slot;
     return TRUE;
 }
 
@@ -4003,6 +3946,24 @@ static u16 Coop_StorageFree(void)
         }
     }
     return free;
+}
+
+u16 Coop_PcFreeSlots(void)
+{
+    return Coop_StorageFree();
+}
+
+// The partner is linked, sending frames, and on this map.
+bool8 Coop_DealPartnerHere(void)
+{
+    return sLinkState == COOP_LINK_UP && sPartnerValid && Coop_PartnerOnSameMap() && sUnlinkTimer == 0;
+}
+
+// Anything else in co-op that a trade or friendly battle must wait for.
+bool8 Coop_OtherInteractionBusy(void)
+{
+    return sProgressPending || sInBattle || gMain.inBattle || sWaitingAck || sWaitKind != 0
+        || sGuestPairPending || sJoinLaunchPending || gCoopBattleLaunching || sPendingMessage != NULL;
 }
 
 bool8 Coop_HasCatchRoom(void)

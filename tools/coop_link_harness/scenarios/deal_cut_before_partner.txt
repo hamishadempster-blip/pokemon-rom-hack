@@ -1,0 +1,11 @@
+# Power cut on both games while player 0's escrow is saved and player 1 has
+# confirmed but not escrowed. deal_cut_before_partner_reload.txt continues.
+include deal_setup.inc
+0 fixture_six
+0 fixture_slot 1 67
+1 fixture_six
+1 fixture_slot 1 261
+include deal_split.inc
+0 expect_species 1 256
+0 expect gPartiesCount 5
+1 expect_species 1 261

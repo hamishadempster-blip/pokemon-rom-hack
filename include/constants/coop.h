@@ -26,4 +26,48 @@
 #define COOP_RIVAL_SOREN         1
 #define COOP_RIVAL_MIRA          2
 
+// Partner interaction (src/coop_deal.c). Deal kinds, also used by scripts.
+#define COOP_DEAL_NONE        0
+#define COOP_DEAL_BATTLE      1
+#define COOP_DEAL_TRADE       2
+#define COOP_DEAL_GIVE_MON    3
+#define COOP_DEAL_GIVE_ITEM   4
+
+// Escrow record states in the save. Append only.
+#define COOP_TXN_NONE         0
+#define COOP_TXN_PREPARED     1
+
+// Results a deal script reads from VAR_RESULT.
+#define COOP_DEAL_OK          0
+#define COOP_DEAL_DECLINED    1
+#define COOP_DEAL_BUSY        2
+#define COOP_DEAL_NO_ROOM     3
+#define COOP_DEAL_CANCELLED   4
+#define COOP_DEAL_LOST        5   // the link dropped or the partner left
+#define COOP_DEAL_PENDING     6   // an earlier transfer is still settling
+#define COOP_DEAL_INVALID     7   // the offer is no longer valid
+#define COOP_DEAL_TIMEOUT     8
+
+// Friendly battle rules, packed in one byte: format bit 0, level bits 1-2,
+// team size bits 3-4, unrestricted bit 5.
+#define COOP_RULE_DOUBLES     (1 << 0)
+#define COOP_RULE_LEVEL_SHIFT 1
+#define COOP_RULE_LEVEL_ACTUAL 0
+#define COOP_RULE_LEVEL_50    1
+#define COOP_RULE_LEVEL_100   2
+#define COOP_RULE_SIZE_SHIFT  3
+#define COOP_RULE_SIZE_3      0
+#define COOP_RULE_SIZE_4      1
+#define COOP_RULE_SIZE_6      2
+#define COOP_RULE_OPEN        (1 << 5)
+
+// Fast battle options (CoopSave.battleSpeed). Bit 0: skip move animations.
+// Bit 1: shorter message pauses. Shared battles use what both games allow.
+#define COOP_SPEED_NO_ANIMS   (1 << 0)
+#define COOP_SPEED_SHORT_TEXT (1 << 1)
+
+// Per-save rewards (CoopSave.rewardsClaimed bit numbers). Append only.
+#define COOP_REWARD_PP_WATTSON   0   // Power Problems: Wattson's reward
+#define COOP_REWARD_PP_CHAMBER   1   // Power Problems: the hidden chamber
+
 #endif // GUARD_CONSTANTS_COOP_H
