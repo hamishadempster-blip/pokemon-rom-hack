@@ -1281,6 +1281,19 @@ static void Coop_HideCallingMessage(void)
         HideFieldMessageBox();
 }
 
+static bool8 Coop_IsTwinTrialTrainer(u16 trainerId)
+{
+    switch (trainerId)
+    {
+    case TRAINER_BT_ROUND1_SOL:
+    case TRAINER_BT_ROUND2_EMBER:
+    case TRAINER_BT_FINAL_LUMEN:
+    case TRAINER_BT_REPEAT_LUMEN:
+        return TRUE;
+    }
+    return FALSE;
+}
+
 static void Coop_LaunchBattle(bool8 isGuest)
 {
     if (!isGuest)
@@ -1315,6 +1328,11 @@ static void Coop_LaunchBattle(bool8 isGuest)
         LockPlayerFieldControls();
         FreezeObjectEvents();
         StopPlayerAvatar();
+        // The Twin Trial restores both teams before every round. The host's
+        // heal message can land while this side is still leaving the last
+        // round, so the joining side heals here too, before its team is sent.
+        if (Coop_IsTwinTrialTrainer(TRAINER_BATTLE_PARAM.opponentA))
+            HealPlayerParty();
     }
     BattleSetup_StartTrainerBattle();
 }
@@ -2103,6 +2121,17 @@ static EWRAM_DATA u8 sFieldFreeFrames = 0;
 static EWRAM_DATA u8 sFreeBeforeScript = 0;
 #define COOP_PARTNER_TALK_SETTLE 20
 
+// The partner's position in this map's grid (with MAP_OFFSET, like
+// currentCoords), when linked and on the same map.
+bool8 Coop_PartnerMapPos(s16 *x, s16 *y)
+{
+    if (!sPartnerValid || !Coop_PartnerOnSameMap())
+        return FALSE;
+    *x = sPartner.x;
+    *y = sPartner.y;
+    return TRUE;
+}
+
 // The partner's sprite on this map (and gender), or MAX_SPRITES.
 u8 Coop_PartnerSpriteId(u8 *gender)
 {
@@ -2474,11 +2503,42 @@ static u8 Coop_RivalStageFromId(u16 trainerId)
     }
 }
 
+// The optional quests' trainers (rival spars and exhibition, SLAG, the Twin
+// Trial): never "meant for both", whatever their class, so each player can
+// fight them alone while linked. Their duos are offered by the scripts.
+static bool8 Coop_IsOptionalQuestTrainer(u16 trainerId)
+{
+    switch (trainerId)
+    {
+    case TRAINER_TWIN_SPAR_1:
+    case TRAINER_TWIN_SPAR_2:
+    case TRAINER_TWIN_EXH_SOREN:
+    case TRAINER_TWIN_EXH_MIRA:
+    case TRAINER_CC_CHIEF:
+    case TRAINER_CC_GRUNT_SKIFF:
+    case TRAINER_CC_GRUNT_BARREL:
+    case TRAINER_DC_RAIDER_DUNE:
+    case TRAINER_DC_RAIDER_MESA:
+    case TRAINER_BT_ROUND1_SOL:
+    case TRAINER_BT_ROUND1_LUNA:
+    case TRAINER_BT_ROUND2_EMBER:
+    case TRAINER_BT_ROUND2_FROST:
+    case TRAINER_BT_FINAL_LUMEN:
+    case TRAINER_BT_FINAL_UMBRA:
+    case TRAINER_BT_REPEAT_LUMEN:
+    case TRAINER_BT_REPEAT_UMBRA:
+        return TRUE;
+    }
+    return FALSE;
+}
+
 static bool8 Coop_ClassRequiresPartner(u16 trainerId)
 {
     enum TrainerClassID cls;
 
     if (trainerId == TRAINER_NONE || trainerId >= TRAINERS_COUNT || IsSpecialTrainer(trainerId))
+        return FALSE;
+    if (Coop_IsOptionalQuestTrainer(trainerId))
         return FALSE;
     cls = GetTrainerClassFromId(trainerId);
     return cls == TRAINER_CLASS_LEADER
@@ -3105,6 +3165,7 @@ static u16 Coop_LocalStory(void)
         done |= 1 << COOP_STORY_RIVAL_MET;
     if (VarGet(VAR_NEW_MAUVILLE_STATE) >= 2)
         done |= 1 << COOP_STORY_POWER_RESTORED;
+    done |= CoopQuest_LocalMilestones();
     return done;
 }
 
@@ -3155,6 +3216,7 @@ void Coop_ApplyPendingStory(void)
 {
     struct CoopSave *save = CoopSave();
     u16 pending;
+    u8 id;
 
     // FLAG_RESCUED_BIRCH is set before starter selection, so require the
     // completed route state as well. Do not touch Birch's later field NPC.
@@ -3174,6 +3236,9 @@ void Coop_ApplyPendingStory(void)
         save->storyApplied |= 1 << COOP_STORY_RIVAL_MET;
     if ((pending & (1 << COOP_STORY_POWER_RESTORED)) && CoopQuest_ApplyPowerRestored())
         save->storyApplied |= 1 << COOP_STORY_POWER_RESTORED;
+    for (id = COOP_STORY_SHOAL_RESCUED; id < COOP_STORY_COUNT; id++)
+        if ((pending & (1 << id)) && CoopQuest_ApplyMilestone(id))
+            save->storyApplied |= 1 << id;
 }
 
 static void Coop_SendStory(u8 kind, u8 scene)

@@ -171,9 +171,25 @@ Coop_EventScript_AskToggleCap::
 
 @ This save's quests: what is done, what is next, and what the partner did.
 Coop_EventScript_MenuJournal::
+	dynmultichoice 13, 1, FALSE, 6, 0, DYN_MULTICHOICE_CB_NONE, Coop_Text_JrnPower, Coop_Text_JrnShoal, Coop_Text_JrnCaravan, Coop_Text_JrnTwins, Coop_Text_JrnCoast, Coop_Text_JrnBeacon, Coop_Text_OptBack
+	goto_if_ge VAR_RESULT, 6, Coop_EventScript_MenuBack
+	copyvar VAR_0x8004, VAR_RESULT
 	special CoopQuest_BufferJournal
 	msgbox gStringVar4, MSGBOX_DEFAULT
 	goto Coop_EventScript_MenuBack
+
+Coop_Text_JrnPower:
+	.string "POWER PROBLEMS$"
+Coop_Text_JrnShoal:
+	.string "MISSING RESEARCHER$"
+Coop_Text_JrnCaravan:
+	.string "DESERT CARAVAN$"
+Coop_Text_JrnTwins:
+	.string "SEPARATE AMBITIONS$"
+Coop_Text_JrnCoast:
+	.string "COASTAL CLEANUP$"
+Coop_Text_JrnBeacon:
+	.string "BEACON HISTORY$"
 
 @ Not linked: the partner catches cached from the last link, if any.
 Coop_EventScript_MenuOfflineDex::

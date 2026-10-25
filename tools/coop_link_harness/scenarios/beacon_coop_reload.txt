@@ -1,0 +1,11 @@
+# beacon_coop.txt's saves after a power cycle (both players): the shrine
+# stays solved and the trial won on both saves; one capsule each.
+include continue.inc
+include relink.inc
+b expect coop.sLinkState 2
+b no_wild 1
+b expect_flag 0x2B8 1
+b expect_flag 0x2B9 1
+b expect_flag 0x2BA 1
+b expect_flag 0x4A1 1
+b expect_item 0 79 1

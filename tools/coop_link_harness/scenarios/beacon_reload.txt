@@ -1,0 +1,28 @@
+# beacon_solo.txt's save after a power cycle (player 0): the passage, the
+# gates and the sanctum stay open, the style stays GOLD, the trial prize is
+# not given twice.
+include continue.inc
+0 no_wild 1
+0 expect_flag 0x2BA 1
+0 expect_flag 0x2BB 1
+0 expect_var 0x40DB 1
+0 fixture_warp 24 73 7 4
+0 until_field 3000
+0 walk 7 3 1000
+0 press UP 30
+0 until_field 3000
+0 wait 30
+0 expect_map 24 109
+0 walk 8 21 2000
+0 press UP 30
+0 until_field 3000
+0 wait 30
+0 walk 8 7 3000
+0 press UP 2
+0 wait 20
+0 press A 2
+0 until_task Task_HandleScrollingMultichoiceInput 3000 B
+0 wait 20
+0 press B 2
+0 mash_field 3000 B
+0 expect_item 0 79 1

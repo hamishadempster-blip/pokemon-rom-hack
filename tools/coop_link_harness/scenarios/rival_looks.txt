@@ -44,5 +44,11 @@ b wait 60
 b shot looks-battle-intro-b
 b wait 90
 b shot looks-battle-intro-c
+b wait 120
+b shot looks-battle-intro-d
+b wait 120
+b shot looks-battle-intro-e
+b wait 120
+b shot looks-battle-intro-f
 b mash_field 35000
 b expect gBattleOutcome 1

@@ -1400,7 +1400,7 @@ void ConfigureApproachingFacilityTrainerBattle(struct ApproachingTrainer *approa
 bool32 GetTrainerFlagFromScriptPointer(const u8 *data)
 {
     TrainerBattleParameter *temp = (TrainerBattleParameter*)(data + TRAINERBATTLE_OPCODE_OFFSET);
-    return FlagGet(TRAINER_FLAGS_START + temp->params.opponentA);
+    return HasTrainerBeenFought(temp->params.opponentA);
 }
 
 bool32 GetRematchFromScriptPointer(const u8 *data)
@@ -1438,7 +1438,7 @@ bool8 GetTrainerFlag(void)
     else if (InTrainerHill())
         return GetHillTrainerFlag(gSelectedObjectEvent);
     else
-        return FlagGet(GetTrainerAFlag());
+        return HasTrainerBeenFought(TRAINER_BATTLE_PARAM.opponentA);
 }
 
 static void SetBattledTrainersFlags(void)
@@ -1451,9 +1451,12 @@ static void SetBattledTrainersFlags(void)
             FlagSet(GetTrainerBFlag());
         return;
     }
-    if (TRAINER_BATTLE_PARAM.opponentB != 0)
+    // Parties at or above MAX_TRAINERS_COUNT have no flag (their scripts
+    // keep their own state): setting one would write a system flag.
+    if (TRAINER_BATTLE_PARAM.opponentB != 0 && TRAINER_BATTLE_PARAM.opponentB < MAX_TRAINERS_COUNT)
         FlagSet(GetTrainerBFlag());
-    FlagSet(GetTrainerAFlag());
+    if (TRAINER_BATTLE_PARAM.opponentA < MAX_TRAINERS_COUNT)
+        FlagSet(GetTrainerAFlag());
 }
 
 static void UNUSED SetBattledTrainerFlag(void)
@@ -1461,19 +1464,25 @@ static void UNUSED SetBattledTrainerFlag(void)
     FlagSet(GetTrainerAFlag());
 }
 
+// Trainer ids at or above MAX_TRAINERS_COUNT have no flag: never fought as
+// far as flags go, and setting or clearing does nothing.
 bool8 HasTrainerBeenFought(u16 trainerId)
 {
+    if (trainerId >= MAX_TRAINERS_COUNT)
+        return FALSE;
     return FlagGet(TRAINER_FLAGS_START + trainerId);
 }
 
 void SetTrainerFlag(u16 trainerId)
 {
-    FlagSet(TRAINER_FLAGS_START + trainerId);
+    if (trainerId < MAX_TRAINERS_COUNT)
+        FlagSet(TRAINER_FLAGS_START + trainerId);
 }
 
 void ClearTrainerFlag(u16 trainerId)
 {
-    FlagClear(TRAINER_FLAGS_START + trainerId);
+    if (trainerId < MAX_TRAINERS_COUNT)
+        FlagClear(TRAINER_FLAGS_START + trainerId);
 }
 
 void BattleSetup_StartTrainerBattle(void)

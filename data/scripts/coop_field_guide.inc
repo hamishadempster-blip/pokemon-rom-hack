@@ -44,9 +44,10 @@ Coop_EventScript_FieldGuideMenu::
 	dynmultipush Coop_Text_FG_Name34, 34
 	dynmultipush Coop_Text_FG_Name35, 35
 	dynmultipush Coop_Text_FG_Name36, 36
-	dynmultipush gText_Cancel, 37
+	dynmultipush Coop_Text_FG_Name37, 37
+	dynmultipush gText_Cancel, 38
 	dynmultistack 17, 1, FALSE, 6, FALSE, 0, DYN_MULTICHOICE_CB_NONE
-	goto_if_ge VAR_RESULT, 37, Coop_EventScript_FieldGuideBye
+	goto_if_ge VAR_RESULT, 38, Coop_EventScript_FieldGuideBye
 	goto_if_eq VAR_RESULT, 0, Coop_EventScript_FG_0
 	goto_if_eq VAR_RESULT, 1, Coop_EventScript_FG_1
 	goto_if_eq VAR_RESULT, 2, Coop_EventScript_FG_2
@@ -84,6 +85,7 @@ Coop_EventScript_FieldGuideMenu::
 	goto_if_eq VAR_RESULT, 34, Coop_EventScript_FG_34
 	goto_if_eq VAR_RESULT, 35, Coop_EventScript_FG_35
 	goto_if_eq VAR_RESULT, 36, Coop_EventScript_FG_36
+	goto_if_eq VAR_RESULT, 37, Coop_EventScript_FG_37
 	goto Coop_EventScript_FieldGuideBye
 Coop_EventScript_FG_0:
 	msgbox Coop_Text_FG_Where0, MSGBOX_DEFAULT
@@ -233,6 +235,10 @@ Coop_EventScript_FG_36:
 	msgbox Coop_Text_FG_Where36, MSGBOX_DEFAULT
 	msgbox Coop_Text_FG_Evo36, MSGBOX_DEFAULT
 	goto Coop_EventScript_FieldGuideMenu
+Coop_EventScript_FG_37:
+	msgbox Coop_Text_FG_Where37, MSGBOX_DEFAULT
+	msgbox Coop_Text_FG_Evo37, MSGBOX_DEFAULT
+	goto Coop_EventScript_FieldGuideMenu
 Coop_EventScript_FieldGuideBye::
 	msgbox Coop_Text_FieldGuideBye, MSGBOX_DEFAULT
 	release
@@ -346,14 +352,15 @@ Coop_Text_FG_Evo13:
 Coop_Text_FG_Name14:
 	.string "SCRAGGY$"
 Coop_Text_FG_Where14:
-	.string "The ROUTE 111 desert.$"
+	.string "The ROUTE 111 desert and the\n"
+	.string "SANDBURIED RUINS.$"
 Coop_Text_FG_Evo14:
 	.string "Level 39: SCRAFTY.$"
 Coop_Text_FG_Name15:
 	.string "MUDBRAY$"
 Coop_Text_FG_Where15:
-	.string "The ROUTE 111 desert, ROUTE 112,\n"
-	.string "and JAGGED PASS.$"
+	.string "The ROUTE 111 desert, the SANDBURIED\n"
+	.string "RUINS, ROUTE 112 and JAGGED PASS.$"
 Coop_Text_FG_Evo15:
 	.string "Level 30: MUDSDALE.$"
 Coop_Text_FG_Name16:
@@ -385,8 +392,8 @@ Coop_Text_FG_Evo19:
 Coop_Text_FG_Name20:
 	.string "SKRELP$"
 Coop_Text_FG_Where20:
-	.string "Surf on ROUTES 105 and 109. SUPER\n"
-	.string "ROD on ROUTES 108 and 109.$"
+	.string "Surf on ROUTES 105 and 109. Any rod\n"
+	.string "on ROUTE 109 and in DEWFORD once\lROUTE 109 is cleaned up.$"
 Coop_Text_FG_Evo20:
 	.string "Level 48: DRAGALGE.$"
 Coop_Text_FG_Name21:
@@ -401,7 +408,7 @@ Coop_Text_FG_Name22:
 	.string "GRIMER$"
 Coop_Text_FG_Where22:
 	.string "ALOLAN GRIMER: surf in SLATEPORT\n"
-	.string "harbour and under ROUTE 110.$"
+	.string "harbour and under ROUTE 110. Two\lcrawl on ROUTE 109 until it is clean.$"
 Coop_Text_FG_Evo22:
 	.string "Level 38: ALOLAN MUK.$"
 Coop_Text_FG_Name23:
@@ -429,10 +436,10 @@ Coop_Text_FG_Name26:
 	.string "VULPIX$"
 Coop_Text_FG_Where26:
 	.string "ALOLAN VULPIX: the SHOAL CAVE ice\n"
-	.string "rooms at low tide.$"
+	.string "rooms at low tide, and one by the\lladder once Dr. ISLA is safe.$"
 Coop_Text_FG_Evo26:
 	.string "An ICE STONE: ALOLAN NINETALES.\n"
-	.string "LILYCOVE and MOSSDEEP sell them.$"
+	.string "Dr. ISLA gives one a day at SHOAL\lCAVE. LILYCOVE also sells them.$"
 Coop_Text_FG_Name27:
 	.string "LARVESTA$"
 Coop_Text_FG_Where27:
@@ -491,16 +498,23 @@ Coop_Text_FG_Evo34:
 	.string "An UP-GRADE: PORYGON2. A DUBIOUS\n"
 	.string "DISC: PORYGON-Z. MAUVILLE sells both.$"
 Coop_Text_FG_Name35:
-	.string "COTTONEE$"
+	.string "SIGILYPH$"
 Coop_Text_FG_Where35:
-	.string "ROUTE 117. PETILIL: ROUTE 123.$"
+	.string "The sealed chamber of the\n"
+	.string "SANDBURIED RUINS. Its glyphs open it.$"
 Coop_Text_FG_Evo35:
+	.string "It does not evolve.$"
+Coop_Text_FG_Name36:
+	.string "COTTONEE$"
+Coop_Text_FG_Where36:
+	.string "ROUTE 117. PETILIL: ROUTE 123.$"
+Coop_Text_FG_Evo36:
 	.string "A SUN STONE: WHIMSICOTT or\n"
 	.string "LILLIGANT. VERDANTURF and LILYCOVE.$"
-Coop_Text_FG_Name36:
+Coop_Text_FG_Name37:
 	.string "LITWICK$"
-Coop_Text_FG_Where36:
+Coop_Text_FG_Where37:
 	.string "MT. PYRE. HONEDGE: ALTERING CAVE.$"
-Coop_Text_FG_Evo36:
+Coop_Text_FG_Evo37:
 	.string "LAMPENT and DOUBLADE need a\n"
 	.string "DUSK STONE from LILYCOVE.$"

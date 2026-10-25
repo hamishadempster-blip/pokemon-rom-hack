@@ -129,6 +129,7 @@ void Coop_MarkDuoLegends(void);
 void Nurse_NoteHeal(void);
 bool8 Coop_IsRivalGraphics(u16 gfx);
 u8 Coop_PartnerSpriteId(u8 *gender);
+bool8 Coop_PartnerMapPos(s16 *x, s16 *y);
 u16 Coop_BufferCapText(void);
 u16 Coop_BufferUnlinkedMenu(void);
 u16 Coop_BufferBeaconStatus(void);

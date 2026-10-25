@@ -1,0 +1,113 @@
+# Coastal Cleanup, linked (story_seg6 saves: player 0 Brendan, player 1
+# May), Twin Beacon on. Player 0 hears MARLIN; player 1 finds the sheen and
+# player 0 the other clues (live, shared). The crew asks player 0 for a
+# duo, both fight as a co-op multi battle, and both saves record both
+# grunts. Player 1 beats SLAG while player 0 is in Slateport: player 0 gets
+# the clean beach at its next map change (catch-up) and both are paid once.
+# FIXTURES: fixture_warp along the beach and to Slateport; strong cached
+# battle stats; no random wild battles.
+include deal_setup.inc
+include beacon_menu_on.inc
+b no_wild 1
+b smart_moves 1
+b strong_battlers 600
+0 fixture_warp 0 24 10 9
+1 fixture_warp 0 24 10 12
+b until_field 3000
+b sync
+0 press UP 2
+0 wait 20
+0 press A 2
+0 mash_field 4000
+1 press LEFT 2
+1 wait 20
+1 press A 2
+1 mash_field 2000
+b sync
+b wait 120
+b expect_var 0x40A8 1
+0 fixture_warp 0 24 13 20
+0 until_field 3000
+0 press UP 2
+0 wait 20
+0 press A 2
+0 mash_field 2000
+0 fixture_warp 0 24 10 11
+0 until_field 3000
+0 press LEFT 2
+0 wait 20
+0 press A 2
+0 mash_field 2000
+b sync
+b wait 120
+b expect_var 0x40A8 7
+0 expect_var 0x40A1 2
+# The crew: player 0 at SKIFF, player 1 beside.
+0 fixture_warp 0 24 9 8
+1 fixture_warp 0 24 11 8
+b until_field 3000
+0 walk 9 7 1000
+b sync
+b wait 60
+0 press UP 2
+0 wait 20
+0 press A 2
+0 wait 120
+0 shot coast-duo-ask
+0 press A 2
+1 until_cb2 BattleMainCB2 8000 A
+0 until_cb2 BattleMainCB2 8000 A
+b expect gBattlersCount 4
+b expect coop.sInBattle 1
+b mash_field 30000
+b expect gBattleOutcome 1
+b mash_field 3000
+b sync
+b expect_flag 0x738 1
+b expect_flag 0x745 1
+0 expect_var 0x40A1 3
+0 expect_no_object 27
+# Player 1 (clues known from the partner) beats SLAG; player 0 waits in
+# Slateport.
+0 fixture_warp 0 1 19 21
+0 until_field 3000
+1 fixture_warp 0 24 9 5
+1 until_field 3000
+1 expect_no_object 27
+1 walk 9 4 1000
+1 press UP 2
+1 wait 20
+1 press A 2
+1 until_cb2 BattleMainCB2 8000 A
+1 mash_field 25000
+1 expect gBattleOutcome 1
+1 mash_field 4000
+1 expect_var 0x40A1 5
+b sync
+b wait 240
+0 expect_var 0x40A1 3
+0 fixture_warp 0 24 10 9
+0 until_field 3000
+b sync
+0 expect_var 0x40A1 5
+0 expect_flag 0x2AE 1
+0 expect_no_object 29
+0 expect_no_object 31
+0 expect_object 33 9 9
+0 shot coast-p0-catchup
+# Both at MARLIN: player 0 below him, player 1 to his right.
+1 fixture_warp 0 24 11 9
+1 until_field 3000
+1 walk 11 8 1000
+b sync
+1 press LEFT 2
+0 press UP 2
+b wait 20
+b press A 2
+b mash_field 4000
+b expect_item 1 16 5
+b expect_item 0 427 1
+b press A 2
+b mash_field 3000
+b expect_item 1 16 5
+include save_continue.inc

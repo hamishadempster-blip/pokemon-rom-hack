@@ -1,0 +1,9 @@
+# shoal_coop.txt's saves after a power cycle (both players, relinked): the
+# rescue stays on both saves, each has its gifts once, and talking to ISLA
+# again gives no second gift.
+include continue.inc
+include relink.inc
+b expect coop.sLinkState 2
+b no_wild 1
+b expect_var 0x4083 3
+b expect_item 0 458 2

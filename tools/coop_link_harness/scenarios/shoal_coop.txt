@@ -1,0 +1,108 @@
+# Shoal Cave, The Missing Researcher, linked (story_seg6 saves: player 0
+# Brendan, player 1 May). Clues found by either show on both saves live
+# (and the found object goes); player 1 is offline for one clue and the
+# link merges it back. Player 1 rescues ISLA while player 0 is in another
+# room: player 0 gets the rescue at its next map change (catch-up), and
+# each player is paid exactly once, even talking to her at the same time.
+# FIXTURES: fixture_warp between rooms; no wild battles.
+include deal_setup.inc
+b no_wild 1
+0 fixture_warp 24 46 9 28
+1 fixture_warp 24 46 4 26
+b until_field 3000
+b sync
+# Player 1 hears PIERS; player 0 takes the thermometer. Both see it.
+1 press UP 2
+1 wait 20
+1 press A 2
+1 mash_field 4000
+0 press RIGHT 2
+0 wait 20
+0 press A 2
+0 mash_field 2000
+b sync
+b wait 120
+b expect_var 0x408B 1
+b expect_flag 0x29B 1
+1 expect_var 0x4083 1
+# Unlink (CO-OP, UNLINK); player 1 takes the notes offline.
+include unlink.inc
+b sync
+1 fixture_warp 24 47 41 27
+1 until_field 3000
+1 press UP 2
+1 wait 20
+1 press A 2
+1 mash_field 3000
+1 expect_var 0x408B 3
+0 expect_var 0x408B 1
+# Relink: the notes merge into player 0's save.
+b sync
+include relink.inc
+b wait 240
+0 expect_var 0x408B 3
+0 expect_flag 0x29C 1
+# Player 0 brings the radio clue; player 1 rescues ISLA (player 0 is in the
+# lower room).
+0 fixture_warp 24 49 28 9
+0 until_field 3000
+0 press UP 2
+0 wait 20
+0 press A 2
+0 mash_field 2000
+b sync
+b wait 120
+1 expect_var 0x408B 7
+1 fixture_warp 24 83 13 8
+1 until_field 3000
+1 press RIGHT 2
+1 wait 20
+1 press A 2
+1 until_map 24 46 4000 A
+1 until_field 3000
+1 mash_field 1500
+1 expect_var 0x4083 3
+b sync
+b wait 240
+# Player 0 has not changed map yet: its state is still from before.
+0 expect_var 0x4083 1
+0 fixture_warp 24 46 5 28
+0 until_field 3000
+b sync
+0 expect_var 0x4083 3
+0 expect_flag 0x2A1 1
+0 expect_flag 0x29E 1
+b sync
+# Both at ISLA together: player 1 below her (5,27), player 0 left of her
+# (4,26).
+1 walk 5 27 1000
+0 walk 4 27 2000
+0 walk 4 26 1000
+b sync
+0 press RIGHT 2
+1 press UP 2
+b wait 20
+0 shot coop-isla-p0
+b press A 2
+b mash_field 4000
+b expect_item 0 215 2
+b expect_item 0 458 2
+# Talk again: the daily stone only (not the gift twice).
+b press A 2
+b mash_field 3000
+b expect_item 0 215 3
+b expect_item 0 458 2
+b shot coop-after-gifts
+# Save both for the reload check.
+b press START 2
+b wait 60
+b menu_to SAVE
+b press A 2
+b wait 50
+b press A 2
+b wait 250
+b press A 2
+b wait 300
+b press A 2
+b wait 40
+b mash_field 600 B

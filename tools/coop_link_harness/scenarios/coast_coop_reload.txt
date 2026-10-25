@@ -1,0 +1,11 @@
+# coast_coop.txt's saves after a power cycle (both players, relinked): the
+# clean beach and both grunts stay on both saves; each reward once.
+include continue.inc
+include relink.inc
+b expect coop.sLinkState 2
+b no_wild 1
+b expect_var 0x40A1 5
+b expect_flag 0x738 1
+b expect_flag 0x745 1
+0 expect_item 0 427 1
+1 expect_item 1 16 5

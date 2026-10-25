@@ -1,3 +1,13 @@
 ShoalCave_LowTideIceRoom_MapScripts::
+	map_script MAP_SCRIPT_ON_TRANSITION, ShoalCave_LowTideIceRoom_OnTransition
+	map_script MAP_SCRIPT_ON_RESUME, ShoalCave_LowTideIceRoom_OnResume
 	.byte 0
+
+ShoalCave_LowTideIceRoom_OnTransition:
+	call ShoalCave_EventScript_SetIslaVisibility
+	end
+
+ShoalCave_LowTideIceRoom_OnResume:
+	call_if_set FLAG_SYS_CTRL_OBJ_DELETE, ShoalCave_EventScript_TryRemoveVulpix
+	end
 

@@ -486,9 +486,115 @@ MauvilleCity_EventScript_PowerShop3::
 MauvilleCity_EventScript_PowerShop4::
 	pokemart MauvilleCity_Pokemart_PowerShop4
 MauvilleCity_EventScript_PowerShopEnd::
+	call MauvilleCity_EventScript_QuestGoods
 	msgbox gText_PleaseComeAgain, MSGBOX_DEFAULT
 	release
 	end
+
+@ Goods from the optional quests: each finished quest adds its own stall.
+MauvilleCity_EventScript_QuestGoods::
+	setvar VAR_0x8008, 0
+	call_if_ge VAR_SHOAL_QUEST, SHOAL_RESCUED, MauvilleCity_EventScript_PushIceGoods
+	call_if_ge VAR_COAST_QUEST, COAST_CLEAN, MauvilleCity_EventScript_PushSeaGoods
+	call_if_ge VAR_CARAVAN_QUEST, CARAVAN_MERCHANT, MauvilleCity_EventScript_PushSandGoods
+	call_if_set FLAG_SHRINE_SOLVED, MauvilleCity_EventScript_PushShrineGoods
+	goto_if_eq VAR_0x8008, 0, Common_EventScript_NopReturn
+	msgbox MauvilleCity_Text_QuestGoodsAsk, MSGBOX_YESNO
+	goto_if_eq VAR_RESULT, NO, MauvilleCity_EventScript_QuestGoodsSkip
+	dynmultipush MauvilleCity_Text_GoodsDone, 9
+	message MauvilleCity_Text_QuestGoodsWhich
+	waitmessage
+	dynmultistack 17, 1, FALSE, 5, FALSE, 0, DYN_MULTICHOICE_CB_NONE
+	switch VAR_RESULT
+	case 1, MauvilleCity_EventScript_IceGoods
+	case 2, MauvilleCity_EventScript_SeaGoods
+	case 3, MauvilleCity_EventScript_SandGoods
+	case 4, MauvilleCity_EventScript_ShrineGoods
+	return
+
+MauvilleCity_EventScript_QuestGoodsSkip::
+	return
+
+MauvilleCity_EventScript_PushIceGoods::
+	dynmultipush MauvilleCity_Text_GoodsIce, 1
+	setvar VAR_0x8008, 1
+	return
+MauvilleCity_EventScript_PushSeaGoods::
+	dynmultipush MauvilleCity_Text_GoodsSea, 2
+	setvar VAR_0x8008, 1
+	return
+MauvilleCity_EventScript_PushSandGoods::
+	dynmultipush MauvilleCity_Text_GoodsSand, 3
+	setvar VAR_0x8008, 1
+	return
+MauvilleCity_EventScript_PushShrineGoods::
+	dynmultipush MauvilleCity_Text_GoodsShrine, 4
+	setvar VAR_0x8008, 1
+	return
+
+MauvilleCity_EventScript_IceGoods::
+	pokemart MauvilleCity_Pokemart_IceGoods
+	return
+MauvilleCity_EventScript_SeaGoods::
+	pokemart MauvilleCity_Pokemart_SeaGoods
+	return
+MauvilleCity_EventScript_SandGoods::
+	pokemart MauvilleCity_Pokemart_SandGoods
+	return
+MauvilleCity_EventScript_ShrineGoods::
+	pokemart MauvilleCity_Pokemart_ShrineGoods
+	return
+
+	.align 2
+MauvilleCity_Pokemart_IceGoods:
+	.2byte ITEM_ICE_STONE
+	.2byte ITEM_SNOWBALL
+	.2byte ITEM_NEVER_MELT_ICE
+	.2byte ITEM_ICY_ROCK
+	pokemartlistend
+
+	.align 2
+MauvilleCity_Pokemart_SeaGoods:
+	.2byte ITEM_LURE_BALL
+	.2byte ITEM_NET_BALL
+	.2byte ITEM_DIVE_BALL
+	.2byte ITEM_MYSTIC_WATER
+	.2byte ITEM_PRISM_SCALE
+	pokemartlistend
+
+	.align 2
+MauvilleCity_Pokemart_SandGoods:
+	.2byte ITEM_SOFT_SAND
+	.2byte ITEM_SMOOTH_ROCK
+	.2byte ITEM_HEAT_ROCK
+	.2byte ITEM_SAFETY_GOGGLES
+	pokemartlistend
+
+	.align 2
+MauvilleCity_Pokemart_ShrineGoods:
+	.2byte ITEM_DAWN_STONE
+	.2byte ITEM_DUSK_STONE
+	.2byte ITEM_SHINY_STONE
+	.2byte ITEM_LIGHT_CLAY
+	pokemartlistend
+
+MauvilleCity_Text_QuestGoodsAsk:
+	.string "Word of your travels got around.\n"
+	.string "Want to see the goods it brought?$"
+
+MauvilleCity_Text_QuestGoodsWhich:
+	.string "Which stall?$"
+
+MauvilleCity_Text_GoodsIce:
+	.string "ICE GOODS$"
+MauvilleCity_Text_GoodsSea:
+	.string "SEA GOODS$"
+MauvilleCity_Text_GoodsSand:
+	.string "DESERT GOODS$"
+MauvilleCity_Text_GoodsShrine:
+	.string "BEACON GOODS$"
+MauvilleCity_Text_GoodsDone:
+	.string "NO THANKS$"
 
 	.align 2
 MauvilleCity_Pokemart_PowerShop1:

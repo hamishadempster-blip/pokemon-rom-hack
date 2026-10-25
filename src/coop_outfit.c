@@ -38,6 +38,7 @@
 #include "malloc.h"
 #include "menu.h"
 #include "palette.h"
+#include "constants/rgb.h"
 #include "script.h"
 #include "sound.h"
 #include "sprite.h"
@@ -48,6 +49,8 @@
 #include "trainer_pokemon_sprites.h"
 #include "window.h"
 #include "constants/coop.h"
+#include "constants/flags.h"
+#include "constants/vars.h"
 #include "constants/event_objects.h"
 #include "constants/songs.h"
 #include "constants/trainers.h"
@@ -58,6 +61,7 @@ enum { KIND_OW, KIND_REFLECTION, KIND_TRAINER };
 
 #define TAG_MARKER_TILES   0xC0B3
 #define TAG_PARTNER_BACK   0xC0B4
+#define TAG_MARKER_PAL     0xC0B5
 
 static EWRAM_DATA u8 sPartnerOutfit = 0;
 static EWRAM_DATA u8 sPartnerGender = MALE;
@@ -71,7 +75,9 @@ static EWRAM_DATA u8 sShownPartner = 0;       // (gender << 4) | outfit
 // Checked against its template before use, so 0 at boot is safe.
 static EWRAM_DATA u8 sMarkerSpriteId = 0;
 static EWRAM_DATA u8 sMarkerTimer = 0;
-EWRAM_DATA bool8 gCoopMarkerShown = FALSE;   // the partner marker is on screen (read by tests)
+EWRAM_DATA bool8 gCoopMarkerShown = FALSE;
+EWRAM_DATA bool8 gCoopCompassShown = FALSE;  // the edge compass is on screen (read by tests)
+static EWRAM_DATA u8 sShownStyle = 0;        // marker palette style + 1 last loaded   // the partner marker is on screen (read by tests)
 
 static u8 Base(u8 gender)
 {
@@ -204,8 +210,7 @@ void CoopOutfit_OnSessionStart(void)
 // ------------------------------------------------------------ partner marker
 
 static const u32 sMarkerTiles[] = {
-    // 8x8, 4bpp: a small down arrow in the partner palette's white (14)
-    // with a black (15) outline.
+    // Tile 0, 8x8 4bpp: a small down arrow (14 fill, 15 outline).
     0x0FFFFFFF,
     0x0FEEEEEF,
     0x00FEEEF0,
@@ -214,9 +219,28 @@ static const u32 sMarkerTiles[] = {
     0x00000000,
     0x00000000,
     0x00000000,
+    // Tile 1: a diamond, the compass at the screen edge.
+    0x0000F000,
+    0x000FEF00,
+    0x00FEDEF0,
+    0x0FEDDDEF,
+    0x00FEDEF0,
+    0x000FEF00,
+    0x0000F000,
+    0x00000000,
 };
 
 static const struct SpriteSheet sMarkerSheet = {sMarkerTiles, sizeof(sMarkerTiles), TAG_MARKER_TILES};
+
+// The marker's own palette: CLASSIC, then the Beacon styles the Twin Beacon
+// shrine unlocks. Index 13 highlight, 14 fill, 15 outline.
+#define RGB_(r, g, b) RGB((r) >> 3, (g) >> 3, (b) >> 3)
+static const u16 sMarkerPals[BEACON_STYLE_COUNT][16] = {
+    { [13] = RGB_(200, 200, 216), [14] = RGB_(255, 255, 255), [15] = RGB_(16, 16, 24) },
+    { [13] = RGB_(255, 246, 180), [14] = RGB_(255, 206, 66), [15] = RGB_(120, 72, 0) },
+    { [13] = RGB_(200, 236, 255), [14] = RGB_(98, 180, 255), [15] = RGB_(16, 48, 128) },
+    { [13] = RGB_(255, 214, 230), [14] = RGB_(255, 128, 180), [15] = RGB_(128, 24, 72) },
+};
 
 static const struct OamData sMarkerOam = {
     .shape = SPRITE_SHAPE(8x8),
@@ -226,7 +250,7 @@ static const struct OamData sMarkerOam = {
 
 static const struct SpriteTemplate sMarkerTemplate = {
     .tileTag = TAG_MARKER_TILES,
-    .paletteTag = OBJ_EVENT_PAL_TAG_COOP_PARTNER,
+    .paletteTag = TAG_MARKER_PAL,
     .oam = &sMarkerOam,
     .anims = gDummySpriteAnimTable,
     .images = NULL,
@@ -247,6 +271,15 @@ static void RemoveMarker(void)
     sMarkerSpriteId = MAX_SPRITES;
 }
 
+static u8 MarkerStyle(void)
+{
+    u16 style = VarGet(VAR_BEACON_STYLE);
+
+    if (!FlagGet(FLAG_SHRINE_LORE_READ) || style >= BEACON_STYLE_COUNT)
+        return 0;
+    return style;
+}
+
 static bool8 WantMarker(u8 gender)
 {
     switch (MarkerMode())
@@ -261,33 +294,102 @@ static bool8 WantMarker(u8 gender)
     }
 }
 
-static void UpdateMarker(void)
+static struct Sprite *EnsureMarker(void)
 {
-    u8 gender;
-    u8 partnerSprite = Coop_PartnerSpriteId(&gender);
-    struct Sprite *partner, *marker;
+    struct SpritePalette pal;
+    u8 slot;
 
-    if (partnerSprite >= MAX_SPRITES || !WantMarker(gender)
-     || IndexOfSpritePaletteTag(OBJ_EVENT_PAL_TAG_COOP_PARTNER) == 0xFF)
-    {
-        RemoveMarker();
-        gCoopMarkerShown = FALSE;
-        return;
-    }
+    pal.data = sMarkerPals[MarkerStyle()];
+    pal.tag = TAG_MARKER_PAL;
+    slot = IndexOfSpritePaletteTag(TAG_MARKER_PAL);
+    if (slot == 0xFF)
+        slot = LoadSpritePalette(&pal);
+    else if (sShownStyle != MarkerStyle() + 1)
+        LoadSpritePaletteInSlot(&pal, slot);
+    if (slot == 0xFF)
+        return NULL;
+    sShownStyle = MarkerStyle() + 1;
     if (!MarkerAlive())
     {
         if (GetSpriteTileStartByTag(TAG_MARKER_TILES) == 0xFFFF)
             LoadSpriteSheet(&sMarkerSheet);
         sMarkerSpriteId = CreateSprite(&sMarkerTemplate, 0, 0, 0);
         if (sMarkerSpriteId >= MAX_SPRITES)
+            return NULL;
+    }
+    gSprites[sMarkerSpriteId].oam.paletteNum = slot;
+    return &gSprites[sMarkerSpriteId];
+}
+
+static void HideMarker(void)
+{
+    RemoveMarker();
+    gCoopMarkerShown = FALSE;
+    gCoopCompassShown = FALSE;
+}
+
+// Over the partner's head: when looks match (AUTO), or ALWAYS. With the
+// shrine's compass, a diamond at the screen edge points to a partner on
+// this map who is out of sight.
+static void UpdateMarker(void)
+{
+    u8 gender;
+    u8 partnerSprite = Coop_PartnerSpriteId(&gender);
+    struct Sprite *partner, *marker;
+    s16 px, py, dx, dy;
+    bool8 offScreen;
+
+    gCoopCompassShown = FALSE;
+    // Out of sight: no sprite, or a sprite beyond the 15x10 tile screen.
+    offScreen = partnerSprite >= MAX_SPRITES;
+    if (Coop_PartnerMapPos(&px, &py))
+    {
+        dx = px - gObjectEvents[gPlayerAvatar.objectEventId].currentCoords.x;
+        dy = py - gObjectEvents[gPlayerAvatar.objectEventId].currentCoords.y;
+        if (dx < -7 || dx > 7 || dy < -5 || dy > 4)
+            offScreen = TRUE;
+    }
+    else
+    {
+        dx = dy = 0;
+    }
+    if (offScreen)
+    {
+        if (!FlagGet(FLAG_SHRINE_LORE_READ) || MarkerMode() == COOP_MARKER_OFF
+         || !Coop_PartnerMapPos(&px, &py) || ArePlayerFieldControlsLocked())
         {
-            gCoopMarkerShown = FALSE;
+            HideMarker();
             return;
         }
+        marker = EnsureMarker();
+        if (marker == NULL)
+            return;
+        marker->oam.tileNum = GetSpriteTileStartByTag(TAG_MARKER_TILES) + 1;
+        marker->coordOffsetEnabled = FALSE;
+        marker->x = 120 + dx * 16;
+        marker->y = 80 + dy * 16;
+        if (marker->x < 6) marker->x = 6;
+        if (marker->x > DISPLAY_WIDTH - 6) marker->x = DISPLAY_WIDTH - 6;
+        if (marker->y < 6) marker->y = 6;
+        if (marker->y > DISPLAY_HEIGHT - 6) marker->y = DISPLAY_HEIGHT - 6;
+        marker->invisible = ((++sMarkerTimer >> 4) & 3) == 0;
+        gCoopMarkerShown = FALSE;
+        gCoopCompassShown = TRUE;
+        return;
+    }
+    if (!WantMarker(gender))
+    {
+        HideMarker();
+        return;
+    }
+    marker = EnsureMarker();
+    if (marker == NULL)
+    {
+        gCoopMarkerShown = FALSE;
+        return;
     }
     partner = &gSprites[partnerSprite];
-    marker = &gSprites[sMarkerSpriteId];
-    marker->oam.paletteNum = IndexOfSpritePaletteTag(OBJ_EVENT_PAL_TAG_COOP_PARTNER);
+    marker->oam.tileNum = GetSpriteTileStartByTag(TAG_MARKER_TILES);
     // Map coordinates, like the object sprites (camera offset applied).
     marker->coordOffsetEnabled = partner->coordOffsetEnabled;
     marker->x = partner->x + partner->x2;

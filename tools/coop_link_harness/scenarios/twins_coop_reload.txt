@@ -1,0 +1,15 @@
+# twins_coop.txt's saves after a power cycle (both players): the
+# exhibition is won on both saves, each has both gifts once, and the twins
+# have left Littleroot.
+include continue.inc
+include relink.inc
+b expect coop.sLinkState 2
+b no_wild 1
+b expect_flag 0x4A0 1
+b expect_var 0x409D 0x1FF
+b expect_item 0 477 1
+b expect_item 0 463 1
+0 fixture_warp 0 9 10 19
+1 fixture_warp 0 9 11 19
+b until_field 3000
+b expect_flag 0x2B6 1

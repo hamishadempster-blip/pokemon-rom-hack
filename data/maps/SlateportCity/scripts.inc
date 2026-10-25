@@ -4,6 +4,7 @@ SlateportCity_MapScripts::
 	.byte 0
 
 SlateportCity_OnTransition:
+	special CoopQuest_TwinUpdateFlags
 	setvar VAR_SLATEPORT_MUSEUM_1F_STATE, 0
 	call SlateportCity_EventScript_EnterSlateport
 	call_if_eq VAR_SLATEPORT_CITY_STATE, 1, SlateportCity_EventScript_MovePeopleForSternInterview

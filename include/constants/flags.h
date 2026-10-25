@@ -719,39 +719,39 @@
 #define FLAG_HIDE_PP_SHOP  0x298 // Power Problems: the POWER SHOP clerk in Mauville (shown after)
 #define FLAG_PP_BRIEFED  0x299 // Power Problems: Wattson explained the breakers
 #define FLAG_PP_LOG_READ  0x29A // Power Problems: the maintenance log (breaker order) was read
-#define FLAG_UNUSED_0x29B  0x29B // Unused Flag
-#define FLAG_UNUSED_0x29C  0x29C // Unused Flag
-#define FLAG_UNUSED_0x29D  0x29D // Unused Flag
-#define FLAG_UNUSED_0x29E  0x29E // Unused Flag
-#define FLAG_UNUSED_0x29F  0x29F // Unused Flag
-#define FLAG_UNUSED_0x2A0  0x2A0 // Unused Flag
-#define FLAG_UNUSED_0x2A1  0x2A1 // Unused Flag
-#define FLAG_UNUSED_0x2A2  0x2A2 // Unused Flag
-#define FLAG_UNUSED_0x2A3  0x2A3 // Unused Flag
-#define FLAG_UNUSED_0x2A4  0x2A4 // Unused Flag
-#define FLAG_UNUSED_0x2A5  0x2A5 // Unused Flag
-#define FLAG_UNUSED_0x2A6  0x2A6 // Unused Flag
-#define FLAG_UNUSED_0x2A7  0x2A7 // Unused Flag
-#define FLAG_UNUSED_0x2A8  0x2A8 // Unused Flag
-#define FLAG_UNUSED_0x2A9  0x2A9 // Unused Flag
-#define FLAG_UNUSED_0x2AA  0x2AA // Unused Flag
-#define FLAG_UNUSED_0x2AB  0x2AB // Unused Flag
-#define FLAG_UNUSED_0x2AC  0x2AC // Unused Flag
-#define FLAG_UNUSED_0x2AD  0x2AD // Unused Flag
-#define FLAG_UNUSED_0x2AE  0x2AE // Unused Flag
-#define FLAG_UNUSED_0x2AF  0x2AF // Unused Flag
-#define FLAG_UNUSED_0x2B0  0x2B0 // Unused Flag
-#define FLAG_UNUSED_0x2B1  0x2B1 // Unused Flag
-#define FLAG_UNUSED_0x2B2  0x2B2 // Unused Flag
-#define FLAG_UNUSED_0x2B3  0x2B3 // Unused Flag
-#define FLAG_UNUSED_0x2B4  0x2B4 // Unused Flag
-#define FLAG_UNUSED_0x2B5  0x2B5 // Unused Flag
-#define FLAG_UNUSED_0x2B6  0x2B6 // Unused Flag
-#define FLAG_UNUSED_0x2B7  0x2B7 // Unused Flag
-#define FLAG_UNUSED_0x2B8  0x2B8 // Unused Flag
-#define FLAG_UNUSED_0x2B9  0x2B9 // Unused Flag
-#define FLAG_UNUSED_0x2BA  0x2BA // Unused Flag
-#define FLAG_UNUSED_0x2BB  0x2BB // Unused Flag
+#define FLAG_SHOAL_CLUE_THERMO_TAKEN 0x29B // Shoal Cave researcher: thermometer clue picked up (hides it)
+#define FLAG_SHOAL_CLUE_NOTES_TAKEN 0x29C // Shoal Cave researcher: notes clue
+#define FLAG_SHOAL_CLUE_RADIO_TAKEN 0x29D // Shoal Cave researcher: radio clue
+#define FLAG_HIDE_SHOAL_ISLA_ICE 0x29E // Shoal Cave researcher in the ice room
+#define FLAG_HIDE_SHOAL_ISLA_ENTRANCE 0x29F // Shoal Cave researcher at the entrance (set on transition)
+#define FLAG_HIDE_SHOAL_VULPIX 0x2A0 // Shoal Cave: this save's Alolan Vulpix in the ice room
+#define FLAG_SHOAL_CATCHUP 0x2A1 // Shoal Cave: the partner rescued the researcher first
+#define FLAG_HIDE_CARAVAN_CRATE_1 0x2A2 // Desert caravan: supply crates in the ruins
+#define FLAG_HIDE_CARAVAN_CRATE_2 0x2A3 // see above
+#define FLAG_HIDE_CARAVAN_CRATE_3 0x2A4 // see above
+#define FLAG_CARAVAN_CHAMBER_OPEN 0x2A5 // Desert caravan: the ruins' sealed chamber is open
+#define FLAG_HIDE_CARAVAN_SIGILYPH 0x2A6 // Desert caravan: this save's Sigilyph in the chamber
+#define FLAG_CARAVAN_CATCHUP 0x2A7 // Desert caravan: the partner resupplied the caravan first
+#define FLAG_CARAVAN_TABLETS_READ 0x2A8 // Desert caravan: chamber tablets read
+#define FLAG_HIDE_CARAVAN_CAMP 0x2A9 // Desert caravan: camp NPCs (set on transition)
+#define FLAG_HIDE_COAST_POLLUTION 0x2AA // Coastal cleanup: drums and sludge (set on transition)
+#define FLAG_HIDE_COAST_GRIMER_1 0x2AB // Coastal cleanup: this save's Alolan Grimer
+#define FLAG_HIDE_COAST_GRIMER_2 0x2AC // see above
+#define FLAG_HIDE_COAST_GRUNTS 0x2AD // Coastal cleanup: the dumping crew (set on transition)
+#define FLAG_COAST_CATCHUP 0x2AE // Coastal cleanup: the partner finished it first
+#define FLAG_HIDE_COAST_CLEAN_NPCS 0x2AF // Coastal cleanup: fishers back on the beach (set on transition)
+#define FLAG_HIDE_TWIN_S1  0x2B0 // Twin arcs: meeting NPCs (set on transition)
+#define FLAG_HIDE_TWIN_S2  0x2B1 // see above
+#define FLAG_HIDE_TWIN_S3  0x2B2 // see above
+#define FLAG_HIDE_TWIN_M1  0x2B3 // see above
+#define FLAG_HIDE_TWIN_M2  0x2B4 // see above
+#define FLAG_HIDE_TWIN_M3  0x2B5 // see above
+#define FLAG_HIDE_TWIN_EXHIBITION 0x2B6 // Twin arcs: the exhibition pair in Littleroot (set on transition)
+#define FLAG_SHRINE_FOUND  0x2B7 // Twin Beacon: the shrine passage in the Scorched Slab is open
+#define FLAG_SHRINE_GATE_PLATES 0x2B8 // Twin Beacon: the twin plates opened their gate
+#define FLAG_SHRINE_GATE_LANTERNS 0x2B9 // Twin Beacon: the twin lanterns
+#define FLAG_SHRINE_SOLVED 0x2BA // Twin Beacon: the sanctum door is open
+#define FLAG_SHRINE_LORE_READ 0x2BB // Twin Beacon: lore read; Beacon styles and compass unlocked
 
 // Event Flags
 #define FLAG_HIDE_ROUTE_101_BIRCH_STARTERS_BAG                      0x2BC
@@ -1222,21 +1222,21 @@
 #define FLAG_ITEM_SAFARI_ZONE_NORTH_EAST_NUGGET                     0x491
 #define FLAG_ITEM_SAFARI_ZONE_SOUTH_EAST_BIG_PEARL                  0x492
 
-#define FLAG_UNUSED_0x493                                           0x493 // Unused Flag
-#define FLAG_UNUSED_0x494                                           0x494 // Unused Flag
-#define FLAG_UNUSED_0x495                                           0x495 // Unused Flag
-#define FLAG_UNUSED_0x496                                           0x496 // Unused Flag
-#define FLAG_UNUSED_0x497                                           0x497 // Unused Flag
-#define FLAG_UNUSED_0x498                                           0x498 // Unused Flag
-#define FLAG_UNUSED_0x499                                           0x499 // Unused Flag
-#define FLAG_UNUSED_0x49A                                           0x49A // Unused Flag
-#define FLAG_UNUSED_0x49B                                           0x49B // Unused Flag
-#define FLAG_UNUSED_0x49C                                           0x49C // Unused Flag
-#define FLAG_UNUSED_0x49D                                           0x49D // Unused Flag
-#define FLAG_UNUSED_0x49E                                           0x49E // Unused Flag
-#define FLAG_UNUSED_0x49F                                           0x49F // Unused Flag
-#define FLAG_UNUSED_0x4A0                                           0x4A0 // Unused Flag
-#define FLAG_UNUSED_0x4A1                                           0x4A1 // Unused Flag
+#define FLAG_SHRINE_RIDDLE_SEEN                                     0x493 // Twin Beacon: riddle door read
+#define FLAG_COAST_SHEEN_SEEN                                       0x494 // Coastal cleanup: clue flags (also in VAR_COAST_CLUES)
+#define FLAG_SHOAL_VULPIX_DONE                                      0x495 // Shoal Cave: this save's Alolan Vulpix caught or gone
+#define FLAG_SHOAL_GOT_ROPE                                         0x496 // Shoal Cave: PIERS gave the Escape Rope
+#define FLAG_CARAVAN_SIGILYPH_DONE                                  0x497 // Desert caravan: Sigilyph caught or gone
+#define FLAG_COAST_GRIMER_1_DONE                                    0x498 // Coastal cleanup: Alolan Grimer met
+#define FLAG_COAST_GRIMER_2_DONE                                    0x499 // see above
+#define FLAG_HIDE_CARAVAN_RAIDERS                                   0x49A // Desert caravan: the raiders in the ruins (set on transition)
+#define FLAG_HIDE_SHRINE_KEEPERS                                    0x49B // Twin Beacon: tournament keepers (set on transition)
+#define FLAG_SHRINE_IDOL_ON_PLATE                                   0x49C // Twin Beacon: unused
+#define FLAG_TWIN_EXH_SEEN                                          0x49D // Twin arcs: exhibition invitation heard
+#define FLAG_COAST_CREW_DUO                                         0x49E // Coastal cleanup: the crew beaten as a co-op duo (set on both saves)
+#define FLAG_CARAVAN_RAIDERS_DUO                                    0x49F // Desert caravan: the raiders beaten as a co-op duo (both saves)
+#define FLAG_TWIN_EXH_WON                                           0x4A0 // Twin arcs: the exhibition won (both saves in co-op)
+#define FLAG_TOURNEY_WON                                            0x4A1 // Twin Trial: the first final won (both saves in co-op)
 #define FLAG_UNUSED_0x4A2                                           0x4A2 // Unused Flag
 #define FLAG_UNUSED_0x4A3                                           0x4A3 // Unused Flag
 #define FLAG_UNUSED_0x4A4                                           0x4A4 // Unused Flag
@@ -1574,8 +1574,8 @@
 #define FLAG_UNUSED_0x920                           (DAILY_FLAGS_START + 0x0)  // Unused Flag
 #define FLAG_DAILY_CONTEST_LOBBY_RECEIVED_BERRY     (DAILY_FLAGS_START + 0x1)
 #define FLAG_DAILY_SECRET_BASE                      (DAILY_FLAGS_START + 0x2)
-#define FLAG_UNUSED_0x923                           (DAILY_FLAGS_START + 0x3)  // Unused Flag
-#define FLAG_UNUSED_0x924                           (DAILY_FLAGS_START + 0x4)  // Unused Flag
+#define FLAG_DAILY_SHOAL_ICE_STONE                  (DAILY_FLAGS_START + 0x3)  // Shoal Cave researcher: one Ice Stone a day
+#define FLAG_DAILY_SHRINE_TOURNEY                   (DAILY_FLAGS_START + 0x4)  // Twin Beacon: repeat tournament prize, once a day
 #define FLAG_UNUSED_0x925                           (DAILY_FLAGS_START + 0x5)  // Unused Flag
 #define FLAG_UNUSED_0x926                           (DAILY_FLAGS_START + 0x6)  // Unused Flag
 #define FLAG_UNUSED_0x927                           (DAILY_FLAGS_START + 0x7)  // Unused Flag

@@ -1,0 +1,133 @@
+# Shoal Cave, The Missing Researcher: one player, not linked (story_seg6
+# save; player 1 only boots). PIERS's briefing and Escape Rope, the three
+# clues, ISLA without her radio, the rescue (warped to the entrance),
+# a full bag deferring her gift, the gift once, the daily ICE STONE, the
+# Vulpix by the ladder, and revisits. Saved for shoal_reload.txt.
+# FIXTURES: fixture_warp between rooms (Shoal Cave is far past Rustboro;
+# the sliding ice and Strength boulder are stock); no wild battles;
+# fixture_fill_pocket fills the items pocket for the deferral check.
+include continue.inc
+0 no_wild 1
+0 expect_var 0x4083 0
+# PIERS at the entrance (4,25).
+0 fixture_warp 24 46 4 26
+0 until_field 3000
+0 press UP 2
+0 wait 20
+0 press A 2
+0 mash_field 4000
+0 expect_var 0x4083 1
+0 expect_item 4 120 1
+0 shot shoal-piers
+# Thermometer (10,28).
+0 fixture_warp 24 46 9 28
+0 until_field 3000
+0 press RIGHT 2
+0 wait 20
+0 press A 2
+0 mash_field 2000
+0 expect_var 0x408B 1
+0 expect_flag 0x29B 1
+# ISLA before the radio: she asks for it.
+0 fixture_warp 24 83 13 8
+0 until_field 3000
+0 press RIGHT 2
+0 wait 20
+0 shot shoal-isla-found
+0 press A 2
+0 mash_field 3000
+0 expect_var 0x4083 2
+# Notes (41,26), inner room.
+0 fixture_warp 24 47 41 27
+0 until_field 3000
+0 press UP 2
+0 wait 20
+0 press A 2
+0 mash_field 3000
+0 expect_var 0x408B 3
+# Radio (28,8), lower room by the ice room ladder.
+0 fixture_warp 24 49 28 9
+0 until_field 3000
+0 press UP 2
+0 wait 20
+0 press A 2
+0 mash_field 2000
+0 expect_var 0x408B 7
+# The rescue: both climb out to the entrance.
+0 fixture_warp 24 83 13 8
+0 until_field 3000
+0 press RIGHT 2
+0 wait 20
+0 press A 2
+0 until_map 24 46 4000 A
+0 until_field 3000
+0 mash_field 1500
+0 expect_var 0x4083 3
+0 expect_flag 0x29E 1
+0 expect_object 4 5 26
+0 shot shoal-rescued
+# Her gift with a full items pocket: deferred, nothing claimed.
+0 fixture_fill_pocket 0
+0 press UP 2
+0 wait 20
+0 press A 2
+0 mash_field 3000
+0 expect_item 0 215 0
+0 expect coop.sLinkState 0
+0 fixture_unfill_pocket 0
+# Now the gift: 2 ICE STONES and 2 SNOWBALLS, once.
+0 press A 2
+0 mash_field 3000
+0 expect_item 0 215 2
+0 expect_item 0 458 2
+# Next talk: the daily ICE STONE; then "come back tomorrow".
+0 press A 2
+0 mash_field 3000
+0 expect_item 0 215 3
+0 expect_flag 0x923 1
+0 press A 2
+0 mash_field 3000
+0 expect_item 0 215 3
+0 expect_item 0 458 2
+# PIERS after; the Vulpix by the ice room ladder.
+0 fixture_warp 24 46 4 26
+0 until_field 3000
+0 press UP 2
+0 wait 20
+0 press A 2
+0 mash_field 2000
+0 fixture_warp 24 83 16 13
+0 until_field 3000
+0 expect_object 5 16 12
+0 expect_no_object 4
+0 shot shoal-vulpix
+# Journal page (CO-OP, JOURNAL, MISSING RESEARCHER).
+0 press START 2
+0 wait 60
+0 menu_to COOP
+0 press A 2
+0 wait 60
+0 press DOWN 2
+0 wait 20
+0 press A 2
+0 wait 60
+0 shot shoal-journal-list
+0 press DOWN 2
+0 wait 20
+0 press A 2
+0 wait 120
+0 shot shoal-journal-1
+0 mash_field 3000 B
+# Save for the reload test.
+0 press START 2
+0 wait 60
+0 menu_to SAVE
+0 press A 2
+0 wait 50
+0 press A 2
+0 wait 250
+0 press A 2
+0 wait 300
+0 press A 2
+0 wait 40
+0 mash_field 600 B

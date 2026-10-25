@@ -46,9 +46,11 @@ for s in $fresh; do run "$s"; done
 lab0="$out/save_lab/p0.sav"; lab1="$out/save_lab/p1.sav"
 for s in reconnect route102_reconnect solo_six trainer_reconnect trainer_p1 coop_six rival_story rival_p1 invite_refuse invite_busy coop_menu center_beacon link_recovery wild_route101 wild_route101_p1 battle_abort_recovery invite_timeout_recovery \
          connected_maps wild_places invite_cancel wild_run wild_simultaneous gym_teams rival_late qol \
-         solo_rival solo_gym rotom_catalog trainer_overhaul e4_sidney coop_levelup_boxes; do
+         solo_rival solo_gym rotom_catalog trainer_overhaul e4_sidney coop_levelup_boxes \
+         rival_looks outfit_same_base; do
 	run "$s" SAVE0="$lab0" SAVE1="$lab1"
 done
+run outfit_same_base_reload SAVE0="$out/outfit_same_base/p0.sav" SAVE1="$out/outfit_same_base/p1.sav"
 
 # Story run on real walking: segment 1 from the lab saves, then the
 # segments and regressions that continue segment 1's saved game.
@@ -83,6 +85,19 @@ if [ -n "${SEG6:-}" ]; then
 	run deal_dex_offline SAVE0="$out/deal_dex/p0.sav" SAVE1="$out/deal_dex/p1.sav"
 	run pp_stagger SAVE0="$out/pp_solo/p0.sav" SAVE1="$SEG6/p1.sav"
 	run pp_stagger_reload SAVE0="$out/pp_solo/p0.sav" SAVE1="$out/pp_stagger/p1.sav"
+	# Outfits on the seg6 pair, and the optional quests (solo and linked),
+	# each followed by a power-cycle reload of the save it made.
+	for s in outfit_bases shoal_solo shoal_coop coast_solo coast_coop caravan_solo caravan_coop \
+	         twins_solo twins_coop beacon_solo beacon_coop quest_goods; do
+		run "$s" SAVE0="$SEG6/p0.sav" SAVE1="$SEG6/p1.sav"
+	done
+	run outfit_bases_reload SAVE0="$out/outfit_bases/p0.sav" SAVE1="$out/outfit_bases/p1.sav"
+	for s in shoal coast caravan twins beacon; do
+		run "${s}_reload" SAVE0="$out/${s}_solo/p0.sav" SAVE1="$out/${s}_solo/p1.sav"
+	done
+	for s in shoal coast caravan twins beacon; do
+		run "${s}_coop_reload" SAVE0="$out/${s}_coop/p0.sav" SAVE1="$out/${s}_coop/p1.sav"
+	done
 fi
 
 if [ -n "${AFFECTED:-}" ]; then

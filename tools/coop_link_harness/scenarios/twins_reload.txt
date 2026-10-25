@@ -1,0 +1,19 @@
+# twins_solo.txt's save after a power cycle (player 0): every meeting and
+# the exhibition stay played, gifts are not given twice, no twin is drawn.
+include continue.inc
+0 no_wild 1
+0 expect_var 0x409D 0x1FF
+0 expect_flag 0x4A0 1
+0 expect_flag 0x2B6 1
+0 fixture_warp 0 1 12 15
+0 until_field 3000
+0 expect_flag 0x2B0 1
+0 fixture_warp 0 6 31 19
+0 until_field 3000
+0 expect_flag 0x2B2 1
+0 fixture_warp 24 46 5 27
+0 until_field 3000
+0 expect_flag 0x2B5 1
+0 expect_item 0 477 1
+0 expect_item 0 463 1
+0 expect_item 0 71 1

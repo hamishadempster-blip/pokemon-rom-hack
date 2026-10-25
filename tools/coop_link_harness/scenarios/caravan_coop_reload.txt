@@ -1,0 +1,13 @@
+# caravan_coop.txt's saves after a power cycle (both players, relinked):
+# the caravan stays resupplied and the raiders beaten on both saves; each
+# has one SAFETY GOGGLES; player 1's chamber is still its own (sealed).
+include continue.inc
+include relink.inc
+b expect coop.sLinkState 2
+b no_wild 1
+b expect_var 0x4091 3
+b expect_flag 0x5AD 1
+b expect_flag 0x6CE 1
+b expect_item 0 504 1
+0 expect_flag 0x2A5 1
+1 expect_flag 0x2A5 0

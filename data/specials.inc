@@ -739,3 +739,19 @@ gSpecials::
 	def_special CoopQuest_BufferJournal
 	def_special Coop_BufferUnlinkedMenu
 	def_special CoopOutfit_OpenMenu
+	def_special CoopQuest_SetBits
+	def_special CoopQuest_CountBits
+	def_special CoopQuest_MilestoneKnown
+	def_special CoopQuest_TwinState
+	def_special CoopQuest_TwinMark
+	def_special CoopQuest_PlatesHeld
+	def_special CoopQuest_LightLantern
+	def_special CoopQuest_DrawScorchedSlab
+	def_special CoopQuest_HasBits
+	def_special CoopQuest_PressGlyph
+	def_special CoopQuest_ApplyFoundObjects
+	def_special CoopQuest_TwinHas
+	def_special CoopQuest_TwinUpdateFlags
+	def_special CoopQuest_TrialHeal
+	def_special CoopQuest_TrialSoloBattle, 0, 1
+	def_special CoopQuest_ShareGates

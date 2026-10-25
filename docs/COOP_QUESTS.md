@@ -1,6 +1,6 @@
-# Co-op quests: foundations, Power Problems, backlog
+# Co-op quests: foundations, Power Problems, five optional quests
 
-This page covers the quest framework added in build 0xC0170131, the one quest built on it (New Mauville, "Power Problems"), and the five quests kept for later. Player-facing text for the finished quest is in [COOP.md](COOP.md#quests).
+This page covers the quest framework added in build 0xC0170131, the quest built on it then (New Mauville, "Power Problems"), and the five optional quests added in build 0xC0170132. Player-facing text is in [COOP.md](COOP.md#quests).
 
 ## 1. Foundations
 
@@ -99,21 +99,97 @@ Lilycove's evolution clerk is unchanged. The POWER SHOP reaches players earlier,
 
 Saves that finished New Mauville before this build count as "power restored": breakers green, shop open, chamber and ROTOM available. WATTSON's earlier reward stands.
 
-## 3. Backlog: five quests for later
+## 3. Five optional quests (build 0xC0170132)
 
-These are kept for later and are not part of this build. None of them is needed for this update's Pokémon or items. They are written to fit the foundations above.
+All five follow the same rules:
 
-| Quest | Place and timing | Solo path | Co-op split | Shared state | Personal rewards (ideas) |
-| --- | --- | --- | --- | --- | --- |
-| **Shoal Cave: the missing researcher** | Shoal Cave, after Surf reaches Route 125 (7 badges) | Follow her notes through the low-tide ice rooms and the high-tide pools across two tide windows | One player reads the tide gauges at high tide while the other searches the low-tide rooms; notes found by either are logged for both | Milestone "researcher found"; live sync of notes found | Never-Melt Ice or Shell Bell; her Snorunt line research unlocks a Dawn Stone hint |
-| **Desert caravan** | Route 111 desert and the Desert Underpass, with the Go-Goggles | Find the caravan's scattered pack Pokémon in the sandstorm, then escort the caravan to the ruins | One scouts the dunes while the other guards the caravan from wild ambushes; duo trainer (desert bandits) with a solo alternative | Milestone "caravan arrived"; live count of pack Pokémon found | A caravan trader (repeatable stock: Soft Sand, Heat Rock, fossils' hints); Sandile/Mudbray research note |
-| **Mira and Soren: separate ambitions** | After Lilycove, each twin's own story | Your own twin's ambition (Mira: rangers and befriending, Safari Zone and Route 120; Soren: battling, the Battle Tent and Frontier) | Each player follows their own twin; the finale can be a joint double against both twins | Rival assignment stays per save (as now); finale milestone only | Twin-themed held items, and a last twin battle each |
-| **Coastal cleanup** | Slateport beach, Routes 109, 105, Dewford | Pick up debris (hidden items) and clear Alolan Grimer from polluted water | Pickups from both players add to one shared total; tiers unlock for both | Shared counter, merged by highest reported totals per player | Tiered rewards per save (Shell Bell, Mystic Water, a beach decoration) |
-| **The Twin Beacon's history** | Birch's lab, Mossdeep Space Center, Sky Pillar | Read the archive and visit the two "beacon" sites | One player at each site lights the beacons at the same time; solo: lights one, then the other within a time window | Milestone "beacons lit" | A lore scene and a cosmetic beacon upgrade; no stat item |
+- **Solo first.** Every step can be done by one player, linked or not. No quest waits for, or needs, a second player.
+- **Shared outcome, personal rewards.** Clues, crates and inscriptions found by either player count for both (`DMSG_QUEST`, OR-merged live, and merged again on every new link). A finished quest is a ledger milestone; the other save gets it at its next map change, with a catch-up flag and a short line instead of the full scene. Each save claims its own reward once (`COOP_REWARD_*`); a full bag defers the reward and the giver keeps it.
+- **No softlocks.** Partner objects never block a critical tile (they are passable); duo fights fall back to solo if the partner can't or won't join; nothing is gated on linking, invitations or reconnection.
+- **Journal.** CO-OP, JOURNAL lists POWER PROBLEMS, MISSING RESEARCHER, DESERT CARAVAN, MIRA AND SOREN, COASTAL CLEANUP and BEACON HISTORY, each with the next step and a hint.
+- **Shops and hints.** Each finished quest opens a stall at Mauville's POWER SHOP (after its own stock): ICE GOODS (Shoal), SEA GOODS (coast), DESERT GOODS (caravan), BEACON GOODS (shrine). The field researchers' habitat guide lists the quest Pokémon (Alolan Vulpix, Alolan Grimer, Skrelp, Mudbray, Scraggy, Sigilyph).
 
-Notes for whoever picks these up:
-- Each needs a solo route that does not wait for the partner.
-- Each needs a journal page.
-- Shared facts go on the ledger, append only. Live values go on `DMSG_QUEST`, with a new `COOP_QUEST_*` id.
-- Rewards are claimed per save with a new `COOP_REWARD_*` bit.
-- Keep any new trainer on a flagged id: ids at or above 864 have no trainer flag, and `trainerbattle` on them would write system flags.
+### A. Shoal Cave: The Missing Researcher
+
+| Step | Where | Notes |
+| --- | --- | --- |
+| PIERS's briefing | Shoal Cave entrance (4,25) | Gives an ESCAPE ROPE once (if there is room). |
+| Three clues | Thermometer (entrance, 10,28); notes (inner room, 41,26); radio (lower room, 28,8) | Shared live. The found object leaves on both saves. |
+| ISLA | Ice room | Without the radio she asks for it; with all three clues, she is rescued and both walk out to the entrance. |
+| Reward | ISLA at the entrance | 2 ICE STONE, 2 SNOWBALL once per save; then one ICE STONE a day. |
+| After | Ice room ladder | This save's ALOLAN VULPIX (Lv 32), until caught. |
+
+Co-op: the rescue is the `COOP_STORY_SHOAL_RESCUED` milestone; the partner's save gets ISLA at the entrance (`FLAG_SHOAL_CATCHUP`) and its own gift.
+
+### B. The Desert Caravan
+
+| Step | Where | Notes |
+| --- | --- | --- |
+| ZAHRA's briefing | Camp, Route 111 south of the desert (31,92) | Three crates went missing in the SANDBURIED RUINS (entrance at Route 111 (29,57), Go-Goggles needed for the desert). |
+| Crates | Ruins (5,27), (11,26), (8,22) | Shared live; a partner's crate disappears on the spot. The third is guarded. |
+| Raiders DUNE and MESA | Ruins (6,23), (10,23) | Alone: one at a time. Linked, partner on the map, Beacon on: DUNE offers a duo (co-op multi battle; both saves record both). |
+| Glyph wall | (7–9,20) | SUN, STAR, MOON (a wrong press starts over). Opens this save's chamber: two tablets and a SIGILYPH (Lv 34, stays until caught). |
+| Reward | ZAHRA | SAFETY GOGGLES once per save; the caravan MERCHANT opens (daily shop: essentials, desert items; more stock at 6 badges). |
+
+Co-op: "resupplied" is `COOP_STORY_CARAVAN_SUPPLIED` (catch-up `FLAG_CARAVAN_CATCHUP`). The chamber and SIGILYPH stay personal.
+
+### C. Mira and Soren: Separate Ambitions
+
+Six meetings, each shown from a badge count once the one before it is known (played on this save or by the partner):
+
+| Twin | Meeting | Badges | Extra |
+| --- | --- | --- | --- |
+| SOREN | Slateport, by the Battle Tent (12,13) | 2 | Spar (single battle): PP UP |
+| SOREN | Fortree (3,8) | 6 | Spar: MUSCLE BAND |
+| SOREN | Mossdeep (31,17) | 7 | |
+| MIRA | Route 109 beach (13,9) | 2 | |
+| MIRA | The caravan camp, Route 111 (34,92) | 4 | |
+| MIRA | Shoal Cave entrance (5,24) | 7 | |
+| Both | The exhibition, Littleroot (10–11,17) | all six known | Alone: a double against both twins. Linked with the partner on the map and the Beacon on: a co-op multi battle. EXPERT BELT (Soren) and SOOTHE BELL (Mira), once per save. |
+
+A meeting the partner played arrives live (`VAR_TWIN_HEARD`): this save gets a short version, never the full scene twice. A meeting stays until this save has played it (and, for the spars, taken the prize). These are separate from the mandatory rival fights: own trainer ids (`TRAINER_TWIN_SPAR_1/2`, `TRAINER_TWIN_EXH_SOREN/MIRA`), own flags and rewards; rival assignment, teams, dialogue and story flags are untouched.
+
+### D. Coastal Cleanup
+
+| Step | Where | Notes |
+| --- | --- | --- |
+| MARLIN's briefing | Route 109 (10,8) | Someone is dumping on the beach. |
+| Clues | Sheen (9,12), drum (13,19), tracks (9,11) | Shared live. The crew won't fight before all three. |
+| Crew SKIFF and BARREL | (9,6), (10,6) | Alone: one at a time. With the partner on the map and the Beacon on: a duo. |
+| SLAG | (9,3) | The crew chief (single battle). |
+| Two ALOLAN GRIMER | (11,11), (12,14) | Each battle-able once per save (they leave after). |
+| Reward | MARLIN | 5 LURE BALL and MYSTIC WATER once per save. The beach is clean: drums, crew and Grimer gone, fishers back, and Route 109 / Dewford fishing gets Skrelp, Clauncher and others. |
+
+Co-op: "clean" is `COOP_STORY_COAST_CLEAN` (catch-up `FLAG_COAST_CATCHUP`).
+
+### E. The Twin Beacon's History
+
+| Step | Where | Notes |
+| --- | --- | --- |
+| Three inscriptions | Outside the sealed doors: Desert Ruins (Route 111, 28,87), Island Cave (Route 105, 8,20), Ancient Tomb (Route 120, 6,55) | Shared live. They don't need the Regi doors open. |
+| The passage | SCORCHED SLAB | Opens once all three are read (both saves). |
+| Twin plates | Shrine hall (5,25) and (11,25) | Something on both at once: the partner, or (alone) the idol boulder pushed with Strength. |
+| Twin lanterns | Statues (4,22) and (12,22) | Both lit within about 12 seconds: one each, or one player lighting both. |
+| Riddle | Sanctum door (7–9,20) | Two half-verses by the plates; the answer is A BEACON. A wrong answer only says so. |
+| Lore | KEEPER, sanctum (8,6) | Unlocks BEACON STYLE (the partner marker's colour: CLASSIC, GOLD, AZURE, ROSE) and the COMPASS (a diamond at the screen edge points to a partner on the same map who is off screen). Cosmetic only. |
+| Twin Trial | KEEPER | Three rounds against pairs, one round per talk, teams restored before each. With the partner (Beacon on, both agree) a round is a co-op multi battle; alone, a double. Leaving the shrine or losing starts it over. First win: ABILITY CAPSULE once per save; later wins: one RARE CANDY a day. |
+
+Co-op: the gates (plates, lanterns, sanctum) are shared live (`COOP_QUEST_SHRINE_GATES`); if both light their lantern at the same moment, the later message opens the gate on both. The shrine milestones are `COOP_STORY_SHRINE_OPEN` and `COOP_STORY_SHRINE_SOLVED`. The trial's final win sets `FLAG_TOURNEY_WON` on both saves; each collects its own capsule. None of this gates linking, invitations, or reconnecting.
+
+### Data
+
+| Kind | Ids |
+| --- | --- |
+| Vars | `VAR_SHOAL_QUEST` 0x4083, `VAR_SHOAL_CLUES` 0x408B, `VAR_CARAVAN_QUEST` 0x4091, `VAR_CARAVAN_FOUND` 0x409B (crates; glyph step in bits 4–5), `VAR_TWIN_ARC` 0x409D, `VAR_COAST_QUEST` 0x40A1, `VAR_COAST_CLUES` 0x40A8, `VAR_SHRINE_QUEST` 0x40B8, `VAR_SHRINE_MARKS` 0x40BB, `VAR_BEACON_STYLE` 0x40DB, `VAR_SHRINE_TOURNEY` 0x40DC, `VAR_TWIN_HEARD` 0x40E5 |
+| Flags | 0x29B–0x2BB (quest objects and gates), 0x493–0x4A1 (quest events), daily `FLAG_DAILY_SHOAL_ICE_STONE`, `FLAG_DAILY_SHRINE_TOURNEY` |
+| Milestones | `COOP_STORY_SHOAL_RESCUED` 2, `CARAVAN_SUPPLIED` 3, `COAST_CLEAN` 4, `SHRINE_OPEN` 5, `SHRINE_SOLVED` 6 |
+| Live values | `COOP_QUEST_SHOAL_CLUES` 2, `CARAVAN_FOUND` 3, `COAST_CLUES` 4, `SHRINE_MARKS` 5, `TWIN_HEARD` 6, `SHRINE_LANTERN` 7, `TRIAL_HEAL` 8, `SHRINE_GATES` 9 |
+| Rewards | `COOP_REWARD_SHOAL_RESCUE` 2, `CARAVAN` 3, `COAST` 4, `TWIN_SOREN` 5, `TWIN_MIRA` 6, `TOURNEY` 7, `TWIN_SPAR_1` 8, `TWIN_SPAR_2` 9; `SHRINE_LORE` 10 is reserved (the lore gives no item) |
+| Trainers (flagged slots reused) | `DC_RAIDER_DUNE` 173, `DC_RAIDER_MESA` 462, `CC_GRUNT_SKIFF` 568, `CC_GRUNT_BARREL` 581, `TWIN_EXH_SOREN` 633, `TWIN_EXH_MIRA` 634, `BT_FINAL_LUMEN` 485, `BT_FINAL_UMBRA` 486 |
+| Trainers (party only, ids 917–925) | `TWIN_SPAR_1/2`, `CC_CHIEF`, `BT_ROUND1_SOL/LUNA`, `BT_ROUND2_EMBER/FROST`, `BT_REPEAT_LUMEN/UMBRA`. `HasTrainerBeenFought`, `SetTrainerFlag` and `ClearTrainerFlag` ignore ids at or above `MAX_TRAINERS_COUNT`, so these never write system flags. |
+| Maps | New: `SANDBURIED_RUINS` (24.108), `TWIN_BEACON_SHRINE` (24.109). Edited: Route 111 (ruins mound and entrance), Scorched Slab (passage), Route 109, Shoal Cave rooms, Slateport, Fortree, Mossdeep, Littleroot, Mauville (stalls). |
+
+### Behaviour notes found in testing
+
+- A co-op story battle (`Coop_StartStoryBattle`) resumes the **host's** script after a win; the **guest** returns to the field with no script running. Guest-side outcomes are therefore applied by flags (the battle's flag on both saves, then map `ON_RESUME`/`ON_TRANSITION` handlers or the next talk), never by script lines after the battle.
+- If both players talk to the same duo NPC at once, one becomes the host and the other's open message closes as they join; nothing is lost.

@@ -22,7 +22,7 @@
 #define MAX_CMDS 4096
 #define MAX_SYMS 500000
 
-enum { C_PARTNER, C_GOTO, C_HEX, C_PRESS, C_WAIT, C_SHOT, C_DUMP, C_BARRIER, C_UNTIL_CB2, C_UNTIL_FIELD, C_EXPECT, C_UNTIL_MEM, C_BATTLE, C_MENU, C_PARTY, C_FIXTURE, C_WRITE, C_LEAD, C_MOVE, C_SIX, C_VAR, C_FLAG, C_VS, C_EXPECT_FLAG, C_EXPECT_VAR, C_NO_OBJECT, C_MAP, C_OBJECT, C_TEXT_SPEED, C_PACE, C_MUTE, C_PARTNER_AT, C_ITEM, C_EXPECT_ITEM, C_UNTIL_TEXT, C_WARP, C_PC_COUNT, C_MONS, C_NO_COPIES, C_NOTE_MONEY, C_MONEY_GAIN, C_FORCE_ENC, C_EXPECT_RANGE, C_WALK, C_NO_WILD, C_CROSS, C_WALK_BATTLE, C_SMART, C_STRONG, C_UNTIL_TASK, C_MIRROR, C_SPECIES, C_NOTE_PARTY, C_SAME_PARTY, C_PATCH_RET, C_SLOT, C_TXN, C_MONEY_SAME, C_DEX, C_SWAP, C_GENDER };
+enum { C_PARTNER, C_GOTO, C_HEX, C_PRESS, C_WAIT, C_SHOT, C_DUMP, C_BARRIER, C_UNTIL_CB2, C_UNTIL_FIELD, C_EXPECT, C_UNTIL_MEM, C_BATTLE, C_MENU, C_PARTY, C_FIXTURE, C_WRITE, C_LEAD, C_MOVE, C_SIX, C_VAR, C_FLAG, C_VS, C_EXPECT_FLAG, C_EXPECT_VAR, C_NO_OBJECT, C_MAP, C_OBJECT, C_TEXT_SPEED, C_PACE, C_MUTE, C_PARTNER_AT, C_ITEM, C_EXPECT_ITEM, C_UNTIL_TEXT, C_WARP, C_PC_COUNT, C_MONS, C_NO_COPIES, C_NOTE_MONEY, C_MONEY_GAIN, C_FORCE_ENC, C_EXPECT_RANGE, C_WALK, C_NO_WILD, C_CROSS, C_WALK_BATTLE, C_SMART, C_STRONG, C_UNTIL_TASK, C_MIRROR, C_SPECIES, C_NOTE_PARTY, C_SAME_PARTY, C_PATCH_RET, C_SLOT, C_TXN, C_MONEY_SAME, C_DEX, C_SWAP, C_GENDER, C_FILL, C_UNFILL };
 
 struct Cmd {
 	int kind;
@@ -693,6 +693,11 @@ static unsigned autoKeys(struct Player* p, unsigned step) {
 	}
 	if (battling && ((summaryMain && cbNow == summaryMain) || (summaryInit && cbNow == summaryInit)))
 		return (step % 24) < 2 ? 2 : 0;
+	// The summary screen's MainCB2 is static, and the symbol "MainCB2" may
+	// be another file's: anything in pokemon_summary_screen.c's code (the
+	// file is about 0x5C00 bytes around CB2_InitSummaryScreen) backs out.
+	if (battling && summaryInit && cbNow + 0x6000 > summaryInit && cbNow < summaryInit + 0x6000)
+		return (step % 24) < 2 ? 2 : 0;
 	if (facingPartner(p))
 		return 0;
 	return (step % 24) < 2 ? 1 : 0;
@@ -824,7 +829,9 @@ static void frameCallback(struct mCoreThread* t) {
 				unsigned mv = rd16(p, m + i * 2), pp = rd8(p, m + 8 + i);
 				if (!mv || !pp || mv >= 0x0E9C0u / 0x40) continue;
 				unsigned pow = rd32(p, info + mv * 0x40 + 8) >> 23;
-				if (best < 0 || pow > bestPow) { best = i; bestPow = pow; }
+				// smart_moves 2: a later move wins a tie (Ember over Scratch
+				// against a Ghost); 1 keeps the first.
+				if (best < 0 || pow > bestPow || (p->smartMoves == 2 && pow == bestPow)) { best = i; bestPow = pow; }
 			}
 			if (best >= 0) p->core->busWrite8(p->core, cur + b, best);
 		}
@@ -1520,6 +1527,43 @@ static void frameCallback(struct mCoreThread* t) {
             out("[p%d] fixture swap slots %d and %u\n", p->id, c->size, c->value);
             advance = true;
             break;
+        case C_FILL: {
+            // fixture_fill_pocket POCKET [FIRST]: every empty slot gets one
+            // of distinct item ids from FIRST up (default 100), so nothing
+            // new fits. Test fixture for deferred rewards.
+            unsigned pocket = symAddr("gBagPockets") + c->size * 8;
+            unsigned slots = rd32(p, pocket), cap = rd16(p, pocket + 4) & 0x3FF;
+            unsigned key = rd16(p, rd32(p, symAddr("gSaveBlock2Ptr")) + symValue("harness.encryptionKeyOffset"));
+            unsigned i, next = c->value ? c->value : 100, n = 0;
+            for (i = 0; i < cap; i++) {
+                if (rd16(p, slots + i * 4) != 0)
+                    continue;
+                p->core->busWrite16(p->core, slots + i * 4, next++);
+                p->core->busWrite16(p->core, slots + i * 4 + 2, (1 ^ key) & 0xFFFF);
+                n++;
+            }
+            out("[p%d] fixture filled %u slots of pocket %d\n", p->id, n, c->size);
+            advance = true;
+            break;
+        }
+        case C_UNFILL: {
+            // fixture_unfill_pocket POCKET [FIRST]: removes what
+            // fixture_fill_pocket put there.
+            unsigned pocket = symAddr("gBagPockets") + c->size * 8;
+            unsigned slots = rd32(p, pocket), cap = rd16(p, pocket + 4) & 0x3FF;
+            unsigned i, first = c->value ? c->value : 100, n = 0;
+            for (i = 0; i < cap; i++) {
+                unsigned id = rd16(p, slots + i * 4);
+                if (id >= first && id < first + cap) {
+                    p->core->busWrite16(p->core, slots + i * 4, 0);
+                    p->core->busWrite16(p->core, slots + i * 4 + 2, 0);
+                    n++;
+                }
+            }
+            out("[p%d] fixture emptied %u slots of pocket %d\n", p->id, n, c->size);
+            advance = true;
+            break;
+        }
         case C_GENDER: {
             // fixture_gender G: SaveBlock2.playerGender (offset 8). Test
             // fixture so two saves share a player base; the sprite follows
@@ -1910,6 +1954,10 @@ static void loadScript(const char* path, int depth) {
             c.kind = C_SWAP;
             c.size = atoi(a);
             c.value = strtoul(b, NULL, 0);
+        } else if (!strcmp(cmd, "fixture_fill_pocket") || !strcmp(cmd, "fixture_unfill_pocket")) {
+            c.kind = !strcmp(cmd, "fixture_fill_pocket") ? C_FILL : C_UNFILL;
+            c.size = atoi(a);
+            c.value = n >= 4 ? strtoul(b, NULL, 0) : 0;
         } else if (!strcmp(cmd, "fixture_gender")) {
             c.kind = C_GENDER;
             c.value = strtoul(a, NULL, 0);

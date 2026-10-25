@@ -4,6 +4,7 @@ FortreeCity_MapScripts::
 	.byte 0
 
 FortreeCity_OnTransition:
+	special CoopQuest_TwinUpdateFlags
 	setflag FLAG_VISITED_FORTREE_CITY
 	end
 

@@ -1,3 +1,44 @@
+# Rival looks, outfits, five optional quests: build 0xC0170132
+
+Branch `coop-doorway-scenes-rivals`, not merged. Test log: [COOP_TESTLOG_C0170132.md](COOP_TESTLOG_C0170132.md). Quest walkthroughs and data: [COOP_QUESTS.md](COOP_QUESTS.md). Player text: [COOP.md](COOP.md).
+
+## 1. Mira and Soren look like themselves
+
+- New overworld sheets (walking, running, Mach Bike) and trainer front pics, made by `tools/coop_art/rivals.py`: Emerald's May/Brendan bodies and frames, with redrawn heads (Mira: wide-brim sun hat; Soren: spiked hair and a gold headband) and new palettes, so the silhouettes differ, not only the colours.
+- Gfx ids `OBJ_EVENT_GFX_SOREN_NORMAL/_MACH_BIKE`, `OBJ_EVENT_GFX_MIRA_NORMAL/_MACH_BIKE`; palette tags 0x1134/0x1135; `TRAINER_PIC_SOREN/MIRA`. All 60 rival trainer parties use them; `rival_graphics.inc`, the Littleroot houses, `coop_rivals.c` (`Coop_IsRivalGfx`, `Coop_TwinGfx`), and the PokéNav match-call list point to them. Assignments, teams, dialogue and flags are unchanged.
+- Fix found on the way: the gfx-info pointers must sit after `#endif // IS_FRLG` (they were invisible and crashed on reset).
+
+## 2. Player outfits
+
+- Wardrobe bg event at (4,1) in both Littleroot bedrooms → `CoopOutfit_OpenMenu` (`src/coop_outfit.c`): six presets per base (`src/data/coop_outfits.h`, from `tools/coop_art/outfits.py`), live preview on the trainer pic and the player sprite, plus the partner MARKER setting (AUTO/ON/OFF).
+- Stored per save in `CoopSave.outfit` and `CoopSave.partnerMarker` (the two former unused bytes; 0 = CLASSIC/AUTO, so older saves are safe). Sent to the partner with `DMSG_LOOK` and re-sent on every link.
+- Overworld palettes go through `ObjectEventSpritePalette()`; the partner uses its own gfx ids and palette tag 0x1136, so two players with the same base wear different colours at once and nobody else is recoloured. Battle back/front pics (`GetTrainerFront/BackPicPalette`, `CoopOutfit_BattleTrainerSprite`) and the trainer card use the same colours.
+- Marker: its own palette 0xC0B5; after the shrine lore it uses `VAR_BEACON_STYLE`, and doubles as the edge compass for an off-screen partner on the same map.
+
+## 3. Five optional quests
+
+Shoal Cave, the Desert Caravan, Mira and Soren, Coastal Cleanup, and the Twin Beacon's history; details in COOP_QUESTS.md §3. Foundations added for them:
+
+- `battle_setup.c`: trainer-flag helpers ignore ids at or above `MAX_TRAINERS_COUNT`, so party-only trainers (917–925) never write system flags.
+- `coop_quest.c`: OR-merged live values with a partner popup and live removal of a partner-found object; specials for bits, milestones, twins, plates, lanterns, glyphs, the Slab passage, trial heal/solo battle, shared shrine gates, and the clean-coast fishing table.
+- `coop.c`: five new ledger milestones; `Coop_IsOptionalQuestTrainer` (Rival/Magma-Admin-class quest trainers are not refused while linked); the joining side heals before a Twin Trial round.
+- Maps `SANDBURIED_RUINS` and `TWIN_BEACON_SHRINE`; Route 111 mound and entrance; Scorched Slab passage; journal with six quests; POWER SHOP stalls.
+
+## 4. Decisions taken
+
+- **Co-op story battles resume only the host's script.** The guest returns to the field with no script, so every guest-side result is applied by flags (the battle's flag on both saves, then `ON_RESUME`/`ON_TRANSITION` or the next talk). The exhibition records the guest's trainer flags when the guest next talks to the twins; the trial's guest gets `FLAG_TOURNEY_WON` from the battle (nothing reads the final pair's trainer flags).
+- **The Twin Trial is one round per talk**, not three chained battles from one script: each round starts from a fresh, idle field on both sides, teams are restored each time, and leaving or losing starts over.
+- **Shrine gates are world state** shared live (`COOP_QUEST_SHRINE_GATES`); the sanctum door is redrawn for a partner standing in the hall.
+- **Lanterns lit at the same moment** solve on both: the later message opens the gate on the side that lit first.
+- **Inscriptions are outside the Regi doors** (Desert Ruins, Island Cave, Ancient Tomb stay closed until the braille puzzle).
+
+## 5. Known gaps
+
+- The shrine's twin plates are not drawn; the verse signs beside them, the "plate gives a little" message and the journal are the hints.
+- Two harness intermittents remain: `wild_simultaneous` (pre-existing wording race) and the harness's forced-switch handling, which was fixed for the summary-screen case found here.
+- Fishing on the clean coast, the 6-badge merchant stock, the other three POWER SHOP stalls, and daily resets were checked in source only.
+- Real hardware, netplay and two physical PCs were not tested.
+
 # Roster, partner menu, QoL, Power Problems: build 0xC0170131
 
 Branch `coop-doorway-scenes-rivals`, on top of `060e0121` (0xC0170130). Keep

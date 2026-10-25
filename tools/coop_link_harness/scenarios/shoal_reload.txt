@@ -1,0 +1,20 @@
+# shoal_solo.txt's save after a power cycle (player 0): the rescue, the
+# gift and today's ICE STONE are kept; ISLA is at the entrance, not in the
+# ice room; the gift is not paid again.
+include continue.inc
+0 no_wild 1
+0 expect_var 0x4083 3
+0 expect_item 0 215 3
+0 fixture_warp 24 46 5 28
+0 until_field 3000
+0 expect_object 4 5 26
+0 walk 5 27 1000
+0 press UP 2
+0 wait 20
+0 press A 2
+0 mash_field 3000
+0 expect_item 0 215 3
+0 expect_item 0 458 2
+0 fixture_warp 24 83 13 8
+0 until_field 3000
+0 expect_no_object 4

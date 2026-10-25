@@ -1,0 +1,43 @@
+# The POWER SHOP's quest stalls, one player, not linked (story_seg6 save).
+# With the POWER SHOP open and every optional quest finished (fixtures),
+# the stock shop is followed by the quest stalls: ICE, SEA, DESERT and
+# BEACON goods; the BEACON stall sells its own stock.
+# FIXTURES: VAR_NEW_MAUVILLE_STATE 2; the four quest states; fixture_warp.
+include continue.inc
+0 no_wild 1
+0 fixture_var 0x40BA 2
+0 fixture_var 0x4083 3
+0 fixture_var 0x40A1 5
+0 fixture_var 0x4091 3
+0 fixture_flag 0x2BA 1
+0 fixture_warp 0 2 12 8
+0 until_field 3000
+0 walk 12 7 1000
+0 press UP 2
+0 wait 20
+0 press A 2
+0 until_cb2 CB2_BuyMenu 3000 A
+0 wait 60
+0 press B 2
+0 wait 30
+0 press B 2
+0 until_task Task_HandleYesNoInput 3000 B
+0 wait 20
+0 press A 2
+0 until_task Task_HandleScrollingMultichoiceInput 3000 B
+0 wait 20
+0 shot goods-stalls
+0 press DOWN 2
+0 wait 10
+0 press DOWN 2
+0 wait 10
+0 press DOWN 2
+0 wait 10
+0 press A 2
+0 until_cb2 CB2_BuyMenu 3000 A
+0 wait 60
+0 shot goods-beacon
+0 press B 2
+0 wait 30
+0 press B 2
+0 mash_field 3000 B

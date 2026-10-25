@@ -470,7 +470,9 @@
     "TerraCave_Entrance",
     "TerraCave_End",
     "AlteringCave",
-    "MeteorFalls_StevensCave"
+    "MeteorFalls_StevensCave",
+    "SandburiedRuins",
+    "TwinBeaconShrine"
   ],
   "gMapGroup_IndoorDynamic": [
     "SecretBase_RedCave1",

@@ -1,0 +1,206 @@
+# The Twin Beacon's History, linked (story_seg6 saves: player 0 Brendan,
+# player 1 May), Twin Beacon on. The inscriptions are shared live (one
+# player reads two, the other one). In the shrine each stands on a plate
+# (no boulder), each lights a lantern, player 0 answers the riddle and the
+# sanctum opens for player 1 too, on the spot. Player 0 hears the lore
+# (the edge compass then points at player 1, off screen) and both face the
+# Twin Trial together: three co-op multi rounds, FLAG_TOURNEY_WON on both
+# saves; each collects the ABILITY CAPSULE once.
+# FIXTURES: fixture_warp; a level 100 lead copied to six slots, battle
+# stats held at 1500 (flow, not balance); no random wild battles.
+include deal_setup.inc
+include beacon_menu_on.inc
+b no_wild 1
+b smart_moves 2
+b strong_battlers 1500
+b fixture_lead 255 100 1059860
+b fixture_six
+# The inscriptions: player 0 one, player 1 two (shared live).
+0 fixture_warp 0 26 28 88
+1 fixture_warp 0 20 8 21
+b until_field 3000
+b sync
+b press UP 2
+b wait 20
+b press A 2
+b mash_field 3000
+b sync
+b wait 120
+b expect_var 0x40BB 3
+1 fixture_warp 0 35 6 56
+1 until_field 3000
+1 press UP 2
+1 wait 20
+1 press A 2
+1 mash_field 3000
+b sync
+b wait 120
+b expect_var 0x40BB 7
+# Both through the SCORCHED SLAB passage (one after the other).
+0 fixture_warp 24 73 7 4
+1 fixture_warp 24 73 8 4
+b until_field 3000
+b sync
+b expect_flag 0x2B7 1
+0 walk 7 3 1000
+0 press UP 30
+0 until_field 3000
+b sync
+1 walk 7 3 1000
+1 press UP 30
+1 until_field 3000
+b sync
+b wait 30
+b expect_map 24 109
+# The plates: player 1 east (alone: nothing yet), then player 0 west.
+0 walk 5 26 3000
+1 walk 11 26 3000
+b sync
+1 press UP 16
+1 wait 30
+1 mash_field 3000
+b sync
+1 expect_flag 0x2B8 0
+b sync
+0 press UP 16
+0 wait 30
+0 shot beacon-coop-plates
+0 mash_field 3000
+b sync
+b wait 120
+b expect_flag 0x2B8 1
+# The lanterns: one each.
+0 walk 4 23 3000
+1 walk 12 23 3000
+b sync
+0 press UP 2
+0 wait 20
+0 press A 2
+0 mash_field 2000
+1 press UP 2
+1 wait 20
+1 press A 2
+1 mash_field 2000
+b sync
+b wait 120
+b expect_flag 0x2B9 1
+# The riddle: player 0 answers; player 1 watches the door open.
+0 walk 8 21 3000
+1 walk 10 22 3000
+b sync
+0 press UP 2
+0 wait 20
+0 press A 2
+0 until_task Task_HandleScrollingMultichoiceInput 3000 B
+0 wait 20
+0 press DOWN 2
+0 wait 10
+0 press A 2
+0 mash_field 3000
+b sync
+b wait 120
+b expect_flag 0x2BA 1
+1 shot beacon-coop-door-p1
+1 walk 8 21 2000
+1 press UP 30
+1 until_field 3000
+1 wait 30
+1 walk 8 10 2000
+# Player 0: the lore; the compass points to player 1 while off screen.
+0 press UP 30
+0 until_field 3000
+0 wait 30
+0 walk 8 7 3000
+0 press UP 2
+0 wait 20
+0 press A 2
+0 mash_field 6000 B
+0 expect_flag 0x2BB 1
+1 press DOWN 30
+1 until_field 3000
+1 wait 30
+1 walk 8 26 2000
+b sync
+b wait 90
+0 expect gCoopCompassShown 1
+0 shot beacon-compass
+1 walk 8 21 2000
+1 press UP 30
+1 until_field 3000
+1 wait 30
+1 walk 9 8 3000
+b sync
+b wait 90
+0 expect gCoopCompassShown 0
+# The Twin Trial together: three co-op rounds, one per talk.
+0 press A 2
+0 until_task Task_HandleScrollingMultichoiceInput 3000 B
+0 wait 20
+0 press A 2
+0 until_task Task_HandleYesNoInput 3000 A
+0 wait 20
+0 press A 2
+0 until_task Task_HandleYesNoInput 3000 A
+0 wait 20
+0 shot beacon-trial-ask
+0 press A 2
+1 until_cb2 BattleMainCB2 9000 A
+0 until_cb2 BattleMainCB2 9000 A
+b expect gBattlersCount 4
+b expect coop.sInBattle 1
+b mash_field 40000
+b expect gBattleOutcome 1
+b sync
+0 expect_var 0x40DC 2
+0 press A 2
+0 until_task Task_HandleScrollingMultichoiceInput 3000 B
+0 wait 20
+0 press A 2
+0 until_task Task_HandleYesNoInput 3000 A
+0 wait 20
+0 press A 2
+1 until_cb2 BattleMainCB2 9000 A
+0 until_cb2 BattleMainCB2 9000 A
+b expect coop.sInBattle 1
+b mash_field 40000
+b expect gBattleOutcome 1
+b sync
+0 expect_var 0x40DC 3
+0 press A 2
+0 until_task Task_HandleScrollingMultichoiceInput 3000 B
+0 wait 20
+0 press A 2
+0 until_task Task_HandleYesNoInput 3000 A
+0 wait 20
+0 press A 2
+1 until_cb2 BattleMainCB2 9000 A
+0 until_cb2 BattleMainCB2 9000 A
+b expect coop.sInBattle 1
+b shot beacon-trial-final
+b mash_field 40000
+b expect gBattleOutcome 1
+b sync
+b sync
+b expect_flag 0x4A1 1
+0 expect_var 0x40DC 0
+0 expect_item 0 79 1
+1 expect_item 0 79 0
+# Player 1 at the keeper: the lore, then its own prize, once.
+1 walk 8 7 3000
+1 press UP 2
+1 wait 20
+1 press A 2
+1 mash_field 8000 B
+1 expect_flag 0x2BB 1
+1 expect_item 0 79 1
+1 press A 2
+1 until_task Task_HandleScrollingMultichoiceInput 3000 B
+1 wait 20
+1 press B 2
+1 mash_field 3000 B
+1 expect_item 0 79 1
+0 expect_item 0 79 1
+b sync
+0 walk 7 9 1000
+1 walk 10 9 1000
+include save_continue.inc

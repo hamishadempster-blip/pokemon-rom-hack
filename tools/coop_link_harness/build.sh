@@ -26,7 +26,7 @@ gcc -O2 -Wall -Wno-stringop-truncation -DM_CORE_GBA -DUSE_PTHREADS -I"$mgba/incl
 # Global symbols, then the RAM statics of a few objects as <file>.<name>,
 # placed through the section bases in the linker map.
 arm-none-eabi-nm -S "$root/pokeemerald.elf" | grep -vE ' [a-zA-Z] [_.$]' > "$out/syms.txt"
-for obj in coop coop_deal coop_outfit link battle_controllers battle_main start_menu menu overworld; do
+for obj in coop coop_deal coop_outfit link battle_controllers battle_main start_menu menu overworld text; do
 	arm-none-eabi-objdump -t "$root/build/emerald/src/$obj.o" | while read -r off scope kind sect size name; do
 		[ "$kind" = O ] || continue
 		case "$sect" in .bss|.sbss|.data) ;; *) continue ;; esac

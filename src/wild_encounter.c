@@ -1,4 +1,5 @@
 #include "global.h"
+#include "coop_quest.h"
 #include "battle_setup.h"
 #include "battle_pike.h"
 #include "battle_pyramid.h"
@@ -1038,9 +1039,13 @@ void FishingWildEncounter(u8 rod)
     }
     else
     {
+        const struct WildPokemonInfo *info = CoopQuest_FishingOverride();
+
         headerId = GetCurrentMapWildMonHeaderId();
         timeOfDay = GetTimeOfDayForEncounters(headerId, WILD_AREA_FISHING);
-        species = GenerateFishingWildMon(gWildMonHeaders[headerId].encounterTypes[timeOfDay].fishingMonsInfo, rod);
+        if (info == NULL)
+            info = gWildMonHeaders[headerId].encounterTypes[timeOfDay].fishingMonsInfo;
+        species = GenerateFishingWildMon(info, rod);
     }
 
     IncrementGameStat(GAME_STAT_FISHING_ENCOUNTERS);

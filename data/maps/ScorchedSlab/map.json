@@ -36,8 +36,24 @@
       "elevation": 1,
       "dest_map": "MAP_ROUTE120",
       "dest_warp_id": "1"
+    },
+    {
+      "x": 7,
+      "y": 2,
+      "elevation": 3,
+      "dest_map": "MAP_TWIN_BEACON_SHRINE",
+      "dest_warp_id": "0"
     }
   ],
   "coord_events": [],
-  "bg_events": []
+  "bg_events": [
+    {
+      "type": "sign",
+      "x": 7,
+      "y": 2,
+      "elevation": 0,
+      "player_facing_dir": "BG_EVENT_PLAYER_FACING_NORTH",
+      "script": "ScorchedSlab_EventScript_TwinWall"
+    }
+  ]
 }

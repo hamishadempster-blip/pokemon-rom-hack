@@ -1,0 +1,17 @@
+# coast_solo.txt's save after a power cycle (player 0): the clean beach,
+# the fisher, MARLIN's gift once.
+include continue.inc
+0 no_wild 1
+0 expect_var 0x40A1 5
+0 fixture_warp 0 24 10 9
+0 until_field 3000
+0 expect_no_object 29
+0 expect_no_object 27
+0 expect_no_object 31
+0 expect_object 33 9 9
+0 press UP 2
+0 wait 20
+0 press A 2
+0 mash_field 3000
+0 expect_item 1 16 5
+0 expect_item 0 427 1

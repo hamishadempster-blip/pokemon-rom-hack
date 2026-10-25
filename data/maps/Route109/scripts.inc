@@ -2,7 +2,19 @@
 @  These are labeled in DewfordTown/scripts.inc
 
 Route109_MapScripts::
+	map_script MAP_SCRIPT_ON_TRANSITION, Route109_OnTransition
+	map_script MAP_SCRIPT_ON_RESUME, Route109_OnResume
 	.byte 0
+
+Route109_OnTransition:
+	special CoopQuest_TwinUpdateFlags
+	call Route109_EventScript_SetCoastObjects
+	end
+
+Route109_OnResume:
+	call_if_set FLAG_SYS_CTRL_OBJ_DELETE, Route109_EventScript_TryRemoveGrimer
+	call Route109_EventScript_ApplyCrewDuo
+	end
 
 Route109_EventScript_StartDepartForDewford::
 	call EventScript_BackupMrBrineyLocation
