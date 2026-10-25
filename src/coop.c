@@ -1537,6 +1537,8 @@ static void Coop_PollBlocks(void)
                 Coop_HandleInvite(i, (const struct CoopInvite *)gBlockRecvBuffer[i]);
             else if (magic == COOP_DEAL_MAGIC)
                 CoopDeal_HandleBlock(i, gBlockRecvBuffer[i]);
+            else if (magic == COOP_DEX_MAGIC)
+                CoopDex_HandleBlock(i, gBlockRecvBuffer[i]);
             else if (magic == COOP_STORY_MAGIC)
                 Coop_HandleStoryMsg(i, (const struct CoopStoryMsg *)gBlockRecvBuffer[i]);
             else

@@ -153,7 +153,7 @@ Coop_EventScript_LinkReady::
 
 Coop_EventScript_AskToggleCap::
 	msgbox Coop_Text_AskToggleCap, MSGBOX_YESNO
-	goto_if_eq VAR_RESULT, NO, Coop_EventScript_MenuEnd
+	goto_if_eq VAR_RESULT, NO, Coop_EventScript_AskPartnerDex
 	special Coop_ToggleLevelCap
 	special Coop_BufferCapText
 	msgbox Coop_Text_CapNow, MSGBOX_DEFAULT
@@ -171,14 +171,21 @@ Coop_EventScript_MenuLinked::
 	specialvar VAR_RESULT, Coop_BufferMenuExplain
 	messageinstant gStringVar4
 	goto_if_eq VAR_RESULT, TRUE, Coop_EventScript_MenuLinkedBeaconOn
-	dynmultichoice 21, 1, FALSE, 3, 0, DYN_MULTICHOICE_CB_NONE, Coop_Text_OptBeaconOn, Coop_Text_OptUnlink, Coop_Text_OptBack
+	dynmultichoice 18, 1, FALSE, 4, 0, DYN_MULTICHOICE_CB_NONE, Coop_Text_OptBeaconOn, Coop_Text_OptUnlink, Coop_Text_OptPartnerDex, Coop_Text_OptBack
 	goto Coop_EventScript_MenuLinkedChoice
 Coop_EventScript_MenuLinkedBeaconOn::
-	dynmultichoice 21, 1, FALSE, 3, 0, DYN_MULTICHOICE_CB_NONE, Coop_Text_OptBeaconOff, Coop_Text_OptUnlink, Coop_Text_OptBack
+	dynmultichoice 18, 1, FALSE, 4, 0, DYN_MULTICHOICE_CB_NONE, Coop_Text_OptBeaconOff, Coop_Text_OptUnlink, Coop_Text_OptPartnerDex, Coop_Text_OptBack
 Coop_EventScript_MenuLinkedChoice::
 	switch VAR_RESULT
 	case 0, Coop_EventScript_MenuBeacon
 	case 1, Coop_EventScript_MenuUnlink
+	case 2, Coop_EventScript_MenuPartnerDex
+	goto Coop_EventScript_MenuBack
+
+@ Whose catches the POKéDEX list shows next to yours, and how fresh.
+Coop_EventScript_MenuPartnerDex::
+	specialvar VAR_RESULT, CoopDex_BufferSummary
+	msgbox gStringVar4, MSGBOX_DEFAULT
 	goto Coop_EventScript_MenuBack
 
 Coop_EventScript_MenuBeacon::
@@ -207,6 +214,17 @@ Coop_EventScript_MenuBack::
 	end
 
 Coop_EventScript_MenuEnd::
+	releaseall
+	end
+
+@ Unlinked: the partner catches cached from the last link, if any.
+Coop_EventScript_AskPartnerDex::
+	specialvar VAR_RESULT, CoopDex_BufferSummary
+	goto_if_eq VAR_RESULT, 0, Coop_EventScript_MenuEnd
+	msgbox Coop_Text_AskPartnerDex, MSGBOX_YESNO
+	goto_if_eq VAR_RESULT, NO, Coop_EventScript_MenuEnd
+	specialvar VAR_RESULT, CoopDex_BufferSummary
+	msgbox gStringVar4, MSGBOX_DEFAULT
 	releaseall
 	end
 
@@ -339,6 +357,13 @@ Coop_Text_OptUnlink:
 
 Coop_Text_OptBack:
 	.string "BACK$"
+
+Coop_Text_OptPartnerDex:
+	.string "PARTNER DEX$"
+
+Coop_Text_AskPartnerDex:
+	.string "See the catches saved from\n"
+	.string "{STR_VAR_1} last time you linked?$"
 
 Coop_Text_AskUnlink:
 	.string "Drop the link?\n"

@@ -720,3 +720,4 @@ gSpecials::
 	def_special CoopDeal_BufferPending
 	def_special CoopDeal_OpenGiftBag
 	def_special CoopDeal_Settle
+	def_special CoopDex_BufferSummary

@@ -22,7 +22,7 @@
 #define MAX_CMDS 4096
 #define MAX_SYMS 500000
 
-enum { C_PARTNER, C_GOTO, C_HEX, C_PRESS, C_WAIT, C_SHOT, C_DUMP, C_BARRIER, C_UNTIL_CB2, C_UNTIL_FIELD, C_EXPECT, C_UNTIL_MEM, C_BATTLE, C_MENU, C_PARTY, C_FIXTURE, C_WRITE, C_LEAD, C_MOVE, C_SIX, C_VAR, C_FLAG, C_VS, C_EXPECT_FLAG, C_EXPECT_VAR, C_NO_OBJECT, C_MAP, C_OBJECT, C_TEXT_SPEED, C_PACE, C_MUTE, C_PARTNER_AT, C_ITEM, C_EXPECT_ITEM, C_UNTIL_TEXT, C_WARP, C_PC_COUNT, C_MONS, C_NO_COPIES, C_NOTE_MONEY, C_MONEY_GAIN, C_FORCE_ENC, C_EXPECT_RANGE, C_WALK, C_NO_WILD, C_CROSS, C_WALK_BATTLE, C_SMART, C_STRONG, C_UNTIL_TASK, C_MIRROR, C_SPECIES, C_NOTE_PARTY, C_SAME_PARTY, C_PATCH_RET, C_SLOT, C_TXN, C_MONEY_SAME };
+enum { C_PARTNER, C_GOTO, C_HEX, C_PRESS, C_WAIT, C_SHOT, C_DUMP, C_BARRIER, C_UNTIL_CB2, C_UNTIL_FIELD, C_EXPECT, C_UNTIL_MEM, C_BATTLE, C_MENU, C_PARTY, C_FIXTURE, C_WRITE, C_LEAD, C_MOVE, C_SIX, C_VAR, C_FLAG, C_VS, C_EXPECT_FLAG, C_EXPECT_VAR, C_NO_OBJECT, C_MAP, C_OBJECT, C_TEXT_SPEED, C_PACE, C_MUTE, C_PARTNER_AT, C_ITEM, C_EXPECT_ITEM, C_UNTIL_TEXT, C_WARP, C_PC_COUNT, C_MONS, C_NO_COPIES, C_NOTE_MONEY, C_MONEY_GAIN, C_FORCE_ENC, C_EXPECT_RANGE, C_WALK, C_NO_WILD, C_CROSS, C_WALK_BATTLE, C_SMART, C_STRONG, C_UNTIL_TASK, C_MIRROR, C_SPECIES, C_NOTE_PARTY, C_SAME_PARTY, C_PATCH_RET, C_SLOT, C_TXN, C_MONEY_SAME, C_DEX };
 
 struct Cmd {
 	int kind;
@@ -1425,6 +1425,26 @@ static void frameCallback(struct mCoreThread* t) {
             advance = true;
             break;
         }
+        case C_DEX: {
+            // dex_caught NUM VALUE (set this save's own caught flag, a fixture)
+            // expect_partner_dex NUM VALUE (the cached partner flag)
+            unsigned n = c->addr - 1, got;
+            if (c->size == 1) {
+                unsigned a = rd32(p, sSave1) + symValue("harness.dexCaughtOffset") + n / 8;
+                unsigned v = rd8(p, a);
+                v = c->value ? (v | (1u << (n % 8))) : (v & ~(1u << (n % 8)));
+                p->core->busWrite8(p->core, a, v);
+                out("[p%d] fixture dex caught %u = %u\n", p->id, c->addr, c->value);
+            } else {
+                unsigned base = rd32(p, symAddr("gSaveBlock3Ptr"));
+                got = (rd8(p, base + symValue("harness.partnerCaughtOffset") + n / 8) >> (n % 8)) & 1;
+                unsigned valid = rd8(p, base + symValue("harness.partnerDexValidOffset"));
+                if (got != c->value || !valid) { out("[p%d] FAIL partner dex %u = %u (valid %u), expected %u\n", p->id, c->addr, got, valid, c->value); sFailures++; }
+                else out("[p%d] ok partner dex %u = %u\n", p->id, c->addr, got);
+            }
+            advance = true;
+            break;
+        }
         case C_TXN: {
             // expect_txn STATE: this save's escrow record (0 none, 1 prepared).
             unsigned rec = rd32(p, symAddr("gSaveBlock3Ptr")) + symValue("harness.dealOffset");
@@ -1816,6 +1836,11 @@ static void loadScript(const char* path, int depth) {
             c.size = atoi(a);
             c.addr = strtoul(b, NULL, 0);
             c.value = strtoul(d, NULL, 0);
+        } else if (!strcmp(cmd, "dex_caught") || !strcmp(cmd, "expect_partner_dex")) {
+            c.kind = C_DEX;
+            c.size = !strcmp(cmd, "dex_caught");
+            c.addr = strtoul(a, NULL, 0);
+            c.value = strtoul(b, NULL, 0);
         } else if (!strcmp(cmd, "expect_txn")) {
             c.kind = C_TXN;
             c.value = strtoul(a, NULL, 0);
@@ -1853,6 +1878,7 @@ static void loadScript(const char* path, int depth) {
 			else if (!strcmp(a, "BAG")) c.value = 2;
 			else if (!strcmp(a, "POKEMON")) c.value = 1;
 			else if (!strcmp(a, "COOP")) c.value = 15;
+			else if (!strcmp(a, "POKEDEX")) c.value = 0;
 			else { fprintf(stderr, "menu_to %s\n", a); exit(1); }
 			snprintf(c.text, sizeof(c.text), "menu %s", a);
 		} else if (!strcmp(cmd, "expect_battle")) {

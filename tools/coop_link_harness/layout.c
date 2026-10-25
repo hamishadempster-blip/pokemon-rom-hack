@@ -9,4 +9,7 @@ const u32 harnessSaveLayout[] = {
     sizeof(struct BoxPokemon),
     offsetof(struct SaveBlock1, money),
     offsetof(struct SaveBlock3, coop) + offsetof(struct CoopSave, deal),
+    offsetof(struct SaveBlock3, coop) + offsetof(struct CoopSave, partnerCaught),
+    offsetof(struct SaveBlock1, dexCaught),
+    offsetof(struct SaveBlock3, coop) + offsetof(struct CoopSave, partnerDexValid),
 };

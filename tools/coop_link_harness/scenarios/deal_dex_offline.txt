@@ -1,0 +1,20 @@
+# After deal_dex.txt: unlinked, player 0's saved partner catches stay and
+# are labelled with the play time of the last sync (CO-OP menu, NO to
+# linking and to the level cap, then YES).
+include continue.inc
+0 expect_partner_dex 252 1
+0 press START 2
+0 wait 40
+0 menu_to COOP
+0 press A 2
+0 wait 90
+0 press DOWN 2
+0 press A 2
+0 wait 90
+0 press DOWN 2
+0 press A 2
+0 wait 90
+0 press A 2
+0 wait 120
+0 shot dex-offline
+0 mash_field 900 B

@@ -1,4 +1,5 @@
 #include "global.h"
+#include "coop_deal.h"
 #include "battle_main.h"
 #include "battle_script_commands.h"
 #include "bg.h"
@@ -124,6 +125,7 @@ static void Task_DisplayCaughtMonDexPage(u8);
 static void Task_ExitCaughtMonPage(u8);
 static void SpriteCB_SlideCaughtMonToCenter(struct Sprite *sprite);
 static void PrintMonInfo(u32 num, u32, u32 owned, u32 newEntry);
+static void CreateCaughtBallCoop(u16 dexNum, bool16 owned, u8 x, u8 y);
 static u32 GetMeasurementTextPositions(u32 textElement);
 static void PrintUnknownMonMeasurements(void);
 static u8* GetUnknownMonHeightString(void);
@@ -2264,13 +2266,13 @@ static void CreateMonListEntry(u8 position, u16 b, u16 ignored)
                 if (sPokedexView->pokedexList[entryNum].seen)
                 {
                     CreateMonDexNum(entryNum, 0x12, i * 2, ignored);
-                    CreateCaughtBall(sPokedexView->pokedexList[entryNum].owned, 0x11, i * 2, ignored);
+                    CreateCaughtBallCoop(sPokedexView->pokedexList[entryNum].dexNum, sPokedexView->pokedexList[entryNum].owned, 0x11, i * 2);
                     CreateMonName(sPokedexView->pokedexList[entryNum].dexNum, 0x16, i * 2);
                 }
                 else
                 {
                     CreateMonDexNum(entryNum, 0x12, i * 2, ignored);
-                    CreateCaughtBall(FALSE, 0x11, i * 2, ignored);
+                    CreateCaughtBallCoop(sPokedexView->pokedexList[entryNum].dexNum, FALSE, 0x11, i * 2);
                     CreateMonName(0, 0x16, i * 2);
                 }
             }
@@ -2289,13 +2291,13 @@ static void CreateMonListEntry(u8 position, u16 b, u16 ignored)
             if (sPokedexView->pokedexList[entryNum].seen)
             {
                 CreateMonDexNum(entryNum, 18, sPokedexView->listVOffset * 2, ignored);
-                CreateCaughtBall(sPokedexView->pokedexList[entryNum].owned, 0x11, sPokedexView->listVOffset * 2, ignored);
+                CreateCaughtBallCoop(sPokedexView->pokedexList[entryNum].dexNum, sPokedexView->pokedexList[entryNum].owned, 0x11, sPokedexView->listVOffset * 2);
                 CreateMonName(sPokedexView->pokedexList[entryNum].dexNum, 0x16, sPokedexView->listVOffset * 2);
             }
             else
             {
                 CreateMonDexNum(entryNum, 18, sPokedexView->listVOffset * 2, ignored);
-                CreateCaughtBall(FALSE, 17, sPokedexView->listVOffset * 2, ignored);
+                CreateCaughtBallCoop(sPokedexView->pokedexList[entryNum].dexNum, FALSE, 17, sPokedexView->listVOffset * 2);
                 CreateMonName(0, 0x16, sPokedexView->listVOffset * 2);
             }
         }
@@ -2315,13 +2317,13 @@ static void CreateMonListEntry(u8 position, u16 b, u16 ignored)
             if (sPokedexView->pokedexList[entryNum].seen)
             {
                 CreateMonDexNum(entryNum, 18, vOffset * 2, ignored);
-                CreateCaughtBall(sPokedexView->pokedexList[entryNum].owned, 0x11, vOffset * 2, ignored);
+                CreateCaughtBallCoop(sPokedexView->pokedexList[entryNum].dexNum, sPokedexView->pokedexList[entryNum].owned, 0x11, vOffset * 2);
                 CreateMonName(sPokedexView->pokedexList[entryNum].dexNum, 0x16, vOffset * 2);
             }
             else
             {
                 CreateMonDexNum(entryNum, 18, vOffset * 2, ignored);
-                CreateCaughtBall(FALSE, 0x11, vOffset * 2, ignored);
+                CreateCaughtBallCoop(sPokedexView->pokedexList[entryNum].dexNum, FALSE, 0x11, vOffset * 2);
                 CreateMonName(0, 0x16, vOffset * 2);
             }
         }
@@ -2358,6 +2360,35 @@ void CreateMonDexNum(u16 entryNum, u8 left, u8 top, u16 unused)
     }
 
     PrintMonDexNum(0, FONT_NARROW, text, left, top);
+}
+
+// Co-op: the list's ball also says who has caught the species. Red top:
+// you. Green top: only your partner (cached from the link). Red top, green
+// bottom: both. The partner's catches never count as this save's own.
+static void CreateCaughtBallCoop(u16 dexNum, bool16 owned, u8 x, u8 y)
+{
+    static EWRAM_DATA u8 sBalls[2][sizeof(sCaughtBall_Gfx)] = {0};
+    static EWRAM_DATA bool8 sBallsReady = FALSE;
+    bool8 partner = CoopDex_PartnerCaught(dexNum);
+    u32 i;
+
+    if (!partner)
+    {
+        CreateCaughtBall(owned, x, y, 0);
+        return;
+    }
+    if (!sBallsReady)
+    {
+        sBallsReady = TRUE;
+        // 4bpp: index 0xB is the red top, 0x1 the white bottom.
+        for (i = 0; i < sizeof(sCaughtBall_Gfx); i++)
+        {
+            u8 b = sCaughtBall_Gfx[i], lo = b & 0xF, hi = b >> 4;
+            sBalls[0][i] = ((hi == 0xB ? 0xC : hi) << 4) | (lo == 0xB ? 0xC : lo);
+            sBalls[1][i] = ((hi == 0x1 ? 0xC : hi) << 4) | (lo == 0x1 ? 0xC : lo);
+        }
+    }
+    BlitBitmapToWindow(0, owned ? sBalls[1] : sBalls[0], x * 8, y * 8, 8, 16);
 }
 
 void CreateCaughtBall(bool16 owned, u8 x, u8 y, u16 unused)

@@ -257,6 +257,7 @@ extern const u8 CoopDeal_EventScript_NoRoomToSettle[];
 static struct CoopDealMsg *Deal_Send(u8 type, u8 arg);
 static void Deal_EndWait(u8 result);
 static void Deal_Reset(void);
+static void Dex_Poll(void);
 
 // ---------------------------------------------------------------- helpers
 
@@ -1074,6 +1075,7 @@ void CoopDeal_Poll(void)
     }
     Deal_PumpSend();
     Deal_PollWait();
+    Dex_Poll();
 
     if (sDeal.state == DS_INCOMING && !sDeal.prompted)
     {
@@ -1108,8 +1110,184 @@ void CoopDeal_Poll(void)
     }
 }
 
+// ---------------------------------------------------------------- Pokedex
+
+// Each game sends its own caught flags when a session starts, when they
+// change, and now and then. The other game keeps them, with the sender's
+// trainer id and name, in its save (struct CoopSave): the list then shows
+// the partner's catches, live while linked to that partner and marked
+// "last synced" otherwise. They never set this save's own flags.
+#define DEX_FIRST_SEND     90
+#define DEX_REFRESH     (60 * 30)
+
+struct CoopDexMsg
+{
+    u16 magic;
+    u16 count;
+    u32 otId;
+    u8 name[PLAYER_NAME_LENGTH + 1];
+    u8 caught[COOP_DEX_FLAG_BYTES];
+    u16 checksum;
+    u16 pad;
+};
+
+STATIC_ASSERT(sizeof(struct CoopDexMsg) <= BLOCK_BUFFER_SIZE, CoopDexMsgFitsBlock);
+STATIC_ASSERT(NUM_DEX_FLAG_BYTES <= COOP_DEX_FLAG_BYTES, CoopDexCacheHoldsCaughtFlags);
+
+static EWRAM_DATA u32 sDexSentHash = 0;
+static EWRAM_DATA bool8 sDexSent = FALSE;
+static EWRAM_DATA u16 sDexTimer = 0;
+
+static u16 Dex_Checksum(const struct CoopDexMsg *msg)
+{
+    const u16 *words = (const u16 *)msg;
+    u32 i, sum = 0xDE51;
+
+    for (i = 0; i < offsetof(struct CoopDexMsg, checksum) / 2; i++)
+        sum = ((sum << 5) | (sum >> 11)) ^ words[i];
+    return (u16)(sum ^ (sum >> 16));
+}
+
+static u32 Dex_Hash(void)
+{
+    u32 i, h = 2166136261u;
+
+    for (i = 0; i < NUM_DEX_FLAG_BYTES; i++)
+        h = (h ^ gSaveBlock1Ptr->dexCaught[i]) * 16777619u;
+    return h;
+}
+
+static void Dex_Poll(void)
+{
+    struct CoopDexMsg msg;
+    u32 hash;
+
+    if (sDexTimer < 0xFFFF)
+        sDexTimer++;
+    // Only between deals, with nothing else in flight.
+    if (sDeal.state != DS_IDLE || sLink.count != 0 || sLink.needAck || gLinkTransferringData
+     || Coop_OtherInteractionBusy() || sDexTimer < DEX_FIRST_SEND)
+        return;
+    hash = Dex_Hash();
+    if (sDexSent && hash == sDexSentHash && sDexTimer < DEX_REFRESH)
+        return;
+    memset(&msg, 0, sizeof(msg));
+    msg.magic = COOP_DEX_MAGIC;
+    msg.count = GetNationalPokedexCount(FLAG_GET_CAUGHT);
+    msg.otId = Deal_MyOtId();
+    StringCopy(msg.name, gSaveBlock2Ptr->playerName);
+    memcpy(msg.caught, gSaveBlock1Ptr->dexCaught, NUM_DEX_FLAG_BYTES);
+    msg.checksum = Dex_Checksum(&msg);
+    if (SendBlock(BitmaskAllOtherLinkPlayers(), &msg, sizeof(msg)))
+    {
+        sDexSent = TRUE;
+        sDexSentHash = hash;
+        sDexTimer = 0;
+    }
+}
+
+void CoopDex_HandleBlock(u32 playerId, const u16 *words)
+{
+    struct CoopDexMsg msg;
+    struct CoopSave *save = Coop_GetSave();
+
+    if (playerId == GetMultiplayerId() || save == NULL)
+        return;
+    memcpy(&msg, words, sizeof(msg));
+    if (msg.magic != COOP_DEX_MAGIC || msg.checksum != Dex_Checksum(&msg))
+        return;
+    // A different partner replaces the old one's catches entirely.
+    save->partnerDexOtId = msg.otId;
+    StringCopyN(save->partnerDexName, msg.name, PLAYER_NAME_LENGTH);
+    save->partnerDexName[PLAYER_NAME_LENGTH] = EOS;
+    memcpy(save->partnerCaught, msg.caught, NUM_DEX_FLAG_BYTES);
+    save->partnerDexHours = gSaveBlock2Ptr->playTimeHours;
+    save->partnerDexMinutes = gSaveBlock2Ptr->playTimeMinutes;
+    save->partnerDexValid = TRUE;
+}
+
+// The cached catches apply: synced from this partner, or offline.
+static bool8 Dex_CacheApplies(void)
+{
+    struct CoopSave *save = Coop_GetSave();
+
+    if (save == NULL || !save->partnerDexValid)
+        return FALSE;
+    if (Deal_LinkOk() && gReceivedRemoteLinkPlayers && save->partnerDexOtId != Deal_PartnerOtId())
+        return FALSE; // linked to someone else: not synced from them yet
+    return TRUE;
+}
+
+bool8 CoopDex_PartnerCaught(u16 nationalNum)
+{
+    struct CoopSave *save;
+    u32 i;
+
+    if (nationalNum == 0 || nationalNum > NATIONAL_DEX_COUNT || !Dex_CacheApplies())
+        return FALSE;
+    save = Coop_GetSave();
+    i = nationalNum - 1;
+    return (save->partnerCaught[i / 8] >> (i % 8)) & 1;
+}
+
+// CO-OP menu: whose catches are cached and how fresh, with the counts.
+// gStringVar4 gets the text. VAR_RESULT: 0 nothing cached, 1 linked to
+// that partner now, 2 cached from earlier.
+u16 CoopDex_BufferSummary(void)
+{
+    struct CoopSave *save = Coop_GetSave();
+    u16 both = 0, mine = 0, theirs = 0, num;
+    bool8 live;
+    u8 *end;
+
+    if (!Dex_CacheApplies())
+    {
+        StringCopy(gStringVar4, COMPOUND_STRING("No partner POKéDEX yet. It is shared\nonce you link with a partner.{PAUSE_UNTIL_PRESS}"));
+        return 0;
+    }
+    for (num = 1; num <= NATIONAL_DEX_COUNT; num++)
+    {
+        bool8 me = GetSetPokedexFlag(num, FLAG_GET_CAUGHT);
+        bool8 them = CoopDex_PartnerCaught(num);
+
+        if (me && them)
+            both++;
+        else if (me)
+            mine++;
+        else if (them)
+            theirs++;
+    }
+    live = Deal_LinkOk() && gReceivedRemoteLinkPlayers && save->partnerDexOtId == Deal_PartnerOtId();
+    StringCopy(gStringVar1, save->partnerDexName);
+    end = StringCopy(gStringVar4, gStringVar1);
+    if (live)
+    {
+        end = StringCopy(end, COMPOUND_STRING("'s catches, linked now.\n"));
+    }
+    else
+    {
+        end = StringCopy(end, COMPOUND_STRING("'s catches, last synced at\n"));
+        end = ConvertIntToDecimalStringN(end, save->partnerDexHours, STR_CONV_MODE_LEFT_ALIGN, 3);
+        end = StringCopy(end, COMPOUND_STRING(":"));
+        end = ConvertIntToDecimalStringN(end, save->partnerDexMinutes, STR_CONV_MODE_LEADING_ZEROS, 2);
+        end = StringCopy(end, COMPOUND_STRING(" of your play time.\p"));
+    }
+    end = StringCopy(end, live ? COMPOUND_STRING("Both: ") : COMPOUND_STRING("Both: "));
+    end = ConvertIntToDecimalStringN(end, both, STR_CONV_MODE_LEFT_ALIGN, 4);
+    end = StringCopy(end, COMPOUND_STRING("  You only: "));
+    end = ConvertIntToDecimalStringN(end, mine, STR_CONV_MODE_LEFT_ALIGN, 4);
+    end = StringCopy(end, COMPOUND_STRING("\n"));
+    end = StringCopy(end, gStringVar1);
+    end = StringCopy(end, COMPOUND_STRING(" only: "));
+    end = ConvertIntToDecimalStringN(end, theirs, STR_CONV_MODE_LEFT_ALIGN, 4);
+    StringCopy(end, COMPOUND_STRING("\pIn the POKéDEX list, a red ball is\nyours, a green one only your\lpartner's, red and green both.{PAUSE_UNTIL_PRESS}"));
+    return live ? 1 : 2;
+}
+
 void CoopDeal_OnSessionStart(void)
 {
+    sDexSent = FALSE;
+    sDexTimer = 0;
     // A new cable session restarts both sides' sequence numbers.
     memset(&sLink, 0, sizeof(sLink));
     sSessionCount++;

@@ -18,6 +18,10 @@ bool8 CoopDeal_Busy(void);
 bool8 CoopDeal_ItemGiftable(u16 item);
 void CoopDeal_AbortFriendlyBattle(void);
 void CoopDeal_FieldFrame(void);
+void CoopDex_HandleBlock(u32 playerId, const u16 *words);
+bool8 CoopDex_PartnerCaught(u16 nationalNum);
+u16 CoopDex_BufferSummary(void);
+#define COOP_DEX_MAGIC 0xC0DE
 
 // Called by coop.c, implemented there.
 struct CoopSave *Coop_GetSave(void);

@@ -1,0 +1,44 @@
+# Partner POKEDEX tracker (actual play from the story_seg6 saves):
+# each save learns the other's catches over the link; the list marks them;
+# the CO-OP menu names the partner; nothing is added to the save's own dex.
+# FIXTURE: player 1 marks national #252 Treecko (Hoenn No001) and #255
+# Torchic (No004) caught; player 0 owns Torchic and Combusken (#255, #256).
+include deal_setup.inc
+1 dex_caught 252 1
+1 dex_caught 255 1
+b wait 400
+0 expect_partner_dex 252 1
+0 expect_partner_dex 255 1
+0 expect_partner_dex 256 0
+1 expect_partner_dex 255 1
+1 expect_partner_dex 256 1
+1 expect_partner_dex 252 0
+0 press UP 1
+0 wait 20
+0 press START 2
+0 wait 40
+0 menu_to POKEDEX
+0 press A 2
+0 wait 240
+0 shot dex-list
+0 press B 2
+0 wait 120
+0 press B 2
+0 until_field 600
+0 press START 2
+0 wait 40
+0 menu_to COOP
+0 press A 2
+0 wait 60
+0 press DOWN 2
+0 wait 10
+0 press DOWN 2
+0 wait 10
+0 press A 2
+0 wait 120
+0 shot dex-summary
+0 press A 2
+0 wait 90
+0 shot dex-summary2
+0 mash_field 900 B
+include save_again.inc
