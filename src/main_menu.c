@@ -1,4 +1,6 @@
 #include "global.h"
+#include "region_map.h"
+#include "coop_protocol.h"
 #include "trainer_pokemon_sprites.h"
 #include "bg.h"
 #include "constants/rgb.h"
@@ -2208,8 +2210,30 @@ static void CreateMainMenuErrorWindow(const u8 *str)
     SetGpuReg(REG_OFFSET_WIN0V, WIN_RANGE(113, DISPLAY_HEIGHT - 1));
 }
 
+// Co-op: where this save was made and which ROM build is running, so two
+// players' saves (and builds) are told apart before CONTINUE.
+static void MainMenu_FormatSavegameWhere(void)
+{
+    u8 str[0x20];
+    const struct MapHeader *header = Overworld_GetMapHeaderByGroupAndId(gSaveBlock1Ptr->location.mapGroup, gSaveBlock1Ptr->location.mapNum);
+    u8 *end;
+    u32 fontId;
+
+    end = StringCopy(str, COMPOUND_STRING("Build "));
+    // In halves: the converter works on signed values.
+    end = ConvertIntToHexStringN(end, COOP_BUILD_ID >> 16, STR_CONV_MODE_LEADING_ZEROS, 4);
+    ConvertIntToHexStringN(end, COOP_BUILD_ID & 0xFFFF, STR_CONV_MODE_LEADING_ZEROS, 4);
+    AddTextPrinterParameterized3(2, FONT_SMALL, 62, 3, sTextColor_MenuInfo, TEXT_SKIP_DRAW, str);
+    if (header == NULL)
+        return;
+    GetMapName(str, header->regionMapSectionId, 0);
+    fontId = GetFontIdToFit(str, FONT_NORMAL, 0, 0xD0 - 118);
+    AddTextPrinterParameterized3(2, fontId, GetStringRightAlignXOffset(fontId, str, 0xD0), 1, sTextColor_MenuInfo, TEXT_SKIP_DRAW, str);
+}
+
 static void MainMenu_FormatSavegameText(void)
 {
+    MainMenu_FormatSavegameWhere();
     MainMenu_FormatSavegamePlayer();
     MainMenu_FormatSavegamePokedex();
     MainMenu_FormatSavegameTime();

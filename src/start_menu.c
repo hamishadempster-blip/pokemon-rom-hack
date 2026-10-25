@@ -1,4 +1,5 @@
 #include "global.h"
+#include "coop_protocol.h"
 #include "config/save.h"
 #include "battle_pike.h"
 #include "battle_pyramid.h"
@@ -1452,6 +1453,7 @@ static void Task_SaveAfterLinkBattle(u8 taskId)
 static void ShowSaveInfoWindow(void)
 {
     struct WindowTemplate saveInfoWindow = sSaveInfoWindowTemplate;
+    u8 build[0x10];
     enum Gender gender;
     u8 color;
     u32 xOffset;
@@ -1461,6 +1463,7 @@ static void ShowSaveInfoWindow(void)
     {
         saveInfoWindow.height -= 2;
     }
+    saveInfoWindow.height += 2; // co-op: the ROM build
 
     sSaveInfoWindowId = AddWindow(&saveInfoWindow);
     DrawStdWindowFrame(sSaveInfoWindowId, FALSE);
@@ -1506,6 +1509,14 @@ static void ShowSaveInfoWindow(void)
     BufferSaveMenuText(SAVE_MENU_PLAY_TIME, gStringVar4, color);
     xOffset = GetStringRightAlignXOffset(FONT_NORMAL, gStringVar4, 0x70);
     AddTextPrinterParameterized(sSaveInfoWindowId, FONT_NORMAL, gStringVar4, xOffset, yOffset, TEXT_SKIP_DRAW, NULL);
+
+    // Print the ROM build: both co-op players need the same one.
+    yOffset += 16;
+    AddTextPrinterParameterized(sSaveInfoWindowId, FONT_NORMAL, COMPOUND_STRING("BUILD"), 0, yOffset, TEXT_SKIP_DRAW, NULL);
+    // In halves: the converter works on signed values.
+    ConvertIntToHexStringN(ConvertIntToHexStringN(build, COOP_BUILD_ID >> 16, STR_CONV_MODE_LEADING_ZEROS, 4), COOP_BUILD_ID & 0xFFFF, STR_CONV_MODE_LEADING_ZEROS, 4);
+    xOffset = GetStringRightAlignXOffset(FONT_NORMAL, build, 0x70);
+    AddTextPrinterParameterized(sSaveInfoWindowId, FONT_NORMAL, build, xOffset, yOffset, TEXT_SKIP_DRAW, NULL);
 
     CopyWindowToVram(sSaveInfoWindowId, COPYWIN_GFX);
 }
