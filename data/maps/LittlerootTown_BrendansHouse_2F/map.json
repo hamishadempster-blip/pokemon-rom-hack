@@ -17,7 +17,7 @@
   "object_events": [
     {
       "local_id": "LOCALID_RIVALS_HOUSE_2F_RIVAL",
-      "graphics_id": "OBJ_EVENT_GFX_RIVAL_BRENDAN_NORMAL",
+      "graphics_id": "OBJ_EVENT_GFX_SOREN_NORMAL",
       "x": 7,
       "y": 1,
       "elevation": 0,
@@ -268,6 +268,14 @@
       "elevation": 0,
       "player_facing_dir": "BG_EVENT_PLAYER_FACING_ANY",
       "script": "PlayersHouse_2F_EventScript_GameCube"
+    },
+    {
+      "type": "sign",
+      "x": 4,
+      "y": 1,
+      "elevation": 0,
+      "player_facing_dir": "BG_EVENT_PLAYER_FACING_NORTH",
+      "script": "Coop_EventScript_Wardrobe"
     }
   ]
 }

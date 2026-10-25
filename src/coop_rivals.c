@@ -38,10 +38,12 @@ static EWRAM_DATA u8 sTwinRetry = 0;
 
 extern const u8 Coop_EventScript_TalkTwin[];
 
+// Birch's twins have their own graphics (OBJ_EVENT_GFX_SOREN_* and
+// OBJ_EVENT_GFX_MIRA_*), used only by the rival story; the stock RIVAL_*
+// graphics stay with the player's own representations.
 static bool8 Coop_IsRivalGfx(u16 gfx)
 {
-    return (gfx >= OBJ_EVENT_GFX_RIVAL_BRENDAN_NORMAL && gfx <= OBJ_EVENT_GFX_RIVAL_BRENDAN_FIELD_MOVE)
-        || (gfx >= OBJ_EVENT_GFX_RIVAL_MAY_NORMAL && gfx <= OBJ_EVENT_GFX_RIVAL_MAY_FIELD_MOVE);
+    return gfx >= OBJ_EVENT_GFX_SOREN_NORMAL && gfx <= OBJ_EVENT_GFX_MIRA_MACH_BIKE;
 }
 
 bool8 Coop_IsRivalGraphics(u16 gfx)
@@ -49,12 +51,21 @@ bool8 Coop_IsRivalGraphics(u16 gfx)
     return Coop_IsRivalGfx(gfx);
 }
 
-// Same pose, other twin: Brendan's look is Soren, May's look is Mira.
+static bool8 Coop_IsSorenGfx(u16 gfx)
+{
+    return gfx == OBJ_EVENT_GFX_SOREN_NORMAL || gfx == OBJ_EVENT_GFX_SOREN_MACH_BIKE;
+}
+
+// Same pose, other twin.
 static u16 Coop_TwinGfx(u16 primaryGfx)
 {
-    if (primaryGfx >= OBJ_EVENT_GFX_RIVAL_MAY_NORMAL && primaryGfx <= OBJ_EVENT_GFX_RIVAL_MAY_FIELD_MOVE)
-        return OBJ_EVENT_GFX_RIVAL_BRENDAN_NORMAL + (primaryGfx - OBJ_EVENT_GFX_RIVAL_MAY_NORMAL);
-    return OBJ_EVENT_GFX_RIVAL_MAY_NORMAL + (primaryGfx - OBJ_EVENT_GFX_RIVAL_BRENDAN_NORMAL);
+    switch (primaryGfx)
+    {
+    case OBJ_EVENT_GFX_SOREN_MACH_BIKE: return OBJ_EVENT_GFX_MIRA_MACH_BIKE;
+    case OBJ_EVENT_GFX_MIRA_MACH_BIKE:  return OBJ_EVENT_GFX_SOREN_MACH_BIKE;
+    case OBJ_EVENT_GFX_MIRA_NORMAL:     return OBJ_EVENT_GFX_SOREN_NORMAL;
+    default:                            return OBJ_EVENT_GFX_MIRA_NORMAL;
+    }
 }
 
 // The bedrooms and the downstairs meeting introduce one twin at home; the
@@ -389,8 +400,7 @@ u16 Coop_TwinIdentity(void)
 
     if (twin >= OBJECT_EVENTS_COUNT)
         return COOP_RIVAL_NONE;
-    if (gObjectEvents[twin].graphicsId >= OBJ_EVENT_GFX_RIVAL_BRENDAN_NORMAL
-     && gObjectEvents[twin].graphicsId <= OBJ_EVENT_GFX_RIVAL_BRENDAN_FIELD_MOVE)
+    if (Coop_IsSorenGfx(gObjectEvents[twin].graphicsId))
         return COOP_RIVAL_SOREN;
     return COOP_RIVAL_MIRA;
 }

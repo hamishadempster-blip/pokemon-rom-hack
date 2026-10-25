@@ -10162,7 +10162,7 @@ IVs: 18 HP / 18 Atk / 18 Def / 18 SpA / 18 SpD / 18 Spe
 === TRAINER_BRENDAN_ROUTE_103_MUDKIP ===
 Name: SOREN
 Class: Rival
-Pic: Brendan
+Pic: Soren
 Gender: Male
 Music: Male
 Double Battle: No
@@ -10175,7 +10175,7 @@ IVs: 8 HP / 8 Atk / 8 Def / 8 SpA / 8 SpD / 8 Spe
 === TRAINER_BRENDAN_ROUTE_110_MUDKIP ===
 Name: SOREN
 Class: Rival
-Pic: Brendan
+Pic: Soren
 Gender: Male
 Music: Male
 Double Battle: No
@@ -10196,7 +10196,7 @@ IVs: 18 HP / 18 Atk / 18 Def / 18 SpA / 18 SpD / 18 Spe
 === TRAINER_BRENDAN_ROUTE_119_MUDKIP ===
 Name: SOREN
 Class: Rival
-Pic: Brendan
+Pic: Soren
 Gender: Male
 Music: Male
 Double Battle: No
@@ -10221,7 +10221,7 @@ IVs: 24 HP / 24 Atk / 24 Def / 24 SpA / 24 SpD / 24 Spe
 === TRAINER_BRENDAN_ROUTE_103_TREECKO ===
 Name: SOREN
 Class: Rival
-Pic: Brendan
+Pic: Soren
 Gender: Male
 Music: Male
 Double Battle: No
@@ -10234,7 +10234,7 @@ IVs: 8 HP / 8 Atk / 8 Def / 8 SpA / 8 SpD / 8 Spe
 === TRAINER_BRENDAN_ROUTE_110_TREECKO ===
 Name: SOREN
 Class: Rival
-Pic: Brendan
+Pic: Soren
 Gender: Male
 Music: Male
 Double Battle: No
@@ -10255,7 +10255,7 @@ IVs: 18 HP / 18 Atk / 18 Def / 18 SpA / 18 SpD / 18 Spe
 === TRAINER_BRENDAN_ROUTE_119_TREECKO ===
 Name: SOREN
 Class: Rival
-Pic: Brendan
+Pic: Soren
 Gender: Male
 Music: Male
 Double Battle: No
@@ -10280,7 +10280,7 @@ IVs: 18 HP / 18 Atk / 18 Def / 18 SpA / 18 SpD / 18 Spe
 === TRAINER_BRENDAN_ROUTE_103_TORCHIC ===
 Name: SOREN
 Class: Rival
-Pic: Brendan
+Pic: Soren
 Gender: Male
 Music: Male
 Double Battle: No
@@ -10293,7 +10293,7 @@ IVs: 8 HP / 8 Atk / 8 Def / 8 SpA / 8 SpD / 8 Spe
 === TRAINER_BRENDAN_ROUTE_110_TORCHIC ===
 Name: SOREN
 Class: Rival
-Pic: Brendan
+Pic: Soren
 Gender: Male
 Music: Male
 Double Battle: No
@@ -10314,7 +10314,7 @@ IVs: 18 HP / 18 Atk / 18 Def / 18 SpA / 18 SpD / 18 Spe
 === TRAINER_BRENDAN_ROUTE_119_TORCHIC ===
 Name: SOREN
 Class: Rival
-Pic: Brendan
+Pic: Soren
 Gender: Male
 Music: Male
 Double Battle: No
@@ -10339,7 +10339,7 @@ IVs: 18 HP / 18 Atk / 18 Def / 18 SpA / 18 SpD / 18 Spe
 === TRAINER_MAY_ROUTE_103_MUDKIP ===
 Name: MIRA
 Class: Rival
-Pic: May
+Pic: Mira
 Gender: Female
 Music: Female
 Double Battle: No
@@ -10352,7 +10352,7 @@ IVs: 8 HP / 8 Atk / 8 Def / 8 SpA / 8 SpD / 8 Spe
 === TRAINER_MAY_ROUTE_110_MUDKIP ===
 Name: MIRA
 Class: Rival
-Pic: May
+Pic: Mira
 Gender: Female
 Music: Female
 Double Battle: No
@@ -10373,7 +10373,7 @@ IVs: 18 HP / 18 Atk / 18 Def / 18 SpA / 18 SpD / 18 Spe
 === TRAINER_MAY_ROUTE_119_MUDKIP ===
 Name: MIRA
 Class: Rival
-Pic: May
+Pic: Mira
 Gender: Female
 Music: Female
 Double Battle: No
@@ -10398,7 +10398,7 @@ IVs: 24 HP / 24 Atk / 24 Def / 24 SpA / 24 SpD / 24 Spe
 === TRAINER_MAY_ROUTE_103_TREECKO ===
 Name: MIRA
 Class: Rival
-Pic: May
+Pic: Mira
 Gender: Female
 Music: Female
 Double Battle: No
@@ -10411,7 +10411,7 @@ IVs: 8 HP / 8 Atk / 8 Def / 8 SpA / 8 SpD / 8 Spe
 === TRAINER_MAY_ROUTE_110_TREECKO ===
 Name: MIRA
 Class: Rival
-Pic: May
+Pic: Mira
 Gender: Female
 Music: Female
 Double Battle: No
@@ -10432,7 +10432,7 @@ IVs: 18 HP / 18 Atk / 18 Def / 18 SpA / 18 SpD / 18 Spe
 === TRAINER_MAY_ROUTE_119_TREECKO ===
 Name: MIRA
 Class: Rival
-Pic: May
+Pic: Mira
 Gender: Female
 Music: Female
 Double Battle: No
@@ -10457,7 +10457,7 @@ IVs: 24 HP / 24 Atk / 24 Def / 24 SpA / 24 SpD / 24 Spe
 === TRAINER_MAY_ROUTE_103_TORCHIC ===
 Name: MIRA
 Class: Rival
-Pic: May
+Pic: Mira
 Gender: Female
 Music: Female
 Double Battle: No
@@ -10470,7 +10470,7 @@ IVs: 8 HP / 8 Atk / 8 Def / 8 SpA / 8 SpD / 8 Spe
 === TRAINER_MAY_ROUTE_110_TORCHIC ===
 Name: MIRA
 Class: Rival
-Pic: May
+Pic: Mira
 Gender: Female
 Music: Female
 Double Battle: No
@@ -10491,7 +10491,7 @@ IVs: 18 HP / 18 Atk / 18 Def / 18 SpA / 18 SpD / 18 Spe
 === TRAINER_MAY_ROUTE_119_TORCHIC ===
 Name: MIRA
 Class: Rival
-Pic: May
+Pic: Mira
 Gender: Female
 Music: Female
 Double Battle: No
@@ -11621,7 +11621,7 @@ IVs: 0 HP / 0 Atk / 0 Def / 0 SpA / 0 SpD / 0 Spe
 === TRAINER_BRENDAN_RUSTBORO_TREECKO ===
 Name: SOREN
 Class: Rival
-Pic: Brendan
+Pic: Soren
 Gender: Male
 Music: Male
 Double Battle: No
@@ -11638,7 +11638,7 @@ IVs: 12 HP / 12 Atk / 12 Def / 12 SpA / 12 SpD / 12 Spe
 === TRAINER_BRENDAN_RUSTBORO_MUDKIP ===
 Name: SOREN
 Class: Rival
-Pic: Brendan
+Pic: Soren
 Gender: Male
 Music: Male
 Double Battle: No
@@ -11749,7 +11749,7 @@ IVs: 0 HP / 0 Atk / 0 Def / 0 SpA / 0 SpD / 0 Spe
 === TRAINER_BRENDAN_RUSTBORO_TORCHIC ===
 Name: SOREN
 Class: Rival
-Pic: Brendan
+Pic: Soren
 Gender: Male
 Music: Male
 Double Battle: No
@@ -11766,7 +11766,7 @@ IVs: 12 HP / 12 Atk / 12 Def / 12 SpA / 12 SpD / 12 Spe
 === TRAINER_MAY_RUSTBORO_MUDKIP ===
 Name: MIRA
 Class: Rival
-Pic: May
+Pic: Mira
 Gender: Female
 Music: Female
 Double Battle: No
@@ -12988,7 +12988,7 @@ IVs: 18 HP / 18 Atk / 18 Def / 18 SpA / 18 SpD / 18 Spe
 === TRAINER_BRENDAN_LILYCOVE_MUDKIP ===
 Name: SOREN
 Class: Rival
-Pic: Brendan
+Pic: Soren
 Gender: Male
 Music: Male
 Double Battle: No
@@ -13013,7 +13013,7 @@ IVs: 28 HP / 28 Atk / 28 Def / 28 SpA / 28 SpD / 28 Spe
 === TRAINER_BRENDAN_LILYCOVE_TREECKO ===
 Name: SOREN
 Class: Rival
-Pic: Brendan
+Pic: Soren
 Gender: Male
 Music: Male
 Double Battle: No
@@ -13038,7 +13038,7 @@ IVs: 18 HP / 18 Atk / 18 Def / 18 SpA / 18 SpD / 18 Spe
 === TRAINER_BRENDAN_LILYCOVE_TORCHIC ===
 Name: SOREN
 Class: Rival
-Pic: Brendan
+Pic: Soren
 Gender: Male
 Music: Male
 Double Battle: No
@@ -13063,7 +13063,7 @@ IVs: 18 HP / 18 Atk / 18 Def / 18 SpA / 18 SpD / 18 Spe
 === TRAINER_MAY_LILYCOVE_MUDKIP ===
 Name: MIRA
 Class: Rival
-Pic: May
+Pic: Mira
 Gender: Female
 Music: Female
 Double Battle: No
@@ -13088,7 +13088,7 @@ IVs: 18 HP / 18 Atk / 18 Def / 18 SpA / 18 SpD / 18 Spe
 === TRAINER_MAY_LILYCOVE_TREECKO ===
 Name: MIRA
 Class: Rival
-Pic: May
+Pic: Mira
 Gender: Female
 Music: Female
 Double Battle: No
@@ -13113,7 +13113,7 @@ IVs: 28 HP / 28 Atk / 28 Def / 28 SpA / 28 SpD / 28 Spe
 === TRAINER_MAY_LILYCOVE_TORCHIC ===
 Name: MIRA
 Class: Rival
-Pic: May
+Pic: Mira
 Gender: Female
 Music: Female
 Double Battle: No
@@ -14959,7 +14959,7 @@ IVs: 12 HP / 12 Atk / 12 Def / 12 SpA / 12 SpD / 12 Spe
 === TRAINER_MAY_RUSTBORO_TREECKO ===
 Name: MIRA
 Class: Rival
-Pic: May
+Pic: Mira
 Gender: Female
 Music: Female
 Double Battle: No
@@ -14976,7 +14976,7 @@ IVs: 12 HP / 12 Atk / 12 Def / 12 SpA / 12 SpD / 12 Spe
 === TRAINER_MAY_RUSTBORO_TORCHIC ===
 Name: MIRA
 Class: Rival
-Pic: May
+Pic: Mira
 Gender: Female
 Music: Female
 Double Battle: No
@@ -18147,7 +18147,7 @@ IVs: 0 HP / 0 Atk / 0 Def / 0 SpA / 0 SpD / 0 Spe
 === TRAINER_SOREN_R103_FIRE ===
 Name: SOREN
 Class: Rival
-Pic: Brendan
+Pic: Soren
 Gender: Male
 Music: Male
 Double Battle: Yes
@@ -18164,7 +18164,7 @@ IVs: 8 HP / 8 Atk / 8 Def / 8 SpA / 8 SpD / 8 Spe
 === TRAINER_SOREN_R103_WATER ===
 Name: SOREN
 Class: Rival
-Pic: Brendan
+Pic: Soren
 Gender: Male
 Music: Male
 Double Battle: Yes
@@ -18181,7 +18181,7 @@ IVs: 8 HP / 8 Atk / 8 Def / 8 SpA / 8 SpD / 8 Spe
 === TRAINER_SOREN_R103_GRASS ===
 Name: SOREN
 Class: Rival
-Pic: Brendan
+Pic: Soren
 Gender: Male
 Music: Male
 Double Battle: Yes
@@ -18198,7 +18198,7 @@ IVs: 8 HP / 8 Atk / 8 Def / 8 SpA / 8 SpD / 8 Spe
 === TRAINER_MIRA_R103_FIRE ===
 Name: MIRA
 Class: Rival
-Pic: May
+Pic: Mira
 Gender: Female
 Music: Female
 Double Battle: Yes
@@ -18215,7 +18215,7 @@ IVs: 8 HP / 8 Atk / 8 Def / 8 SpA / 8 SpD / 8 Spe
 === TRAINER_MIRA_R103_WATER ===
 Name: MIRA
 Class: Rival
-Pic: May
+Pic: Mira
 Gender: Female
 Music: Female
 Double Battle: Yes
@@ -18232,7 +18232,7 @@ IVs: 8 HP / 8 Atk / 8 Def / 8 SpA / 8 SpD / 8 Spe
 === TRAINER_MIRA_R103_GRASS ===
 Name: MIRA
 Class: Rival
-Pic: May
+Pic: Mira
 Gender: Female
 Music: Female
 Double Battle: Yes
@@ -18249,7 +18249,7 @@ IVs: 8 HP / 8 Atk / 8 Def / 8 SpA / 8 SpD / 8 Spe
 === TRAINER_SOREN_RUSTBORO_FIRE ===
 Name: SOREN
 Class: Rival
-Pic: Brendan
+Pic: Soren
 Gender: Male
 Music: Male
 Double Battle: Yes
@@ -18274,7 +18274,7 @@ IVs: 12 HP / 12 Atk / 12 Def / 12 SpA / 12 SpD / 12 Spe
 === TRAINER_SOREN_RUSTBORO_WATER ===
 Name: SOREN
 Class: Rival
-Pic: Brendan
+Pic: Soren
 Gender: Male
 Music: Male
 Double Battle: Yes
@@ -18295,7 +18295,7 @@ IVs: 18 HP / 18 Atk / 18 Def / 18 SpA / 18 SpD / 18 Spe
 === TRAINER_SOREN_RUSTBORO_GRASS ===
 Name: SOREN
 Class: Rival
-Pic: Brendan
+Pic: Soren
 Gender: Male
 Music: Male
 Double Battle: Yes
@@ -18316,7 +18316,7 @@ IVs: 18 HP / 18 Atk / 18 Def / 18 SpA / 18 SpD / 18 Spe
 === TRAINER_MIRA_RUSTBORO_FIRE ===
 Name: MIRA
 Class: Rival
-Pic: May
+Pic: Mira
 Gender: Female
 Music: Female
 Double Battle: Yes
@@ -18341,7 +18341,7 @@ IVs: 12 HP / 12 Atk / 12 Def / 12 SpA / 12 SpD / 12 Spe
 === TRAINER_MIRA_RUSTBORO_WATER ===
 Name: MIRA
 Class: Rival
-Pic: May
+Pic: Mira
 Gender: Female
 Music: Female
 Double Battle: Yes
@@ -18366,7 +18366,7 @@ IVs: 12 HP / 12 Atk / 12 Def / 12 SpA / 12 SpD / 12 Spe
 === TRAINER_MIRA_RUSTBORO_GRASS ===
 Name: MIRA
 Class: Rival
-Pic: May
+Pic: Mira
 Gender: Female
 Music: Female
 Double Battle: Yes
@@ -18391,7 +18391,7 @@ IVs: 12 HP / 12 Atk / 12 Def / 12 SpA / 12 SpD / 12 Spe
 === TRAINER_SOREN_R110_FIRE ===
 Name: SOREN
 Class: Rival
-Pic: Brendan
+Pic: Soren
 Gender: Male
 Music: Male
 Double Battle: Yes
@@ -18420,7 +18420,7 @@ IVs: 18 HP / 18 Atk / 18 Def / 18 SpA / 18 SpD / 18 Spe
 === TRAINER_SOREN_R110_WATER ===
 Name: SOREN
 Class: Rival
-Pic: Brendan
+Pic: Soren
 Gender: Male
 Music: Male
 Double Battle: Yes
@@ -18445,7 +18445,7 @@ IVs: 18 HP / 18 Atk / 18 Def / 18 SpA / 18 SpD / 18 Spe
 === TRAINER_SOREN_R110_GRASS ===
 Name: SOREN
 Class: Rival
-Pic: Brendan
+Pic: Soren
 Gender: Male
 Music: Male
 Double Battle: Yes
@@ -18470,7 +18470,7 @@ IVs: 18 HP / 18 Atk / 18 Def / 18 SpA / 18 SpD / 18 Spe
 === TRAINER_MIRA_R110_FIRE ===
 Name: MIRA
 Class: Rival
-Pic: May
+Pic: Mira
 Gender: Female
 Music: Female
 Double Battle: Yes
@@ -18499,7 +18499,7 @@ IVs: 18 HP / 18 Atk / 18 Def / 18 SpA / 18 SpD / 18 Spe
 === TRAINER_MIRA_R110_WATER ===
 Name: MIRA
 Class: Rival
-Pic: May
+Pic: Mira
 Gender: Female
 Music: Female
 Double Battle: Yes
@@ -18524,7 +18524,7 @@ IVs: 18 HP / 18 Atk / 18 Def / 18 SpA / 18 SpD / 18 Spe
 === TRAINER_MIRA_R110_GRASS ===
 Name: MIRA
 Class: Rival
-Pic: May
+Pic: Mira
 Gender: Female
 Music: Female
 Double Battle: Yes
@@ -18549,7 +18549,7 @@ IVs: 18 HP / 18 Atk / 18 Def / 18 SpA / 18 SpD / 18 Spe
 === TRAINER_SOREN_R119_FIRE ===
 Name: SOREN
 Class: Rival
-Pic: Brendan
+Pic: Soren
 Gender: Male
 Music: Male
 Double Battle: Yes
@@ -18570,7 +18570,7 @@ IVs: 18 HP / 18 Atk / 18 Def / 18 SpA / 18 SpD / 18 Spe
 === TRAINER_SOREN_R119_WATER ===
 Name: SOREN
 Class: Rival
-Pic: Brendan
+Pic: Soren
 Gender: Male
 Music: Male
 Double Battle: Yes
@@ -18596,7 +18596,7 @@ IVs: 24 HP / 24 Atk / 24 Def / 24 SpA / 24 SpD / 24 Spe
 === TRAINER_SOREN_R119_GRASS ===
 Name: SOREN
 Class: Rival
-Pic: Brendan
+Pic: Soren
 Gender: Male
 Music: Male
 Double Battle: Yes
@@ -18621,7 +18621,7 @@ IVs: 18 HP / 18 Atk / 18 Def / 18 SpA / 18 SpD / 18 Spe
 === TRAINER_MIRA_R119_FIRE ===
 Name: MIRA
 Class: Rival
-Pic: May
+Pic: Mira
 Gender: Female
 Music: Female
 Double Battle: Yes
@@ -18652,7 +18652,7 @@ IVs: 18 HP / 18 Atk / 18 Def / 18 SpA / 18 SpD / 18 Spe
 === TRAINER_MIRA_R119_WATER ===
 Name: MIRA
 Class: Rival
-Pic: May
+Pic: Mira
 Gender: Female
 Music: Female
 Double Battle: Yes
@@ -18682,7 +18682,7 @@ IVs: 18 HP / 18 Atk / 18 Def / 18 SpA / 18 SpD / 18 Spe
 === TRAINER_MIRA_R119_GRASS ===
 Name: MIRA
 Class: Rival
-Pic: May
+Pic: Mira
 Gender: Female
 Music: Female
 Double Battle: Yes
@@ -18711,7 +18711,7 @@ IVs: 24 HP / 24 Atk / 24 Def / 24 SpA / 24 SpD / 24 Spe
 === TRAINER_SOREN_LILYCOVE_FIRE ===
 Name: SOREN
 Class: Rival
-Pic: Brendan
+Pic: Soren
 Gender: Male
 Music: Male
 Double Battle: Yes
@@ -18736,7 +18736,7 @@ IVs: 18 HP / 18 Atk / 18 Def / 18 SpA / 18 SpD / 18 Spe
 === TRAINER_SOREN_LILYCOVE_WATER ===
 Name: SOREN
 Class: Rival
-Pic: Brendan
+Pic: Soren
 Gender: Male
 Music: Male
 Double Battle: Yes
@@ -18757,7 +18757,7 @@ IVs: 18 HP / 18 Atk / 18 Def / 18 SpA / 18 SpD / 18 Spe
 === TRAINER_SOREN_LILYCOVE_GRASS ===
 Name: SOREN
 Class: Rival
-Pic: Brendan
+Pic: Soren
 Gender: Male
 Music: Male
 Double Battle: Yes
@@ -18782,7 +18782,7 @@ IVs: 18 HP / 18 Atk / 18 Def / 18 SpA / 18 SpD / 18 Spe
 === TRAINER_MIRA_LILYCOVE_FIRE ===
 Name: MIRA
 Class: Rival
-Pic: May
+Pic: Mira
 Gender: Female
 Music: Female
 Double Battle: Yes
@@ -18808,7 +18808,7 @@ IVs: 18 HP / 18 Atk / 18 Def / 18 SpA / 18 SpD / 18 Spe
 === TRAINER_MIRA_LILYCOVE_WATER ===
 Name: MIRA
 Class: Rival
-Pic: May
+Pic: Mira
 Gender: Female
 Music: Female
 Double Battle: Yes
@@ -18842,7 +18842,7 @@ IVs: 28 HP / 28 Atk / 28 Def / 28 SpA / 28 SpD / 28 Spe
 === TRAINER_MIRA_LILYCOVE_GRASS ===
 Name: MIRA
 Class: Rival
-Pic: May
+Pic: Mira
 Gender: Female
 Music: Female
 Double Battle: Yes

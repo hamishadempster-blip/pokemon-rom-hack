@@ -738,3 +738,4 @@ gSpecials::
 	def_special CoopQuest_OpenChamber
 	def_special CoopQuest_BufferJournal
 	def_special Coop_BufferUnlinkedMenu
+	def_special CoopOutfit_OpenMenu

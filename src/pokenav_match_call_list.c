@@ -351,6 +351,11 @@ enum TrainerPicID GetMatchCallTrainerPic(int index)
     }
 
     index = MatchCall_GetOverrideFacilityClass(headerId);
+    // The rival entries show Birch's twins, not the player's own pics.
+    if (index == FACILITY_CLASS_BRENDAN)
+        return TRAINER_PIC_SOREN;
+    if (index == FACILITY_CLASS_MAY)
+        return TRAINER_PIC_MIRA;
     return gFacilityClassToPicIndex[index];
 }
 

@@ -56,6 +56,7 @@
 #include "constants/field_effects.h"
 #include "field_effect.h"
 #include "coop_deal.h"
+#include "coop_outfit.h"
 #include "coop_quest.h"
 
 #define COOP_INVITE_MAGIC 0xC0A1
@@ -290,8 +291,8 @@ static struct CoopSave *CoopSave(void)
         save->storyApplied = 0;
         save->rivalId = COOP_RIVAL_NONE;
         save->sharedItems = 0;
-        save->unused[0] = 0;
-        save->unused[1] = 0;
+        save->outfit = 0;
+        save->partnerMarker = 0;
     }
     // Layout 2: escrow record, partner Pokedex cache, battle speed, rewards.
     if (save->layout < 2)
@@ -392,13 +393,14 @@ static u16 Coop_PartnerGfx(const struct CoopFrame *frame)
 {
     bool8 female = frame->gender == FEMALE;
 
+    // The partner's own palette (outfit), not this player's.
     if (frame->surf)
-        return female ? OBJ_EVENT_GFX_MAY_SURFING : OBJ_EVENT_GFX_BRENDAN_SURFING;
+        return CoopOutfit_PartnerGfx(female, COOP_OUTFIT_POSE_SURFING);
     if (frame->bike && frame->acro)
-        return female ? OBJ_EVENT_GFX_MAY_ACRO_BIKE : OBJ_EVENT_GFX_BRENDAN_ACRO_BIKE;
+        return CoopOutfit_PartnerGfx(female, COOP_OUTFIT_POSE_ACRO_BIKE);
     if (frame->bike)
-        return female ? OBJ_EVENT_GFX_MAY_MACH_BIKE : OBJ_EVENT_GFX_BRENDAN_MACH_BIKE;
-    return female ? OBJ_EVENT_GFX_MAY_NORMAL : OBJ_EVENT_GFX_BRENDAN_NORMAL;
+        return CoopOutfit_PartnerGfx(female, COOP_OUTFIT_POSE_MACH_BIKE);
+    return CoopOutfit_PartnerGfx(female, COOP_OUTFIT_POSE_NORMAL);
 }
 
 // The partner object keeps the map it was spawned on. Crossing a connection
@@ -2101,6 +2103,25 @@ static EWRAM_DATA u8 sFieldFreeFrames = 0;
 static EWRAM_DATA u8 sFreeBeforeScript = 0;
 #define COOP_PARTNER_TALK_SETTLE 20
 
+// The partner's sprite on this map (and gender), or MAX_SPRITES.
+u8 Coop_PartnerSpriteId(u8 *gender)
+{
+    u8 i;
+
+    *gender = sPartner.gender;
+    if (!sPartnerValid || !sPartnerDrawn)
+        return MAX_SPRITES;
+    for (i = 0; i < OBJECT_EVENTS_COUNT; i++)
+    {
+        struct ObjectEvent *obj = &gObjectEvents[i];
+
+        if (obj->active && obj->localId == OBJ_EVENT_ID_COOP_PARTNER
+         && obj->spriteId < MAX_SPRITES && gSprites[obj->spriteId].inUse)
+            return obj->spriteId;
+    }
+    return MAX_SPRITES;
+}
+
 void Coop_OverworldFrame(void)
 {
     if (ScriptContext_IsEnabled() || ArePlayerFieldControlsLocked())
@@ -2114,6 +2135,7 @@ void Coop_OverworldFrame(void)
         sFieldFreeFrames++;
     }
     CoopDeal_FieldFrame();
+    CoopOutfit_FieldFrame();
     Coop_PollSharedItems();
     if (sLinkState != COOP_LINK_IDLE || sPendingMessage != NULL)
         Coop_EnsureTask();

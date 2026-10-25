@@ -1,0 +1,32 @@
+# outfit_bases.txt's saves after a power cycle: each save still wears its
+# outfit, and after relinking each game learns the partner's again.
+include continue.inc
+0 expect coop_outfit.sShownLocal 3
+1 expect coop_outfit.sShownLocal 4
+b expect coop_outfit.sPartnerKnown 0
+b press START 2
+b wait 50
+b menu_to COOP
+b press A 2
+b wait 50
+b press A 2
+b until_mem coop.sLinkState 2 3000
+b mash_field 1500
+b wait 120
+b expect coop_outfit.sPartnerKnown 1
+0 expect coop_outfit.sPartnerOutfit 4
+1 expect coop_outfit.sPartnerOutfit 3
+b shot bases-reloaded
+# Trainer card (the start menu entry above SAVE): each in its own outfit.
+b press START 2
+b wait 60
+b menu_to SAVE
+b wait 30
+b press UP 4
+b wait 30
+b press A 2
+b wait 150
+b shot bases-trainer-card
+b press B 2
+b wait 90
+b mash_field 600 B

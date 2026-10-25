@@ -1055,6 +1055,7 @@ gStdScripts_End::
 	.include "data/scripts/coop.inc"
 	.include "data/scripts/coop_field_guide.inc"
 	.include "data/scripts/coop_deal.inc"
+	.include "data/scripts/coop_outfit.inc"
 	.include "data/scripts/new_game.inc"
 	.include "data/scripts/hall_of_fame.inc"
 	.include "data/scripts/hall_of_fame_frlg.inc"

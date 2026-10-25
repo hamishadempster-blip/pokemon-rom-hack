@@ -1,4 +1,5 @@
 #include "global.h"
+#include "coop_outfit.h"
 #include "reshow_battle_screen.h"
 #include "battle.h"
 #include "palette.h"
@@ -344,6 +345,7 @@ void CreateBattlerSprite(enum BattlerId battler)
                                                 (8 - GetTrainerBackPicCoords(trainerPicId)->size) * 4 + 80,
                                                  GetBattlerSpriteSubpriority(0));
             gSprites[gBattlerSpriteIds[battler]].oam.paletteNum = IndexOfSpritePaletteTag(GetTrainerPicTag(trainerPicId, FALSE));
+            CoopOutfit_BattleTrainerSprite(battler, gBattlerSpriteIds[battler], trainerPicId);
             gSprites[gBattlerSpriteIds[battler]].callback = SpriteCallbackDummy;
             gSprites[gBattlerSpriteIds[battler]].data[0] = battler;
         }

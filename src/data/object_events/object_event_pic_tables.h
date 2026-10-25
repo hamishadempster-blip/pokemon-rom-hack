@@ -414,6 +414,22 @@ static const struct SpriteFrameImage sPicTable_MayNormal[] = {
     overworld_ascending_frames(gObjectEventPic_MayNormalRunning, 2, 4),
 };
 
+static const struct SpriteFrameImage sPicTable_SorenNormal[] = {
+    overworld_ascending_frames(gObjectEventPic_SorenNormalRunning, 2, 4),
+};
+
+static const struct SpriteFrameImage sPicTable_SorenMachBike[] = {
+    overworld_ascending_frames(gObjectEventPic_SorenMachBike, 4, 4),
+};
+
+static const struct SpriteFrameImage sPicTable_MiraNormal[] = {
+    overworld_ascending_frames(gObjectEventPic_MiraNormalRunning, 2, 4),
+};
+
+static const struct SpriteFrameImage sPicTable_MiraMachBike[] = {
+    overworld_ascending_frames(gObjectEventPic_MiraMachBike, 4, 4),
+};
+
 static const struct SpriteFrameImage sPicTable_MayMachBike[] = {
     overworld_ascending_frames(gObjectEventPic_MayMachBike, 4, 4),
 };

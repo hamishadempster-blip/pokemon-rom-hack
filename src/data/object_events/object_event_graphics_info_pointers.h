@@ -104,6 +104,18 @@ extern const struct ObjectEventGraphicsInfo gObjectEventGraphicsInfo_RivalBrenda
 extern const struct ObjectEventGraphicsInfo gObjectEventGraphicsInfo_RivalBrendanFieldMove;
 extern const struct ObjectEventGraphicsInfo gObjectEventGraphicsInfo_RivalMayNormal;
 extern const struct ObjectEventGraphicsInfo gObjectEventGraphicsInfo_RivalMayMachBike;
+extern const struct ObjectEventGraphicsInfo gObjectEventGraphicsInfo_CoopPartnerBrendanNormal;
+extern const struct ObjectEventGraphicsInfo gObjectEventGraphicsInfo_CoopPartnerBrendanMachBike;
+extern const struct ObjectEventGraphicsInfo gObjectEventGraphicsInfo_CoopPartnerBrendanAcroBike;
+extern const struct ObjectEventGraphicsInfo gObjectEventGraphicsInfo_CoopPartnerBrendanSurfing;
+extern const struct ObjectEventGraphicsInfo gObjectEventGraphicsInfo_CoopPartnerMayNormal;
+extern const struct ObjectEventGraphicsInfo gObjectEventGraphicsInfo_CoopPartnerMayMachBike;
+extern const struct ObjectEventGraphicsInfo gObjectEventGraphicsInfo_CoopPartnerMayAcroBike;
+extern const struct ObjectEventGraphicsInfo gObjectEventGraphicsInfo_CoopPartnerMaySurfing;
+extern const struct ObjectEventGraphicsInfo gObjectEventGraphicsInfo_SorenNormal;
+extern const struct ObjectEventGraphicsInfo gObjectEventGraphicsInfo_SorenMachBike;
+extern const struct ObjectEventGraphicsInfo gObjectEventGraphicsInfo_MiraNormal;
+extern const struct ObjectEventGraphicsInfo gObjectEventGraphicsInfo_MiraMachBike;
 extern const struct ObjectEventGraphicsInfo gObjectEventGraphicsInfo_RivalMayAcroBike;
 extern const struct ObjectEventGraphicsInfo gObjectEventGraphicsInfo_RivalMaySurfing;
 extern const struct ObjectEventGraphicsInfo gObjectEventGraphicsInfo_RivalMayFieldMove;
@@ -791,6 +803,18 @@ const struct ObjectEventGraphicsInfo *const gObjectEventGraphicsInfoPointers[NUM
     [OBJ_EVENT_GFX_DEOXYS_N]                 = &gObjectEventGraphicsInfo_DeoxysN,
     [OBJ_EVENT_GFX_SS_ANNE]                  = &gObjectEventGraphicsInfo_SSAnne,
 #endif // IS_FRLG
+    [OBJ_EVENT_GFX_SOREN_NORMAL]             = &gObjectEventGraphicsInfo_SorenNormal,
+    [OBJ_EVENT_GFX_SOREN_MACH_BIKE]          = &gObjectEventGraphicsInfo_SorenMachBike,
+    [OBJ_EVENT_GFX_MIRA_NORMAL]              = &gObjectEventGraphicsInfo_MiraNormal,
+    [OBJ_EVENT_GFX_MIRA_MACH_BIKE]           = &gObjectEventGraphicsInfo_MiraMachBike,
+    [OBJ_EVENT_GFX_COOP_PARTNER_BRENDAN_NORMAL] = &gObjectEventGraphicsInfo_CoopPartnerBrendanNormal,
+    [OBJ_EVENT_GFX_COOP_PARTNER_BRENDAN_MACH_BIKE] = &gObjectEventGraphicsInfo_CoopPartnerBrendanMachBike,
+    [OBJ_EVENT_GFX_COOP_PARTNER_BRENDAN_ACRO_BIKE] = &gObjectEventGraphicsInfo_CoopPartnerBrendanAcroBike,
+    [OBJ_EVENT_GFX_COOP_PARTNER_BRENDAN_SURFING] = &gObjectEventGraphicsInfo_CoopPartnerBrendanSurfing,
+    [OBJ_EVENT_GFX_COOP_PARTNER_MAY_NORMAL] = &gObjectEventGraphicsInfo_CoopPartnerMayNormal,
+    [OBJ_EVENT_GFX_COOP_PARTNER_MAY_MACH_BIKE] = &gObjectEventGraphicsInfo_CoopPartnerMayMachBike,
+    [OBJ_EVENT_GFX_COOP_PARTNER_MAY_ACRO_BIKE] = &gObjectEventGraphicsInfo_CoopPartnerMayAcroBike,
+    [OBJ_EVENT_GFX_COOP_PARTNER_MAY_SURFING] = &gObjectEventGraphicsInfo_CoopPartnerMaySurfing,
 };
 
 const struct ObjectEventGraphicsInfo *const gMauvilleOldManGraphicsInfoPointers[] = {

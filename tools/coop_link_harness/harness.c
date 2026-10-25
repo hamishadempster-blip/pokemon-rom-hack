@@ -22,7 +22,7 @@
 #define MAX_CMDS 4096
 #define MAX_SYMS 500000
 
-enum { C_PARTNER, C_GOTO, C_HEX, C_PRESS, C_WAIT, C_SHOT, C_DUMP, C_BARRIER, C_UNTIL_CB2, C_UNTIL_FIELD, C_EXPECT, C_UNTIL_MEM, C_BATTLE, C_MENU, C_PARTY, C_FIXTURE, C_WRITE, C_LEAD, C_MOVE, C_SIX, C_VAR, C_FLAG, C_VS, C_EXPECT_FLAG, C_EXPECT_VAR, C_NO_OBJECT, C_MAP, C_OBJECT, C_TEXT_SPEED, C_PACE, C_MUTE, C_PARTNER_AT, C_ITEM, C_EXPECT_ITEM, C_UNTIL_TEXT, C_WARP, C_PC_COUNT, C_MONS, C_NO_COPIES, C_NOTE_MONEY, C_MONEY_GAIN, C_FORCE_ENC, C_EXPECT_RANGE, C_WALK, C_NO_WILD, C_CROSS, C_WALK_BATTLE, C_SMART, C_STRONG, C_UNTIL_TASK, C_MIRROR, C_SPECIES, C_NOTE_PARTY, C_SAME_PARTY, C_PATCH_RET, C_SLOT, C_TXN, C_MONEY_SAME, C_DEX, C_SWAP };
+enum { C_PARTNER, C_GOTO, C_HEX, C_PRESS, C_WAIT, C_SHOT, C_DUMP, C_BARRIER, C_UNTIL_CB2, C_UNTIL_FIELD, C_EXPECT, C_UNTIL_MEM, C_BATTLE, C_MENU, C_PARTY, C_FIXTURE, C_WRITE, C_LEAD, C_MOVE, C_SIX, C_VAR, C_FLAG, C_VS, C_EXPECT_FLAG, C_EXPECT_VAR, C_NO_OBJECT, C_MAP, C_OBJECT, C_TEXT_SPEED, C_PACE, C_MUTE, C_PARTNER_AT, C_ITEM, C_EXPECT_ITEM, C_UNTIL_TEXT, C_WARP, C_PC_COUNT, C_MONS, C_NO_COPIES, C_NOTE_MONEY, C_MONEY_GAIN, C_FORCE_ENC, C_EXPECT_RANGE, C_WALK, C_NO_WILD, C_CROSS, C_WALK_BATTLE, C_SMART, C_STRONG, C_UNTIL_TASK, C_MIRROR, C_SPECIES, C_NOTE_PARTY, C_SAME_PARTY, C_PATCH_RET, C_SLOT, C_TXN, C_MONEY_SAME, C_DEX, C_SWAP, C_GENDER };
 
 struct Cmd {
 	int kind;
@@ -1520,6 +1520,16 @@ static void frameCallback(struct mCoreThread* t) {
             out("[p%d] fixture swap slots %d and %u\n", p->id, c->size, c->value);
             advance = true;
             break;
+        case C_GENDER: {
+            // fixture_gender G: SaveBlock2.playerGender (offset 8). Test
+            // fixture so two saves share a player base; the sprite follows
+            // at the next map load.
+            unsigned addr = rd32(p, symAddr("gSaveBlock2Ptr")) + 8;
+            p->core->busWrite8(p->core, addr, c->value);
+            out("[p%d] fixture gender %u\n", p->id, c->value);
+            advance = true;
+            break;
+        }
         case C_SIX:
             for (unsigned slot = 1; slot < 6; slot++)
                 for (unsigned off = 0; off < 100; off++)
@@ -1900,6 +1910,9 @@ static void loadScript(const char* path, int depth) {
             c.kind = C_SWAP;
             c.size = atoi(a);
             c.value = strtoul(b, NULL, 0);
+        } else if (!strcmp(cmd, "fixture_gender")) {
+            c.kind = C_GENDER;
+            c.value = strtoul(a, NULL, 0);
         } else if (!strcmp(cmd, "fixture_six")) {
             c.kind = C_SIX;
         } else if (!strcmp(cmd, "expect_move") || !strcmp(cmd, "expect_no_move")) {

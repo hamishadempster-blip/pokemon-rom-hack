@@ -22,6 +22,7 @@
 #include "coop.h"
 #include "coop_deal.h"
 #include "coop_quest.h"
+#include "coop_outfit.h"
 #include "coop_protocol.h"
 #include "battle.h"
 #include "battle_setup.h"
@@ -72,6 +73,7 @@ enum
     DMSG_PARTY_REQ,     // practice: send me a copy of your party
     DMSG_PARTY_MON,     // arg: index, arg2: count, mon: one Pokemon
     DMSG_QUEST,         // arg: COOP_QUEST_*, arg2: value, qty: 1 live change, 0 report
+    DMSG_LOOK,          // arg: COOP_OUTFIT preset, arg2: gender (src/coop_outfit.c)
 };
 
 // Local deal states.
@@ -235,6 +237,7 @@ EWRAM_DATA u8 gCoopFriendlyRules = 0;
 EWRAM_DATA bool8 gCoopPracticeBattle = FALSE;
 EWRAM_DATA u8 gCoopBattleSpeed = 0;
 
+static EWRAM_DATA bool8 sLookDue = FALSE;
 static EWRAM_DATA struct CoopDealState sDeal = {0};
 static EWRAM_DATA struct CoopDealLink sLink = {0};
 static EWRAM_DATA struct DealSaver sSaver = {0};
@@ -891,6 +894,11 @@ void CoopDeal_HandleBlock(u32 playerId, const u16 *words)
         CoopQuest_HandleSync(msg.arg, msg.arg2, msg.qty != 0);
         return;
     }
+    if (msg.type == DMSG_LOOK)
+    {
+        CoopOutfit_OnPartnerLook(msg.arg, msg.arg2);
+        return;
+    }
     if (msg.dealId != sDeal.dealId || sDeal.state == DS_IDLE)
     {
         // A READY for a deal this game has escrowed but already gave up
@@ -1101,6 +1109,12 @@ void CoopDeal_Poll(void)
             Deal_Reset();
         }
         return;
+    }
+    if (sLookDue && sLink.count + 1 < DEAL_QUEUE_SIZE)
+    {
+        struct CoopDealMsg *look = Deal_Push(DMSG_LOOK, CoopOutfit_Local(), 0xFFFF, COOP_DEAL_NONE);
+        look->arg2 = gSaveBlock2Ptr->playerGender;
+        sLookDue = FALSE;
     }
     Deal_PumpSend();
     Deal_PollWait();
@@ -1427,6 +1441,14 @@ void CoopDeal_OnSessionStart(void)
     if (sDeal.state != DS_PREPARED && sDeal.waitKind == WAIT_NONE)
         Deal_Reset();
     CoopQuest_OnSessionStart();
+    CoopOutfit_OnSessionStart();
+}
+
+// This save's outfit for the partner: sent at the next chance (new link, or
+// a change at the dresser).
+void CoopDeal_QueueLook(void)
+{
+    sLookDue = TRUE;
 }
 
 // Quest state for the partner (src/coop_quest.c), delivered in order and

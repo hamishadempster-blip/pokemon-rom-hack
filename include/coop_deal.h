@@ -19,6 +19,7 @@ void CoopDeal_HandleBlock(u32 playerId, const u16 *words);
 void CoopDeal_Poll(void);
 void CoopDeal_OnSessionStart(void);
 void CoopDeal_SendQuest(u8 quest, u8 value, bool8 live);
+void CoopDeal_QueueLook(void);
 bool8 CoopDeal_Busy(void);
 bool8 CoopDeal_ItemGiftable(u16 item);
 void CoopDeal_AbortFriendlyBattle(void);

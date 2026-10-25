@@ -128,6 +128,7 @@ u16 Coop_StartSoloRescueBattle(void);
 void Coop_MarkDuoLegends(void);
 void Nurse_NoteHeal(void);
 bool8 Coop_IsRivalGraphics(u16 gfx);
+u8 Coop_PartnerSpriteId(u8 *gender);
 u16 Coop_BufferCapText(void);
 u16 Coop_BufferUnlinkedMenu(void);
 u16 Coop_BufferBeaconStatus(void);

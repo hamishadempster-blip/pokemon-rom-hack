@@ -291,7 +291,8 @@ struct CoopSave
     u16 storyApplied;   // milestones whose story state is written here
     u8 rivalId;         // COOP_RIVAL_*: the twin who answers this player's case
     u8 sharedItems;     // shared progression items already received
-    u8 unused[2];
+    u8 outfit;          // COOP_OUTFIT preset (zero on older saves: CLASSIC)
+    u8 partnerMarker;   // COOP_MARKER_* (zero: AUTO)
     // Layout 2 (build 0xC0170131).
     struct CoopDealRecord deal;    // an escrowed trade or gift waiting to settle
     u32 partnerDexOtId;            // whose catches partnerCaught holds

@@ -1,0 +1,18 @@
+# outfit_same_base.txt's saves after a power cycle: both still FOREST,
+# player 0's marker setting (OFF) kept, player 1's (AUTO) shows the marker
+# again once relinked.
+include continue.inc
+b expect coop_outfit.sShownLocal 1
+b press START 2
+b wait 50
+b menu_to COOP
+b press A 2
+b wait 50
+b press A 2
+b until_mem coop.sLinkState 2 3000
+b mash_field 1500
+b wait 150
+b expect coop_outfit.sPartnerOutfit 1
+0 expect gCoopMarkerShown 0
+1 expect gCoopMarkerShown 1
+b shot same-reloaded

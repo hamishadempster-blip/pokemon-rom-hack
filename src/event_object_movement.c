@@ -1,4 +1,5 @@
 #include "global.h"
+#include "coop_outfit.h"
 #include "malloc.h"
 #include "battle_anim.h"
 #include "battle_pyramid.h"
@@ -528,6 +529,9 @@ static const struct SpritePalette sObjectEventSpritePalettes[] = {
     {gObjectEventPal_RedLeaf,               OBJ_EVENT_PAL_TAG_RED_LEAF},
     {gObjectEventPal_Deoxys,                OBJ_EVENT_PAL_TAG_DEOXYS},
     {gObjectEventPal_BirthIslandStone,      OBJ_EVENT_PAL_TAG_BIRTH_ISLAND_STONE},
+    {gObjectEventPal_Soren,                 OBJ_EVENT_PAL_TAG_SOREN},
+    {gObjectEventPal_Mira,                  OBJ_EVENT_PAL_TAG_MIRA},
+    {gObjectEventPal_Brendan,               OBJ_EVENT_PAL_TAG_COOP_PARTNER}, // CoopOutfit_ObjectPalette
     {gObjectEventPal_HoOh,                  OBJ_EVENT_PAL_TAG_HO_OH},
     {gObjectEventPal_Lugia,                 OBJ_EVENT_PAL_TAG_LUGIA},
     {gObjectEventPal_RubySapphireBrendan,   OBJ_EVENT_PAL_TAG_RS_BRENDAN},
@@ -591,6 +595,22 @@ static const struct SpritePalette sObjectEventSpritePalettes[] = {
         // If it's looking for a tag that isn't in this table, the game locks in an infinite loop.
 #endif
 };
+
+// The player looks (OBJ_EVENT_PAL_TAG_BRENDAN, _MAY and their reflections)
+// and the co-op partner's palette come from the chosen outfit
+// (src/coop_outfit.c); everything else is the table entry.
+static EWRAM_DATA struct SpritePalette sOutfitSpritePalette = {0};
+
+static const struct SpritePalette *ObjectEventSpritePalette(u32 i)
+{
+    const u16 *data = CoopOutfit_ObjectPalette(sObjectEventSpritePalettes[i].tag);
+
+    if (data == NULL)
+        return &sObjectEventSpritePalettes[i];
+    sOutfitSpritePalette.data = data;
+    sOutfitSpritePalette.tag = sObjectEventSpritePalettes[i].tag;
+    return &sOutfitSpritePalette;
+}
 
 static const u16 sReflectionPaletteTags_Brendan[] = {
     OBJ_EVENT_PAL_TAG_BRENDAN_REFLECTION,
@@ -2283,7 +2303,7 @@ static void RefreshFollowerGraphics(struct ObjectEvent *objEvent)
     }
     else if (i != 0xFF)
     {
-        UpdateSpritePalette(&sObjectEventSpritePalettes[i], sprite);
+        UpdateSpritePalette(ObjectEventSpritePalette(i), sprite);
         if (gWeatherPtr->currWeather != WEATHER_FOG_HORIZONTAL) // don't want to weather blend in fog
             UpdateSpritePaletteWithWeather(sprite->oam.paletteNum, FALSE);
     }
@@ -3099,7 +3119,7 @@ u8 UpdateSpritePaletteByTemplate(const struct SpriteTemplate *template, struct S
     u8 i = FindObjectEventPaletteIndexByTag(template->paletteTag);
     if (i == 0xFF)
         return i;
-    return UpdateSpritePalette(&sObjectEventSpritePalettes[i], sprite);
+    return UpdateSpritePalette(ObjectEventSpritePalette(i), sprite);
 }
 
 // Set graphics *by info*
@@ -3108,7 +3128,7 @@ static void ObjectEventSetGraphics(struct ObjectEvent *objectEvent, const struct
     struct Sprite *sprite = &gSprites[objectEvent->spriteId];
     u32 i = FindObjectEventPaletteIndexByTag(graphicsInfo->paletteTag);
     if (i != 0xFF)
-        UpdateSpritePalette(&sObjectEventSpritePalettes[i], sprite);
+        UpdateSpritePalette(ObjectEventSpritePalette(i), sprite);
 
     // If frame size changes, we need to reallocate tiles.
     if (OW_LARGE_OW_SUPPORT && !OW_GFX_COMPRESS && graphicsInfo->images->size != sprite->images->size)
@@ -3305,13 +3325,13 @@ u8 LoadObjectEventPalette(u16 paletteTag)
     u16 i = FindObjectEventPaletteIndexByTag(paletteTag);
     if (i == 0xFF)
         return i;
-    return LoadSpritePaletteIfTagExists(&sObjectEventSpritePalettes[i]);
+    return LoadSpritePaletteIfTagExists(ObjectEventSpritePalette(i));
 }
 
 u8 LoadObjectEventPaletteCopy(u16 originalTag, u16 copyTag)
 {
     u32 i = FindObjectEventPaletteIndexByTag(originalTag);
-    const struct SpritePalette palette = {sObjectEventSpritePalettes[i].data, copyTag};
+    const struct SpritePalette palette = {ObjectEventSpritePalette(i)->data, copyTag};
     return LoadSpritePalette(&palette);
 }
 
@@ -3356,7 +3376,7 @@ void PatchObjectPalette(u16 paletteTag, u8 paletteSlot)
     // paletteTag is assumed to exist in sObjectEventSpritePalettes
     u8 paletteIndex = FindObjectEventPaletteIndexByTag(paletteTag);
 
-    LoadPalette(sObjectEventSpritePalettes[paletteIndex].data, OBJ_PLTT_ID(paletteSlot), PLTT_SIZE_4BPP);
+    LoadPalette(ObjectEventSpritePalette(paletteIndex)->data, OBJ_PLTT_ID(paletteSlot), PLTT_SIZE_4BPP);
 }
 
 void PatchObjectPaletteRange(const u16 *paletteTags, u8 minSlot, u8 maxSlot)
@@ -11031,7 +11051,7 @@ void SetVirtualObjectGraphics(u8 virtualObjId, u16 graphicsId)
         u16 tileNum = sprite->oam.tileNum;
         u8 i = FindObjectEventPaletteIndexByTag(graphicsInfo->paletteTag);
         if (i != 0xFF)
-            UpdateSpritePalette(&sObjectEventSpritePalettes[i], sprite);
+            UpdateSpritePalette(ObjectEventSpritePalette(i), sprite);
 
         sprite->oam = *graphicsInfo->oam;
         sprite->oam.tileNum = tileNum;

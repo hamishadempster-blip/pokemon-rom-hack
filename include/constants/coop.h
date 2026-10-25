@@ -86,4 +86,12 @@
 #define PP_PRESS_TRIPPED         2   // wrong order: every breaker tripped
 #define PP_PRESS_DONE            3   // generator already off; nothing to do
 
+// Player outfit colours (CoopSave.outfit, src/coop_outfit.c): presets per
+// player base. 0 is the stock look, which older saves read as.
+#define COOP_OUTFIT_COUNT        6
+// CoopSave.partnerMarker: a small arrow over the partner.
+#define COOP_MARKER_AUTO         0   // only when both look the same
+#define COOP_MARKER_ALWAYS       1
+#define COOP_MARKER_OFF          2
+
 #endif // GUARD_CONSTANTS_COOP_H

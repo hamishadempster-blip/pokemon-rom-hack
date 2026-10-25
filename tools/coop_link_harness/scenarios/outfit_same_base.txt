@@ -1,0 +1,156 @@
+# Outfits with the same base (lab saves: both players are Brendan). Player
+# 0 picks FOREST, player 1 keeps CLASSIC: both screens show one green and
+# one classic Brendan in the bedroom, in a Twin Beacon wild double (the two
+# back pics), and surfing. Then player 1 picks FOREST too: the looks match,
+# so the partner marker shows (AUTO); OFF hides it, ALWAYS shows it with
+# different looks. Saved for outfit_same_base_reload.txt.
+# FIXTURES: player 1's lab save is the girl, so fixture_gender makes it the
+# boy before linking (the same base is the case under test); fixture_warp
+# between the bedroom, Granite Cave and Route 103's water (landing on water
+# starts surfing); strong cached stats on the leads so the battle is short.
+include outfit_boys_beacon.inc
+b mash_field 2000 B
+b write sWildEncountersDisabled 1
+b expect coop_outfit.sShownLocal 0
+0 fixture_warp 1 1 4 4
+1 fixture_warp 1 1 6 4
+b until_field 3000
+b wait 60
+# Player 0: FOREST (second).
+0 walk 4 2 2000
+0 press UP 2
+0 wait 10
+0 press A 2
+0 wait 90
+0 press A 2
+0 wait 60
+0 press DOWN 2
+0 wait 30
+0 shot same-menu-forest
+0 press A 2
+0 wait 60
+0 mash_field 2000 B
+b sync
+b wait 120
+0 expect coop_outfit.sShownLocal 1
+1 expect coop_outfit.sPartnerOutfit 1
+0 walk 3 5 3000
+1 walk 5 5 3000
+b sync
+b wait 60
+b shot same-bedroom-different
+b expect gCoopMarkerShown 0
+# Twin Beacon wild double: both back pics, each in its own outfit.
+0 fixture_lead 255 40 56660
+1 fixture_lead 255 40 56660
+b write gParties+86:2 500
+b write gParties+88:2 500
+b write gParties+90:2 400
+b write gParties+92:2 300
+b write gParties+94:2 400
+b write gParties+96:2 400
+b write gParties+98:2 300
+0 fixture_warp 24 7 6 7
+1 fixture_warp 24 7 8 8
+b until_field 3000
+b sync
+b wait 30
+b sync
+b shot same-cave
+0 write sWildEncountersDisabled 0
+0 pace_until_battle 9000
+0 write sWildEncountersDisabled 1
+0 until_cb2 BattleMainCB2 6000
+1 until_cb2 BattleMainCB2 6000 A
+b wait 330
+b shot same-battle-a
+b wait 40
+b shot same-battle-b
+b wait 40
+b shot same-battle-c
+b expect coop.sInBattle 1
+b mash_field 25000
+b expect gBattleOutcome 1
+b sync
+b wait 30
+b sync
+# Surfing on Route 103.
+0 fixture_warp 0 18 30 9
+1 fixture_warp 0 18 33 9
+b until_field 3000
+b sync
+b wait 60
+b shot same-surf
+b wait 120
+b shot same-surf-b
+# Player 1 matches: FOREST too. The marker appears (AUTO).
+0 fixture_warp 1 1 3 5
+1 fixture_warp 1 1 4 4
+b until_field 3000
+b wait 60
+1 walk 4 2 2000
+1 press UP 2
+1 wait 10
+1 press A 2
+1 wait 90
+1 press A 2
+1 wait 60
+1 press DOWN 2
+1 wait 30
+1 press A 2
+1 wait 60
+1 mash_field 2000 B
+b sync
+1 walk 5 5 3000
+b sync
+b wait 90
+b expect coop_outfit.sPartnerOutfit 1
+b expect gCoopMarkerShown 1
+b shot same-bedroom-marker
+# Player 0 sets the marker to OFF (seventh entry: AUTO -> ON -> OFF) and
+# leaves with B, so the outfit stays FOREST.
+0 walk 4 2 2000
+0 press UP 2
+0 wait 10
+0 press A 2
+0 wait 90
+0 press A 2
+0 wait 60
+0 press DOWN 2
+0 wait 15
+0 press DOWN 2
+0 wait 15
+0 press DOWN 2
+0 wait 15
+0 press DOWN 2
+0 wait 15
+0 press DOWN 2
+0 wait 15
+0 press A 2
+0 wait 20
+0 press A 2
+0 wait 30
+0 shot same-marker-option
+0 press B 2
+0 wait 60
+0 mash_field 1500 B
+0 walk 3 5 2000
+b sync
+b wait 60
+0 expect coop_outfit.sShownLocal 1
+0 expect gCoopMarkerShown 0
+1 expect gCoopMarkerShown 1
+b shot same-marker-off
+# Save both games for the reload test.
+b press START 2
+b wait 60
+b menu_to SAVE
+b press A 2
+b wait 50
+b press A 2
+b wait 250
+b press A 2
+b wait 300
+b press A 2
+b wait 40
+b mash_field 600 B

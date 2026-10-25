@@ -1,0 +1,48 @@
+# Rival appearance check (screenshots only): the Route 103 twins on the
+# overworld, then the co-op battle intro with both trainer pics. Same
+# play and fixtures as story_seg1.txt up to the battle.
+include continue.inc
+include relink.inc
+b expect coop.sLinkState 2
+b no_wild 1
+# Out of the lab; Mom stops each player in Littleroot with Running Shoes.
+b walk 6 11 1500
+b cross DOWN 0 9
+b mash_field 3000
+b dump littleroot
+0 walk 11 1 3000
+0 cross UP 0 16
+1 wait 200
+1 walk 10 1 3000
+1 cross UP 0 16
+b dump route101
+b walk 10 1 3000
+b cross UP 0 10
+b dump oldale
+b walk 10 1 3000
+b cross UP 0 18
+b dump route103
+b expect coop.sLinkState 2
+b write gParties+86:2 300
+b write gParties+88:2 300
+b write gParties+90:2 200
+b write gParties+92:2 200
+b write gParties+94:2 200
+b write gParties+96:2 200
+b write gParties+98:2 200
+0 walk 10 4 3000
+1 walk 11 4 3000
+b expect_any_object 246
+b shot looks-twins-overworld
+0 press UP 2
+0 press A 2
+b until_cb2 BattleMainCB2 12000 A
+b expect coop.sInBattle 1
+b wait 45
+b shot looks-battle-intro-a
+b wait 60
+b shot looks-battle-intro-b
+b wait 90
+b shot looks-battle-intro-c
+b mash_field 35000
+b expect gBattleOutcome 1
