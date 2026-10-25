@@ -721,3 +721,8 @@ gSpecials::
 	def_special CoopDeal_OpenGiftBag
 	def_special CoopDeal_Settle
 	def_special CoopDex_BufferSummary
+	def_special CoopPractice_AskPartnerTeam
+	def_special CoopPractice_WaitPartnerTeam
+	def_special CoopPractice_Prepare
+	def_special CoopPractice_Start
+	def_special CoopPractice_Outcome

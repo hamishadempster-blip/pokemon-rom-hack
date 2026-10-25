@@ -706,3 +706,133 @@ CoopDeal_Text_SettledAbort:
 CoopDeal_Text_NoRoomToSettle:
 	.string "An exchange is waiting for room\n"
 	.string "in your party, BOXES or BAG.$"
+
+@ ------------------------------------------------------------ practice
+
+@ The COACH in several Pokemon Centers: an AI battle against a copy of your
+@ team or of your linked partner's (src/coop_practice.c). Nothing changes.
+	.global Coop_EventScript_PracticeCoach
+Coop_EventScript_PracticeCoach::
+	lock
+	faceplayer
+	msgbox CoopDeal_Text_CoachHello, MSGBOX_DEFAULT
+	message CoopDeal_Text_CoachWhichTeam
+	waitmessage
+	dynmultichoice 15, 1, FALSE, 3, 0, DYN_MULTICHOICE_CB_NONE, CoopDeal_Text_OptYourTeam, CoopDeal_Text_OptPartnerTeam, CoopDeal_Text_OptCancel
+	switch VAR_RESULT
+	case 0, CoopDeal_EventScript_CoachOwn
+	case 1, CoopDeal_EventScript_CoachPartner
+	goto CoopDeal_EventScript_CoachBye
+CoopDeal_EventScript_CoachOwn::
+	setvar VAR_0x8004, 0
+	goto CoopDeal_EventScript_CoachFormat
+CoopDeal_EventScript_CoachPartner::
+	specialvar VAR_RESULT, CoopPractice_AskPartnerTeam
+	goto_if_ne VAR_RESULT, COOP_DEAL_OK, CoopDeal_EventScript_CoachNoPartner
+	message CoopDeal_Text_CoachAsking
+	waitmessage
+	special CoopPractice_WaitPartnerTeam
+	waitstate
+	goto_if_eq VAR_RESULT, FALSE, CoopDeal_EventScript_CoachNoTeam
+	setvar VAR_0x8004, 1
+CoopDeal_EventScript_CoachFormat::
+	message CoopDeal_Text_ChooseFormat2
+	waitmessage
+	dynmultichoice 18, 1, FALSE, 3, 0, DYN_MULTICHOICE_CB_NONE, CoopDeal_Text_OptSingles, CoopDeal_Text_OptDoubles, CoopDeal_Text_OptCancel
+	goto_if_gt VAR_RESULT, 1, CoopDeal_EventScript_CoachBye
+	copyvar VAR_0x8005, VAR_RESULT
+	message CoopDeal_Text_ChooseLevel2
+	waitmessage
+	dynmultichoice 18, 1, FALSE, 3, 0, DYN_MULTICHOICE_CB_NONE, CoopDeal_Text_OptOwnLevels, CoopDeal_Text_OptLv50, CoopDeal_Text_OptCancel
+	goto_if_gt VAR_RESULT, 1, CoopDeal_EventScript_CoachBye
+	copyvar VAR_0x8006, VAR_RESULT
+	specialvar VAR_RESULT, CoopPractice_Prepare
+	goto_if_eq VAR_RESULT, 1, CoopDeal_EventScript_CoachTooFewMine
+	goto_if_eq VAR_RESULT, 2, CoopDeal_EventScript_CoachTooFewFoe
+	msgbox CoopDeal_Text_CoachGo, MSGBOX_DEFAULT
+	closemessage
+	special CoopPractice_Start
+	waitstate
+	specialvar VAR_RESULT, CoopPractice_Outcome
+	goto_if_eq VAR_RESULT, 1, CoopDeal_EventScript_CoachWon
+	msgbox CoopDeal_Text_CoachAfter, MSGBOX_DEFAULT
+	release
+	end
+CoopDeal_EventScript_CoachWon::
+	msgbox CoopDeal_Text_CoachWon, MSGBOX_DEFAULT
+	release
+	end
+CoopDeal_EventScript_CoachNoPartner::
+	msgbox CoopDeal_Text_CoachNoPartner, MSGBOX_DEFAULT
+	release
+	end
+CoopDeal_EventScript_CoachNoTeam::
+	msgbox CoopDeal_Text_CoachNoTeam, MSGBOX_DEFAULT
+	release
+	end
+CoopDeal_EventScript_CoachTooFewMine::
+	msgbox CoopDeal_Text_CoachTooFewMine, MSGBOX_DEFAULT
+	release
+	end
+CoopDeal_EventScript_CoachTooFewFoe::
+	msgbox CoopDeal_Text_CoachTooFewFoe, MSGBOX_DEFAULT
+	release
+	end
+CoopDeal_EventScript_CoachBye::
+	msgbox CoopDeal_Text_CoachBye, MSGBOX_DEFAULT
+	release
+	end
+
+CoopDeal_Text_CoachHello:
+	.string "I'm a battle COACH. I set copies of\n"
+	.string "a team against yours.\p"
+	.string "Only copies fight: your POKéMON,\n"
+	.string "items and money stay as they are.$"
+
+CoopDeal_Text_CoachWhichTeam:
+	.string "Whose team should you face?$"
+
+CoopDeal_Text_OptYourTeam:
+	.string "YOUR TEAM$"
+CoopDeal_Text_OptPartnerTeam:
+	.string "PARTNER'S$"
+
+CoopDeal_Text_ChooseFormat2:
+	.string "Which format?$"
+
+CoopDeal_Text_ChooseLevel2:
+	.string "Which levels?$"
+
+CoopDeal_Text_CoachAsking:
+	.string "Getting a copy of your partner's\n"
+	.string "team…$"
+
+CoopDeal_Text_CoachNoPartner:
+	.string "Link with your partner first, and\n"
+	.string "I can copy their team.$"
+
+CoopDeal_Text_CoachNoTeam:
+	.string "Your partner's team didn't come\n"
+	.string "through. Try again in a moment.$"
+
+CoopDeal_Text_CoachTooFewMine:
+	.string "You need two POKéMON that can\n"
+	.string "battle for a double battle.$"
+
+CoopDeal_Text_CoachTooFewFoe:
+	.string "That team has only one POKéMON;\n"
+	.string "a double battle needs two.$"
+
+CoopDeal_Text_CoachGo:
+	.string "Here come the copies!$"
+
+CoopDeal_Text_CoachWon:
+	.string "Well fought! That's the real thing\n"
+	.string "next time.$"
+
+CoopDeal_Text_CoachAfter:
+	.string "Practice is for learning. Come\n"
+	.string "back any time.$"
+
+CoopDeal_Text_CoachBye:
+	.string "Come back for practice any time.$"

@@ -1,0 +1,21 @@
+b wait 1100
+b press START 2
+b wait 300
+b press A 2
+b wait 250
+b shot title
+b press A 2
+b wait 250
+b shot continue-info
+b press A 2
+b mash_field 4000
+b until_field 5000
+b press START 2
+b wait 60
+b menu_to SAVE
+b press A 2
+b wait 90
+b shot save-info
+b press B 2
+b wait 30
+b press B 2

@@ -4012,6 +4012,8 @@ static void HandleTurnActionSelectionState(void)
                                             | BATTLE_TYPE_RECORDED_LINK))
                                             && !gTestRunnerEnabled
                                             && !Coop_IsWildBattle())
+                                            // Practice copies: the bag stays closed.
+                                            || gCoopPracticeBattle
                                             // Or if currently held by Sky Drop
                                             || gBattleMons[battler].volatiles.semiInvulnerable == STATE_SKY_DROP_TARGET)
                     {

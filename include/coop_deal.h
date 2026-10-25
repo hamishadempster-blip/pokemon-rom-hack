@@ -6,6 +6,9 @@
 
 #define COOP_DEAL_MAGIC 0xC0D1
 
+struct Pokemon;
+struct CoopSave;
+
 extern bool8 gCoopFriendlyBattle;
 extern u8 gCoopFriendlyRules;
 extern bool8 gCoopPracticeBattle;
@@ -24,6 +27,16 @@ bool8 CoopDex_PartnerCaught(u16 nationalNum);
 u16 CoopDex_BufferSummary(void);
 u8 Coop_LocalBattleSpeed(void);
 u8 Coop_BattleSpeed(void);
+u16 CoopDeal_RequestPartnerTeam(void);
+u8 CoopDeal_PartnerTeamReady(void);
+void CoopDeal_CopyPartnerTeamMon(u8 index, struct Pokemon *dest);
+
+// Practice battles (src/coop_practice.c).
+u16 CoopPractice_AskPartnerTeam(void);
+void CoopPractice_WaitPartnerTeam(void);
+u16 CoopPractice_Prepare(void);
+void CoopPractice_Start(void);
+u16 CoopPractice_Outcome(void);
 #define COOP_DEX_MAGIC 0xC0DE
 
 // Called by coop.c, implemented there.

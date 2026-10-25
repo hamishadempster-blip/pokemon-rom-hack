@@ -68,6 +68,8 @@ enum
     DMSG_CANCEL,
     DMSG_TEAM,
     DMSG_STATUS,
+    DMSG_PARTY_REQ,     // practice: send me a copy of your party
+    DMSG_PARTY_MON,     // arg: index, arg2: count, mon: one Pokemon
 };
 
 // Local deal states.
@@ -211,7 +213,7 @@ struct CoopDealState
 
 // The cable side, which outlives any one deal: messages go out in order,
 // each resent until the partner acknowledges it.
-#define DEAL_QUEUE_SIZE 4
+#define DEAL_QUEUE_SIZE 8
 struct CoopDealLink
 {
     struct CoopDealMsg queue[DEAL_QUEUE_SIZE];
@@ -259,6 +261,7 @@ static struct CoopDealMsg *Deal_Send(u8 type, u8 arg);
 static void Deal_EndWait(u8 result);
 static void Deal_Reset(void);
 static void Dex_Poll(void);
+static void Team_HandleMsg(const struct CoopDealMsg *msg);
 
 // ---------------------------------------------------------------- helpers
 
@@ -863,6 +866,11 @@ void CoopDeal_HandleBlock(u32 playerId, const u16 *words)
         Deal_HandleStatus(&msg);
         return;
     }
+    if (msg.type == DMSG_PARTY_REQ || msg.type == DMSG_PARTY_MON)
+    {
+        Team_HandleMsg(&msg);
+        return;
+    }
     if (msg.dealId != sDeal.dealId || sDeal.state == DS_IDLE)
     {
         // A READY for a deal this game has escrowed but already gave up
@@ -1109,6 +1117,73 @@ void CoopDeal_Poll(void)
         sDealMessage = NULL;
         ScriptContext_SetupScript(script);
     }
+}
+
+// ---------------------------------------------------------------- practice
+
+// A copy of the partner's party for a practice battle (src/coop_practice.c).
+// Asked for with PARTY_REQ; the partner answers with one PARTY_MON per
+// Pokemon, eggs left out. Nothing of the partner's game changes.
+static EWRAM_DATA struct BoxPokemon sTeamMons[PARTY_SIZE] = {0};
+static EWRAM_DATA u8 sPartnerTeamCount = 0;
+static EWRAM_DATA u8 sTeamGot = 0;      // bit per index received
+static EWRAM_DATA bool8 sTeamAsked = FALSE;
+
+static void Team_HandleMsg(const struct CoopDealMsg *msg)
+{
+    u8 i, n = 0, order[PARTY_SIZE];
+
+    if (msg->type == DMSG_PARTY_REQ)
+    {
+        for (i = 0; i < PARTY_SIZE; i++)
+        {
+            struct Pokemon *mon = &gParties[B_TRAINER_PLAYER][i];
+            if (GetMonData(mon, MON_DATA_SPECIES) != SPECIES_NONE && !GetMonData(mon, MON_DATA_IS_EGG))
+                order[n++] = i;
+        }
+        // All or nothing: the queue must take the whole team.
+        if (DEAL_QUEUE_SIZE - sLink.count < n)
+            return;
+        for (i = 0; i < n; i++)
+        {
+            struct CoopDealMsg *out = Deal_Push(DMSG_PARTY_MON, i, 0xFFFF, COOP_DEAL_NONE);
+            out->arg2 = n;
+            memcpy(out->mon, &gParties[B_TRAINER_PLAYER][order[i]].box, sizeof(struct BoxPokemon));
+        }
+        return;
+    }
+    if (!sTeamAsked || msg->arg >= PARTY_SIZE || msg->arg2 == 0 || msg->arg2 > PARTY_SIZE)
+        return;
+    memcpy(&sTeamMons[msg->arg], msg->mon, sizeof(struct BoxPokemon));
+    sPartnerTeamCount = msg->arg2;
+    sTeamGot |= 1 << msg->arg;
+}
+
+// Starts asking. VAR_RESULT: COOP_DEAL_OK, or LOST when not linked.
+u16 CoopDeal_RequestPartnerTeam(void)
+{
+    sTeamAsked = FALSE;
+    sPartnerTeamCount = 0;
+    sTeamGot = 0;
+    if (!Deal_LinkOk() || !gReceivedRemoteLinkPlayers)
+        return COOP_DEAL_LOST;
+    CoopDeal_BufferPartnerName();
+    sTeamAsked = TRUE;
+    Deal_Push(DMSG_PARTY_REQ, 0, 0xFFFF, COOP_DEAL_NONE);
+    return COOP_DEAL_OK;
+}
+
+// The whole team has arrived: its size, else 0.
+u8 CoopDeal_PartnerTeamReady(void)
+{
+    if (!sTeamAsked || sPartnerTeamCount == 0 || sTeamGot != (1 << sPartnerTeamCount) - 1)
+        return 0;
+    return sPartnerTeamCount;
+}
+
+void CoopDeal_CopyPartnerTeamMon(u8 index, struct Pokemon *dest)
+{
+    BoxMonToMon(&sTeamMons[index], dest);
 }
 
 // ---------------------------------------------------------------- Pokedex
