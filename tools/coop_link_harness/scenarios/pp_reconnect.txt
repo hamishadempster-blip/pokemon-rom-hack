@@ -1,0 +1,42 @@
+# Power Problems breakers across a reconnect (actual play from the
+# story_seg6 saves). Linked, both in New Mauville; UNLINK; player 0 resets
+# STORAGE alone (player 1's save does not change while unlinked); link
+# again: player 1 takes the higher count. Then player 1 trips the breakers
+# live and both go back to 0.
+# FIXTURES: Wattson's key step done; ROLYCOLY marked gone on player 0;
+# fixture_warp into the rooms; no random wild battles.
+include continue.inc
+include relink.inc
+b expect coop.sLinkState 2
+b no_wild 1
+b fixture_flag 0xd0 1
+b fixture_var 0x40ba 1
+0 fixture_flag 0x28c 1
+0 fixture_warp 24 53 3 23
+1 fixture_warp 24 53 37 2
+b until_field 3000
+b sync
+include unlink.inc
+b expect coop.sLinkState 0
+0 press UP 2
+0 wait 20
+0 press A 2
+0 mash_field 3000
+0 expect_var 0x40f7 1
+b wait 240
+1 expect_var 0x40f7 0
+b sync
+include relink.inc
+b expect coop.sLinkState 2
+b wait 400
+1 expect_var 0x40f7 1
+0 expect_var 0x40f7 1
+1 shot p1-after-relink
+1 press UP 2
+1 wait 20
+1 press A 2
+1 mash_field 3000
+1 expect_var 0x40f7 0
+b wait 300
+0 expect_var 0x40f7 0
+0 shot p0-trip-seen

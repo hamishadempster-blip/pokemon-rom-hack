@@ -6,7 +6,8 @@
 // A milestone is story state both saves should agree on. Parties, bags,
 // money, catches, and optional conversations are never milestones.
 #define COOP_STORY_RIVAL_MET     0  // Introduced to the rival twins in Littleroot
-#define COOP_STORY_COUNT         1
+#define COOP_STORY_POWER_RESTORED 1 // New Mauville's generator is off (Power Problems)
+#define COOP_STORY_COUNT         2
 #define COOP_STORY_KNOWN_MASK    ((1 << COOP_STORY_COUNT) - 1)
 
 // Scenes a nearby partner can join. 0 is "no scene".
@@ -69,5 +70,20 @@
 // Per-save rewards (CoopSave.rewardsClaimed bit numbers). Append only.
 #define COOP_REWARD_PP_WATTSON   0   // Power Problems: Wattson's reward
 #define COOP_REWARD_PP_CHAMBER   1   // Power Problems: the hidden chamber
+
+// Quest state carried live over the cable (src/coop_quest.c). Append only.
+#define COOP_QUEST_PP_BREAKERS   1   // value: breakers reset in order, 0-3
+
+// Power Problems breakers, in the order the log asks for.
+#define PP_BREAKER_STORAGE       0
+#define PP_BREAKER_SERVICE       1
+#define PP_BREAKER_CONTROL       2
+#define PP_BREAKER_COUNT         3
+
+// CoopQuest_PressBreaker results.
+#define PP_PRESS_RESET           0   // this breaker is now on
+#define PP_PRESS_ALREADY         1   // it was already on
+#define PP_PRESS_TRIPPED         2   // wrong order: every breaker tripped
+#define PP_PRESS_DONE            3   // generator already off; nothing to do
 
 #endif // GUARD_CONSTANTS_COOP_H

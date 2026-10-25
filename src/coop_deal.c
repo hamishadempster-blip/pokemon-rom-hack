@@ -21,6 +21,7 @@
 #include "global.h"
 #include "coop.h"
 #include "coop_deal.h"
+#include "coop_quest.h"
 #include "coop_protocol.h"
 #include "battle.h"
 #include "battle_setup.h"
@@ -70,6 +71,7 @@ enum
     DMSG_STATUS,
     DMSG_PARTY_REQ,     // practice: send me a copy of your party
     DMSG_PARTY_MON,     // arg: index, arg2: count, mon: one Pokemon
+    DMSG_QUEST,         // arg: COOP_QUEST_*, arg2: value, qty: 1 live change, 0 report
 };
 
 // Local deal states.
@@ -871,6 +873,11 @@ void CoopDeal_HandleBlock(u32 playerId, const u16 *words)
         Team_HandleMsg(&msg);
         return;
     }
+    if (msg.type == DMSG_QUEST)
+    {
+        CoopQuest_HandleSync(msg.arg, msg.arg2, msg.qty != 0);
+        return;
+    }
     if (msg.dealId != sDeal.dealId || sDeal.state == DS_IDLE)
     {
         // A READY for a deal this game has escrowed but already gave up
@@ -1085,6 +1092,7 @@ void CoopDeal_Poll(void)
     Deal_PumpSend();
     Deal_PollWait();
     Dex_Poll();
+    CoopQuest_Poll();
 
     if (sDeal.state == DS_INCOMING && !sDeal.prompted)
     {
@@ -1405,6 +1413,20 @@ void CoopDeal_OnSessionStart(void)
     sLink.statusTimer = DEAL_STATUS_FRAMES - 30;
     if (sDeal.state != DS_PREPARED && sDeal.waitKind == WAIT_NONE)
         Deal_Reset();
+    CoopQuest_OnSessionStart();
+}
+
+// Quest state for the partner (src/coop_quest.c), delivered in order and
+// resent until acknowledged like every other deal block.
+void CoopDeal_SendQuest(u8 quest, u8 value, bool8 live)
+{
+    struct CoopDealMsg *msg;
+
+    if (!Deal_LinkOk())
+        return;
+    msg = Deal_Push(DMSG_QUEST, quest, 0, COOP_DEAL_NONE);
+    msg->arg2 = value;
+    msg->qty = live ? 1 : 0;
 }
 
 // ---------------------------------------------------------------- specials

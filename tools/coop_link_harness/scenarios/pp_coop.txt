@@ -1,0 +1,176 @@
+# Power Problems, both players linked and in New Mauville together (actual
+# play from the story_seg6 saves, linked, Twin Beacon on).
+# FIXTURES: both saves have Wattson's key step done (door open); the
+# blocking ROLYCOLY/JOLTIK are marked gone where a player only needs the
+# panel; fixture_warp places players instead of walking the barrier maze;
+# battlers hit hard; no random wild battles.
+# Checks:
+# - each breaker either player resets shows up on the other save at once;
+#   an out-of-order press by one player trips both;
+# - with both here and the Beacon on, VOLT offers the duo: both players
+#   fight VOLT and FUSE together, and both saves record both wins;
+# - player 1 throws the MAIN SWITCH. Player 0, who did not, gets the
+#   generator-off state at the next map change (catch-up) and WATTSON still
+#   pays player 0's own reward; player 1 is paid once as well.
+include continue.inc
+include relink.inc
+b expect coop.sLinkState 2
+b no_wild 1
+b smart_moves 1
+b strong_battlers 600
+b fixture_flag 0xd0 1
+b fixture_var 0x40ba 1
+# Beacon on, both agreeing (in Rustboro).
+1 press UP 1
+1 wait 20
+0 press START 2
+0 wait 40
+0 menu_to COOP
+0 press A 2
+0 wait 60
+0 press A 2
+1 until_mem coop.sBeacon+1:1 1 3000 A
+0 mash_field 1200 B
+b until_mem coop.sBeacon+1:1 1 1200
+b mash_field 1500 B
+b wait 30
+b expect coop.sBeacon+1:1 1
+# Into New Mauville: player 0 at STORAGE, player 1 near CONTROL.
+0 fixture_flag 0x28c 1
+0 fixture_warp 24 53 3 23
+1 fixture_warp 24 53 36 3
+b until_field 3000
+b sync
+b wait 60
+0 press UP 2
+0 wait 20
+0 press A 2
+0 mash_field 3000
+0 expect_var 0x40f7 1
+1 wait 240
+1 expect_var 0x40f7 1
+1 shot p1-sees-storage
+# Player 1 presses CONTROL out of order: both trip.
+b sync
+1 walk 37 2 600
+1 press UP 2
+1 wait 20
+1 press A 2
+1 mash_field 3000
+1 expect_var 0x40f7 0
+0 wait 240
+0 expect_var 0x40f7 0
+0 shot p0-sees-trip
+b sync
+# Right order, split: player 0 STORAGE, player 1 SERVICE then CONTROL.
+0 press A 2
+0 mash_field 3000
+0 expect_var 0x40f7 1
+b sync
+b wait 120
+1 expect_var 0x40f7 1
+1 fixture_flag 0x28d 1
+1 fixture_warp 24 53 25 15
+1 until_field 3000
+1 press UP 2
+1 wait 20
+1 press A 2
+1 mash_field 3000
+1 expect_var 0x40f7 2
+b sync
+b wait 120
+0 expect_var 0x40f7 2
+1 fixture_warp 24 53 37 2
+1 until_field 3000
+1 press UP 2
+1 wait 20
+1 press A 2
+1 mash_field 3000
+1 expect_var 0x40f7 3
+b sync
+b wait 120
+0 expect_var 0x40f7 3
+# VOLT and FUSE together: player 0 asks, player 1 joins.
+0 fixture_warp 24 53 33 8
+1 fixture_warp 24 53 31 7
+b until_field 3000
+b sync
+b wait 60
+0 walk 33 7 600
+0 press UP 2
+0 wait 20
+0 shot volt-duo
+0 press A 2
+0 wait 200
+0 press A 2
+0 wait 120
+0 shot volt-ask
+0 press A 2
+1 until_mem sGlobalScriptContextStatus:1 1 3000
+1 wait 120
+1 shot p1-join-ask
+1 press A 2
+b until_cb2 BattleMainCB2 3000 A
+b shot duo-battle
+b mash_field 40000
+b mash_field 4000
+b until_field 3000
+b expect_flag 0x855 1
+b expect_flag 0x856 1
+b expect_object 11 32 7
+b shot after-duo
+# Player 1 throws the MAIN SWITCH.
+b sync
+1 walk 34 7 600
+1 walk 34 6 600
+1 walk 33 6 600
+1 mash_field 3000
+1 expect_var 0x40ba 2
+1 expect_flag 0x295 0
+0 wait 300
+0 expect_var 0x40ba 1
+# Player 0 leaves the map: the generator is off on that save too.
+b sync
+0 fixture_flag 0x390 0
+0 fixture_warp 0 2 29 10
+0 until_field 3000
+0 expect_var 0x40ba 2
+0 expect_flag 0x295 1
+0 expect_flag 0x298 0
+0 press UP 2
+0 wait 20
+0 press A 2
+0 mash_field 4000
+0 expect_flag 0xd1 1
+0 expect_item 2 605 1
+0 shot p0-paid
+0 walk 26 10 1000
+1 fixture_flag 0x390 0
+1 fixture_warp 0 2 29 10
+1 until_field 3000
+1 press UP 2
+1 wait 20
+1 press A 2
+1 mash_field 4000
+1 expect_flag 0xd1 1
+1 expect_item 2 605 1
+1 shot p1-paid
+b sync
+# Journal while linked (CO-OP list: BEACON, UNLINK, PARTNER DEX, JOURNAL).
+0 press START 2
+0 wait 40
+0 menu_to COOP
+0 press A 2
+0 wait 60
+0 press DOWN 2
+0 wait 10
+0 press DOWN 2
+0 wait 10
+0 press DOWN 2
+0 wait 10
+0 shot coop-linked
+0 press A 2
+0 wait 90
+0 shot journal-linked
+0 mash_field 2000 B
+b expect coop.sLinkState 2

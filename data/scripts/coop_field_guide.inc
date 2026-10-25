@@ -42,9 +42,11 @@ Coop_EventScript_FieldGuideMenu::
 	dynmultipush Coop_Text_FG_Name32, 32
 	dynmultipush Coop_Text_FG_Name33, 33
 	dynmultipush Coop_Text_FG_Name34, 34
-	dynmultipush gText_Cancel, 35
+	dynmultipush Coop_Text_FG_Name35, 35
+	dynmultipush Coop_Text_FG_Name36, 36
+	dynmultipush gText_Cancel, 37
 	dynmultistack 17, 1, FALSE, 6, FALSE, 0, DYN_MULTICHOICE_CB_NONE
-	goto_if_ge VAR_RESULT, 35, Coop_EventScript_FieldGuideBye
+	goto_if_ge VAR_RESULT, 37, Coop_EventScript_FieldGuideBye
 	goto_if_eq VAR_RESULT, 0, Coop_EventScript_FG_0
 	goto_if_eq VAR_RESULT, 1, Coop_EventScript_FG_1
 	goto_if_eq VAR_RESULT, 2, Coop_EventScript_FG_2
@@ -80,6 +82,8 @@ Coop_EventScript_FieldGuideMenu::
 	goto_if_eq VAR_RESULT, 32, Coop_EventScript_FG_32
 	goto_if_eq VAR_RESULT, 33, Coop_EventScript_FG_33
 	goto_if_eq VAR_RESULT, 34, Coop_EventScript_FG_34
+	goto_if_eq VAR_RESULT, 35, Coop_EventScript_FG_35
+	goto_if_eq VAR_RESULT, 36, Coop_EventScript_FG_36
 	goto Coop_EventScript_FieldGuideBye
 Coop_EventScript_FG_0:
 	msgbox Coop_Text_FG_Where0, MSGBOX_DEFAULT
@@ -220,6 +224,14 @@ Coop_EventScript_FG_33:
 Coop_EventScript_FG_34:
 	msgbox Coop_Text_FG_Where34, MSGBOX_DEFAULT
 	msgbox Coop_Text_FG_Evo34, MSGBOX_DEFAULT
+	goto Coop_EventScript_FieldGuideMenu
+Coop_EventScript_FG_35:
+	msgbox Coop_Text_FG_Where35, MSGBOX_DEFAULT
+	msgbox Coop_Text_FG_Evo35, MSGBOX_DEFAULT
+	goto Coop_EventScript_FieldGuideMenu
+Coop_EventScript_FG_36:
+	msgbox Coop_Text_FG_Where36, MSGBOX_DEFAULT
+	msgbox Coop_Text_FG_Evo36, MSGBOX_DEFAULT
 	goto Coop_EventScript_FieldGuideMenu
 Coop_EventScript_FieldGuideBye::
 	msgbox Coop_Text_FieldGuideBye, MSGBOX_DEFAULT
@@ -459,21 +471,36 @@ Coop_Text_FG_Evo31:
 Coop_Text_FG_Name32:
 	.string "ROTOM$"
 Coop_Text_FG_Where32:
-	.string "NEW MAUVILLE.$"
+	.string "NEW MAUVILLE, and in its APPLIANCE\n"
+	.string "ROOM once the power is fixed.$"
 Coop_Text_FG_Evo32:
 	.string "The scientist at NEW MAUVILLE's door\n"
 	.string "gives a ROTOM CATALOG to change it.$"
 Coop_Text_FG_Name33:
-	.string "COTTONEE$"
+	.string "JOLTIK$"
 Coop_Text_FG_Where33:
-	.string "ROUTE 117. PETILIL: ROUTE 123.$"
+	.string "NEW MAUVILLE.$"
 Coop_Text_FG_Evo33:
+	.string "Level 36: GALVANTULA.$"
+Coop_Text_FG_Name34:
+	.string "PORYGON$"
+Coop_Text_FG_Where34:
+	.string "A sealed chamber in NEW MAUVILLE.\n"
+	.string "Old log pages show the way.$"
+Coop_Text_FG_Evo34:
+	.string "An UP-GRADE: PORYGON2. A DUBIOUS\n"
+	.string "DISC: PORYGON-Z. MAUVILLE sells both.$"
+Coop_Text_FG_Name35:
+	.string "COTTONEE$"
+Coop_Text_FG_Where35:
+	.string "ROUTE 117. PETILIL: ROUTE 123.$"
+Coop_Text_FG_Evo35:
 	.string "A SUN STONE: WHIMSICOTT or\n"
 	.string "LILLIGANT. VERDANTURF and LILYCOVE.$"
-Coop_Text_FG_Name34:
+Coop_Text_FG_Name36:
 	.string "LITWICK$"
-Coop_Text_FG_Where34:
+Coop_Text_FG_Where36:
 	.string "MT. PYRE. HONEDGE: ALTERING CAVE.$"
-Coop_Text_FG_Evo34:
+Coop_Text_FG_Evo36:
 	.string "LAMPENT and DOUBLADE need a\n"
 	.string "DUSK STONE from LILYCOVE.$"

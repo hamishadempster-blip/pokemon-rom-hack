@@ -121,9 +121,18 @@ Coop_EventScript_Menu::
 	lockall
 	specialvar VAR_RESULT, Coop_CableUp
 	goto_if_eq VAR_RESULT, TRUE, Coop_EventScript_MenuLinked
-	special Coop_BufferCapText
-	msgbox Coop_Text_AskLink, MSGBOX_YESNO
-	goto_if_eq VAR_RESULT, NO, Coop_EventScript_AskToggleCap
+	@ Not linked: LINK UP first, so A, A still links as it always has.
+	special Coop_BufferUnlinkedMenu
+	messageinstant gStringVar4
+	dynmultichoice 18, 1, FALSE, 5, 0, DYN_MULTICHOICE_CB_NONE, Coop_Text_OptLinkUp, Coop_Text_OptJournal, Coop_Text_OptPartnerDex, Coop_Text_OptLevelCap, Coop_Text_OptBack
+	switch VAR_RESULT
+	case 0, Coop_EventScript_MenuLinkUp
+	case 1, Coop_EventScript_MenuJournal
+	case 2, Coop_EventScript_MenuOfflineDex
+	case 3, Coop_EventScript_AskToggleCap
+	goto Coop_EventScript_MenuBack
+
+Coop_EventScript_MenuLinkUp::
 	special Coop_BeginLink
 	message Coop_Text_WaitingLink
 	waitmessage
@@ -153,12 +162,29 @@ Coop_EventScript_LinkReady::
 
 Coop_EventScript_AskToggleCap::
 	msgbox Coop_Text_AskToggleCap, MSGBOX_YESNO
-	goto_if_eq VAR_RESULT, NO, Coop_EventScript_AskPartnerDex
+	goto_if_eq VAR_RESULT, NO, Coop_EventScript_MenuBack
 	special Coop_ToggleLevelCap
 	special Coop_BufferCapText
 	msgbox Coop_Text_CapNow, MSGBOX_DEFAULT
 	releaseall
 	end
+
+@ This save's quests: what is done, what is next, and what the partner did.
+Coop_EventScript_MenuJournal::
+	special CoopQuest_BufferJournal
+	msgbox gStringVar4, MSGBOX_DEFAULT
+	goto Coop_EventScript_MenuBack
+
+@ Not linked: the partner catches cached from the last link, if any.
+Coop_EventScript_MenuOfflineDex::
+	specialvar VAR_RESULT, CoopDex_BufferSummary
+	goto_if_eq VAR_RESULT, 0, Coop_EventScript_MenuNoOfflineDex
+	msgbox gStringVar4, MSGBOX_DEFAULT
+	goto Coop_EventScript_MenuBack
+
+Coop_EventScript_MenuNoOfflineDex::
+	msgbox Coop_Text_NoOfflineDex, MSGBOX_DEFAULT
+	goto Coop_EventScript_MenuBack
 
 @ Linked: a short list. Where the partner is, the Beacon, and your rival
 @ are in the start menu's status window just before. B or BACK returns to
@@ -171,15 +197,16 @@ Coop_EventScript_MenuLinked::
 	specialvar VAR_RESULT, Coop_BufferMenuExplain
 	messageinstant gStringVar4
 	goto_if_eq VAR_RESULT, TRUE, Coop_EventScript_MenuLinkedBeaconOn
-	dynmultichoice 18, 1, FALSE, 4, 0, DYN_MULTICHOICE_CB_NONE, Coop_Text_OptBeaconOn, Coop_Text_OptUnlink, Coop_Text_OptPartnerDex, Coop_Text_OptBack
+	dynmultichoice 18, 1, FALSE, 5, 0, DYN_MULTICHOICE_CB_NONE, Coop_Text_OptBeaconOn, Coop_Text_OptUnlink, Coop_Text_OptPartnerDex, Coop_Text_OptJournal, Coop_Text_OptBack
 	goto Coop_EventScript_MenuLinkedChoice
 Coop_EventScript_MenuLinkedBeaconOn::
-	dynmultichoice 18, 1, FALSE, 4, 0, DYN_MULTICHOICE_CB_NONE, Coop_Text_OptBeaconOff, Coop_Text_OptUnlink, Coop_Text_OptPartnerDex, Coop_Text_OptBack
+	dynmultichoice 18, 1, FALSE, 5, 0, DYN_MULTICHOICE_CB_NONE, Coop_Text_OptBeaconOff, Coop_Text_OptUnlink, Coop_Text_OptPartnerDex, Coop_Text_OptJournal, Coop_Text_OptBack
 Coop_EventScript_MenuLinkedChoice::
 	switch VAR_RESULT
 	case 0, Coop_EventScript_MenuBeacon
 	case 1, Coop_EventScript_MenuUnlink
 	case 2, Coop_EventScript_MenuPartnerDex
+	case 3, Coop_EventScript_MenuJournal
 	goto Coop_EventScript_MenuBack
 
 @ Whose catches the POKéDEX list shows next to yours, and how fresh.
@@ -214,17 +241,6 @@ Coop_EventScript_MenuBack::
 	end
 
 Coop_EventScript_MenuEnd::
-	releaseall
-	end
-
-@ Unlinked: the partner catches cached from the last link, if any.
-Coop_EventScript_AskPartnerDex::
-	specialvar VAR_RESULT, CoopDex_BufferSummary
-	goto_if_eq VAR_RESULT, 0, Coop_EventScript_MenuEnd
-	msgbox Coop_Text_AskPartnerDex, MSGBOX_YESNO
-	goto_if_eq VAR_RESULT, NO, Coop_EventScript_MenuEnd
-	specialvar VAR_RESULT, CoopDex_BufferSummary
-	msgbox gStringVar4, MSGBOX_DEFAULT
 	releaseall
 	end
 
@@ -361,9 +377,18 @@ Coop_Text_OptBack:
 Coop_Text_OptPartnerDex:
 	.string "PARTNER DEX$"
 
-Coop_Text_AskPartnerDex:
-	.string "See the catches saved from\n"
-	.string "{STR_VAR_1} last time you linked?$"
+Coop_Text_OptLinkUp:
+	.string "LINK UP$"
+
+Coop_Text_OptJournal:
+	.string "JOURNAL$"
+
+Coop_Text_OptLevelCap:
+	.string "LEVEL CAP$"
+
+Coop_Text_NoOfflineDex:
+	.string "No partner catches are saved yet.\n"
+	.string "They're shared when you link.$"
 
 Coop_Text_AskUnlink:
 	.string "Drop the link?\n"
@@ -401,10 +426,6 @@ Coop_Text_TradeDone:
 Coop_Text_PartnerHello:
 	.string "Your partner is on\n"
 	.string "{STR_VAR_1}.$"
-
-Coop_Text_AskLink:
-	.string "Level cap: {STR_VAR_1}.\n"
-	.string "Link up with your partner?$"
 
 Coop_Text_WaitingLink:
 	.string "Waiting for the other game.\n"

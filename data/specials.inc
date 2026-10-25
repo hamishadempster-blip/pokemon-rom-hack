@@ -726,3 +726,15 @@ gSpecials::
 	def_special CoopPractice_Prepare
 	def_special CoopPractice_Start
 	def_special CoopPractice_Outcome
+	def_special CoopQuest_DrawNewMauville
+	def_special CoopQuest_PressBreaker
+	def_special CoopQuest_BreakerCount
+	def_special CoopQuest_PowerRestored
+	def_special CoopQuest_DuoReady
+	def_special CoopQuest_ForceSolo
+	def_special CoopQuest_ClaimReward
+	def_special CoopQuest_RewardClaimed
+	def_special CoopQuest_PagesRead
+	def_special CoopQuest_OpenChamber
+	def_special CoopQuest_BufferJournal
+	def_special Coop_BufferUnlinkedMenu

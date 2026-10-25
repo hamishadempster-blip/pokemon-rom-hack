@@ -857,8 +857,8 @@
 #define TRAINER_EVERETT                     850
 #define TRAINER_RED                         851
 #define TRAINER_LEAF                        852
-#define TRAINER_BRENDAN_PLACEHOLDER         853
-#define TRAINER_MAY_PLACEHOLDER             854
+#define TRAINER_PP_VOLT                     853 // Power Problems (was an unused placeholder)
+#define TRAINER_PP_FUSE                     854 // Power Problems (was an unused placeholder)
 
 // Co-op parties. Ids 855-863 still fit in the nine spare trainer flags.
 // Id 865 is TRAINER_PARTNER(PARTNER_STEVEN) and is an unused slot.

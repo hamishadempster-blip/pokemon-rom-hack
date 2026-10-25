@@ -56,6 +56,7 @@
 #include "constants/field_effects.h"
 #include "field_effect.h"
 #include "coop_deal.h"
+#include "coop_quest.h"
 
 #define COOP_INVITE_MAGIC 0xC0A1
 #define COOP_SAVE_MAGIC   0xC0
@@ -107,6 +108,7 @@ enum
 EWRAM_DATA bool8 gCoopBattleLaunching = FALSE;
 EWRAM_DATA bool8 gCoopArmWild = FALSE;
 EWRAM_DATA bool8 gCoopHoldLink = FALSE;
+EWRAM_DATA bool8 gCoopForceSolo = FALSE; // next trainer battle stays solo (coop_quest.c)
 
 static EWRAM_DATA u8 sLinkState = COOP_LINK_IDLE;
 static EWRAM_DATA u8 sTaskId = 0;
@@ -2177,6 +2179,17 @@ u16 Coop_ToggleLevelCap(void)
     return save->levelCapOn;
 }
 
+// gStringVar4: the line under the CO-OP list when not linked.
+u16 Coop_BufferUnlinkedMenu(void)
+{
+    u8 *end = StringCopy(gStringVar4, COMPOUND_STRING("Not linked. Level cap: "));
+
+    Coop_BufferCapText();
+    end = StringCopy(end, gStringVar1);
+    StringCopy(end, COMPOUND_STRING("."));
+    return TRUE;
+}
+
 u16 Coop_BufferCapText(void)
 {
     if (Coop_IsLevelCapOn())
@@ -2529,6 +2542,14 @@ bool8 Coop_TryQueueOrdinaryDouble(void)
     u16 trainerA = TRAINER_BATTLE_PARAM.opponentA;
     u16 trainerB;
     int category;
+
+    // A script that already offered the partner a duo and heard NO.
+    if (gCoopForceSolo)
+    {
+        gCoopForceSolo = FALSE;
+        sSoloNote = COOP_SOLO_NONE;
+        return FALSE;
+    }
 
     // Only ordinary trainers get a note; story fights have their own rules.
     sSoloNote = COOP_SOLO_NONE;
@@ -3040,6 +3061,8 @@ static u16 Coop_LocalStory(void)
 
     if (VarGet(VAR_LITTLEROOT_RIVAL_STATE) >= 3)
         done |= 1 << COOP_STORY_RIVAL_MET;
+    if (VarGet(VAR_NEW_MAUVILLE_STATE) >= 2)
+        done |= 1 << COOP_STORY_POWER_RESTORED;
     return done;
 }
 
@@ -3107,6 +3130,8 @@ void Coop_ApplyPendingStory(void)
     pending = CoopProtocol_StoryPending(save->storyDone, save->storyApplied);
     if ((pending & (1 << COOP_STORY_RIVAL_MET)) && Coop_ApplyRivalMet())
         save->storyApplied |= 1 << COOP_STORY_RIVAL_MET;
+    if ((pending & (1 << COOP_STORY_POWER_RESTORED)) && CoopQuest_ApplyPowerRestored())
+        save->storyApplied |= 1 << COOP_STORY_POWER_RESTORED;
 }
 
 static void Coop_SendStory(u8 kind, u8 scene)

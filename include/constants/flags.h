@@ -704,21 +704,21 @@
 #define FLAG_ITEM_COOP_GRANITE_CAVE_METAL_COAT    0x289
 #define FLAG_ITEM_COOP_ROUTE124_DRAGON_SCALE      0x28A
 #define FLAG_RECEIVED_TWIN_BEACON  0x28B // Twin Beacon was given. The link itself is not saved.
-#define FLAG_UNUSED_0x28C  0x28C // Unused Flag
-#define FLAG_UNUSED_0x28D  0x28D // Unused Flag
-#define FLAG_UNUSED_0x28E  0x28E // Unused Flag
-#define FLAG_UNUSED_0x28F  0x28F // Unused Flag
-#define FLAG_UNUSED_0x290  0x290 // Unused Flag
-#define FLAG_UNUSED_0x291  0x291 // Unused Flag
-#define FLAG_UNUSED_0x292  0x292 // Unused Flag
-#define FLAG_UNUSED_0x293  0x293 // Unused Flag
-#define FLAG_UNUSED_0x294  0x294 // Unused Flag
-#define FLAG_UNUSED_0x295  0x295 // Unused Flag
-#define FLAG_UNUSED_0x296  0x296 // Unused Flag
-#define FLAG_UNUSED_0x297  0x297 // Unused Flag
-#define FLAG_UNUSED_0x298  0x298 // Unused Flag
-#define FLAG_UNUSED_0x299  0x299 // Unused Flag
-#define FLAG_UNUSED_0x29A  0x29A // Unused Flag
+#define FLAG_PP_ROLYCOLY_DONE  0x28C // Power Problems: the ROLYCOLY by the STORAGE breaker is gone
+#define FLAG_PP_JOLTIK_DONE  0x28D // Power Problems: the JOLTIK in the SERVICE breaker is gone
+#define FLAG_PP_ROTOM_DONE  0x28E // Power Problems: the appliance room ROTOM is gone
+#define FLAG_PP_PORYGON_DONE  0x28F // Power Problems: the chamber PORYGON is gone
+#define FLAG_PP_PAGE_1  0x290 // Power Problems: log page 1 read
+#define FLAG_PP_PAGE_2  0x291 // Power Problems: log page 2 read
+#define FLAG_PP_PAGE_3  0x292 // Power Problems: log page 3 read
+#define FLAG_PP_CHAMBER_OPEN  0x293 // Power Problems: the sealed chamber panel is open
+#define FLAG_ITEM_PP_CHAMBER_UPGRADE  0x294 // Power Problems: the chamber cache was taken
+#define FLAG_PP_CATCHUP  0x295 // Power Problems: power was restored on the partner's save first
+#define FLAG_HIDE_PP_CREW  0x296 // Power Problems: VOLT and FUSE (shown while the generator runs)
+#define FLAG_HIDE_PP_SHUTTER  0x297 // Power Problems: crates on the appliance room (shown until power is back)
+#define FLAG_HIDE_PP_SHOP  0x298 // Power Problems: the POWER SHOP clerk in Mauville (shown after)
+#define FLAG_PP_BRIEFED  0x299 // Power Problems: Wattson explained the breakers
+#define FLAG_PP_LOG_READ  0x29A // Power Problems: the maintenance log (breaker order) was read
 #define FLAG_UNUSED_0x29B  0x29B // Unused Flag
 #define FLAG_UNUSED_0x29C  0x29C // Unused Flag
 #define FLAG_UNUSED_0x29D  0x29D // Unused Flag

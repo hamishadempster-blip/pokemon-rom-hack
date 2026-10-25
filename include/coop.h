@@ -84,6 +84,7 @@ extern bool8 gCoopBattleLaunching;
 extern bool8 gCoopArmWild;
 // Set while a co-op session should survive a one-off link glitch, such as a door.
 extern bool8 gCoopHoldLink;
+extern bool8 gCoopForceSolo;
 // A friendly battle between the two partners (src/coop_deal.c).
 extern bool8 gCoopFriendlyBattle;
 // Battles that borrow the co-op cable and hand it back open afterwards.
@@ -128,6 +129,7 @@ void Coop_MarkDuoLegends(void);
 void Nurse_NoteHeal(void);
 bool8 Coop_IsRivalGraphics(u16 gfx);
 u16 Coop_BufferCapText(void);
+u16 Coop_BufferUnlinkedMenu(void);
 u16 Coop_BufferBeaconStatus(void);
 u16 Coop_BufferBeaconAsk(void);
 u16 Coop_PrepareTwinBeacon(void);

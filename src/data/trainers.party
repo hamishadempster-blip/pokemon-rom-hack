@@ -17747,29 +17747,43 @@ Bulbasaur
 Level: 5
 IVs: 0 HP / 0 Atk / 0 Def / 0 SpA / 0 SpD / 0 Spe
 
-=== TRAINER_BRENDAN_PLACEHOLDER ===
-Name: BRENDAN
-Class: RS Protag
-Pic: RS Brendan
+=== TRAINER_PP_VOLT ===
+Name: VOLT
+Class: Guitarist
+Pic: Guitarist
 Gender: Male
-Music: Male
+Music: Intense
 Double Battle: No
+AI: Check Bad Move / Try To Faint / Check Viability / HP Aware
 
-Groudon
-Level: 5
-IVs: 0 HP / 0 Atk / 0 Def / 0 SpA / 0 SpD / 0 Spe
+Magneton
+Level: 40
+IVs: 20 HP / 20 Atk / 20 Def / 20 SpA / 20 SpD / 20 Spe
 
-=== TRAINER_MAY_PLACEHOLDER ===
-Name: MAY
-Class: RS Protag
-Pic: RS May
-Gender: Female
-Music: Male
+Galvantula
+Level: 40
+IVs: 20 HP / 20 Atk / 20 Def / 20 SpA / 20 SpD / 20 Spe
+
+Luxray @ Sitrus Berry
+Level: 42
+IVs: 24 HP / 24 Atk / 24 Def / 24 SpA / 24 SpD / 24 Spe
+
+=== TRAINER_PP_FUSE ===
+Name: FUSE
+Class: Pokemaniac
+Pic: Pokemaniac
+Gender: Male
+Music: Suspicious
 Double Battle: No
+AI: Check Bad Move / Try To Faint / Check Viability
 
-Kyogre
-Level: 5
-IVs: 0 HP / 0 Atk / 0 Def / 0 SpA / 0 SpD / 0 Spe
+Electrode
+Level: 40
+IVs: 20 HP / 20 Atk / 20 Def / 20 SpA / 20 SpD / 20 Spe
+
+Manectric
+Level: 41
+IVs: 20 HP / 20 Atk / 20 Def / 20 SpA / 20 SpD / 20 Spe
 
 === TRAINER_HEATH_1 ===
 Name: HEATH

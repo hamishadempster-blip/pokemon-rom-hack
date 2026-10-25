@@ -10,7 +10,18 @@ MauvilleCity_OnTransition:
 	clearflag FLAG_MAUVILLE_GYM_BARRIERS_STATE
 	setvar VAR_MAUVILLE_GYM_STATE, 0
 	call_if_set FLAG_GOT_TM_THUNDERBOLT_FROM_WATTSON, MauvilleCity_EventScript_MoveWattsonBackToGym
+	@ Power Problems: the POWER SHOP opens once New Mauville's generator is off.
+	call_if_lt VAR_NEW_MAUVILLE_STATE, 2, MauvilleCity_EventScript_HidePowerShop
+	call_if_ge VAR_NEW_MAUVILLE_STATE, 2, MauvilleCity_EventScript_ShowPowerShop
 	end
+
+MauvilleCity_EventScript_HidePowerShop::
+	setflag FLAG_HIDE_PP_SHOP
+	return
+
+MauvilleCity_EventScript_ShowPowerShop::
+	clearflag FLAG_HIDE_PP_SHOP
+	return
 
 MauvilleCity_EventScript_MoveWattsonBackToGym::
 	clearflag FLAG_HIDE_MAUVILLE_GYM_WATTSON
@@ -421,23 +432,196 @@ MauvilleCity_EventScript_Wattson::
 	giveitem ITEM_BASEMENT_KEY
 	goto_if_eq VAR_RESULT, FALSE, Common_EventScript_ShowBagIsFull
 	setflag FLAG_GOT_BASEMENT_KEY_FROM_WATTSON
+	setflag FLAG_PP_BRIEFED
+	msgbox MauvilleCity_Text_WattsonBreakers, MSGBOX_DEFAULT
 	msgbox MauvilleCity_Text_WattsonWontBeChallenge, MSGBOX_DEFAULT
 	release
 	end
 
 MauvilleCity_EventScript_BegunNewMauville::
+	setflag FLAG_PP_BRIEFED
+	specialvar VAR_RESULT, CoopQuest_BreakerCount
+	msgbox MauvilleCity_Text_WattsonHowGoesIt, MSGBOX_DEFAULT
 	msgbox MauvilleCity_Text_WattsonWontBeChallenge, MSGBOX_DEFAULT
 	release
 	end
 
+@ Each save is paid once, whoever stopped the generator first.
 MauvilleCity_EventScript_CompletedNewMauville::
+	call_if_set FLAG_PP_CATCHUP, MauvilleCity_EventScript_WattsonPartnerFirst
 	msgbox MauvilleCity_Text_WattsonThanksTakeTM, MSGBOX_DEFAULT
 	giveitem ITEM_TM_THUNDERBOLT
 	goto_if_eq VAR_RESULT, FALSE, Common_EventScript_ShowBagIsFull
 	setflag FLAG_GOT_TM_THUNDERBOLT_FROM_WATTSON
+	setvar VAR_0x8004, COOP_REWARD_PP_WATTSON
+	special CoopQuest_ClaimReward
+	msgbox MauvilleCity_Text_WattsonPowerShop, MSGBOX_DEFAULT
 	msgbox MauvilleCity_Text_WattsonYoungTakeCharge, MSGBOX_DEFAULT
 	release
 	end
+
+MauvilleCity_EventScript_WattsonPartnerFirst::
+	msgbox MauvilleCity_Text_WattsonPartnerFirst, MSGBOX_DEFAULT
+	return
+
+@ The POWER SHOP: evolution items salvaged from New Mauville. It always
+@ restocks, and every badge from the sixth on adds more.
+MauvilleCity_EventScript_PowerShop::
+	lock
+	faceplayer
+	msgbox MauvilleCity_Text_PowerShop, MSGBOX_DEFAULT
+	message gText_HowMayIServeYou
+	waitmessage
+	goto_if_set FLAG_BADGE08_GET, MauvilleCity_EventScript_PowerShop4
+	goto_if_set FLAG_BADGE07_GET, MauvilleCity_EventScript_PowerShop3
+	goto_if_set FLAG_BADGE06_GET, MauvilleCity_EventScript_PowerShop2
+	pokemart MauvilleCity_Pokemart_PowerShop1
+	goto MauvilleCity_EventScript_PowerShopEnd
+MauvilleCity_EventScript_PowerShop2::
+	pokemart MauvilleCity_Pokemart_PowerShop2
+	goto MauvilleCity_EventScript_PowerShopEnd
+MauvilleCity_EventScript_PowerShop3::
+	pokemart MauvilleCity_Pokemart_PowerShop3
+	goto MauvilleCity_EventScript_PowerShopEnd
+MauvilleCity_EventScript_PowerShop4::
+	pokemart MauvilleCity_Pokemart_PowerShop4
+MauvilleCity_EventScript_PowerShopEnd::
+	msgbox gText_PleaseComeAgain, MSGBOX_DEFAULT
+	release
+	end
+
+	.align 2
+MauvilleCity_Pokemart_PowerShop1:
+	.2byte ITEM_THUNDER_STONE
+	.2byte ITEM_FIRE_STONE
+	.2byte ITEM_WATER_STONE
+	.2byte ITEM_LEAF_STONE
+	.2byte ITEM_MOON_STONE
+	.2byte ITEM_SUN_STONE
+	.2byte ITEM_METAL_COAT
+	.2byte ITEM_KINGS_ROCK
+	.2byte ITEM_LINKING_CORD
+	pokemartlistend
+
+	.align 2
+MauvilleCity_Pokemart_PowerShop2:
+	.2byte ITEM_THUNDER_STONE
+	.2byte ITEM_FIRE_STONE
+	.2byte ITEM_WATER_STONE
+	.2byte ITEM_LEAF_STONE
+	.2byte ITEM_MOON_STONE
+	.2byte ITEM_SUN_STONE
+	.2byte ITEM_METAL_COAT
+	.2byte ITEM_KINGS_ROCK
+	.2byte ITEM_LINKING_CORD
+	.2byte ITEM_DUSK_STONE
+	.2byte ITEM_SHINY_STONE
+	.2byte ITEM_DRAGON_SCALE
+	.2byte ITEM_REAPER_CLOTH
+	.2byte ITEM_UPGRADE
+	.2byte ITEM_TART_APPLE
+	.2byte ITEM_SWEET_APPLE
+	.2byte ITEM_SYRUPY_APPLE
+	pokemartlistend
+
+	.align 2
+MauvilleCity_Pokemart_PowerShop3:
+	.2byte ITEM_THUNDER_STONE
+	.2byte ITEM_FIRE_STONE
+	.2byte ITEM_WATER_STONE
+	.2byte ITEM_LEAF_STONE
+	.2byte ITEM_MOON_STONE
+	.2byte ITEM_SUN_STONE
+	.2byte ITEM_METAL_COAT
+	.2byte ITEM_KINGS_ROCK
+	.2byte ITEM_LINKING_CORD
+	.2byte ITEM_DUSK_STONE
+	.2byte ITEM_SHINY_STONE
+	.2byte ITEM_DRAGON_SCALE
+	.2byte ITEM_REAPER_CLOTH
+	.2byte ITEM_UPGRADE
+	.2byte ITEM_TART_APPLE
+	.2byte ITEM_SWEET_APPLE
+	.2byte ITEM_SYRUPY_APPLE
+	.2byte ITEM_ICE_STONE
+	.2byte ITEM_DAWN_STONE
+	.2byte ITEM_PRISM_SCALE
+	.2byte ITEM_DEEP_SEA_TOOTH
+	.2byte ITEM_DEEP_SEA_SCALE
+	.2byte ITEM_AUSPICIOUS_ARMOR
+	.2byte ITEM_MALICIOUS_ARMOR
+	.2byte ITEM_DUBIOUS_DISC
+	pokemartlistend
+
+	.align 2
+MauvilleCity_Pokemart_PowerShop4:
+	.2byte ITEM_THUNDER_STONE
+	.2byte ITEM_FIRE_STONE
+	.2byte ITEM_WATER_STONE
+	.2byte ITEM_LEAF_STONE
+	.2byte ITEM_MOON_STONE
+	.2byte ITEM_SUN_STONE
+	.2byte ITEM_METAL_COAT
+	.2byte ITEM_KINGS_ROCK
+	.2byte ITEM_LINKING_CORD
+	.2byte ITEM_DUSK_STONE
+	.2byte ITEM_SHINY_STONE
+	.2byte ITEM_DRAGON_SCALE
+	.2byte ITEM_REAPER_CLOTH
+	.2byte ITEM_UPGRADE
+	.2byte ITEM_TART_APPLE
+	.2byte ITEM_SWEET_APPLE
+	.2byte ITEM_SYRUPY_APPLE
+	.2byte ITEM_ICE_STONE
+	.2byte ITEM_DAWN_STONE
+	.2byte ITEM_PRISM_SCALE
+	.2byte ITEM_DEEP_SEA_TOOTH
+	.2byte ITEM_DEEP_SEA_SCALE
+	.2byte ITEM_AUSPICIOUS_ARMOR
+	.2byte ITEM_MALICIOUS_ARMOR
+	.2byte ITEM_DUBIOUS_DISC
+	.2byte ITEM_ELECTIRIZER
+	.2byte ITEM_MAGMARIZER
+	.2byte ITEM_PROTECTOR
+	.2byte ITEM_RAZOR_CLAW
+	.2byte ITEM_RAZOR_FANG
+	.2byte ITEM_OVAL_STONE
+	pokemartlistend
+
+MauvilleCity_Text_WattsonBreakers:
+	.string "WATTSON: Oh, and one more thing!\p"
+	.string "Every surge down there trips the\n"
+	.string "three circuit breakers.\p"
+	.string "The MAIN SWITCH won't stop the\n"
+	.string "generator until all are reset!\p"
+	.string "My old crew kept a MAINTENANCE LOG\n"
+	.string "by the stairs. It knows the order.$"
+
+MauvilleCity_Text_WattsonHowGoesIt:
+	.string "WATTSON: Wahahahah! How goes it?\n"
+	.string "{STR_VAR_1} of 3 breakers reset, eh?\p"
+	.string "The MAINTENANCE LOG by the stairs\n"
+	.string "gives the order!$"
+
+MauvilleCity_Text_WattsonPartnerFirst:
+	.string "WATTSON: Your partner got to the\n"
+	.string "generator first, I hear!\p"
+	.string "But you came all this way too.\n"
+	.string "Fair's fair!$"
+
+MauvilleCity_Text_WattsonPowerShop:
+	.string "WATTSON: And with the power steady,\n"
+	.string "my old crew opened a POWER SHOP\l"
+	.string "right here, by the GYM!\p"
+	.string "Stones and gadgets for evolution.\n"
+	.string "More stock as you earn badges!$"
+
+MauvilleCity_Text_PowerShop:
+	.string "Welcome to the POWER SHOP!\n"
+	.string "Salvage from NEW MAUVILLE.\p"
+	.string "We always restock, and we bring\n"
+	.string "out more for every BADGE you earn,\l"
+	.string "from your sixth on.$"
 
 MauvilleCity_EventScript_ReceivedThunderbolt::
 	msgbox MauvilleCity_Text_WattsonYoungTakeCharge, MSGBOX_DEFAULT

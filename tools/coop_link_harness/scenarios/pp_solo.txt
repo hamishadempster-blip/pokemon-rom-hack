@@ -1,0 +1,236 @@
+# Power Problems, one player, not linked (actual play from the story_seg6
+# saves; player 1 only boots).
+# FIXTURES: Wattson's BASEMENT KEY step is marked done (the door opened,
+# VAR_NEW_MAUVILLE_STATE 1); fixture_warp moves player 0 between rooms
+# instead of walking the stock blue/green barrier maze; player 0's
+# battlers hit hard (strong_battlers) so the fights are short; no random
+# wild battles.
+# Checks: the log; a wrong order trips every breaker; ROLYCOLY and JOLTIK
+# leave their panels after a battle; the right order resets all three; the
+# MAIN SWITCH refuses until then; VOLT (solo) steps aside; the switch stops
+# the generator and frees the appliance room; ROTOM and PORYGON stay until
+# caught; the three pages open the chamber only with the generator off;
+# the UP-GRADE; WATTSON pays once; the POWER SHOP; a save for the reload
+# test (pp_reload.txt).
+include continue.inc
+0 no_wild 1
+0 smart_moves 1
+0 strong_battlers 600
+0 fixture_flag 0xd0 1
+0 fixture_var 0x40ba 1
+# The maintenance log by the stairs.
+0 fixture_warp 24 53 30 34
+0 until_field 3000
+0 press UP 2
+0 wait 20
+0 press A 2
+0 mash_field 3000
+0 expect_flag 0x29a 1
+# A page before the power is off: the panel stays shut.
+0 fixture_warp 24 53 12 2
+0 until_field 3000
+0 press UP 2
+0 wait 20
+0 press A 2
+0 mash_field 3000
+0 expect_flag 0x290 1
+# STORAGE: ROLYCOLY first, then the breaker (1 of 3).
+0 fixture_warp 24 53 3 24
+0 until_field 3000
+0 press UP 2
+0 wait 20
+0 shot storage-rolycoly
+0 press A 2
+0 mash_field 6000
+0 until_field 3000
+0 expect_flag 0x28c 1
+0 press UP 2
+0 wait 30
+0 press UP 2
+0 wait 20
+0 press A 2
+0 mash_field 3000
+0 expect_var 0x40f7 1
+0 shot storage-reset
+# CONTROL out of order: everything trips (0 of 3).
+0 fixture_warp 24 53 37 2
+0 until_field 3000
+0 press UP 2
+0 wait 20
+0 press A 2
+0 mash_field 3000
+0 expect_var 0x40f7 0
+# VOLT stands on the MAIN SWITCH: a solo battle (not linked), then he
+# steps aside, and the switch still refuses with no breakers reset.
+0 fixture_warp 24 53 33 7
+0 until_field 3000
+0 press UP 2
+0 wait 20
+0 shot volt
+0 press A 2
+0 mash_field 8000
+0 until_field 3000
+0 expect_flag 0x855 1
+0 expect_flag 0x856 0
+0 expect_object 11 32 7
+0 press UP 2
+0 wait 60
+0 shot switch-refuses
+0 mash_field 3000
+0 expect_var 0x40ba 1
+# Right order: STORAGE, SERVICE (after JOLTIK), CONTROL.
+0 fixture_warp 24 53 3 23
+0 until_field 3000
+0 press UP 2
+0 wait 20
+0 press A 2
+0 mash_field 3000
+0 expect_var 0x40f7 1
+0 fixture_warp 24 53 25 16
+0 until_field 3000
+0 press UP 2
+0 wait 20
+0 press A 2
+0 mash_field 6000
+0 until_field 3000
+0 expect_flag 0x28d 1
+0 press UP 2
+0 wait 30
+0 press UP 2
+0 wait 20
+0 press A 2
+0 mash_field 3000
+0 expect_var 0x40f7 2
+0 fixture_warp 24 53 37 2
+0 until_field 3000
+0 press UP 2
+0 wait 20
+0 press A 2
+0 mash_field 3000
+0 expect_var 0x40f7 3
+0 shot control-reset
+# The MAIN SWITCH, all three breakers reset.
+0 fixture_warp 24 53 33 8
+0 until_field 3000
+0 walk 33 7 600
+0 press UP 2
+0 wait 60
+0 mash_field 3000
+0 expect_var 0x40ba 2
+0 expect_flag 0x296 1
+0 expect_flag 0x297 1
+0 shot generator-off
+# The appliance room: crates gone, ROTOM stays after a knockout.
+0 fixture_warp 24 53 34 26
+0 until_field 3000
+0 press UP 2
+0 wait 20
+0 shot appliance-room
+0 press A 2
+0 mash_field 6000
+0 until_field 3000
+0 expect_flag 0x28e 0
+# The other two pages, then the panel.
+0 fixture_warp 24 53 8 36
+0 until_field 3000
+0 press UP 2
+0 wait 20
+0 press A 2
+0 mash_field 3000
+0 expect_flag 0x291 1
+0 fixture_warp 24 53 31 23
+0 until_field 3000
+0 press UP 2
+0 wait 20
+0 press A 2
+0 mash_field 3000
+0 expect_flag 0x292 1
+0 fixture_warp 24 53 34 8
+0 until_field 3000
+0 press DOWN 2
+0 wait 20
+0 press A 2
+0 mash_field 3000
+0 expect_flag 0x293 1
+0 walk 36 12 2000
+0 shot chamber
+0 press RIGHT 2
+0 wait 20
+0 press A 2
+0 mash_field 3000
+0 expect_flag 0x294 1
+0 expect_item 0 228 1
+0 walk 35 12 1000
+0 press DOWN 2
+0 wait 20
+0 press A 2
+0 mash_field 6000
+0 until_field 3000
+0 expect_flag 0x28f 0
+# WATTSON in Mauville pays once; the POWER SHOP is open.
+0 fixture_flag 0x390 0
+0 fixture_warp 0 2 29 10
+0 until_field 3000
+0 press UP 2
+0 wait 20
+0 press A 2
+0 mash_field 4000
+0 expect_flag 0xd1 1
+0 expect_item 2 605 1
+0 press A 2
+0 mash_field 3000
+0 expect_item 2 605 1
+0 walk 12 7 2000
+0 press UP 2
+0 wait 20
+0 press A 2
+0 wait 90
+0 press A 2
+0 wait 90
+0 press A 2
+0 wait 90
+0 press A 2
+0 wait 120
+0 shot power-shop
+0 press A 2
+0 wait 150
+0 press A 2
+0 wait 150
+0 shot power-shop-list
+0 mash_field 3000 B
+0 walk 14 9 1000
+# The journal, from the CO-OP menu (not linked).
+0 press START 2
+0 wait 40
+0 menu_to COOP
+0 press A 2
+0 wait 60
+0 shot coop-unlinked
+0 press DOWN 2
+0 wait 10
+0 press A 2
+0 wait 90
+0 shot journal-1
+0 press A 2
+0 wait 60
+0 shot journal-2
+0 press A 2
+0 wait 60
+0 shot journal-3
+0 press A 2
+0 wait 60
+0 shot journal-4
+0 mash_field 2000 B
+0 press START 2
+0 wait 60
+0 menu_to SAVE
+0 press A 2
+0 wait 50
+0 press A 2
+0 wait 250
+0 press A 2
+0 wait 300
+0 press A 2
+0 wait 40
+0 mash_field 1500 B
+0 until_field 3000

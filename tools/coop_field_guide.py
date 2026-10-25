@@ -41,7 +41,9 @@ GUIDE = [
     ('RIOLU', 'GRANITE CAVE 1F.', 'Level up while very friendly between\n6:00 and 19:59: LUCARIO.'),
     ('SNOM', 'SHOAL CAVE ice rooms at low tide.', 'Level up while very friendly at\nnight (20:00 to 5:59): FROSMOTH.'),
     ('ROCKRUFF', 'ROUTE 114.', 'Level 25: MIDDAY LYCANROC by day,\nMIDNIGHT at night. An OWN TEMPO\\lROCKRUFF becomes DUSK at any hour.'),
-    ('ROTOM', 'NEW MAUVILLE.', "The scientist at NEW MAUVILLE's door\ngives a ROTOM CATALOG to change it."),
+    ('ROTOM', 'NEW MAUVILLE, and in its APPLIANCE\nROOM once the power is fixed.', "The scientist at NEW MAUVILLE's door\ngives a ROTOM CATALOG to change it."),
+    ('JOLTIK', 'NEW MAUVILLE.', 'Level 36: GALVANTULA.'),
+    ('PORYGON', 'A sealed chamber in NEW MAUVILLE.\nOld log pages show the way.', 'An UP-GRADE: PORYGON2. A DUBIOUS\nDISC: PORYGON-Z. MAUVILLE sells both.'),
     ('COTTONEE', 'ROUTE 117. PETILIL: ROUTE 123.', 'A SUN STONE: WHIMSICOTT or\nLILLIGANT. VERDANTURF and LILYCOVE.'),
     ('LITWICK', 'MT. PYRE. HONEDGE: ALTERING CAVE.', 'LAMPENT and DOUBLADE need a\nDUSK STONE from LILYCOVE.'),
 ]
