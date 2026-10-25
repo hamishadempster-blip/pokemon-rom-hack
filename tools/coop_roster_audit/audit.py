@@ -150,6 +150,12 @@ for row in table.splitlines()[2:]:
     cells = [c.strip() for c in row.strip('|').split('|')]
     name = re.sub(r'\s*\(.*\)', '', cells[0])
     const = 'SPECIES_' + re.sub(r'[^A-Z0-9]', '_', name.upper().replace('-', '_')).strip('_')
+    # A form in brackets, such as "Rockruff (Own Tempo)", is its own species.
+    paren = re.search(r'\((.*)\)', cells[0])
+    if paren:
+        form = const + '_' + re.sub(r'[^A-Z0-9]', '_', paren.group(1).upper()).strip('_')
+        if form in SPECIES:
+            const = form
     const = {'SPECIES_JANGMO_O': 'SPECIES_JANGMO_O', 'SPECIES_INDEEDEE': 'SPECIES_INDEEDEE_M'}.get(const, const)
     if const == 'SPECIES_INDEEDEE_M' and 'female' in cells[0]:
         const = 'SPECIES_INDEEDEE_F'
@@ -164,6 +170,20 @@ for sid in range(1, max(SPECIES_NAME) + 1):
         pass
 
 
+# Evolutions that cannot happen in Hoenn, by design: region-locked forms
+# (Hisuian Lilligant) and totem forms with no method. Reported, not audited.
+EXCLUDED = {}
+
+
+def reachable_evo(m, conds):
+    if m == 'EVO_NONE':
+        return 'no method (totem form)'
+    for c, a in conds:
+        if c == 'IF_REGION':
+            return 'needs another region'
+    return None
+
+
 def line_of(sid):
     root = sid
     while root in prevo:
@@ -174,8 +194,20 @@ def line_of(sid):
         if s in out:
             continue
         out.append(s)
-        todo += [t for _, _, t, _ in info(s)['evos'] if t not in out]
+        for m, _, t, conds in info(s)['evos']:
+            why = reachable_evo(m, conds)
+            if why:
+                EXCLUDED[t] = why
+            elif t not in out:
+                todo.append(t)
     return out
+
+
+# Forms reached with a key item from the bag, and where the item comes from.
+FORM_ITEMS = {
+    'SPECIES_ROTOM': ('ITEM_ROTOM_CATALOG', ['SPECIES_ROTOM_HEAT', 'SPECIES_ROTOM_WASH', 'SPECIES_ROTOM_FROST',
+                                             'SPECIES_ROTOM_FAN', 'SPECIES_ROTOM_MOW']),
+}
 
 
 # --- obtainability ---------------------------------------------------------
@@ -284,7 +316,11 @@ for const, label, where, level in intended:
     if sid is None:
         issues.append(f'{label}: no species constant {const}')
         continue
-    for s in line_of(sid):
+    line = line_of(sid)
+    for base, (item, forms) in FORM_ITEMS.items():
+        if SPECIES[base] in line:
+            line += [SPECIES[f] for f in forms if SPECIES[f] not in line]
+    for s in line:
         if s in seen:
             continue
         seen.add(s)
@@ -314,6 +350,13 @@ for const, label, where, level in intended:
             how.append('in-game trade')
         if s != line_of(s)[0] and s in prevo:
             how.append('evolve ' + SPECIES_NAME[prevo[s]].replace('SPECIES_', '').title())
+        for base, (item, forms) in FORM_ITEMS.items():
+            if c in forms:
+                src = sources_for(item)
+                how.append(f'{item.replace("ITEM_", "").replace("_", " ").title()} on {base.replace("SPECIES_", "").title()}'
+                           + (f' ({", ".join(sorted(src))})' if src else ''))
+                if not src:
+                    probs.append(f'{item} not obtainable')
         if not how and s == line_of(s)[0] and any(wild.get(SPECIES_NAME[o]) or SPECIES_NAME[o] in trades for o in line_of(s)):
             how.append('breed an evolved form (Day Care)')
         if not how and info(s)['natdex'] != info(line_of(s)[0])['natdex'] or (not how and s in prevo):
@@ -338,6 +381,11 @@ for c, d, hd, how, probs in rows:
     evo = '; '.join(fmt_evo(*e) for e in d['evos']) or '—'
     print(f'| {d["name"]} | {hd or "—"} | {types} | {abil} | {stats} | {"; ".join(how) or "—"} | {evo} | {"OK" if not probs else "; ".join(probs)} |')
 print()
+if EXCLUDED:
+    print('Forms left out on purpose (cannot be reached in Hoenn):')
+    for t, why in sorted(EXCLUDED.items()):
+        print(f'- {SPECIES_NAME.get(t, t).replace("SPECIES_", "").title()}: {why}')
+    print()
 print('Items those evolutions need, and where they come from:')
 needed = sorted({it for _, d, _, _, _ in rows for it in items_needed(d['evos'])})
 for it in needed:

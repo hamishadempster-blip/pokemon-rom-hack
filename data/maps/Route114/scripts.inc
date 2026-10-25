@@ -61,6 +61,7 @@ Route114_EventScript_Poochyena::
 	playmoncry SPECIES_POOCHYENA, CRY_MODE_ENCOUNTER
 	msgbox Route114_Text_Poochyena, MSGBOX_DEFAULT
 	waitmoncry
+	msgbox Route114_Text_RockruffNote, MSGBOX_DEFAULT
 	release
 	end
 
@@ -185,6 +186,16 @@ Route114_Text_ExplainRoar:
 
 Route114_Text_Poochyena:
 	.string "Bow! Bowwow!$"
+
+Route114_Text_RockruffNote:
+	.string "A note hangs from its collar:\p"
+	.string "“ROCKRUFF play in this grass.\n"
+	.string "Raised to level 25, one becomes\l"
+	.string "LYCANROC: Midday form in daylight,\l"
+	.string "Midnight form at night.\p"
+	.string "A calm one with OWN TEMPO becomes\n"
+	.string "the Dusk form at level 25,\l"
+	.string "whatever the hour.”$"
 
 Route114_Text_MeteorFallsSign:
 	.string "METEOR FALLS\n"

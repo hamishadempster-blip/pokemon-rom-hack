@@ -56,3 +56,31 @@ NewMauville_Entrance_Text_UsedBasementKey:
 	.string "{PLAYER} used the BASEMENT KEY.\p"
 	.string "The door opened!$"
 
+
+@ Rotom's appliances: each save gets its own catalog here.
+NewMauville_Entrance_EventScript_RotomScientist::
+	lock
+	faceplayer
+	checkitem ITEM_ROTOM_CATALOG
+	goto_if_eq VAR_RESULT, TRUE, NewMauville_Entrance_EventScript_RotomExplain
+	msgbox NewMauville_Entrance_Text_RotomIntro, MSGBOX_DEFAULT
+	giveitem ITEM_ROTOM_CATALOG
+	goto_if_eq VAR_RESULT, FALSE, Common_EventScript_ShowBagIsFull
+NewMauville_Entrance_EventScript_RotomExplain::
+	msgbox NewMauville_Entrance_Text_RotomExplain, MSGBOX_DEFAULT
+	release
+	end
+
+NewMauville_Entrance_Text_RotomIntro:
+	.string "The old appliances down here are\n"
+	.string "full of ROTOM. They love machines!\p"
+	.string "Take this catalog of appliances.$"
+
+NewMauville_Entrance_Text_RotomExplain:
+	.string "With a ROTOM in your party, use the\n"
+	.string "ROTOM CATALOG from your bag.\p"
+	.string "It can slip into a heater, a washer,\n"
+	.string "a fridge, a fan, or a mower, and\l"
+	.string "learns that appliance's move.\p"
+	.string "Pick the light bulb to bring it\n"
+	.string "back to its own form.$"

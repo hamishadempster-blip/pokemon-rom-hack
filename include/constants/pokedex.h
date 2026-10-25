@@ -1408,7 +1408,39 @@ enum NationalDexOrder
     F(BISHARP) \
     F(KINGAMBIT) \
     F(GIMMIGHOUL) \
-    F(GHOLDENGO)
+    F(GHOLDENGO) \
+    F(HATENNA) \
+    F(HATTREM) \
+    F(HATTERENE) \
+    F(WATTREL) \
+    F(KILOWATTREL) \
+    F(RIOLU) \
+    F(LUCARIO) \
+    F(SHINX) \
+    F(LUXIO) \
+    F(LUXRAY) \
+    F(COTTONEE) \
+    F(WHIMSICOTT) \
+    F(SMOLIV) \
+    F(DOLLIV) \
+    F(ARBOLIVA) \
+    F(ROCKRUFF) \
+    F(LYCANROC) \
+    F(JOLTIK) \
+    F(GALVANTULA) \
+    F(ROTOM) \
+    F(LITWICK) \
+    F(LAMPENT) \
+    F(CHANDELURE) \
+    F(FOONGUS) \
+    F(AMOONGUSS) \
+    F(HONEDGE) \
+    F(DOUBLADE) \
+    F(AEGISLASH) \
+    F(PETILIL) \
+    F(LILLIGANT) \
+    F(SNOM) \
+    F(FROSMOTH)
 
 // Hoenn Pokédex order
 enum HoennDexOrder
@@ -1629,7 +1661,7 @@ enum KantoDexOrder
 };
 
 #define KANTO_DEX_COUNT (KANTO_DEX_MEW + 1)
-#define HOENN_DEX_COUNT (HOENN_DEX_GHOLDENGO + 1)
+#define HOENN_DEX_COUNT (HOENN_DEX_FROSMOTH + 1)
 
 #define REGIONAL_DEX_COUNT (IS_FRLG ? KANTO_DEX_COUNT : HOENN_DEX_COUNT)
 

@@ -222,10 +222,27 @@ Together on the same tile, a wild double of any of these pairs is the pair itsel
 | Tadbulb | New Mauville | 22 and 24 |
 | Impidimp | Route 121 | 26 and 28 |
 | Pawniard | Victory Road B1F | 38 and 40 |
+| Hatenna | Petalburg Woods | 5 and 6 |
+| Wattrel | Route 104, and Route 110 | 4 and 5, and 12 and 13 |
+| Riolu | Granite Cave 1F | 9 and 10 |
+| Shinx | Route 110 | 12 and 13 |
+| Cottonee | Route 117 | 13 and 14 |
+| Smoliv | Route 117 | 13 and 14 |
+| Rockruff | Route 114 | 16 and 17 |
+| Rockruff (Own Tempo) | Route 114 | 16 |
+| Joltik | New Mauville | 23 and 24 |
+| Rotom | New Mauville | 24 and 25 |
+| Litwick | Mt. Pyre 1F–3F | 25–27 |
+| Foongus | Route 119 | 25 and 27 |
+| Honedge | Altering Cave (Route 103, by Surf) | 26–30 |
+| Petilil | Route 123 | 26 and 28 |
+| Snom | Shoal Cave, low tide ice and inner rooms | 28–32 |
 
 Gigalith is on the Desert Underpass. The underpass encounter table already runs from 35 to 45, so level 42 is inside that table. Sandile and Helioptile stay at the desert's own levels. Tadbulb uses New Mauville's own levels, 22 and 24, because that cave's table runs from 22 to 26. Crabrawler is a surf encounter on Route 106, which has no grass.
 
 Their evolution lines are in the Hoenn Pokédex beside the route where you first meet them: Corvisquire and Corviknight, Dubwool, Thievul, Crabominable, Barraskewda, Scovillain, Copperajah, Bellibolt, Morgrem and Grimmsnarl, Bisharp and Kingambit. Flamigo has no evolution.
+
+Build `0xC017012F` adds fourteen more families (see [COOP_ROSTER_F.md](COOP_ROSTER_F.md) for every level, item, and condition). Each save catches its own; every evolution item is sold every day, so neither player can miss one. Riolu becomes Lucario with high friendship outside night hours; Snom becomes Frosmoth with high friendship at night. Lampent and Doublade use a Dusk Stone and Cottonee and Petilil a Sun Stone (Verdanturf and Lilycove sell Sun Stones; Lilycove sells Dusk Stones). A Rockruff becomes Midday Lycanroc by day or Midnight Lycanroc at night; an Own Tempo Rockruff becomes Dusk Lycanroc at level 25 at any hour (the stock rule needs 19:00–19:59, too narrow here; the note on the Route 114 POOCHYENA says so). The scientist in New Mauville's entrance gives each save a Rotom Catalog, which moves Rotom in and out of its five appliance forms. Hisuian Lilligant is not obtainable: it needs the Hisui region.
 
 Three evolutions could not happen in this game and were changed in build `0xC017012E`: Gimmighoul needed 999 Gimmighoul Coins (none exist here) and now becomes Gholdengo at level 50; Bisharp needed to defeat Bisharp holding a Leader's Crest (none exist here) and now becomes Kingambit at level 64; Charcadet's Auspicious and Malicious Armor, and Boldore's Linking Cord, are now sold by the Lilycove evolution clerk.
 
