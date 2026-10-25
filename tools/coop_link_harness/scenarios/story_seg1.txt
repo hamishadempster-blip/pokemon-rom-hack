@@ -1,0 +1,75 @@
+# Story run, segment 1 (actual play, no warps or story flags): from the
+# lab saves made by save_lab.txt (rescue played for real), CONTINUE, link,
+# walk out of the lab (Mom's Running Shoes scene), up Routes 101 and Oldale
+# to Route 103, fight both twins together, walk back to the lab staggered
+# (player 1 a few seconds behind) for Birch's Pokedex scene, then save.
+# FIXTURES: wild encounters off while walking (wild battles have their own
+# scenarios); strong cached battle stats on each lead before the rival fight,
+# so the run tests story flow rather than level grinding.
+include continue.inc
+include relink.inc
+b expect coop.sLinkState 2
+b no_wild 1
+# Out of the lab; Mom stops each player in Littleroot with Running Shoes.
+b walk 6 11 1500
+b cross DOWN 0 9
+b mash_field 3000
+b dump littleroot
+0 walk 11 1 3000
+0 cross UP 0 16
+1 wait 200
+1 walk 10 1 3000
+1 cross UP 0 16
+b dump route101
+b walk 10 1 3000
+b cross UP 0 10
+b dump oldale
+b walk 10 1 3000
+b cross UP 0 18
+b dump route103
+b expect coop.sLinkState 2
+b write gParties+86:2 300
+b write gParties+88:2 300
+b write gParties+90:2 200
+b write gParties+92:2 200
+b write gParties+94:2 200
+b write gParties+96:2 200
+b write gParties+98:2 200
+0 walk 10 4 3000
+1 walk 11 4 3000
+b expect_any_object 246
+b shot seg1-twins
+0 press UP 2
+0 press A 2
+b until_cb2 BattleMainCB2 12000 A
+b expect coop.sInBattle 1
+b mash_field 35000
+b expect gBattleOutcome 1
+b mash_field 12000
+b expect_var 0x4084 4
+b expect coop.sLinkState 2
+b shot seg1-after-rival
+# Back to the lab, player 1 trailing.
+0 walk 10 21 4000
+0 cross DOWN 0 10
+1 wait 300
+1 walk 11 21 4000
+1 cross DOWN 0 10
+b dump oldale-back
+b walk 10 19 3000
+b cross DOWN 0 16
+b walk 10 19 3000
+b cross DOWN 0 9
+b dump littleroot-back
+0 walk 7 16 3000
+0 until_map 1 4
+1 wait 400
+1 walk 7 16 4000
+1 until_map 1 4
+b mash_field 6000
+b dump lab-pokedex
+b shot seg1-pokedex
+b expect_flag 0x74 1
+b expect coop.sLinkState 2
+include save_again.inc
+b shot seg1-saved

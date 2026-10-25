@@ -22,7 +22,7 @@
 #define MAX_CMDS 4096
 #define MAX_SYMS 500000
 
-enum { C_PARTNER, C_GOTO, C_HEX, C_PRESS, C_WAIT, C_SHOT, C_DUMP, C_BARRIER, C_UNTIL_CB2, C_UNTIL_FIELD, C_EXPECT, C_UNTIL_MEM, C_BATTLE, C_MENU, C_PARTY, C_FIXTURE, C_WRITE, C_LEAD, C_MOVE, C_SIX, C_VAR, C_FLAG, C_VS, C_EXPECT_FLAG, C_EXPECT_VAR, C_NO_OBJECT, C_MAP, C_OBJECT, C_TEXT_SPEED, C_PACE, C_MUTE, C_PARTNER_AT, C_ITEM, C_EXPECT_ITEM, C_UNTIL_TEXT, C_WARP, C_PC_COUNT, C_MONS, C_NO_COPIES, C_NOTE_MONEY, C_MONEY_GAIN, C_FORCE_ENC, C_EXPECT_RANGE };
+enum { C_PARTNER, C_GOTO, C_HEX, C_PRESS, C_WAIT, C_SHOT, C_DUMP, C_BARRIER, C_UNTIL_CB2, C_UNTIL_FIELD, C_EXPECT, C_UNTIL_MEM, C_BATTLE, C_MENU, C_PARTY, C_FIXTURE, C_WRITE, C_LEAD, C_MOVE, C_SIX, C_VAR, C_FLAG, C_VS, C_EXPECT_FLAG, C_EXPECT_VAR, C_NO_OBJECT, C_MAP, C_OBJECT, C_TEXT_SPEED, C_PACE, C_MUTE, C_PARTNER_AT, C_ITEM, C_EXPECT_ITEM, C_UNTIL_TEXT, C_WARP, C_PC_COUNT, C_MONS, C_NO_COPIES, C_NOTE_MONEY, C_MONEY_GAIN, C_FORCE_ENC, C_EXPECT_RANGE, C_WALK, C_NO_WILD, C_CROSS, C_WALK_BATTLE, C_SMART, C_STRONG, C_UNTIL_TASK, C_MIRROR };
 
 struct Cmd {
 	int kind;
@@ -54,6 +54,10 @@ struct Player {
     unsigned vsFlags;
     unsigned muteFrames, mutedOpcode;
     unsigned encSaved[2], encForced;
+    unsigned noWild;
+    unsigned smartMoves;
+    unsigned strongBattlers;
+    unsigned offField;
 };
 
 static struct Player P[2];
@@ -119,7 +123,36 @@ static unsigned symValue(const char* name) {
 	return addr;
 }
 
+// Lookups are memoised by name (a copy is kept), so per-frame lookups stay
+// cheap.
+#define SYM_CACHE 256
+static struct { char* key; unsigned val; int kind; } sSymCache[SYM_CACHE];
+static pthread_mutex_t sSymLock = PTHREAD_MUTEX_INITIALIZER;
+static int symCacheGet(const char* name, int kind, unsigned* out) {
+	int found = 0;
+	pthread_mutex_lock(&sSymLock);
+	for (int i = 0; i < SYM_CACHE && sSymCache[i].key; i++)
+		if (sSymCache[i].kind == kind && !strcmp(sSymCache[i].key, name)) { *out = sSymCache[i].val; found = 1; break; }
+	pthread_mutex_unlock(&sSymLock);
+	return found;
+}
+static void symCachePut(const char* name, int kind, unsigned val) {
+	pthread_mutex_lock(&sSymLock);
+	for (int i = 0; i < SYM_CACHE; i++)
+		if (!sSymCache[i].key) { sSymCache[i].key = strdup(name); sSymCache[i].kind = kind; sSymCache[i].val = val; break; }
+	pthread_mutex_unlock(&sSymLock);
+}
+
+static unsigned symAddrSlow(const char* name);
 static unsigned symAddr(const char* name) {
+	unsigned v;
+	if (symCacheGet(name, 1, &v)) return v;
+	v = symAddrSlow(name);
+	symCachePut(name, 1, v);
+	return v;
+}
+
+static unsigned symAddrSlow(const char* name) {
 	for (int i = 0; i < sNumSyms; i++)
 		if (!strcmp(sSyms[i].name, name))
 			return (sSyms[i].type == 'T' || sSyms[i].type == 't') ? sSyms[i].addr & ~1u : sSyms[i].addr;
@@ -211,10 +244,13 @@ static unsigned sMain, sObjEvents, sAvatar, sSave1, sBattleFlags, sLockCtl, sLin
 static unsigned sCoopBss;
 
 static unsigned symFind(const char* name) {
+	unsigned v;
+	if (symCacheGet(name, 2, &v)) return v;
+	v = 0;
 	for (int i = 0; i < sNumSyms; i++)
-		if (!strcmp(sSyms[i].name, name))
-			return sSyms[i].addr;
-	return 0;
+		if (!strcmp(sSyms[i].name, name)) { v = sSyms[i].addr; break; }
+	symCachePut(name, 2, v);
+	return v;
 }
 
 static void printCb2Trace(struct Player* p) {
@@ -419,7 +455,11 @@ static void checkBattle(struct Player* p, int moves) {
 				otherCount++;
 			}
 		}
-		if (!own || rd32(p, partyMon(0, 1)) || !partner || rd32(p, partyMon(2, 1)) || own == partner)
+		// A copy of this player's own lead would share personality AND OT ID.
+		// Personality alone can match: both cores boot in the same second, the
+		// RTC seeds the RNG, and two different starters can roll the same value.
+		bool copied = own == partner && rd32(p, partyMon(0, 0) + 4) == rd32(p, partyMon(2, 0) + 4);
+		if (!own || rd32(p, partyMon(0, 1)) || !partner || rd32(p, partyMon(2, 1)) || copied)
 			snprintf(why, sizeof(why), "roster personality own %08x partner %08x", own, partner);
 		else if (own != rd32(other, partyMon(2, 0)) || partner != rd32(other, partyMon(0, 0)))
 			snprintf(why, sizeof(why), "personality not mirrored");
@@ -609,9 +649,155 @@ static void recordSide(struct Player* p) {
 	sRecorded++;
 }
 
+
+// Keys a player would press when not in control: tap A through messages
+// and battles; in a battle's party menu (forced switch) step to a healthy
+// Pokemon (DOWN, A, A); back out of a summary screen with B.
+static unsigned autoKeys(struct Player* p, unsigned step) {
+	static unsigned partyCb, summaryMain, summaryInit;
+	if (!partyCb) {
+		partyCb = symFind("CB2_UpdatePartyMenu") & ~1u;
+		summaryMain = symFind("MainCB2") & ~1u;
+		summaryInit = symFind("CB2_InitSummaryScreen") & ~1u;
+	}
+	unsigned cbNow = rd32(p, sMain + 4) & ~1u;
+	bool battling = rd8(p, sMain + 0x439) & 2;
+	if (battling && partyCb && cbNow == partyCb) {
+		unsigned t = step % 120;
+		return t < 2 ? 0x80 : ((t >= 40 && t < 42) || (t >= 90 && t < 92)) ? 1 : 0;
+	}
+	if (battling && ((summaryMain && cbNow == summaryMain) || (summaryInit && cbNow == summaryInit)))
+		return (step % 24) < 2 ? 2 : 0;
+	return (step % 24) < 2 ? 1 : 0;
+}
+
+// Pathfinding for `walk`: breadth-first search over the live map (the
+// game's VMap, which includes the loaded strip of connected maps), honouring
+// collision, elevation, ledges (one-way jumps), water (unless surfing),
+// objects (the co-op partner and twin are passable), and warps (only the
+// target may be a warp). Returns the key for the first step, 0 if already
+// there, or -1 when no path exists right now.
+static int walkStep(struct Player* p, int tx, int ty) {
+	static unsigned layoutSym, headerSym;
+	if (!layoutSym) { layoutSym = symAddr("gBackupMapLayout"); headerSym = symAddr("gMapHeader"); }
+	int w = (int)rd32(p, layoutSym), h = (int)rd32(p, layoutSym + 4);
+	unsigned map = rd32(p, layoutSym + 8);
+	if (w <= 0 || h <= 0 || w * h > 10240) return -1;
+	unsigned lay = rd32(p, headerSym), events = rd32(p, headerSym + 4);
+	unsigned pattr = rd32(p, rd32(p, lay + 0x10) + 0x10), sattr = rd32(p, rd32(p, lay + 0x14) + 0x10);
+	unsigned obj = sObjEvents + rd8(p, sAvatar + 5) * 0x24;
+	int sx = (int16_t)rd16(p, obj + 0x10), sy = (int16_t)rd16(p, obj + 0x12);
+	int gx = tx + 7, gy = ty + 7;
+	int lw = (int)rd32(p, lay), lh = (int)rd32(p, lay + 4);
+	bool goalInside = tx >= 0 && ty >= 0 && tx < lw && ty < lh;
+	if (sx == gx && sy == gy) return 0;
+	bool surfing = rd8(p, sAvatar) & 8;
+	static __thread uint8_t blocked[10240];
+	static __thread int16_t prev[10240];
+	static __thread uint8_t elev[10240];
+	memset(blocked, 0, (size_t)(w * h));
+	for (unsigned i = 0; i < 16; i++) {
+		unsigned o = sObjEvents + i * 0x24;
+		if (!(rd8(p, o) & 1) || o == obj) continue;
+		unsigned lid = rd8(p, o + 8);
+		if (lid == 0xFC || lid == 0xF6) continue;
+		int ox = (int16_t)rd16(p, o + 0x10), oy = (int16_t)rd16(p, o + 0x12);
+		if (ox >= 0 && oy >= 0 && ox < w && oy < h) blocked[oy * w + ox] = 1;
+	}
+	unsigned nwarps = rd8(p, events + 1), warps = rd32(p, events + 8);
+	for (unsigned i = 0; i < nwarps && i < 64; i++) {
+		int wx = (int16_t)rd16(p, warps + i * 8) + 7, wy = (int16_t)rd16(p, warps + i * 8 + 2) + 7;
+		if (wx >= 0 && wy >= 0 && wx < w && wy < h && !(wx == gx && wy == gy)) blocked[wy * w + wx] = 2;
+	}
+	#define BLK(x, y) rd16(p, map + 2u * (unsigned)((y) * w + (x)))
+	#define BEH(b) (((b) & 0x3FF) < 512 ? rd16(p, pattr + 2u * ((b) & 0x3FF)) : rd16(p, sattr + 2u * (((b) & 0x3FF) - 512))) & 0xFF
+	for (int i = 0; i < w * h; i++) prev[i] = -2;
+	static __thread int queue[10240];
+	int qh = 0, qt = 0, start = sy * w + sx;
+	prev[start] = -1;
+	elev[start] = (BLK(sx, sy) >> 12) & 0xF;
+	queue[qt++] = start;
+	static const int DX[4] = {0, 0, -1, 1}, DY[4] = {1, -1, 0, 0};
+	static const unsigned JUMP[4] = {0x3B, 0x3A, 0x39, 0x38};
+	bool found = false;
+	while (qh < qt && !found) {
+		if (qt > 10200) { out("[p%d] walk: queue overflow\n", p->id); return -1; }
+		int cur = queue[qh++], cx = cur % w, cy = cur / w;
+		for (int d = 0; d < 4; d++) {
+			int nx = cx + DX[d], ny = cy + DY[d];
+			if (nx < 0 || ny < 0 || nx >= w || ny >= h) continue;
+			unsigned b = BLK(nx, ny), beh = BEH(b);
+			int ex = (b >> 12) & 0xF, ce = elev[cur];
+			if (beh >= 0x38 && beh <= 0x3B) {
+				if (beh != JUMP[d]) continue;
+				nx += DX[d]; ny += DY[d];
+				if (nx < 0 || ny < 0 || nx >= w || ny >= h) continue;
+				b = BLK(nx, ny); beh = BEH(b); ex = (b >> 12) & 0xF; ce = ex;
+			}
+			int ni = ny * w + nx;
+			if (prev[ni] != -2 || blocked[ni]) continue;
+			// Stay on this map unless the target is off it (a connected map).
+			if (goalInside && (nx < 7 || ny < 7 || nx >= 7 + lw || ny >= 7 + lh)) continue;
+			bool goal = nx == gx && ny == gy; // a door warp tile has collision set
+			if (((b >> 10) & 3) && !goal) continue;
+			bool water = (beh >= 0x10 && beh <= 0x16) || beh == 0x19 || beh == 0x22 || (beh >= 0x50 && beh <= 0x53);
+			if (water != surfing) continue;
+			if (!goal && !(ex == 0 || ex == 15 || ce == 0 || ce == 15 || ex == ce)) continue;
+			prev[ni] = (int16_t)cur;
+			elev[ni] = (ex == 0 || ex == 15) ? (uint8_t)ce : (uint8_t)ex;
+			queue[qt++] = ni;
+			if (nx == gx && ny == gy) { found = true; break; }
+		}
+	}
+	#undef BLK
+	#undef BEH
+	if (gx < 0 || gy < 0 || gx >= w || gy >= h) return -1;
+	int g = gy * w + gx;
+	if (prev[g] == -2) return -1;
+	for (int guard = 0; prev[g] != start && prev[g] >= 0; guard++) {
+		if (guard > w * h) { out("[p%d] walk: path loop\n", p->id); return -1; }
+		g = prev[g];
+	}
+	int fx = g % w, fy = g / w;
+	if (fx > sx) return 1 << 4;
+	if (fx < sx) return 1 << 5;
+	if (fy < sy) return 1 << 6;
+	return 1 << 7;
+}
+
 static void frameCallback(struct mCoreThread* t) {
 	struct Player* p = t->userData;
 	p->frame++;
+	// FIXTURE `no_wild 1`: hold wild encounters off (map loads reset it).
+	if (p->noWild) p->core->busWrite8(p->core, symAddr("sWildEncountersDisabled"), 1);
+	// FIXTURE: battle-only stat boost for this player's battlers (0 and 2):
+	// attack..spDefense in gBattleMons, never written back to the party.
+	if (p->strongBattlers && (rd8(p, sMain + 0x439) & 2)) {
+		unsigned mons = symAddr("gBattleMons");
+		for (int b = 0; b < 4; b += 2)
+			if (rd16(p, mons + b * 0x8C))
+				for (int k = 0; k < 5; k++) p->core->busWrite16(p->core, mons + b * 0x8C + 2 + k * 2, p->strongBattlers);
+	}
+	// Test driver, not game state: in battle, keep the move cursor of this
+	// player's battlers (0 and 2) on the strongest damaging move with PP, so
+	// mashing A attacks instead of looping on a status move or "no PP left".
+	if (p->smartMoves && (rd8(p, sMain + 0x439) & 2)) {
+		// The move menu's own data (ChooseMoveStruct at bufferA[b] + 4:
+		// moves u16[4], currentPP u8[4] at +8). Unlike gBattleMons it is
+		// filled on the guest too, which runs controllers only.
+		unsigned res = rd32(p, symAddr("gBattleResources")), cur = symAddr("gMoveSelectionCursor"), info = symAddr("gMovesInfo");
+		for (int b = 0; res && b < 4; b += 2) {
+			unsigned m = res + 0x10 + b * 0x200 + 4;
+			int best = -1; unsigned bestPow = 0;
+			for (int i = 0; i < 4; i++) {
+				unsigned mv = rd16(p, m + i * 2), pp = rd8(p, m + 8 + i);
+				if (!mv || !pp || mv >= 0x0E9C0u / 0x40) continue;
+				unsigned pow = rd32(p, info + mv * 0x40 + 8) >> 23;
+				if (best < 0 || pow > bestPow) { best = i; bestPow = pow; }
+			}
+			if (best >= 0) p->core->busWrite8(p->core, cur + b, best);
+		}
+	}
     // Controlled application-heartbeat outage: serial hardware keeps running.
     // Patch only this emulated core's callback, and always restore its opcode.
     if (p->muteFrames && --p->muteFrames == 0)
@@ -646,6 +832,50 @@ static void frameCallback(struct mCoreThread* t) {
 		struct Cmd* c = &p->cmds[p->pc];
 		bool advance = false;
 		switch (c->kind) {
+        case C_CROSS: {
+            // Hold a direction (or nothing) until this save is on map
+            // GROUP.NUM with field control.
+            unsigned save = rd32(p, sSave1);
+            unsigned mg = rd8(p, save + 4), mn = rd8(p, save + 5);
+            if (mg == c->addr && mn == (unsigned)c->value && inField(p)) {
+                if (++p->stable >= 20) { p->stable = 0; advance = true; }
+                break;
+            }
+            p->stable = 0;
+            if (inField(p)) keys = c->keys;
+            else keys = autoKeys(p, p->step);
+            if (++p->step >= c->frames) {
+                out("[p%d] FAIL %s: on map %u.%u\n", p->id, c->text, mg, mn);
+                dump(p, "fail");
+                writePng(p, "fail");
+                sFailures++;
+                p->done = 1;
+            }
+            break;
+        }
+        case C_MIRROR: {
+            // expect_mirror MINE THEIRS: a value on this game equals one on
+            // the other game (use after a sync, at a quiet point).
+            struct Player* o = &P[1 - p->id];
+            unsigned mine = rdN(p, c->addr, c->size), theirs = rdN(o, (unsigned)c->value, c->size);
+            if (mine != theirs) { out("[p%d] FAIL %s: this game %u, other game %u\n", p->id, c->text, mine, theirs); sFailures++; }
+            else out("[p%d] ok %s (%u)\n", p->id, c->text, mine);
+            advance = true;
+            break;
+        }
+        case C_STRONG:
+            p->strongBattlers = c->value;
+            advance = true;
+            break;
+        case C_SMART:
+            p->smartMoves = c->value;
+            advance = true;
+            break;
+        case C_NO_WILD:
+            p->noWild = c->value;
+            if (!c->value) p->core->busWrite8(p->core, symAddr("sWildEncountersDisabled"), 0);
+            advance = true;
+            break;
         case C_FORCE_ENC: {
             // FIXTURE: WildEncounterCheck returns TRUE (movs r0,#1; bx lr), so
             // the next grass step rolls an encounter. Off restores the code.
@@ -768,6 +998,43 @@ static void frameCallback(struct mCoreThread* t) {
 			advance = true;
 			break;
 		}
+		case C_WALK_BATTLE:
+			// walk_battle X Y T: walk toward X,Y until a battle starts.
+			if (rd8(p, sMain + 0x439) & 2) { p->stable = 0; p->offField = 0; p->step = 0; advance = true; break; }
+			if (p->offField > 1200u) {
+				out("[p%d] FAIL walk_battle: off the field with no battle\n", p->id);
+				dump(p, "fail"); writePng(p, "fail"); sFailures++; p->done = 1; break;
+			}
+			/* fall through */
+		case C_WALK: {
+			unsigned obj = sObjEvents + rd8(p, sAvatar + 5) * 0x24;
+			int x = (int16_t)rd16(p, obj + 0x10) - 7, y = (int16_t)rd16(p, obj + 0x12) - 7;
+			if (x == (int)c->addr && y == c->value) {
+				if (++p->stable >= 16) { p->stable = 0; p->offField = 0; advance = true; }
+				break;
+			}
+			p->stable = 0;
+			bool field = inField(p);
+			if (!field)
+				keys = autoKeys(p, p->offField++); // a cutscene or a trainer's battle on the way
+			if (field) {
+				int k = walkStep(p, (int)c->addr, c->value);
+				if (k > 0) keys = (unsigned)k;
+				if (k < 0 && (p->step % 600) == 0)
+					out("[f%06d p%d] walk: no path to (%d,%d) from (%d,%d)\n", p->frame, p->id, (int)c->addr, c->value, x, y);
+			}
+			// The budget counts overworld frames; battles and scenes on the
+			// way have a separate, generous cap.
+			if ((field ? ++p->step : 0) >= c->frames || p->offField >= 60000u) {
+				p->offField = 0;
+				out("[p%d] FAIL walk (%d,%d) stuck at (%d,%d)\n", p->id, (int)c->addr, c->value, x, y);
+				dump(p, "fail");
+				writePng(p, "fail");
+				sFailures++;
+				p->done = 1;
+			}
+			break;
+		}
 		case C_GOTO: {
 			unsigned obj = sObjEvents + rd8(p, sAvatar + 5) * 0x24;
 			int x = (int16_t)rd16(p, obj + 0x10) - 7, y = (int16_t)rd16(p, obj + 0x12) - 7;
@@ -790,8 +1057,9 @@ static void frameCallback(struct mCoreThread* t) {
 		}
 		case C_HEX: {
 			char line[600]; int o = 0;
+			unsigned base = c->value == 1 ? rd32(p, c->addr) + (unsigned)c->frames : c->addr; // hexp: through a pointer
 			for (int i = 0; i < c->size && o < 580; i++)
-				o += snprintf(line + o, sizeof(line) - o, "%02x%s", rd8(p, c->addr + i), (i & 15) == 15 ? " | " : " ");
+				o += snprintf(line + o, sizeof(line) - o, "%02x%s", rd8(p, base + i), (i & 15) == 15 ? " | " : " ");
 			out("[f%06d p%d hex %s] %s\n", p->frame, p->id, c->text, line);
 			advance = true;
 			break;
@@ -813,6 +1081,7 @@ static void frameCallback(struct mCoreThread* t) {
 			advance = P[1 - p->id].barrierReached >= c->barrier || P[1 - p->id].done;
 			pthread_mutex_unlock(&sLock);
 			break;
+		case C_UNTIL_TASK:
 		case C_UNTIL_CB2:
 		case C_UNTIL_FIELD:
 		case C_UNTIL_MEM: {
@@ -820,7 +1089,14 @@ static void frameCallback(struct mCoreThread* t) {
 			unsigned got = c->kind == C_UNTIL_MEM ? rdN(p, c->addr, nbytes) : 0;
 			unsigned want = c->value;
 			if ((want & 1u) && nbytes == 4) { got &= ~1u; want &= ~1u; }
-			bool ok = c->kind == C_UNTIL_CB2 ? (rd32(p, sMain + 4) & ~1u) == c->addr
+			bool ok = false;
+			if (c->kind == C_UNTIL_TASK) {
+				// gTasks[16]: func at +0, isActive at +4, 0x28 bytes each.
+				unsigned tasks = symAddr("gTasks");
+				for (int t = 0; t < 16 && !ok; t++)
+					ok = rd8(p, tasks + t * 0x28 + 4) && (rd32(p, tasks + t * 0x28) & ~1u) == c->addr;
+			} else
+			ok = c->kind == C_UNTIL_CB2 ? (rd32(p, sMain + 4) & ~1u) == c->addr
 			        : c->kind == C_UNTIL_FIELD ? inField(p)
 			        : c->size < 0 ? got != 0
 			        : got == want;
@@ -833,16 +1109,7 @@ static void frameCallback(struct mCoreThread* t) {
 			// mash_field in a battle's party menu (a forced switch after a
 			// faint): step the cursor down before each A, so a fainted
 			// first slot does not hold the masher on "no energy left".
-			if (c->kind == C_UNTIL_FIELD && c->keys == 1 && symFind("CB2_UpdatePartyMenu")
-			 && (rd32(p, sMain + 4) & ~1u) == (symFind("CB2_UpdatePartyMenu") & ~1u) && rd8(p, symAddr("gMain") + 0x439) & 2) {
-				unsigned t = p->step % 120;
-				keys = t < 2 ? 0x80 : ((t >= 40 && t < 42) || (t >= 90 && t < 92)) ? 1 : 0;
-			}
-			if (c->kind == C_UNTIL_FIELD && c->keys == 1 && symFind("MainCB2") && symFind("CB2_InitSummaryScreen")
-			 && rd8(p, symAddr("gMain") + 0x439) & 2
-			 && ((rd32(p, sMain + 4) & ~1u) == (symFind("MainCB2") & ~1u) || (rd32(p, sMain + 4) & ~1u) == (symFind("CB2_InitSummaryScreen") & ~1u))) {
-				keys = (p->step % 24) < 2 ? 2 : 0; // B out of a summary screen
-			}
+			if (c->kind == C_UNTIL_FIELD && c->keys == 1) keys = autoKeys(p, p->step);
 			if (++p->step >= c->frames) {
 				out("[p%d] FAIL timeout waiting for %s (line cmd %d)\n", p->id, c->text, p->pc);
 				dump(p, "fail");
@@ -1004,8 +1271,10 @@ static void frameCallback(struct mCoreThread* t) {
             break;
         }
         case C_NO_COPIES: {
-            // No Pokemon on this save (party or PC) shares a personality value
-            // with one on the other save: nothing was duplicated across.
+            // No Pokemon on this save (party or PC) shares personality AND OT ID
+            // with one on the other save: nothing was duplicated across. (A
+            // copy keeps both; two saves booted in the same second can roll
+            // the same personality for different Pokemon with different OTs.)
             struct Player* o = &P[1 - p->id];
             unsigned shared = 0, mine = 0;
             for (unsigned i = 0; i < 6 + 14 * 30; i++) {
@@ -1013,11 +1282,11 @@ static void frameCallback(struct mCoreThread* t) {
                 unsigned a = i < 6 ? partyMon(0, i) : sm + (i - 6) * symValue("harness.boxMonSize");
                 if (!(rd8(p, a + 19) & 2)) continue;
                 mine++;
-                unsigned pid = rd32(p, a);
+                unsigned pid = rd32(p, a), ot = rd32(p, a + 4);
                 for (unsigned j = 0; j < 6 + 14 * 30; j++) {
                     unsigned so = rd32(o, symAddr("gPokemonStoragePtr")) + symValue("harness.storageBoxesOffset");
                     unsigned b = j < 6 ? partyMon(0, j) : so + (j - 6) * symValue("harness.boxMonSize");
-                    if ((rd8(o, b + 19) & 2) && rd32(o, b) == pid) { shared++; break; }
+                    if ((rd8(o, b + 19) & 2) && rd32(o, b) == pid && rd32(o, b + 4) == ot) { shared++; break; }
                 }
             }
             if (shared) { out("[p%d] FAIL %u of %u Pokemon also on the other save\n", p->id, shared, mine); sFailures++; }
@@ -1306,6 +1575,10 @@ static void loadScript(const char* path, int depth) {
 			}
 		} else if (!strcmp(cmd, "goto")) {
 			c.kind = C_GOTO; c.addr = atoi(a); c.value = atoi(b); c.frames = n >= 5 ? atoi(d) : 600;
+		} else if (!strcmp(cmd, "hexp")) {
+			// hexp POINTER_SYM N OFFSET: N bytes at *POINTER_SYM + OFFSET
+			c.kind = C_HEX; c.addr = symAddr(a); c.size = atoi(b); c.value = 1; c.frames = n >= 5 ? (int)strtoul(d, NULL, 0) : 0;
+			snprintf(c.text, sizeof(c.text), "*%s+%s", a, n >= 5 ? d : "0");
 		} else if (!strcmp(cmd, "hex")) {
 			c.kind = C_HEX; c.addr = symAddr(a) + (n >= 5 ? strtoul(d, NULL, 0) : 0); c.size = n >= 4 ? atoi(b) : 16;
 			strncpy(c.text, a, sizeof(c.text) - 1);
@@ -1314,8 +1587,8 @@ static void loadScript(const char* path, int depth) {
 		} else if (!strcmp(cmd, "sync")) {
 			if (w != 2) { fprintf(stderr, "sync needs b\n"); exit(1); }
 			continue;
-		} else if (!strcmp(cmd, "until_cb2")) {
-			c.kind = C_UNTIL_CB2; c.addr = symAddr(a); c.frames = n >= 4 ? atoi(b) : 3000;
+		} else if (!strcmp(cmd, "until_cb2") || !strcmp(cmd, "until_task")) {
+			c.kind = cmd[6] == 'c' ? C_UNTIL_CB2 : C_UNTIL_TASK; c.addr = symAddr(a) & ~1u; c.frames = n >= 4 ? atoi(b) : 3000;
 			if (n >= 5) c.keys = parseKeys(d);
 			snprintf(c.text, sizeof(c.text), "cb2 %s", a);
 		} else if (!strcmp(cmd, "until_field") || !strcmp(cmd, "mash_field")) {
@@ -1345,6 +1618,30 @@ static void loadScript(const char* path, int depth) {
         } else if (!strcmp(cmd, "expect_no_object")) {
             c.kind = C_NO_OBJECT;
             c.value = strtoul(a, NULL, 0);
+        } else if (!strcmp(cmd, "cross") || !strcmp(cmd, "until_map")) {
+        	// cross DIR GROUP NUM [timeout] / until_map GROUP NUM [timeout]
+        	int until = !strcmp(cmd, "until_map");
+        	c.kind = C_CROSS;
+        	c.keys = until ? 0 : parseKeys(a);
+        	c.addr = strtoul(until ? a : b, NULL, 0);
+        	c.value = strtoul(until ? b : d, NULL, 0);
+        	c.frames = until ? (n >= 5 ? atoi(d) : 3000) : (n >= 6 ? atoi(e) : 3000);
+        	snprintf(c.text, sizeof(c.text), "%s %s %s %s", cmd, a, b, until ? "" : d);
+        } else if (!strcmp(cmd, "strong_battlers")) {
+        	c.kind = C_STRONG;
+        	c.value = strtoul(a, NULL, 0);
+        } else if (!strcmp(cmd, "smart_moves")) {
+        	c.kind = C_SMART;
+        	c.value = strtoul(a, NULL, 0);
+        } else if (!strcmp(cmd, "no_wild")) {
+        	c.kind = C_NO_WILD;
+        	c.value = strtoul(a, NULL, 0);
+        } else if (!strcmp(cmd, "walk") || !strcmp(cmd, "walk_battle")) {
+        	c.kind = !strcmp(cmd, "walk") ? C_WALK : C_WALK_BATTLE;
+        	c.addr = strtoul(a, NULL, 0);
+        	c.value = strtoul(b, NULL, 0);
+        	c.frames = n >= 5 ? atoi(d) : 4000;
+        	snprintf(c.text, sizeof(c.text), "walk %s %s", a, b);
         } else if (!strcmp(cmd, "force_encounter")) {
             c.kind = C_FORCE_ENC;
             c.value = strtoul(a, NULL, 0);
@@ -1466,6 +1763,20 @@ static void loadScript(const char* path, int depth) {
 			c.value = symValue(b);
 			c.frames = (int)symValue(d);
 			snprintf(c.text, sizeof(c.text), "%s in %s..%s", a, b, d);
+		} else if (!strcmp(cmd, "expect_mirror")) {
+			// expect_mirror SYM[+off]:size SYM[+off]
+			char s1[96], s2[96]; unsigned o1 = 0, o2 = 0; int size = 1;
+			strncpy(s1, a, sizeof(s1) - 1); s1[sizeof(s1) - 1] = 0;
+			strncpy(s2, b, sizeof(s2) - 1); s2[sizeof(s2) - 1] = 0;
+			char* colon = strchr(s1, ':');
+			if (colon) { size = atoi(colon + 1); *colon = 0; }
+			char* plus = strchr(s1, '+');
+			if (plus) { o1 = strtoul(plus + 1, NULL, 0); *plus = 0; }
+			if ((colon = strchr(s2, ':'))) *colon = 0;
+			if ((plus = strchr(s2, '+'))) { o2 = strtoul(plus + 1, NULL, 0); *plus = 0; }
+			c.kind = C_MIRROR; c.size = size;
+			c.addr = symAddr(s1) + o1; c.value = symAddr(s2) + o2;
+			snprintf(c.text, sizeof(c.text), "mirror %s ~ %s", a, b);
 		} else if (!strcmp(cmd, "until_mem") || !strcmp(cmd, "expect") || !strcmp(cmd, "write")) {
 			// until_mem SYM[+off]:size value [timeout]
 			char sym[96]; unsigned off = 0; int size = 1;

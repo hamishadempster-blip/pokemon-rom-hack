@@ -2391,7 +2391,9 @@ static void Cmd_getexp(void)
                             gBattleStruct->battlerExpReward = gExperienceTables[growthRate][levelCap] - currentExp;
                     }
 
-                    if (IsTradedMon(&*ExpGetterMon(*expMonId)))
+                    // Same rule as ApplyExperienceMultipliers: the guest's
+                    // Pokémon carries the guest's OT but is not boosted.
+                    if (!(*expMonId & EXP_GETTER_PARTNER) && IsTradedMon(&*ExpGetterMon(*expMonId)))
                     {
                         i = STRINGID_ABOOSTED;
                     }
@@ -2486,6 +2488,10 @@ static void Cmd_getexp(void)
                             SWAP(gBattleMons[battler].attack, gBattleMons[battler].defense, temp);
                         }
                     }
+                    // The guest's game shows its own level-up; show it on this
+                    // screen's ally box too.
+                    if (GetMonData(mon, MON_DATA_LEVEL) != oldLevel)
+                        UpdateHealthboxAttribute(gHealthboxSpriteIds[battler], mon, HEALTHBOX_ALL);
                 }
                 gBattleStruct->battlerExpReward = remainder;
                 gBattleScripting.getexpState = 5;

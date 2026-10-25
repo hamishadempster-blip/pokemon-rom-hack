@@ -39,6 +39,8 @@ static void LinkPartnerHandleEndLinkBattle(enum BattlerId battler);
 
 static void LinkPartnerBufferRunCommand(enum BattlerId battler);
 
+static void LinkPartnerHandleExpUpdate(enum BattlerId battler);
+
 static void (*const sLinkPartnerBufferCommands[CONTROLLER_CMDS_COUNT])(enum BattlerId battler) =
 {
     [CONTROLLER_GETMONDATA]               = BtlController_HandleGetMonData,
@@ -65,7 +67,7 @@ static void (*const sLinkPartnerBufferCommands[CONTROLLER_CMDS_COUNT])(enum Batt
     [CONTROLLER_CHOOSEPOKEMON]            = BtlController_Empty,
     [CONTROLLER_23]                       = BtlController_Empty,
     [CONTROLLER_HEALTHBARUPDATE]          = BtlController_HandleHealthBarUpdate,
-    [CONTROLLER_EXPUPDATE]                = BtlController_Empty,
+    [CONTROLLER_EXPUPDATE]                = LinkPartnerHandleExpUpdate,
     [CONTROLLER_STATUSICONUPDATE]         = BtlController_HandleStatusIconUpdate,
     [CONTROLLER_STATUSANIMATION]          = BtlController_HandleStatusAnimation,
     [CONTROLLER_STATUSXOR]                = BtlController_Empty,
@@ -186,4 +188,30 @@ static void LinkPartnerHandleEndLinkBattle(enum BattlerId battler)
     BeginFastPaletteFade(3);
     BtlController_Complete(battler);
     gBattlerControllerFuncs[battler] = SetBattleEndCallbacks;
+}
+
+// Co-op: the other game's Pokémon gained experience. The master keeps its
+// copy in step in Cmd_getexp; the guest mirrors it here, so the ally's health
+// box shows the level that game really reached (Gen 9 notifications send the
+// whole gain once per Pokémon, so nothing is counted twice).
+static void LinkPartnerHandleExpUpdate(enum BattlerId battler)
+{
+    u8 monId = gBattleResources->bufferA[battler][1];
+
+    if ((gBattleTypeFlags & BATTLE_TYPE_COOP) && !(gBattleTypeFlags & BATTLE_TYPE_IS_MASTER) && monId < PARTY_SIZE)
+    {
+        struct Pokemon *mon = &gParties[B_TRAINER_PARTNER][monId];
+        u32 level = GetMonData(mon, MON_DATA_LEVEL);
+
+        if (GetMonData(mon, MON_DATA_SPECIES) != SPECIES_NONE && level < MAX_LEVEL)
+        {
+            u32 exp = GetMonData(mon, MON_DATA_EXP) + T1_READ_32(&gBattleResources->bufferA[battler][2]);
+
+            SetMonData(mon, MON_DATA_EXP, &exp);
+            CalculateMonStats(mon);
+            if (GetMonData(mon, MON_DATA_LEVEL) != level && gBattlerPartyIndexes[battler] == monId)
+                UpdateHealthboxAttribute(gHealthboxSpriteIds[battler], mon, HEALTHBOX_ALL);
+        }
+    }
+    BtlController_Complete(battler);
 }

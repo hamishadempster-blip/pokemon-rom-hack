@@ -1,3 +1,65 @@
+# Bug-fixing pass: build 0xC0170130
+
+Branch `coop-doorway-scenes-rivals`, on top of the 0xC017012F work. Keep it
+unmerged. Both games need this build (0xC017012F refuses to link with it).
+The save layout is unchanged; existing saves load, and saves with the
+respawn problem below are repaired on load. Full log with evidence:
+[COOP_TESTLOG_C0170130.md](COOP_TESTLOG_C0170130.md).
+
+## Fixed
+
+- **Whiteout sent the player to Petalburg's corner.** The co-op TEST START
+  skipped the truck script, the only place that sets the respawn point, so
+  `lastHealLocation` stayed all zero (Petalburg, tile 0,0). TEST START now
+  sets the player's bedroom; `Coop_RepairUnsetHealLocation` (overworld.c)
+  fixes an all-zero heal location on Continue and before a whiteout or
+  Teleport, so affected saves wake at home with Mum's heal.
+- **Co-op level-ups on the wrong health box.** Both leads are slot 0 of
+  different parties; the level-up flash and new level went to the ally's
+  box, and the guest never heard about the host's level-ups.
+  `IsMonOutOnAllyOfSameParty` (battle_controller_player.c) also checks the
+  party; `LinkPartnerHandleExpUpdate` (battle_controller_link_partner.c,
+  guest only) mirrors the host's exp step into its copy; the host redraws
+  the guest's box after the partner-exp path (battle_script_commands.c).
+- **"gained a boosted … Exp." on the partner's Pokémon** (label only; the
+  amount was already right).
+
+## Test harness additions
+
+Story runs now walk real maps (`walk`, `walk_battle`, `cross`, `until_map`),
+with `no_wild`, `strong_battlers` (in-battle stats only), `smart_moves`,
+`until_task`, `expect_mirror`, `hexp`, and `edges.py`. See the harness
+README. New scenarios: `story_seg1`–`story_seg6` (a chain from the lab to
+Rustboro after the rival, each continuing the last one's saves),
+`whiteout_home`, `coop_levelup_boxes`, `catch_walk`. Final suite on this
+build: 60 runs, 58 pass, 2 check artifacts fixed and rerun (see the log).
+`run_all.sh` runs the
+long chain with `LONG=1`; `HEAL_AFFECTED=dir` adds `whiteout_home` on
+pre-fix saves.
+
+## Behaviour confirmed, not changed
+
+- The Twin Beacon is per session: off again after a reload.
+- An idle partner never answers an invitation; the fight goes solo after
+  the timeout and the prompt is withdrawn.
+- A partner standing in the 7-tile strip of a connected map is drawn (and
+  counts as visible) even when off screen.
+- The Match Call tutorial after Devon accepts only POKéNAV (stock).
+
+## Known gaps
+
+- Walking story coverage stops after the Rustboro rival; later story is
+  covered only by the older fixture scenarios.
+- One starter pairing and one-Pokémon parties in the walking chain.
+- Physical cable loss is not exercised (application stall and injected
+  battle abort only).
+- One harness segfault was seen in a single recording run of `catch_walk`;
+  it did not reproduce (same scenario passed under gdb and with recording).
+- Two games booted in the same second get the same RTC RNG seed and can
+  roll matching personality/IVs for different Pokémon. Harmless (no co-op
+  code uses personality) and unlikely outside the harness; the harness copy
+  checks now also compare OT ID.
+
 # Roster, revamps, trainers, bosses, solo paths: build 0xC017012F
 
 Branch `coop-doorway-scenes-rivals`, on top of `03e29fd8` (C017012E). Keep it

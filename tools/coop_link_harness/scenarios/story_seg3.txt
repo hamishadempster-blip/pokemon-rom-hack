@@ -1,0 +1,79 @@
+# Story run, segment 3 (actual play): CONTINUE the saves story_seg2 made in
+# Norman's gym, link, turn the Beacon ON with the Twin Beacon, walk out of
+# Petalburg to Route 104 (its trainers are co-op fights when they spot the
+# pair), through Petalburg Woods (Devon researcher and the Aqua grunt), up
+# Route 104 to Rustboro, and save there (story_seg4 continues in the gym).
+# FIXTURES: wild encounters held off while walking (no_wild); strong cached
+# battle stats on each lead, so the run tests
+# story flow rather than grinding. smart_moves only steers the test driver's
+# move choice.
+include continue.inc
+include relink.inc
+b expect coop.sLinkState 2
+b no_wild 1
+b smart_moves 1
+include beacon_on.inc
+b mash_field 2000 B
+b dump beacon
+# Out of the gym and west to Route 104.
+0 walk 4 110 3000
+0 cross DOWN 0 0 3000
+1 walk 5 110 3000
+1 cross DOWN 0 0 3000
+b dump petalburg
+b walk 0 12 3000
+b cross LEFT 0 19 3000
+b dump route104
+b write gParties+86:2 300
+b write gParties+88:2 300
+b write gParties+90:2 200
+b write gParties+92:2 200
+b write gParties+94:2 200
+b write gParties+96:2 200
+b write gParties+98:2 200
+0 walk 10 38 6000
+0 until_map 24 11 3000
+1 wait 200
+1 walk 11 38 6000
+1 until_map 24 11 3000
+b dump woods
+b shot seg3-woods
+# The Devon researcher stops the player near the middle; the grunt follows.
+# Story state is per save: player 0 plays the scene and player 1 joins the
+# grunt fight from its invite; then player 1 plays it and player 0 joins.
+0 walk 26 24 4000
+1 walk 27 25 4000
+b sync
+0 walk 26 23 2000
+1 until_cb2 BattleMainCB2 15000 A
+0 until_cb2 BattleMainCB2 15000 A
+b expect coop.sInBattle 1
+b expect gBattlersCount 4
+b shot seg3-grunt-p0-scene
+b mash_field 30000
+b sync
+b mash_field 3000
+0 expect_var 0x4098 1
+1 expect_var 0x4098 0
+0 dump after-grunt
+0 walk 26 21 2000
+1 walk 27 23 3000
+0 until_cb2 BattleMainCB2 15000 A
+1 until_cb2 BattleMainCB2 15000 A
+b expect coop.sInBattle 1
+b shot seg3-grunt-p1-scene
+b mash_field 30000
+b sync
+b mash_field 3000
+b expect_var 0x4098 1
+1 dump after-grunt
+b expect coop.sLinkState 2
+b shot seg3-after-grunt
+b walk 14 5 6000
+b cross UP 0 19 3000
+b dump route104-north
+b walk 16 0 5000
+b cross UP 0 3 3000
+b dump rustboro
+b shot seg3-rustboro
+include save_again.inc

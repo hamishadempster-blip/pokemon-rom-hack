@@ -1,0 +1,44 @@
+# Regression: level-ups in a co-op fight land on the right health box on both
+# screens. Both leads are party slot 0 of different parties; the level-up
+# flash and new level used to go to the ally's box, and the other game never
+# heard about the partner's level-up. Checked at quiet action prompts: each
+# game's copy of the partner's lead (gParties[B_TRAINER_PARTNER], +1200) has
+# the partner's real level (and max HP), both ways.
+# Start from lab saves made by save_lab.txt (level 5 leads, so Roxanne levels
+# both). FIXTURES: fixture_warp to Roxanne; strong_battlers (in-battle stats
+# only); smart_moves steers the driver's move choice.
+include continue.inc
+include relink.inc
+b no_wild 1
+b strong_battlers 999
+b smart_moves 1
+0 fixture_warp 11 3 5 3
+1 fixture_warp 11 3 4 3
+b until_field 3000
+b sync
+0 press UP 2
+0 wait 20
+0 press A 2
+b until_cb2 BattleMainCB2 9000 A
+b expect coop.sInBattle 1
+0 until_mem gBattlerControllerFuncs:4 HandleInputChooseAction 9000 A
+1 until_mem gBattlerControllerFuncs+8:4 HandleInputChooseAction 9000 A
+b sync
+b expect_mirror gParties+1284:1 gParties+84
+b expect_mirror gParties+1288:2 gParties+88
+b press A 2
+b wait 30
+b press A 2
+b wait 30
+b press A 2
+b wait 300
+0 until_mem gBattlerControllerFuncs:4 HandleInputChooseAction 12000 A
+1 until_mem gBattlerControllerFuncs+8:4 HandleInputChooseAction 12000 A
+b sync
+b expect_range gParties+84:1 6 100
+b expect_mirror gParties+1284:1 gParties+84
+b expect_mirror gParties+1288:2 gParties+88
+b shot levelup-boxes
+b mash_field 30000
+b expect gBattleOutcome 1
+b expect coop.sLinkState 2

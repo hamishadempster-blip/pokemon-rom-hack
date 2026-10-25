@@ -1,0 +1,68 @@
+# Story run, segment 2 (actual play): CONTINUE the saves story_seg1 made
+# in the lab (Pokedex received), link again, walk Littleroot -> Route 101 ->
+# Oldale (the footprint man must now let you west) -> Route 102 with the
+# Beacon OFF (any trainer who spots a player is that player's solo fight) ->
+# Petalburg, where each player enters Norman's gym for the Wally scene and
+# the Route 102 catching tutorial, staggered; then save.
+# FIXTURES: wild encounters held off while walking (no_wild); strong cached
+# battle stats on each lead so Route 102's trainers don't end the run.
+include continue.inc
+include relink.inc
+b expect coop.sLinkState 2
+b expect coop.sBeacon+1:1 0
+b no_wild 1
+b smart_moves 1
+b walk 6 11 1500
+b cross DOWN 0 9
+b walk 11 1 3000
+b cross UP 0 16
+b walk 10 1 3000
+b cross UP 0 10
+b dump oldale
+b write gParties+86:2 300
+b write gParties+88:2 300
+b write gParties+90:2 200
+b write gParties+92:2 200
+b write gParties+94:2 200
+b write gParties+96:2 200
+b write gParties+98:2 200
+# The footprint man blocked Route 102 before the Pokedex; now he must not.
+b walk 0 10 3000
+b cross LEFT 0 17 3000
+b dump route102
+0 walk 1 8 4000
+0 cross LEFT 0 0 4000
+1 wait 240
+1 walk 1 9 4000
+1 cross LEFT 0 0 4000
+b dump petalburg
+b shot seg2-petalburg
+b expect coop.sLinkState 2
+# Player 0 goes into the gym first; player 1 a little later.
+0 walk 15 8 4000
+0 until_map 8 1 4000
+1 wait 400
+1 walk 15 8 5000
+1 until_map 8 1 5000
+b dump gym
+# Each player talks to Norman: Wally's catching tutorial on Route 102 and
+# back to the gym (VAR_PETALBURG_GYM_STATE 0 -> 2), each on its own save.
+0 walk 4 108 3000
+0 press UP 2
+0 press A 2
+0 mash_field 30000
+0 dump after-norman
+0 walk 2 110 2000
+b sync
+# Player 1 had been waiting in the gym while player 0's scene played.
+1 walk 4 108 3000
+1 press UP 2
+1 press A 2
+1 mash_field 30000
+1 dump after-norman
+b sync
+b mash_field 3000
+b expect_var 0x4085 2
+b shot seg2-after-norman
+b expect coop.sLinkState 2
+include save_again.inc

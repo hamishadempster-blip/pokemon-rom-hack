@@ -743,6 +743,25 @@ void SetWarpDestinationToHealLocation(u8 healLocationId)
         SetWarpDestination(healLocation->mapGroup, healLocation->mapNum, WARP_ID_NONE, healLocation->x, healLocation->y);
 }
 
+// The co-op TEST START skips the truck, whose script is what normally
+// sets the respawn point. A save made that way has an all-zero heal
+// location (Petalburg, tile 0,0, no real heal location), so a whiteout
+// left the player at the edge of Petalburg. Point it at the player's own
+// bedroom, as the truck would have.
+void Coop_RepairUnsetHealLocation(void)
+{
+    const struct WarpData *w = &gSaveBlock1Ptr->lastHealLocation;
+
+    if (w->mapGroup != 0 || w->mapNum != 0 || w->warpId != 0 || w->x != 0 || w->y != 0)
+        return;
+    if (IS_FRLG)
+        SetLastHealLocationWarp(HEAL_LOCATION_PALLET_TOWN);
+    else if (gSaveBlock2Ptr->playerGender == MALE)
+        SetLastHealLocationWarp(HEAL_LOCATION_LITTLEROOT_TOWN_BRENDANS_HOUSE_2F);
+    else
+        SetLastHealLocationWarp(HEAL_LOCATION_LITTLEROOT_TOWN_MAYS_HOUSE_2F);
+}
+
 static bool32 IsWhiteoutCutscene(void)
 {
     if (OW_WHITEOUT_CUTSCENE < GEN_4)
@@ -752,6 +771,7 @@ static bool32 IsWhiteoutCutscene(void)
 
 void SetWarpDestinationToLastHealLocation(void)
 {
+    Coop_RepairUnsetHealLocation();
     if (IsWhiteoutCutscene())
         SetWhiteoutRespawnWarpAndHealerNPC(&sWarpDestination);
     else
@@ -760,6 +780,7 @@ void SetWarpDestinationToLastHealLocation(void)
 
 void SetWarpDestinationForTeleport(void)
 {
+    Coop_RepairUnsetHealLocation();
     sWarpDestination = gSaveBlock1Ptr->lastHealLocation;
 }
 
@@ -1997,6 +2018,7 @@ static void Coop_ApplyClockStart(void)
         FlagSet(FLAG_HIDE_LITTLEROOT_TOWN_BRENDANS_HOUSE_TRUCK);
         VarSet(VAR_LITTLEROOT_HOUSES_STATE_BRENDAN, 1);
         SetContinueGameWarpToHealLocation(HEAL_LOCATION_LITTLEROOT_TOWN_BRENDANS_HOUSE_2F);
+        SetLastHealLocationWarp(HEAL_LOCATION_LITTLEROOT_TOWN_BRENDANS_HOUSE_2F);
         SetWarpDestination(MAP_GROUP(MAP_LITTLEROOT_TOWN_BRENDANS_HOUSE_2F), MAP_NUM(MAP_LITTLEROOT_TOWN_BRENDANS_HOUSE_2F), WARP_ID_NONE, 5, 3);
     }
     else
@@ -2009,6 +2031,7 @@ static void Coop_ApplyClockStart(void)
         FlagSet(FLAG_HIDE_LITTLEROOT_TOWN_MAYS_HOUSE_TRUCK);
         VarSet(VAR_LITTLEROOT_HOUSES_STATE_MAY, 1);
         SetContinueGameWarpToHealLocation(HEAL_LOCATION_LITTLEROOT_TOWN_MAYS_HOUSE_2F);
+        SetLastHealLocationWarp(HEAL_LOCATION_LITTLEROOT_TOWN_MAYS_HOUSE_2F);
         SetWarpDestination(MAP_GROUP(MAP_LITTLEROOT_TOWN_MAYS_HOUSE_2F), MAP_NUM(MAP_LITTLEROOT_TOWN_MAYS_HOUSE_2F), WARP_ID_NONE, 3, 3);
     }
     FlagSet(FLAG_HIDE_LITTLEROOT_TOWN_MOM_OUTSIDE);
@@ -2237,6 +2260,7 @@ void CB2_ContinueSavedGame(void)
 
     LoadSaveblockMapHeader();
     ClearDiveAndHoleWarps();
+    Coop_RepairUnsetHealLocation();
     trainerHillMapId = GetCurrentTrainerHillMapId();
     if (gMapHeader.mapLayoutId == LAYOUT_BATTLE_FRONTIER_BATTLE_PYRAMID_FLOOR)
         LoadBattlePyramidFloorObjectEventScripts();

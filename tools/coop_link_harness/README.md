@@ -258,3 +258,38 @@ The affected-save producer is deliberately not part of the new-ROM suite.
 
 Final run results and fixture limits: `docs/COOP_REGRESSION_C017012E.md` and
 `docs/COOP_HANDOFF.md`.
+
+## Story runs on real walking (build 0xC0170130)
+
+Long progression runs walk the maps instead of warping. New verbs:
+
+| Command | Meaning |
+|---|---|
+| `walk X Y [timeout]` | Path-find (BFS over collision, elevation, ledges, water, objects) to map tile X,Y and walk there; a door/warp goal tile is allowed. Off the field (a scene, a trainer who spotted the player) it taps A. The timeout counts overworld frames only. |
+| `walk_battle X Y [timeout]` | The same, but succeeds as soon as a battle starts on the way. |
+| `cross DIR GROUP NUM [timeout]` | Hold DIR until on map GROUP.NUM with field control (edges, arrow warps, doors). |
+| `until_map GROUP NUM [timeout]` | Wait (no keys) until on that map with field control. |
+| `until_task FUNC [timeout] [KEYS]` | Wait for an active task with that function (e.g. `Task_HandleMultichoiceInput`). |
+| `no_wild 1\|0` | FIXTURE: hold `sWildEncountersDisabled` while walking. |
+| `strong_battlers N` | FIXTURE: in battle, set attack..spDefense of this game's battlers (0 and 2) in `gBattleMons` to N every frame. Nothing reaches the party or the save (a level-up recalculates party stats, which is why party stat writes do not survive a run). |
+| `smart_moves 1\|0` | Test driver only: in battle, keep the move cursor on the strongest damaging move with PP, read from the move menu's own data (`bufferA[b]+4`), so mashing A attacks on the guest too. |
+| `expect_mirror SYM[+off]:size SYM[+off]` | A value on this game equals one on the other game (after a `sync`). |
+| `hexp PTRSYM LEN OFF` | Hex dump through a pointer (e.g. `gSaveBlock1Ptr`). |
+
+`tools/coop_link_harness/edges.py MapName` prints a map's passable edge
+tiles and warps, for choosing `walk`/`cross` targets.
+
+Story chain (each from the saves the one before made; `run_all.sh` runs
+segments 1–2 always and 3–6 plus `catch_walk` with `LONG=1`):
+
+| Scenario | Covers |
+|---|---|
+| `story_seg1` | Lab saves: Mom's Running Shoes, Routes 101/103, co-op twins, Oldale rival scene, staggered lab entry, Pokédex, save |
+| `whiteout_home` | Lose a real Route 102 trainer fight: wake at home with Mum's heal (also on pre-fix TEST START saves via `HEAL_AFFECTED`) |
+| `story_seg2` | Route 102 with the Beacon off (solo trainers), Petalburg, staggered gym entry, Norman/Wally on each save, save |
+| `story_seg3` | Twin Beacon on, Route 104 co-op trainer, Petalburg Woods grunt on each save (partner joins from the invite), Rustboro, save |
+| `story_seg4` | Reload (Beacon off), Rustboro gym trainers solo, Roxanne co-op, badge and flag on both, save |
+| `story_seg5` | Thief, employee, Briney, Rusturf grunt per save, goods, Mr. Stone (PokéNav), Match Call tutorial, co-op Rustboro rival (no replay on the second save), save |
+| `story_seg6` | Staggered Pokémon Centre heal, UNLINK, split maps (Mart), relink apart, rejoin, save |
+| `catch_walk` | (LONG chain) Walk to Route 104 grass alone, catch with an own Poké Ball, save |
+| `coop_levelup_boxes` | Co-op level-ups: each game's copy of the partner's lead matches the partner's level and max HP |

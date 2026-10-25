@@ -109,6 +109,7 @@ void SetWarpDestinationToHealLocation(u8 healLocationId);
 void SetWarpDestinationToLastHealLocation(void);
 void SetWarpDestinationForTeleport(void);
 void SetLastHealLocationWarp(u8 healLocationId);
+void Coop_RepairUnsetHealLocation(void);
 void UpdateEscapeWarp(s16 x, s16 y);
 void SetEscapeWarp(s8 mapGroup, s8 mapNum, s8 warpId, s8 x, s8 y);
 void SetWarpDestinationToEscapeWarp(void);

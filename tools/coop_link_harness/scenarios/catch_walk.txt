@@ -1,0 +1,44 @@
+# A real catch on a walking run: CONTINUE the saves story_seg6 made in
+# Rustboro, link (Beacon off after a reload), and player 0 walks to the
+# Route 104 grass and throws one of its own POKe BALLS (5 in the bag from
+# play) at a wild Pokemon, alone. Player 1 stays in Rustboro, linked. No fixture items.
+# FIXTURE: wild encounters held off on the walk there (no_wild), released in
+# the grass.
+include continue.inc
+include relink.inc
+b expect coop.sLinkState 2
+b expect coop.sBeacon+1:1 0
+b expect gPartiesCount:1 1
+0 no_wild 1
+0 walk 15 59 4000
+0 cross DOWN 0 19 3000
+0 walk 7 5 5000
+0 no_wild 0
+0 pace_until_battle 12000
+0 until_cb2 BattleMainCB2 6000
+0 expect gBattlersCount 2
+0 until_mem gBattlerControllerFuncs:4 HandleInputChooseAction 6000 A
+0 wait 60
+0 shot catch-wild
+0 press RIGHT 2
+0 wait 10
+0 press A 2
+0 until_cb2 CB2_BagMenuRun 600
+0 wait 40
+0 until_mem gBagPosition+5:1 1 600 RIGHT
+0 wait 30
+0 shot catch-balls
+0 press A 2
+0 wait 30
+0 press A 2
+0 until_cb2 BattleMainCB2 600
+0 mash_field 20000 B
+0 expect gBattleOutcome 7
+0 expect gPartiesCount:1 2
+0 expect_item 1 1 4
+0 expect_item 1 2 2
+0 shot catch-after
+1 expect gPartiesCount:1 1
+b sync
+b expect coop.sLinkState 2
+include save_again.inc

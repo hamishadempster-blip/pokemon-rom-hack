@@ -1,0 +1,42 @@
+# Linked, in the field: player 0 uses the Twin Beacon from Key Items, player 1 accepts.
+0 press START 2
+0 wait 40
+0 menu_to BAG
+0 press A 2
+0 until_cb2 CB2_BagMenuRun 2500
+0 wait 80
+0 hex gBagPosition 8
+0 press RIGHT 4
+0 wait 30
+0 press RIGHT 4
+0 wait 30
+0 press RIGHT 4
+0 wait 30
+0 press RIGHT 4
+0 wait 30
+0 hex gBagPosition 8
+0 expect gBagPosition+5:1 4
+0 press A 4
+0 wait 40
+0 shot context
+0 press A 4
+0 wait 40
+0 shot afteruse
+0 hex coop.sBeacon 6
+0 hex gLinkCallback 4
+1 until_mem sGlobalScriptContextStatus:1 1 6000
+1 wait 90
+1 press A 4
+1 wait 50
+1 press A 4
+1 wait 50
+1 press A 4
+1 wait 80
+1 hex coop.sBeacon 6
+0 wait 40
+0 press B 4
+0 wait 20
+0 press B 4
+b wait 1500
+b hex coop.sBeacon 6
+b expect coop.sBeacon+1:1 1

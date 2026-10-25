@@ -1,0 +1,29 @@
+# Regression: losing a battle sends the player home, not to the edge of
+# Petalburg. Uses saves made with TEST START before the fix (heal location
+# never set), so this also covers the load-time repair. Player 1 walks
+# Route 102 with the Beacon off, gets spotted by a trainer, loses on a
+# 1-HP lead, and must wake up in their own bedroom with Mum's heal while
+# player 0 stays linked on Route 102.
+# FIXTURES: wild encounters off (no_wild); player 1's lead set to 1 HP.
+include continue.inc
+include relink.inc
+b expect coop.sLinkState 2
+b no_wild 1
+b walk 6 11 1500
+b cross DOWN 0 9
+b walk 11 1 3000
+b cross UP 0 16
+b walk 10 1 3000
+b cross UP 0 10
+b walk 0 10 3000
+b cross LEFT 0 17 3000
+1 write gParties+86:2 1
+1 walk_battle 1 9 4000
+1 dump spotted
+1 until_cb2 CB2_WhiteOut 6000 A
+1 mash_field 8000
+1 dump after-whiteout
+1 expect_map 1 2
+1 expect_nz gParties+86:2
+b expect coop.sLinkState 2
+b shot whiteout-home

@@ -93,6 +93,7 @@ static void Task_PrepareToGiveExpWithExpBar(u8);
 static void Task_SetControllerToWaitForString(u8);
 static void Task_GiveExpWithExpBar(u8);
 static void Task_UpdateLvlInHealthbox(u8);
+static bool32 IsMonOutOnAllyOfSameParty(enum BattlerId battler, u32 monIndex);
 static void PrintLinkStandbyMsg(void);
 
 static void ReloadMoveNames(enum BattlerId battler);
@@ -1434,7 +1435,7 @@ static void Task_GiveExpToMon(u8 taskId)
             BtlController_EmitTwoReturnValues(battler, B_COMM_TO_ENGINE, RET_VALUE_LEVELED_UP, (B_LEVEL_UP_NOTIFICATION >= GEN_9) ? 0 : gainedExp);
 
             if (IsDoubleBattle() == TRUE
-             && (monId == gBattlerPartyIndexes[battler] || monId == gBattlerPartyIndexes[GetPartnerBattler(battler)]))
+             && (monId == gBattlerPartyIndexes[battler] || IsMonOutOnAllyOfSameParty(battler, monId)))
                 gTasks[taskId].func = Task_LaunchLvlUpAnim;
             else
                 gTasks[taskId].func = Task_SetControllerToWaitForString;
@@ -1532,12 +1533,25 @@ static void Task_GiveExpWithExpBar(u8 taskId)
     }
 }
 
+// TRUE when party slot monIndex is the Pokémon out on this battler's ally.
+// In co-op the ally belongs to the other player (gParties[B_TRAINER_PARTNER]),
+// whose lead is also slot 0; matching the index alone sent this player's
+// level-up flash and new level to the partner's health box.
+static bool32 IsMonOutOnAllyOfSameParty(enum BattlerId battler, u32 monIndex)
+{
+    enum BattlerId ally = GetPartnerBattler(battler);
+
+    return IsDoubleBattle() == TRUE
+        && GetBattlerTrainer(ally) == GetBattlerTrainer(battler)
+        && monIndex == gBattlerPartyIndexes[ally];
+}
+
 static void Task_LaunchLvlUpAnim(u8 taskId)
 {
     enum BattlerId battler = gTasks[taskId].tExpTask_battler;
     u8 monIndex = gTasks[taskId].tExpTask_monId;
 
-    if (IsDoubleBattle() == TRUE && monIndex == gBattlerPartyIndexes[GetPartnerBattler(battler)])
+    if (IsMonOutOnAllyOfSameParty(battler, monIndex))
         battler ^= BIT_FLANK;
 
     InitAndLaunchSpecialAnimation(battler, battler, battler, B_ANIM_LVL_UP);
@@ -1552,7 +1566,7 @@ static void Task_UpdateLvlInHealthbox(u8 taskId)
     {
         u8 monIndex = gTasks[taskId].tExpTask_monId;
 
-        if (IsDoubleBattle() == TRUE && monIndex == gBattlerPartyIndexes[GetPartnerBattler(battler)])
+        if (IsMonOutOnAllyOfSameParty(battler, monIndex))
             UpdateHealthboxAttribute(gHealthboxSpriteIds[GetPartnerBattler(battler)], &gParties[B_TRAINER_PLAYER][monIndex], HEALTHBOX_ALL);
         else
             UpdateHealthboxAttribute(gHealthboxSpriteIds[battler], &gParties[B_TRAINER_PLAYER][monIndex], HEALTHBOX_ALL);

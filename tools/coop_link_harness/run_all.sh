@@ -44,14 +44,36 @@ for s in $fresh; do run "$s"; done
 lab0="$out/save_lab/p0.sav"; lab1="$out/save_lab/p1.sav"
 for s in reconnect route102_reconnect solo_six trainer_reconnect trainer_p1 coop_six rival_story rival_p1 invite_refuse invite_busy coop_menu center_beacon link_recovery wild_route101 wild_route101_p1 battle_abort_recovery invite_timeout_recovery \
          connected_maps wild_places invite_cancel wild_run wild_simultaneous gym_teams rival_late qol \
-         solo_rival solo_gym rotom_catalog trainer_overhaul e4_sidney; do
+         solo_rival solo_gym rotom_catalog trainer_overhaul e4_sidney coop_levelup_boxes; do
 	run "$s" SAVE0="$lab0" SAVE1="$lab1"
 done
+
+# Story run on real walking: segment 1 from the lab saves, then the
+# segments and regressions that continue segment 1's saved game.
+run story_seg1 SAVE0="$lab0" SAVE1="$lab1"
+s1_0="$out/story_seg1/p0.sav"; s1_1="$out/story_seg1/p1.sav"
+for s in whiteout_home story_seg2; do
+	run "$s" SAVE0="$s1_0" SAVE1="$s1_1"
+done
+# LONG=1: the uninterrupted story chain continues, each segment from the
+# saves the one before made (Rustboro, Roxanne, Devon, Rustboro rival).
+if [ -n "${LONG:-}" ]; then
+	prev=story_seg2
+	for s in story_seg3 story_seg4 story_seg5 story_seg6 catch_walk; do
+		run "$s" SAVE0="$out/$prev/p0.sav" SAVE1="$out/$prev/p1.sav"
+		prev=$s
+	done
+fi
 
 run bedroom_reload SAVE0="$out/mays_house_doorway/p0.sav" SAVE1="$out/mays_house_doorway/p1.sav"
 
 if [ -n "${AFFECTED:-}" ]; then
 	run mays_house_recovery SAVE0="$AFFECTED/host_p0.sav" SAVE1="$AFFECTED/guest_p1.sav"
+fi
+
+# Saves made by a TEST START before the respawn fix (no heal location).
+if [ -n "${HEAL_AFFECTED:-}" ]; then
+	run whiteout_home SAVE0="$HEAL_AFFECTED/p0.sav" SAVE1="$HEAL_AFFECTED/p1.sav"
 fi
 
 if [ -n "${ZIG_AFFECTED:-}" ]; then

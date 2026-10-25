@@ -1,0 +1,59 @@
+# Story run, segment 6 (actual play): CONTINUE the saves story_seg5 made at
+# Rustboro's south exit, link, heal at the Pokemon Centre staggered (player 0
+# inside while player 1 stays out, then the reverse), UNLINK from the CO-OP
+# menu, split up (player 1 into the Mart),
+# link again from different maps, meet up, and save.
+# FIXTURES: no_wild; each lead set to 1 HP before the Centre (to see the heal).
+include continue.inc
+include relink.inc
+b expect coop.sLinkState 2
+b no_wild 1
+b write gParties+86:2 1
+0 walk 16 39 4000
+1 walk 18 40 4000
+0 walk 16 38 2000
+0 until_map 11 5 3000
+0 walk 7 4 2000
+0 press UP 2
+0 press A 2
+0 mash_field 6000
+0 expect_range gParties+86:2 2 999
+0 expect_no_partner p0-in-centre
+1 expect_range gParties+86:2 1 1
+b sync
+0 walk 7 7 2000
+0 cross DOWN 0 3 2000
+b wait 120
+b expect_partner both-outside
+1 walk 16 38 2000
+1 until_map 11 5 3000
+1 walk 7 4 2000
+1 press UP 2
+1 press A 2
+1 mash_field 6000
+1 expect_range gParties+86:2 2 999
+1 walk 7 7 2000
+1 cross DOWN 0 3 2000
+b sync
+b expect coop.sLinkState 2
+b shot seg6-healed
+# Explicit UNLINK, then split up across maps.
+include unlink.inc
+b expect coop.sLinkState 0
+1 walk 16 45 4000
+1 until_map 11 7 3000
+1 dump p1-mart-alone
+0 walk 19 50 4000
+0 dump p0-rustboro-alone
+b sync
+# Link again from different maps; each sees the other is elsewhere.
+include relink.inc
+b expect coop.sLinkState 2
+b expect_no_partner apart
+1 walk 4 7 3000
+1 cross DOWN 0 3 3000
+b wait 120
+b expect_partner together-again
+b expect coop.sLinkState 2
+b shot seg6-relinked
+include save_again.inc
