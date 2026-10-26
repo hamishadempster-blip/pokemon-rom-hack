@@ -1,0 +1,82 @@
+# JOURNEY 24 (main playthrough, no fixtures): CONTINUE journey_23's saves
+# (Dewford Centre). Brawly's six Fighting types call for counters and
+# training; a first plan (journey_24x: catch SABLEYE in Granite Cave) ran
+# out of POKe BALLS and Dewford has no Mart. So on with the story first:
+#  - Relink, Beacon ON (Rosa's side).
+#  - Mr. Briney at the dock: Rosa sails to Slateport first (her save),
+#    then Kai (his).
+#  - Route 109 north to Slateport: heal at the Centre, the Mart (POKe BALLS
+#    and NEST BALLS each), save.
+# Driver aids: smart_moves, heal_below.
+include continue.inc
+include relink.inc
+b expect coop.sLinkState 2
+b smart_moves 1
+b heal_below 35 2
+include beacon_on_p1.inc
+b mash_field 2000 B
+b expect coop.sBeacon+1:1 1
+b expect_flag 0xBD 1
+b dump start
+b walk 7 8 2000
+b cross DOWN 0 11 2000
+# Briney (12,9) from the west; the menu: PETALBURG / SLATEPORT / CANCEL
+# (cursor starts on CANCEL).
+1 walk 11 9 4000
+1 press RIGHT 2
+1 wait 10
+1 press A 2
+1 until_task Task_HandleMultichoiceInput 3000 A
+1 wait 20
+1 press UP 2
+1 wait 20
+1 press A 2
+1 cross B 0 24 12000
+1 dump rosa-route109
+0 wait 600
+0 walk 11 9 4000
+0 press RIGHT 2
+0 wait 10
+0 press A 2
+0 until_task Task_HandleMultichoiceInput 3000 A
+0 wait 20
+0 press UP 2
+0 wait 20
+0 press A 2
+0 cross B 0 24 12000
+b sync
+b dump route109
+b shot route109
+b walk 20 0 6000
+b cross UP 0 1 3000
+b dump slateport
+0 walk 19 19 6000
+0 until_map 9 11 3000
+1 wait 200
+1 walk 19 19 6000
+1 until_map 9 11 3000
+include journey_heal_center.inc
+b walk 7 8 2000
+b cross DOWN 0 1 2000
+0 walk 13 26 6000
+0 until_map 9 13 3000
+1 wait 300
+1 walk 13 26 6000
+1 until_map 9 13 3000
+include journey_p0_buy_row0_x5.inc
+include journey_p0_buy_row2_x3.inc
+0 walk 4 6 2000
+b sync
+include journey_p1_buy_row0_x5.inc
+include journey_p1_buy_row2_x3.inc
+b sync
+b party
+b walk 3 7 3000
+b cross DOWN 0 1 3000
+0 walk 19 19 6000
+0 until_map 9 11 3000
+1 wait 200
+1 walk 19 19 6000
+1 until_map 9 11 3000
+include save_again.inc
+b party

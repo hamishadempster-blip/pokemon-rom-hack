@@ -1,0 +1,102 @@
+# JOURNEY 18 (main playthrough, no fixtures): CONTINUE journey_17's saves
+# (both on Devon Corp 3F with the LETTER and POKeNAV).
+#  - Relink, Beacon ON (Rosa's side this time).
+#  - Down and out; the scientist adds Match Call (PokeNAV tutorial: choose
+#    POKeNAV in the start menu), each on their own save.
+#  - South together; Rosa steps onto the rival's line (y=53): the rival
+#    fight (co-op Mira and Soren).
+#  - Both saves checked (state 8, rival flag, no second fight); save.
+# Driver aids: smart_moves, heal_below.
+include continue.inc
+include relink.inc
+b expect coop.sLinkState 2
+b smart_moves 1
+b heal_below 35 2
+include beacon_on_p1.inc
+b mash_field 2000 B
+b expect coop.sBeacon+1:1 1
+b expect_var 0x405A 6
+b dump start
+# Down the stairs and out (Kai first).
+1 wait 150
+b walk 2 1 4000
+b until_map 11 1 3000
+b walk 14 1 6000
+b until_map 11 0 3000
+b walk 5 8 6000
+b press DOWN 16
+b wait 150
+b expect_map 0 3
+# The scientist: Match Call; the tutorial start menu wants POKeNAV (row 3).
+b until_task Task_HandleMultichoiceInput 5000 A
+b wait 30
+b shot tutorial-menu
+b press DOWN 2
+b wait 12
+b press DOWN 2
+b wait 12
+b press DOWN 2
+b wait 12
+b press A 2
+b wait 240
+b shot pokenav
+# The tutorial wants MATCH CALL (row 2) and a call to Mr. Stone, then
+# the POKeNAV can be put away.
+b press DOWN 2
+b wait 15
+b press DOWN 2
+b wait 15
+b press A 2
+b wait 150
+b shot match-call
+b press A 2
+b wait 40
+b press A 2
+b wait 90
+b press A 2
+b wait 60
+b press A 2
+b wait 60
+b press A 2
+b wait 60
+b press A 2
+b wait 60
+b press A 2
+b wait 60
+b shot after-call
+b press B 2
+b wait 90
+b press B 2
+b wait 90
+b press B 2
+b wait 90
+b shot after-pokenav
+b mash_field 4000 B
+b expect_var 0x405A 7
+b expect_flag 0x90 1
+b sync
+b dump after-scientist
+# South together; Rosa steps onto the rival's line.
+1 walk 16 52 6000
+0 wait 60
+0 walk 17 52 6000
+b sync
+b dump rival-line
+1 press DOWN 24
+b until_cb2 BattleMainCB2 9000 A
+b expect coop.sInBattle 1
+b expect gBattlersCount 4
+b shot rival-coop
+b mash_field 60000
+b dump after-rival
+b party
+b expect_var 0x405A 8
+b expect_flag 0xD3 1
+b expect coop.sLinkState 2
+b shot after-rival
+# No second fight: Kai crosses the same line.
+0 walk 17 54 3000
+0 expect coop.sInBattle 0
+0 expect_var 0x405A 8
+include save_again.inc
+b party

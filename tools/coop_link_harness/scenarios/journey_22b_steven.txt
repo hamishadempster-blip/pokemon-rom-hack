@@ -1,0 +1,59 @@
+# JOURNEY 22b (main playthrough, no fixtures): CONTINUE journey_22's
+# milestone saves (Granite Cave 1F, north half, both with FLASH; the rest of
+# journey 22 stopped at the room's entrance, which is entered facing down).
+#  - Relink, Beacon ON (Kai's side).
+#  - Steven's room: Kai delivers the LETTER first, Rosa after him.
+#  - Back out through B1F/B2F/B1F to the entrance, Dewford, heal, save.
+# Driver aids: smart_moves, heal_below.
+include continue.inc
+include relink.inc
+b expect coop.sLinkState 2
+b smart_moves 1
+b heal_below 35 2
+include beacon_on.inc
+b mash_field 2000 B
+b expect coop.sBeacon+1:1 1
+b expect_flag 0x6D 1
+b walk 5 10 12000
+b cross DOWN 24 10 3000
+b dump stevens-room
+0 walk 7 7 3000
+0 press DOWN 2
+0 wait 10
+0 press A 2
+0 mash_field 6000
+0 shot kai-steven
+1 wait 400
+1 walk 6 7 3000
+1 walk 7 7 3000
+1 press DOWN 2
+1 wait 10
+1 press A 2
+1 mash_field 6000
+b sync
+b dump after-steven
+b expect_flag 0xBD 1
+b party
+# Back out the same way.
+b walk 7 3 3000
+b cross UP 24 7 3000
+b walk 35 3 12000
+b until_map 24 8 3000
+b walk 29 13 6000
+b until_map 24 9 3000
+b walk 28 21 12000
+b until_map 24 8 3000
+b walk 4 21 12000
+b until_map 24 7 3000
+b walk 37 12 8000
+b cross DOWN 0 21 3000
+b walk 65 19 8000
+b cross DOWN 0 11 3000
+0 walk 2 10 4000
+0 until_map 3 1 3000
+1 wait 200
+1 walk 2 10 4000
+1 until_map 3 1 3000
+include journey_heal_center.inc
+include save_again.inc
+b party

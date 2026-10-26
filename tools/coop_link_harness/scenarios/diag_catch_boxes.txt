@@ -1,0 +1,38 @@
+# DIAGNOSTIC: where does Kai's PC box get junk? (journey 24 found 12 junk
+# "Pokemon" in box 1 after catching SABLEYE with five in the party; the
+# Gen 8 Centre heal then hit "invalid move" assert screens.)
+# From journey_23's saves (boxes empty). Kai only: Granite Cave 1F, catch
+# the first cave Pokemon met (FIXTURE none; the Beacon is OFF), PC boxes
+# checked after the catch, after walking back, after the Centre heal.
+include continue.inc
+include relink.inc
+b expect coop.sLinkState 2
+b smart_moves 1
+b boxes
+b walk 7 8 2000
+b cross DOWN 0 11 2000
+b walk 5 0 4000
+b cross UP 0 21 3000
+b walk 48 17 8000
+b cross UP 24 7 3000
+b walk 17 11 8000
+b until_map 24 8 3000
+0 walk 3 17 4000
+0 hunt 8 41,74,296,529,447,1320,1358,63,302,304 60000
+0 boxes
+0 party
+b sync
+b walk 4 21 6000
+b until_map 24 7 3000
+b walk 37 12 8000
+b cross DOWN 0 21 3000
+b boxes
+b walk 65 19 8000
+b cross DOWN 0 11 3000
+0 walk 2 10 4000
+0 until_map 3 1 3000
+1 wait 200
+1 walk 2 10 4000
+1 until_map 3 1 3000
+include journey_heal_center.inc
+b boxes

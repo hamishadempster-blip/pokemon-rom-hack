@@ -1,0 +1,4 @@
+# DIAGNOSTIC (read-only): POKe BALLS and NEST BALLS in each bag.
+include continue.inc
+b expect_item 1 1 5
+b expect_item 1 8 3

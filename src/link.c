@@ -586,6 +586,12 @@ static void ProcessRecvCmds(u8 unused)
         }
         case LINKCMD_CONT_BLOCK:
             {
+                // A continuation with no block open (its INIT_BLOCK was lost
+                // when a full queue dropped commands) used to keep writing at
+                // a growing position: past gBlockRecvBuffer and into the PC
+                // boxes that follow it in EWRAM. Drop it instead.
+                if (sBlockRecv[i].pos >= sBlockRecv[i].size)
+                    break;
                 if (sBlockRecv[i].size > BLOCK_BUFFER_SIZE)
                 {
                     // Too large block was sent.
@@ -594,7 +600,7 @@ static void ProcessRecvCmds(u8 unused)
                 {
                     u32 j;
 
-                    for (j = 0; j < CMD_LENGTH - 1; j++)
+                    for (j = 0; j < CMD_LENGTH - 1 && (sBlockRecv[i].pos / 2) + j < BLOCK_BUFFER_SIZE / 2; j++)
                     {
                         gBlockRecvBuffer[i][(sBlockRecv[i].pos / 2) + j] = gRecvCmds[i][j + 1];
                     }

@@ -1,0 +1,47 @@
+# A trainer spots a player right after a co-op wild battle (journey_16
+# saves, both in Rusturf Tunnel; School Kid Karen unbeaten on Kai's save).
+# DIAGNOSTIC (fixtures below).
+# Found in the main journey (segment 17, 2nd attempt): Kai and Rosa won a
+# co-op wild battle on Route 116 with Kai standing in Karen's sight line;
+# back on the field Karen spotted Kai and the battle opened with an assert
+# screen "Opponent needs a valid name" (no opponent, blank Pokemon).
+# Here: Rosa stands nearby; Kai steps into the grass below Karen (FIXTURE:
+# force_encounter), Rosa joins; after the fight Kai waits until Karen turns
+# and spots him. Expected: an ordinary battle with KAREN.
+include continue.inc
+include relink.inc
+b expect coop.sLinkState 2
+b smart_moves 1
+include beacon_on.inc
+b mash_field 2000 B
+b expect coop.sBeacon+1:1 1
+0 expect_flag 0x618 0
+# FIXTURE: no random encounters on the walk.
+b no_wild 1
+0 walk 4 10 4000
+0 cross DOWN 0 31 3000
+1 wait 100
+1 walk 4 10 4000
+1 cross DOWN 0 31 3000
+1 walk 25 17 8000
+0 walk 23 17 8000
+b sync
+b dump lane
+0 no_wild 0
+0 force_encounter 1
+0 press LEFT 8
+0 force_encounter 0
+0 no_wild 1
+b until_cb2 BattleMainCB2 2000 A
+b dump first-battle
+b until_cb2 CB2_Overworld 20000 A
+b dump back
+0 wait 1200
+0 dump after-wait
+0 until_cb2 BattleMainCB2 4000 A
+0 until_battle_text KAREN 600
+0 shot karen
+0 mash_field 30000
+1 wait 600
+b sync
+b dump after

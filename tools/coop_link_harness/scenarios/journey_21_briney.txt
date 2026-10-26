@@ -1,0 +1,60 @@
+# JOURNEY 21 (main playthrough, no fixtures): CONTINUE journey_20's saves
+# (Rustboro Centre, rival beaten on both saves, healed).
+#  - Relink, Beacon ON (Rosa's side).
+#  - South together: Route 104 north, Petalburg Woods (north to south),
+#    Route 104 south (its trainers, co-op where both are spotted or asked).
+#  - Mr. Briney's cottage: Rosa goes in first and sails to Dewford (her
+#    save's scene); Kai follows a little later and sails on his own save.
+#  - Dewford: both meet by the dock, heal at the Centre, save.
+# Driver aids: smart_moves, heal_below.
+include continue.inc
+include relink.inc
+b expect coop.sLinkState 2
+b smart_moves 1
+b heal_below 35 2
+include beacon_on_p1.inc
+b mash_field 2000 B
+b expect coop.sBeacon+1:1 1
+b expect_var 0x405A 8
+b dump start
+b walk 7 8 2000
+b cross DOWN 0 3 2000
+b walk 16 59 5000
+b cross DOWN 0 19 3000
+b dump route104
+0 walk 10 30 8000
+0 until_map 24 11 3000
+1 walk 11 30 8000
+1 until_map 24 11 3000
+b dump woods
+b walk 16 38 12000
+b cross DOWN 0 19 3000
+b sync
+b dump route104-south
+# Rosa first into the cottage.
+1 walk 17 51 8000
+1 cross UP 17 0 3000
+1 walk 10 3 3000
+1 talk_obj 1 3000
+1 cross B 0 11 12000
+1 dump rosa-dewford
+1 shot rosa-dewford
+0 wait 400
+0 walk 17 51 8000
+0 cross UP 17 0 3000
+0 walk 10 3 3000
+0 talk_obj 1 3000
+0 cross B 0 11 12000
+0 dump kai-dewford
+b sync
+b dump both-dewford
+b shot both-dewford
+# Heal at the Centre, save.
+1 walk 2 10 4000
+1 until_map 3 1 3000
+0 wait 200
+0 walk 2 10 4000
+0 until_map 3 1 3000
+include journey_heal_center.inc
+include save_again.inc
+b party

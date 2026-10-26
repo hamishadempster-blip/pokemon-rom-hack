@@ -1,0 +1,44 @@
+# JOURNEY 23 (main playthrough, no fixtures): CONTINUE journey_22's saves
+# (Dewford Centre, letter delivered, FLASH; healed).
+#  - Relink, Beacon ON (Rosa's side).
+#  - Into the Dewford Gym side by side; walk up through the dark maze to
+#    Brawly's floor, fighting the gym trainers who spot the pair (co-op).
+#  - Back out, heal at the Centre, save (Brawly in journey 24).
+# Driver aids: smart_moves, heal_below.
+include continue.inc
+include relink.inc
+b expect coop.sLinkState 2
+b smart_moves 1
+b heal_below 35 2
+include beacon_on_p1.inc
+b mash_field 2000 B
+b expect coop.sBeacon+1:1 1
+b expect_flag 0xBD 1
+b dump start
+b walk 7 8 2000
+b cross DOWN 0 11 2000
+0 walk 8 17 4000
+0 until_map 3 3 3000
+1 wait 200
+1 walk 8 17 4000
+1 until_map 3 3 3000
+b dump gym
+b shot gym
+# Up through the maze; whoever spots the pair is fought together.
+0 walk 4 5 20000
+1 walk 5 5 20000
+b sync
+b dump gym-top
+b shot gym-top
+b party
+# Out, heal, save.
+b walk 5 26 20000
+b cross DOWN 0 11 3000
+0 walk 2 10 4000
+0 until_map 3 1 3000
+1 wait 200
+1 walk 2 10 4000
+1 until_map 3 1 3000
+include journey_heal_center.inc
+include save_again.inc
+b party

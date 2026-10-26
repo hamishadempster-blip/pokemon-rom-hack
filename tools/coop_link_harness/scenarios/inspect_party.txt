@@ -1,0 +1,4 @@
+# DIAGNOSTIC (read-only): continue both saves and print every party slot.
+include continue.inc
+b party
+b boxes

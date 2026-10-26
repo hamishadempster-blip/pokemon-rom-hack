@@ -1,0 +1,102 @@
+# JOURNEY 19 (main playthrough, no fixtures): checkpoint j18 = Kai's
+# journey-17 save (Devon Corp 3F, POKeNAV) + Rosa's journey-18 save
+# (Rustboro, rival beaten together and saved; Kai's part of journey 18
+# stopped at a mis-placed walk after the fight, so his save was not written).
+# 1st attempt (19a): Kai stepped onto the rival's line with Rosa nearby; the
+# co-op layer pulled Rosa into the fight again (she had already won it) and
+# the pair lost (Rosa's Marill had not been healed). Not saved.
+# 2nd attempt (the first ran out of the runner's time limit mid-training):
+#  - Relink (Beacon OFF: training is solo). Kai: down and out, the
+#    scientist's Match Call tutorial. Both heal at the Centre.
+#  - Eight Route 116 training cycles (Kai: Combusken leads, Shroomish
+#    switches in; then Buizel. Rosa: Marill leads, Skiddo; then Shroomish).
+#  - Party order for the twins (Grass first vs Marshtomp): Kai Shroomish,
+#    Combusken, Buizel; Rosa Shroomish, Skiddo, Marill.
+#  - Heal, save in the Centre (the rival: journey 20).
+# Driver aids: smart_moves, heal_below, grind, switch_lead.
+include continue.inc
+include relink.inc
+b expect coop.sLinkState 2
+b smart_moves 1
+b heal_below 35 2
+0 expect_var 0x405A 6
+1 expect_var 0x405A 8
+1 expect_flag 0xD3 1
+b dump start
+0 walk 2 1 4000
+0 until_map 11 1 3000
+0 walk 14 1 6000
+0 until_map 11 0 3000
+0 walk 5 8 6000
+0 press DOWN 16
+0 wait 150
+0 expect_map 0 3
+0 until_task Task_HandleMultichoiceInput 5000 A
+0 wait 30
+0 press DOWN 2
+0 wait 12
+0 press DOWN 2
+0 wait 12
+0 press DOWN 2
+0 wait 12
+0 press A 2
+0 wait 240
+0 press DOWN 2
+0 wait 15
+0 press DOWN 2
+0 wait 15
+0 press A 2
+0 wait 150
+0 press A 2
+0 wait 40
+0 press A 2
+0 wait 90
+0 press A 2
+0 wait 60
+0 press A 2
+0 wait 60
+0 press A 2
+0 wait 60
+0 press A 2
+0 wait 60
+0 press A 2
+0 wait 60
+0 press B 2
+0 wait 90
+0 press B 2
+0 wait 90
+0 press B 2
+0 wait 90
+0 mash_field 4000 B
+0 expect_var 0x405A 7
+b sync
+# Both to the Centre (Rosa first).
+1 walk 16 38 6000
+1 until_map 11 5 3000
+0 wait 200
+0 walk 16 38 6000
+0 until_map 11 5 3000
+include journey_heal_center.inc
+b party
+0 switch_lead 2
+1 switch_lead 2
+include journey_cycle_r116_sw.inc
+include journey_cycle_r116_sw.inc
+include journey_cycle_r116_sw.inc
+include journey_cycle_r116_sw.inc
+include journey_cycle_r116_sw.inc
+0 switch_lead 1
+1 switch_lead 1
+include journey_cycle_r116_sw.inc
+include journey_cycle_r116_sw.inc
+include journey_cycle_r116_sw.inc
+b switch_lead 0
+b dump trained
+b party
+include journey_p0_swap02.inc
+include journey_p0_swap12.inc
+include journey_p1_swap01.inc
+include journey_p1_swap12.inc
+b party
+# Milestone save before the rival (trained, healed).
+include save_again.inc

@@ -1,0 +1,51 @@
+# JOURNEY 17 (main playthrough, no fixtures): CONTINUE journey_16's saves
+# (both in Rusturf Tunnel with the DEVON GOODS). Back to Rustboro:
+#  - Relink, Beacon ON (Kai's side). Out of the tunnel, Route 116 west.
+#  - Kai first: the Devon employee by the east exit takes the goods (GREAT
+#    BALL), Devon Corp 3F: Mr. Stone (LETTER, POKeNAV, party healed). Down
+
+#  - Rosa does the same on her save a little later.
+#  - Both save on 3F (checkpoint). The scientist and the rival: journey 18.
+# Driver aids: smart_moves, heal_below.
+include continue.inc
+include relink.inc
+b expect coop.sLinkState 2
+b smart_moves 1
+b heal_below 35 2
+include beacon_on.inc
+b mash_field 2000 B
+b expect coop.sBeacon+1:1 1
+b expect_var 0x405A 4
+b expect_flag 0x8F 1
+b dump start
+0 walk 4 10 4000
+0 cross DOWN 0 31 3000
+1 wait 200
+1 walk 4 10 4000
+1 cross DOWN 0 31 3000
+b walk 0 10 8000
+b cross LEFT 0 3 3000
+b sync
+b dump rustboro
+# Kai returns the goods: the employee's trigger on the way west from the
+# east exit.
+0 walk 31 10 3000
+0 mash_field 4000
+0 until_map 11 2 3000
+0 mash_field 8000
+0 expect_flag 0x90 1
+0 expect_var 0x405A 6
+0 shot kai-pokenav
+0 dump kai-3f
+1 wait 600
+1 walk 31 10 3000
+1 mash_field 4000
+1 until_map 11 2 3000
+1 mash_field 8000
+1 expect_flag 0x90 1
+1 expect_var 0x405A 6
+b sync
+b dump both-3f
+b party
+# Milestone save (POKeNAV), a checkpoint for the rest.
+include save_again.inc

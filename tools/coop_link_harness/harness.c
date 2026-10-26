@@ -23,7 +23,7 @@
 #define MAX_CMDS 4096
 #define MAX_SYMS 500000
 
-enum { C_PARTNER, C_GOTO, C_HEX, C_PRESS, C_WAIT, C_SHOT, C_DUMP, C_BARRIER, C_UNTIL_CB2, C_UNTIL_FIELD, C_EXPECT, C_UNTIL_MEM, C_BATTLE, C_MENU, C_PARTY, C_FIXTURE, C_WRITE, C_LEAD, C_MOVE, C_SIX, C_VAR, C_FLAG, C_VS, C_EXPECT_FLAG, C_EXPECT_VAR, C_NO_OBJECT, C_MAP, C_OBJECT, C_TEXT_SPEED, C_PACE, C_MUTE, C_PARTNER_AT, C_ITEM, C_EXPECT_ITEM, C_UNTIL_TEXT, C_WARP, C_PC_COUNT, C_MONS, C_NO_COPIES, C_NOTE_MONEY, C_MONEY_GAIN, C_FORCE_ENC, C_EXPECT_RANGE, C_WALK, C_NO_WILD, C_CROSS, C_WALK_BATTLE, C_SMART, C_STRONG, C_UNTIL_TASK, C_MIRROR, C_SPECIES, C_NOTE_PARTY, C_SAME_PARTY, C_PATCH_RET, C_SLOT, C_TXN, C_MONEY_SAME, C_DEX, C_SWAP, C_GENDER, C_FILL, C_UNFILL, C_WRITEP, C_TINT, C_UNTIL_FTEXT, C_NICK, C_GRIND, C_CATCH, C_HUNT, C_SWITCH_LEAD, C_PARTY_SLOT, C_HEAL_BELOW };
+enum { C_PARTNER, C_GOTO, C_HEX, C_PRESS, C_WAIT, C_SHOT, C_DUMP, C_BARRIER, C_UNTIL_CB2, C_UNTIL_FIELD, C_EXPECT, C_UNTIL_MEM, C_BATTLE, C_MENU, C_PARTY, C_FIXTURE, C_WRITE, C_LEAD, C_MOVE, C_SIX, C_VAR, C_FLAG, C_VS, C_EXPECT_FLAG, C_EXPECT_VAR, C_NO_OBJECT, C_MAP, C_OBJECT, C_TEXT_SPEED, C_PACE, C_MUTE, C_PARTNER_AT, C_ITEM, C_EXPECT_ITEM, C_UNTIL_TEXT, C_WARP, C_PC_COUNT, C_MONS, C_NO_COPIES, C_NOTE_MONEY, C_MONEY_GAIN, C_FORCE_ENC, C_EXPECT_RANGE, C_WALK, C_NO_WILD, C_CROSS, C_WALK_BATTLE, C_SMART, C_STRONG, C_UNTIL_TASK, C_MIRROR, C_SPECIES, C_NOTE_PARTY, C_SAME_PARTY, C_PATCH_RET, C_SLOT, C_TXN, C_MONEY_SAME, C_DEX, C_SWAP, C_GENDER, C_FILL, C_UNFILL, C_WRITEP, C_TINT, C_UNTIL_FTEXT, C_NICK, C_GRIND, C_CATCH, C_HUNT, C_SWITCH_LEAD, C_PARTY_SLOT, C_HEAL_BELOW, C_TALK_OBJ, C_BOXES };
 
 struct Cmd {
 	int kind;
@@ -56,6 +56,9 @@ struct Player {
     unsigned muteFrames, mutedOpcode;
     unsigned encSaved[2], encForced;
     unsigned noWild;
+    unsigned crashStart; // frames of START to leave an assert crash screen
+    unsigned boxSum; int boxSumSet;
+    int crashSeen;
     unsigned smartMoves;
     int learnPhase, learnTarget; unsigned learnStart, partyBackFrame;
     unsigned strongBattlers;
@@ -68,6 +71,59 @@ struct Player {
 };
 
 static struct Player P[2];
+
+// WATCH_BOX=1: a write watch on the first 12 slots of PC box 1 (set from the
+// box watch below). Every store into it is logged with the code doing it.
+static unsigned sWatchLo[2], sWatchHi[2];
+static int sWatchLogs[2];
+static struct ARMMemory sOrigMem[2];
+static int watchPlayer(struct ARMCore* cpu) {
+	for (int i = 0; i < 2; i++)
+		if (P[i].core && ((struct GBA*)P[i].core->board)->cpu == cpu) return i;
+	return -1;
+}
+static const char* symAt(unsigned addr);
+static void out(const char* fmt, ...);
+static void watchHit(struct ARMCore* cpu, int id, uint32_t addr, const char* kind) {
+	if (sWatchLogs[id] >= 400) return;
+	// The save-block shuffle at each battle start copies the boxes legitimately.
+	if (!strncmp(symAt(cpu->gprs[14]), "MoveSaveBlocks", 14)) return;
+	sWatchLogs[id]++;
+	char pc[120];
+	snprintf(pc, sizeof(pc), "%s", symAt(cpu->gprs[15] - ((cpu->cpsr.t) ? 4 : 8)));
+	out("[p%d WRITE] %s at %08x (slot %u) pc=%s lr=%s\n", id, kind, addr, (addr - sWatchLo[id]) / 80, pc, symAt(cpu->gprs[14]));
+}
+static void hookStore32(struct ARMCore* cpu, uint32_t a, int32_t v, int* c) {
+	int id = watchPlayer(cpu);
+	if (id >= 0 && a >= sWatchLo[id] && a < sWatchHi[id]) watchHit(cpu, id, a, "str32");
+	sOrigMem[id < 0 ? 0 : id].store32(cpu, a, v, c);
+}
+static void hookStore16(struct ARMCore* cpu, uint32_t a, int16_t v, int* c) {
+	int id = watchPlayer(cpu);
+	if (id >= 0 && a >= sWatchLo[id] && a < sWatchHi[id]) watchHit(cpu, id, a, "str16");
+	sOrigMem[id < 0 ? 0 : id].store16(cpu, a, v, c);
+}
+static void hookStore8(struct ARMCore* cpu, uint32_t a, int8_t v, int* c) {
+	int id = watchPlayer(cpu);
+	if (id >= 0 && a >= sWatchLo[id] && a < sWatchHi[id]) watchHit(cpu, id, a, "str8");
+	sOrigMem[id < 0 ? 0 : id].store8(cpu, a, v, c);
+}
+static uint32_t hookStoreMultiple(struct ARMCore* cpu, uint32_t base, int mask, enum LSMDirection dir, int* c) {
+	int id = watchPlayer(cpu);
+	int n = __builtin_popcount(mask & 0xFFFF);
+	uint32_t lo = (dir & LSM_D) ? base - n * 4 : base, hi = (dir & LSM_D) ? base : base + n * 4;
+	if (id >= 0 && hi > sWatchLo[id] && lo < sWatchHi[id]) watchHit(cpu, id, lo, "stm");
+	return sOrigMem[id < 0 ? 0 : id].storeMultiple(cpu, base, mask, dir, c);
+}
+static void installWatch(struct Player* p) {
+	struct ARMCore* cpu = ((struct GBA*)p->core->board)->cpu;
+	if (cpu->memory.store32 == hookStore32) return;
+	sOrigMem[p->id] = cpu->memory;
+	cpu->memory.store32 = hookStore32;
+	cpu->memory.store16 = hookStore16;
+	cpu->memory.store8 = hookStore8;
+	cpu->memory.storeMultiple = hookStoreMultiple;
+}
 static struct GBASIOLockstep sLockstep;
 static pthread_mutex_t sLock = PTHREAD_MUTEX_INITIALIZER;
 static pthread_mutex_t sOut = PTHREAD_MUTEX_INITIALIZER;
@@ -1247,7 +1303,7 @@ static void frameCallback(struct mCoreThread* t) {
 		if (cb2 != sLastCb2[p->id]) {
 			sLastCb2[p->id] = cb2;
 			const char* nm = symName(cb2);
-			if (sCb2Logs[p->id]++ < 30 || strstr(nm, "LinkError") || strstr(nm, "ErrorMessage") || strstr(nm, "SoftReset") || strstr(nm, "Copyright"))
+			if (sCb2Logs[p->id]++ < 30 || strstr(nm, "LinkError") || strstr(nm, "ErrorMessage") || strstr(nm, "SoftReset") || strstr(nm, "Copyright") || strstr(nm, "ContinueSavedGame") || strstr(nm, "CrashScreen"))
 				out("[f%06d p%d] cb2 %08x %s\n", p->frame, p->id, cb2, nm);
 			// A link error screen is never expected in co-op play: record it.
 			if (strstr(nm, "CB2_LinkError")) {
@@ -1258,6 +1314,61 @@ static void frameCallback(struct mCoreThread* t) {
 				battleDump(p);
 				writePng(p, "linkerror");
 			}
+		}
+	}
+	// PC box watch: the first 12 slots of box 1 should only change when the
+	// game deposits a Pokemon. Log every change with where the game was.
+	if ((p->frame & 7) == 0 && p->frame > 600) {
+		unsigned st = rd32(p, symAddr("gPokemonStoragePtr"));
+		if (st >= 0x02000000 && st < 0x02040000) {
+			unsigned sum = 0;
+			for (int k = 0; k < 240; k++) sum = sum * 31 + rd32(p, st + 4 + k * 4);
+			if (p->boxSumSet && sum != p->boxSum) {
+				struct ARMCore* cpu = ((struct GBA*)p->core->board)->cpu;
+				out("[f%06d p%d BOXWATCH] box 1 changed: cb1=%s cb2=%s pc=%s lr=%s\n", p->frame, p->id,
+				    symName(rd32(p, sMain)), symName(rd32(p, sMain + 4)), symAt(cpu->gprs[15]), symAt(cpu->gprs[14]));
+				dump(p, "boxwatch");
+			}
+			p->boxSum = sum; p->boxSumSet = 1;
+			if (getenv("WATCH_BOX")) { installWatch(p); sWatchLo[p->id] = st + 4; sWatchHi[p->id] = st + 4 + 960; }
+		}
+	}
+	// An assert crash screen (debug builds) waits for START. Record it once
+	// with the trainer-battle state, count a failure, then press past it.
+	if ((p->frame & 15) == 0 && !p->crashStart) {
+		static unsigned crashLo, crashHi;
+		if (!crashLo) {
+			crashLo = symAddr("CrashScreen");
+			crashHi = 0xFFFFFFFFu;
+			for (int i = 0; i < sNumSyms; i++)
+				if ((sSyms[i].type == 'T' || sSyms[i].type == 't') && (sSyms[i].addr & ~1u) > crashLo && (sSyms[i].addr & ~1u) < crashHi)
+					crashHi = sSyms[i].addr & ~1u;
+		}
+		struct ARMCore* cpu = ((struct GBA*)p->core->board)->cpu;
+		// The crash screen busy-waits on the keypad inside CrashScreen.
+		unsigned pc = cpu->gprs[15] & ~1u;
+		bool inCrash = pc >= crashLo && pc < crashHi;
+		if (inCrash) {
+			unsigned tbp = symAddr("gTrainerBattleParameter"), at = symAddr("gApproachingTrainers");
+			char hex[200]; int n = 0;
+			for (int k = 0; k < 40 && n < 190; k++) n += snprintf(hex + n, sizeof(hex) - n, "%02x", rd8(p, tbp + k));
+			out("[f%06d p%d] ASSERT CRASH SCREEN: trainerParams=%s approaching=%u lastTalked=%u selectedObj=%u battleFlags=%08x\n", p->frame, p->id, hex,
+			    rd8(p, symAddr("gNoOfApproachingTrainers")), rd16(p, symAddr("gSpecialVar_LastTalked")), rd8(p, symAddr("gSelectedObjectEvent")), rd32(p, symAddr("gBattleTypeFlags")));
+			for (int k = 0; k < 2; k++)
+				out("[f%06d p%d] approaching[%d] obj=%u script=%s radius=%u\n", p->frame, p->id, k, rd8(p, at + k * 12), symAtAny(rd32(p, at + k * 12 + 4)), rd8(p, at + k * 12 + 1));
+			for (int k = 0; k < 16; k++) {
+				unsigned o = sObjEvents + k * 0x24;
+				if (!(rd8(p, o) & 1)) continue;
+				out("[f%06d p%d] obj%d localId=%u gfx=%u move=%u trainerType=%u range=%u at=(%d,%d) facing=%u map=%u.%u player=%u\n", p->frame, p->id, k,
+				    rd8(p, o + 8), rd16(p, o + 4), rd8(p, o + 6), rd8(p, o + 7), rd8(p, o + 0x1D), (int16_t)rd16(p, o + 0x10) - 7, (int16_t)rd16(p, o + 0x12) - 7,
+				    rd8(p, o + 0x18) & 15, rd8(p, o + 10), rd8(p, o + 9), (rd8(p, o + 2) & 1));
+			}
+			dump(p, "assert");
+			battleDump(p);
+			writePng(p, "assert");
+			if (!p->crashSeen) sFailures++;
+			p->crashSeen++;
+			p->crashStart = 8;
 		}
 	}
 	recordSide(p);
@@ -1512,6 +1623,31 @@ static void frameCallback(struct mCoreThread* t) {
 			advance = true;
 			break;
 		}
+		case C_TALK_OBJ: {
+			// talk_obj LOCALID [T]: wait in place until that (moving) object
+			// is next to the player, face it, press A; done once a script runs.
+			if (!inField(p)) { if (++p->stable >= 2) { p->stable = 0; advance = true; } break; }
+			p->stable = 0;
+			unsigned me = sObjEvents + rd8(p, sAvatar + 5) * 0x24;
+			int px = (int16_t)rd16(p, me + 0x10), py = (int16_t)rd16(p, me + 0x12);
+			for (int k = 0; k < 16; k++) {
+				unsigned o = sObjEvents + k * 0x24;
+				if (!(rd8(p, o) & 1) || rd8(p, o + 8) != c->value || (rd8(p, o + 2) & 1)) continue;
+				int ox = (int16_t)rd16(p, o + 0x10), oy = (int16_t)rd16(p, o + 0x12);
+				int dx = ox - px, dy = oy - py;
+				if (abs(dx) + abs(dy) != 1) break;
+				unsigned dirKey = dx > 0 ? (1u << 4) : dx < 0 ? (1u << 5) : dy < 0 ? (1u << 6) : (1u << 7);
+				unsigned want = dx > 0 ? 4 : dx < 0 ? 3 : dy < 0 ? 2 : 1; // DIR_EAST/WEST/NORTH/SOUTH
+				if ((rd8(p, me + 0x18) & 15) != want) keys = (p->step & 7) < 2 ? dirKey : 0;
+				else keys = (p->step & 7) == 4 ? 1 : 0;
+				break;
+			}
+			if (++p->step >= c->frames) {
+				out("[p%d] FAIL talk_obj %u: never next to it\n", p->id, c->value);
+				dump(p, "fail"); writePng(p, "fail"); sFailures++; advance = true;
+			}
+			break;
+		}
 		case C_WALK_BATTLE:
 			// walk_battle X Y T: walk toward X,Y until a battle starts.
 			if (rd8(p, sMain + 0x439) & 2) { p->stable = 0; p->offField = 0; p->step = 0; advance = true; break; }
@@ -1594,13 +1730,13 @@ static void frameCallback(struct mCoreThread* t) {
 			if (p->barrierReached < c->barrier) p->barrierReached = c->barrier;
 			advance = P[1 - p->id].barrierReached >= c->barrier || P[1 - p->id].done;
 			pthread_mutex_unlock(&sLock);
-			// Waiting for the partner while a wild Pokemon jumped out on the
-			// last step: play the solo fight out instead of standing at its
-			// first message (a player would). Co-op fights are left alone.
+			// Waiting for the partner while in a battle (a wild Pokemon on
+			// the last step, or the partner's fight joined): play it out
+			// instead of standing at its first message (a player would).
 			if (!advance) {
 				static unsigned battleCb2;
 				if (!battleCb2) battleCb2 = symAddr("BattleMainCB2") & ~1u;
-				if ((rd32(p, sMain + 4) & ~1u) == battleCb2 && !rd8(p, coopStatic("sInBattle")))
+				if ((rd32(p, sMain + 4) & ~1u) == battleCb2)
 					keys = autoKeys(p, p->step++);
 			}
 			break;
@@ -1789,6 +1925,13 @@ static void frameCallback(struct mCoreThread* t) {
                 else if ((cur & 2) != (want & 2)) keys = (want & 2) ? (1u << 7) : (1u << 6);
                 else { keys = 1; if (p->stable) { p->grindCount++; out("[p%d] hunt: throw %d\n", p->id, p->grindCount); } p->step += 40; }
                 break;
+            }
+            if (atMenu) { keys = autoKeys(p, p->step); break; }
+            // Out of throws (or balls) the fight goes on: the move and
+            // target menus are the driver's (B there backed out forever).
+            for (int b = 0; b < 4; b++) {
+                const char* fn = symName(rd32(p, funcs + b * 4));
+                if (!strcmp(fn, "HandleInputChooseMove") || !strcmp(fn, "HandleInputChooseTarget")) atMenu = 1;
             }
             if (atMenu) { keys = autoKeys(p, p->step); break; }
             keys = (p->step % 24) < 2 ? 2 : 0;
@@ -2280,10 +2423,26 @@ static void frameCallback(struct mCoreThread* t) {
             advance = true;
             break;
         }
+		case C_BOXES: {
+			// boxes: every occupied PC box slot (species and moves, decrypted).
+			unsigned st = rd32(p, symAddr("gPokemonStoragePtr"));
+			int n = 0;
+			for (int bx = 0; bx < 14; bx++)
+				for (int sl = 0; sl < 30; sl++) {
+					unsigned mon = st + 4 + (bx * 30 + sl) * 80;
+					if (!rd32(p, mon) && !rd32(p, mon + 4)) continue;
+					showMonAddr(p, mon, 100 + bx, sl);
+					n++;
+				}
+			out("[f%06d p%d boxes] %d occupied\n", p->frame, p->id, n);
+			advance = true;
+			break;
+		}
 		case C_PARTY:
 			showParty(p);
 			showPartySpecies(p);
-			showMonAt(p, 0, 0);
+			for (int k = 0; k < 6; k++)
+				if (rd8(p, partyMon(0, k) + 19) & 2) showMonAt(p, 0, k);
 			showMonAt(p, 1, 0);
 			showMonAt(p, 1, 1);
 			showMonAddr(p, coopStatic("sCatches"), 9, 0);
@@ -2365,6 +2524,7 @@ static void frameCallback(struct mCoreThread* t) {
 		p->step = 0;
 		if (c->kind == C_PRESS || c->kind == C_WAIT) break;
 	}
+	if (p->crashStart) { p->crashStart--; keys = p->crashStart >= 4 ? 8 /* START */ : 0; }
 	p->core->setKeys(p->core, keys);
 }
 
@@ -2513,6 +2673,13 @@ static void loadScript(const char* path, int depth) {
         } else if (!strcmp(cmd, "smart_moves")) {
         	c.kind = C_SMART;
         	c.value = strtoul(a, NULL, 0);
+        } else if (!strcmp(cmd, "boxes")) {
+        	c.kind = C_BOXES;
+        } else if (!strcmp(cmd, "talk_obj")) {
+        	c.kind = C_TALK_OBJ;
+        	c.value = strtoul(a, NULL, 0);
+        	c.frames = n >= 4 ? atoi(b) : 3000;
+        	snprintf(c.text, sizeof(c.text), "talk_obj %s", a);
         } else if (!strcmp(cmd, "no_wild")) {
         	c.kind = C_NO_WILD;
         	c.value = strtoul(a, NULL, 0);
