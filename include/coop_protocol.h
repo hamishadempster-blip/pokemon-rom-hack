@@ -511,6 +511,22 @@ static inline void CoopProtocol_BeaconStep(struct CoopBeaconState *state, u8 par
         state->event = COOP_BEACON_EVT_APPLIED;
         return;
     }
+    // The partner saw this side's YES, applied, and went back to no
+    // request: its own YES lasted a frame or two, and this side can miss it
+    // (frozen while busy, or a frame skipped in catch-up). Only an applied
+    // partner leaves CONFIRM, so a partner no longer offering or answering
+    // means the change is done on that side: apply it here too.
+    if (state->phase == COOP_BEACON_CONFIRM
+        && partnerRequest != COOP_REQ_BEACON
+        && partnerRequest != COOP_REQ_BEACON_YES
+        && partnerRequest != COOP_REQ_BEACON_NO)
+    {
+        state->on = state->want;
+        state->phase = COOP_BEACON_IDLE;
+        state->request = COOP_REQ_NONE;
+        state->event = COOP_BEACON_EVT_APPLIED;
+        return;
+    }
     if (state->phase == COOP_BEACON_DECLINE && partnerRequest != COOP_REQ_BEACON)
     {
         state->phase = COOP_BEACON_IDLE;

@@ -1,0 +1,49 @@
+# JOURNEY 07 (main playthrough, no fixtures): CONTINUE journey_06's saves
+# in the Rustboro Centre, relink, Beacon ON (Kai uses the Twin Beacon, Rosa
+# accepts). Rosa leads into the gym; the gym trainers who spot the pair are
+# co-op fights; Rosa talks to Roxanne (the other player triggered the
+# previous story scenes) and the two take on Roxanne and Hiker Heath
+# together. Both saves are checked for the badge and the gym flag; then
+# both leave the gym and save. Driver aid: smart_moves.
+include continue.inc
+include relink.inc
+b expect coop.sLinkState 2
+b smart_moves 1
+include beacon_on.inc
+b mash_field 2000 B
+b party
+b walk 7 8 2000
+b cross DOWN 0 3 2000
+1 walk 27 19 5000
+1 until_map 11 3 3000
+0 wait 300
+0 walk 27 19 5000
+0 until_map 11 3 3000
+b dump gym
+b shot gym-entry
+1 walk 4 3 9000
+0 walk 5 4 9000
+b sync
+0 walk 5 3 3000
+b sync
+b dump before-roxanne
+b party
+1 press UP 2
+1 wait 20
+1 press A 2
+b until_cb2 BattleMainCB2 9000 A
+b expect coop.sInBattle 1
+b expect gBattlersCount 4
+b shot roxanne-start
+b mash_field 60000
+b dump after-roxanne
+b party
+b expect_flag 0x4F0 1
+b expect_flag 0x867 1
+b expect coop.sLinkState 2
+b shot badge
+b walk 5 19 4000
+b cross DOWN 0 3 3000
+b dump rustboro
+include save_again.inc
+b party

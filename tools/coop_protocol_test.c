@@ -245,6 +245,23 @@ int main(void)
         CoopProtocol_BeaconStep(&a, bReq, bSlot, 0);
         CoopProtocol_BeaconStep(&b, aReq, aSlot, 0);
         Expect(a.on == 0 && b.on == 0, "the beacon clears after the gym");
+
+        // Journey 07 (build 0xC0170133+): b answered YES, a saw it and
+        // applied at once; b was busy for the frame or two a sent YES and
+        // then only saw a's empty request. b used to wait in CONFIRM forever
+        // (a: Beacon ON, b: OFF).
+        memset(&a, 0, sizeof(a));
+        memset(&b, 0, sizeof(b));
+        CoopProtocol_BeaconOffer(&a, 1);
+        CoopProtocol_BeaconStep(&b, a.request, a.slot, 0);
+        CoopProtocol_BeaconAnswer(&b, 1);
+        CoopProtocol_BeaconStep(&a, b.request, b.slot, 0);   // a: OFFER -> CONFIRM
+        CoopProtocol_BeaconStep(&b, a.request, a.slot, 1);   // b busy: misses a's YES
+        CoopProtocol_BeaconStep(&a, b.request, b.slot, 0);   // a: applies
+        Expect(a.on == 1 && a.request == COOP_REQ_NONE, "the offerer applies on the echo");
+        CoopProtocol_BeaconStep(&b, a.request, a.slot, 0);   // b sees no request
+        Expect(b.on == 1 && b.phase == COOP_BEACON_IDLE && b.event == COOP_BEACON_EVT_APPLIED,
+               "a missed YES still turns the beacon on once the partner has applied");
     }
 
     {

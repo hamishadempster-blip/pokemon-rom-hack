@@ -1,0 +1,37 @@
+# DIAGNOSTIC FIXTURE (not the main run): one player's whole team goes down
+# in a co-op battle while the partner fights on (journey_06 saves).
+# Found in the main journey (segment 07): in the Roxanne co-op battle Kai's
+# last Pokemon fainted; Rosa chose a move ("Ready. Waiting for Kai...") and
+# both games then crawled at a few frames a second without finishing the
+# turn. Here, a co-op wild battle on Route 116: FIXTURE leaves Kai one
+# Pokemon at 1 HP (party data, the others at 0); it faints early and
+# Rosa must be able to finish the battle alone.
+include continue.inc
+include relink.inc
+b expect coop.sLinkState 2
+b smart_moves 1
+include beacon_on.inc
+b mash_field 2000 B
+b expect coop.sBeacon+1:1 1
+# FIXTURE: Kai (player 0): slot 0 at 1 HP, slots 1 and 2 at 0 HP (fainted).
+0 write gParties+86:2 1
+0 write gParties+186:2 0
+0 write gParties+286:2 0
+0 party
+1 party
+b walk 7 8 2000
+b cross DOWN 0 3 2000
+b walk 39 10 5000
+b cross RIGHT 0 31 3000
+# The first co-op wild battle on the way or in the grass.
+0 walk 7 15 6000
+1 walk 8 15 6000
+0 pace_until_battle 20000
+1 until_cb2 BattleMainCB2 20000 A
+b expect coop.sInBattle 1
+b expect gBattlersCount 4
+b shot wild-coop
+b mash_field 20000
+b expect coop.sInBattle 0
+b party
+b dump after

@@ -5,6 +5,7 @@
 #include "battle_controllers.h"
 #include "battle_main.h"
 #include "battle_setup.h"
+#include "trainer_see.h"
 #include "battle_pyramid.h"
 #include "constants/region_map_sections.h"
 #include "constants/battle_pyramid.h"
@@ -231,6 +232,11 @@ static EWRAM_DATA struct CoopInvite sGuestPairInvite = {0};
 // A joined wild fight starts once the question's script has ended: a wild
 // battle never resumes a script, so one left waiting would stay stuck.
 static EWRAM_DATA bool8 sJoinLaunchPending = FALSE;
+// Both players spotted by the same trainer: the partner's invite for a
+// trainer whose approach and intro are still playing here. It is answered
+// (joined) when this side reaches that battle, instead of a "busy" no.
+static EWRAM_DATA struct CoopInvite sSameTrainerInvite = {0};
+static EWRAM_DATA bool8 sSameTrainerPending = FALSE;
 
 static const u8 sText_BeaconNeedLink[] = _("Link from the CO-OP menu first.{PAUSE_UNTIL_PRESS}");
 static const u8 sText_BeaconWaiting[] = _("Still waiting on your partner.{PAUSE_UNTIL_PRESS}");
@@ -263,12 +269,16 @@ static u8 Coop_RivalId(void);
 static u8 Coop_SoloReasonHere(void);
 static void Coop_PollStory(void);
 static bool8 Coop_GuestBusy(void);
+static void Coop_SendReply(u8 kind, u16 seq);
 
 // Frames before another "went inside" note may show.
 static EWRAM_DATA u16 sPartnerPopupCooldown = 0;
 #define COOP_PARTNER_POPUP_COOLDOWN (60 * 20)
 
 #define COOP_FOLLOWUP_WOODS 30
+
+// CoopFrame.talkLocalId while that player is in a (solo) battle.
+#define COOP_TALK_IN_BATTLE 0xFE
 
 // Field frames the partner has reported COOP_ACT_BUSY in a row.
 static EWRAM_DATA u16 sPartnerBusyFrames = 0;
@@ -883,7 +893,7 @@ static void Coop_AnimateTalkNpc(void)
     u8 localId = sPartner.talkLocalId;
     if (gMain.callback2 != CB2_Overworld || !Coop_PartnerOnSameMap()
      || ScriptContext_IsEnabled() || ArePlayerFieldControlsLocked()
-     || localId == 0 || localId == 0xFF || localId == OBJ_EVENT_ID_COOP_PARTNER)
+     || localId == 0 || localId == 0xFF || localId == COOP_TALK_IN_BATTLE || localId == OBJ_EVENT_ID_COOP_PARTNER)
     {
         Coop_ReleaseTalkNpc();
         return;
@@ -965,6 +975,9 @@ static void Coop_FillFrame(struct CoopFrame *frame)
         for (i = 0; i < 3; i++)
             frame->legend[i] = save->legendaryOwner[i];
     }
+    // In a solo battle (frames keep coming, see Coop_LinkCallback).
+    if (gMain.inBattle)
+        frame->talkLocalId = COOP_TALK_IN_BATTLE;
     frame->activity = Coop_LocalActivity();
 }
 
@@ -1166,7 +1179,13 @@ void Coop_LinkCallback(void)
     struct CoopFrame frame;
     u16 words[8];
 
-    if (!gReceivedRemoteLinkPlayers || gLinkTransferringData || gMain.inBattle)
+    // A link battle owns the cable (its callback is removed at setup). In a
+    // solo battle keep sending the position frame (activity BUSY): silence
+    // there used to run the partner's quiet limit out, so a long solo fight
+    // read as "the link is recovering" on the other screen, and the
+    // partner's sprite vanished until the fight ended.
+    if (!gReceivedRemoteLinkPlayers || gLinkTransferringData
+     || (gMain.inBattle && (gBattleTypeFlags & BATTLE_TYPE_LINK)))
         return;
     Coop_FillFrame(&frame);
     CoopProtocol_Pack(words, &frame, COOP_SEND_AS_HELD_KEYS);
@@ -1444,6 +1463,35 @@ static bool8 Coop_IsMandatoryKind(u8 kind)
 
 // An optional invite never pulls a player out of a menu, a script, a trade,
 // or a prompt that is already on screen.
+// TRUE while this game is itself about to fight trainerId: its approach or
+// intro is playing, or its own invite for that trainer is out.
+static bool8 Coop_SameTrainerHere(u16 trainerId)
+{
+    if (trainerId == TRAINER_NONE || trainerId >= TRAINERS_COUNT || HasTrainerBeenFought(trainerId))
+        return FALSE;
+    if (sInBattle || gMain.inBattle || TRAINER_BATTLE_PARAM.opponentA != trainerId)
+        return FALSE;
+    if (sWaitingAck)
+        return sBattleKind == COOP_KIND_TRAINER;
+    return gNoOfApproachingTrainers != 0 && ScriptContext_IsEnabled();
+}
+
+static void Coop_JoinSameTrainer(const struct CoopInvite *invite)
+{
+    Coop_HideCallingMessage();
+    sSameTrainerPending = FALSE;
+    sBattleKind = COOP_KIND_TRAINER;
+    sBattleBadge = 0;
+    sBattleFlag = 0;
+    sLegendKind = 0;
+    sRivalFightStage = 0xFF;
+    sResumeScript = FALSE;
+    TRAINER_BATTLE_PARAM.opponentA = invite->trainerA;
+    TRAINER_BATTLE_PARAM.opponentB = invite->trainerB;
+    Coop_SendReply(COOP_KIND_ACK, invite->seq);
+    Coop_LaunchBattle(TRUE);
+}
+
 static bool8 Coop_GuestBusy(void)
 {
     return ScriptContext_IsEnabled()
@@ -1523,6 +1571,8 @@ static void Coop_HandleInvite(u32 playerId, const struct CoopInvite *invite)
 
     if (invite->kind == COOP_KIND_WITHDRAW)
     {
+        if (sSameTrainerPending && invite->seq == sSameTrainerInvite.seq)
+            sSameTrainerPending = FALSE;
         // The inviter stopped waiting; the open question becomes too late.
         if (sGuestPairPending && invite->seq == sGuestPairInvite.seq)
             sGuestPairTimer = 0xFFFF;
@@ -1595,6 +1645,24 @@ static void Coop_HandleInvite(u32 playerId, const struct CoopInvite *invite)
     if (Coop_IsOptionalKind(invite->kind))
     {
         u8 why = COOP_SOLO_NONE;
+
+        // The same trainer spotted both players. Both games run its approach
+        // and intro, and each would ask the other, hear "busy", and fight
+        // alone. Join instead: one fight, two players.
+        if (invite->kind == COOP_KIND_TRAINER && Coop_SameTrainerHere(invite->trainerA))
+        {
+            if (sWaitingAck)
+            {
+                // Both games already asked: link player 0's invite wins.
+                if (GetMultiplayerId() == 0)
+                    return;
+                Coop_JoinSameTrainer(invite);
+                return;
+            }
+            sSameTrainerInvite = *invite;
+            sSameTrainerPending = TRUE;
+            return;
+        }
 
         if (Coop_GuestBusy() || sGuestPairPending)
             why = COOP_SOLO_BUSY;
@@ -2816,6 +2884,17 @@ bool8 Coop_TryQueueOrdinaryDouble(void)
     // already stopped in Coop_BlockUnreadyMandatory.
     if (!Coop_HasBattleReadyLead())
         return FALSE;
+    // The partner, spotted by this same trainer, already asked: join it.
+    if (sSameTrainerPending)
+    {
+        sSameTrainerPending = FALSE;
+        if (category == COOP_CAT_OPTIONAL && sSameTrainerInvite.trainerA == trainerA)
+        {
+            sSoloNote = COOP_SOLO_NONE;
+            Coop_JoinSameTrainer(&sSameTrainerInvite);
+            return TRUE;
+        }
+    }
     trainerB = CoopProtocol_DistinctPartner(trainerA, TRAINER_BATTLE_PARAM.opponentB);
     sResumeScript = FALSE;
     sLegendKind = 0;
@@ -4115,6 +4194,10 @@ static u8 Coop_SoloReasonHere(void)
         return COOP_SOLO_RECOVERING;
     if (!Coop_PartnerOnSameMap())
         return COOP_SOLO_ELSEWHERE;
+    // The partner is in a fight of their own: no invite (it would wait out
+    // its whole timeout, unanswered).
+    if (sPartner.talkLocalId == COOP_TALK_IN_BATTLE)
+        return COOP_SOLO_BUSY;
     if (!Coop_HasBattleReadyLead())
         return COOP_SOLO_SELF_NOT_READY;
     if (Coop_InteractionBusy() || sPendingMessage != NULL)

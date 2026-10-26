@@ -1,3 +1,4 @@
+#include <signal.h>
 // Two linked mGBA cores, headless, driven by a script. See README.md.
 #include <mgba/core/core.h>
 #include <mgba/core/thread.h>
@@ -56,11 +57,12 @@ struct Player {
     unsigned encSaved[2], encForced;
     unsigned noWild;
     unsigned smartMoves;
+    int learnPhase, learnTarget; unsigned learnStart, partyBackFrame;
     unsigned strongBattlers;
     unsigned offField;
     unsigned char partyNote[600];
     unsigned patchAddr, patchOpcode, patchFrames;
-    int grindCount, grindInBattle;
+    int grindCount, grindInBattle, grindSwitched;
 };
 
 static struct Player P[2];
@@ -714,16 +716,73 @@ static unsigned autoKeys(struct Player* p, unsigned step) {
 	unsigned cbNow = rd32(p, sMain + 4) & ~1u;
 	bool battling = rd8(p, sMain + 0x439) & 2;
 	if (battling && partyCb && cbNow == partyCb) {
+		// Replacement or switch: move the cursor to a slot whose Pokemon
+		// can fight (HP > 0), then A (the mon) and A (SHIFT). Coming back
+		// from a summary screen, B first closes the submenu that opened it.
 		unsigned t = step % 120;
-		return t < 2 ? 0x80 : ((t >= 40 && t < 42) || (t >= 90 && t < 92)) ? 1 : 0;
+		if (p->learnPhase) { p->learnPhase = 0; p->partyBackFrame = p->frame; }
+		if (p->partyBackFrame && p->frame - p->partyBackFrame < 30) return (p->frame - p->partyBackFrame) < 2 ? 2 : 0;
+		int slot = (signed char)rd8(p, symAddr("gPartyMenu") + 9);
+		bool multi = rd32(p, symAddr("gBattleTypeFlags")) & (1u << 6);
+		bool usable = slot >= 0 && slot < (multi ? 3 : 6) && rd16(p, partyMon(0, slot) + 86) > 0;
+		if (!usable) return t < 2 ? 0x80 : 0;
+		return ((t >= 40 && t < 42) || (t >= 90 && t < 92)) ? 1 : 0;
 	}
-	if (battling && ((summaryMain && cbNow == summaryMain) || (summaryInit && cbNow == summaryInit)))
-		return (step % 24) < 2 ? 2 : 0;
 	// The summary screen's MainCB2 is static, and the symbol "MainCB2" may
 	// be another file's: anything in pokemon_summary_screen.c's code (the
-	// file is about 0x5C00 bytes around CB2_InitSummaryScreen) backs out.
-	if (battling && summaryInit && cbNow + 0x6000 > summaryInit && cbNow < summaryInit + 0x6000)
-		return (step % 24) < 2 ? 2 : 0;
+	// file is about 0x5C00 bytes around CB2_InitSummaryScreen) counts.
+	bool summary = (summaryMain && cbNow == summaryMain) || (summaryInit && cbNow == summaryInit)
+		|| (summaryInit && cbNow + 0x6000 > summaryInit && cbNow < summaryInit + 0x6000);
+	if (battling && summary) {
+		// In battle the summary screen only opens to pick a move to forget.
+		// Without smart_moves: back out (the move is not learned). With
+		// smart_moves: forget the weakest move (status moves count as 0
+		// power, HM moves are kept) when the new move is stronger.
+		if (!p->smartMoves) return (step % 24) < 2 ? 2 : 0;
+		if (!p->learnPhase) { p->learnPhase = 1; p->learnStart = step; p->learnTarget = -1; return 0; }
+		if (p->learnPhase == 1) {
+			if (step - p->learnStart < 60) return 0;
+			p->learnPhase = 2;
+			unsigned info = symAddr("gMovesInfo");
+			// The learner: the party mon whose personality and OT id the
+			// summary screen holds (its copy of the mon). This covers the
+			// battle's level-up and the evolution scene alike.
+			unsigned slot = 6, sum = rd32(p, symAddr("sMonSummaryScreen"));
+			for (unsigned o = 0; sum && o < 0x1000 && slot == 6; o += 4)
+				for (unsigned m = 0; m < 6; m++) {
+					unsigned pm = partyMon(0, m);
+					if (rd32(p, pm) && rd32(p, sum + o) == rd32(p, pm) && rd32(p, sum + o + 4) == rd32(p, pm + 4)) { slot = m; break; }
+				}
+			if (slot == 6) slot = rd8(p, rd32(p, symAddr("gBattleStruct")) + symValue("harness.expGetterOffset"));
+			unsigned mon = partyMon(0, slot < 6 ? slot : 0), personality = rd32(p, mon), key = personality ^ rd32(p, mon + 4);
+			static const char* order[24] = {"GAEM","GAME","GEAM","GEMA","GMAE","GMEA","AGEM","AGME","AEGM","AEMG","AMGE","AMEG",
+				"EGAM","EGMA","EAGM","EAMG","EMGA","EMAG","MGAE","MGEA","MAGE","MAEG","MEGA","MEAG"};
+			int a = (int)(strchr(order[personality % 24], 'A') - order[personality % 24]);
+			unsigned w0 = rd32(p, mon + 32 + a * 12) ^ key, w1 = rd32(p, mon + 32 + a * 12 + 4) ^ key;
+			unsigned mv[4] = { w0 & 0x7FF, (w0 >> 16) & 0x7FF, w1 & 0x7FF, (w1 >> 16) & 0x7FF };
+			unsigned learn = rd16(p, symAddr("gMoveToLearn"));
+			if (!learn) { p->learnTarget = -1; return 0; }
+			unsigned newPow = rd32(p, info + learn * 0x40 + 8) >> 23, minPow = 0xFFFF;
+			for (int i = 0; i < 4; i++) {
+				int hm = 0;
+				for (int k = 0; k < 8; k++) { char nm[16]; snprintf(nm, sizeof(nm), "harness.hm%d", k); if (mv[i] == symValue(nm)) hm = 1; }
+				if (hm || !mv[i]) continue;
+				unsigned pow = rd32(p, info + mv[i] * 0x40 + 8) >> 23;
+				if (pow < minPow) { minPow = pow; p->learnTarget = i; }
+			}
+			if (p->learnTarget >= 0 && newPow <= minPow) p->learnTarget = -1;
+			out("[f%06d p%d learn] slot %u moves %u,%u,%u,%u new %u (power %u): %s %d\n", p->frame, p->id, slot,
+			    mv[0], mv[1], mv[2], mv[3], learn, newPow, p->learnTarget >= 0 ? "forget slot" : "keep all", p->learnTarget);
+		}
+		unsigned dt = step - p->learnStart;
+		if (p->learnTarget < 0 || dt > 600) return (step % 24) < 2 ? 2 : 0;
+		if (dt < 90) return 0;
+		unsigned k = (dt - 90) / 16, r = (dt - 90) % 16;
+		if (k < (unsigned)p->learnTarget) return r < 2 ? 0x80 : 0;
+		if (k == (unsigned)p->learnTarget + 1) return r < 2 ? 1 : 0;
+		return 0;
+	}
+	if (!summary) p->learnPhase = 0;
 	if (facingPartner(p))
 		return 0;
 	return (step % 24) < 2 ? 1 : 0;
@@ -901,9 +960,34 @@ static void battleLog(struct Player* p) {
 	out("[f%06d p%d battle] %s |%s\n", p->frame, p->id, text, state);
 }
 
+// kill -USR1 <pid>: each core dumps its state (field, battle, screenshot)
+// on its next frame, for a run that has stopped making progress.
+static volatile sig_atomic_t sUsr1[2];
+static void onUsr1(int sig) { (void)sig; sUsr1[0] = sUsr1[1] = 1; }
+
 static void frameCallback(struct mCoreThread* t) {
 	struct Player* p = t->userData;
 	p->frame++;
+	if (sUsr1[p->id]) {
+		sUsr1[p->id] = 0;
+		out("[f%06d p%d usr1] cmd %d/%d step %d\n", p->frame, p->id, p->pc, p->ncmds, p->step);
+		dump(p, "usr1");
+		battleDump(p);
+		for (int tr = 0; tr < 4; tr++) {
+			char line[200]; int o = 0;
+			for (int sl = 0; sl < 6; sl++) {
+				unsigned mon = partyMon(tr, sl), pers = rd32(p, mon), key = pers ^ rd32(p, mon + 4);
+				unsigned sp = (rd32(p, mon + 32 + sSub0[pers % 24] * 12) ^ key) & 0x7FF;
+				o += snprintf(line + o, sizeof(line) - o, "%u:%u/%u ", (rd8(p, mon + 19) & 2) ? sp : 0, rd16(p, mon + 86), rd16(p, mon + 88));
+			}
+			out("[f%06d p%d usr1 party%d] %s\n", p->frame, p->id, tr, line);
+		}
+		out("[f%06d p%d usr1 idx] partyIdx=%04x %04x %04x %04x absent=%02x hitmarker=%08x\n", p->frame, p->id,
+		    rd16(p, symAddr("gBattlerPartyIndexes")), rd16(p, symAddr("gBattlerPartyIndexes") + 2),
+		    rd16(p, symAddr("gBattlerPartyIndexes") + 4), rd16(p, symAddr("gBattlerPartyIndexes") + 6),
+		    rd8(p, symAddr("gAbsentBattlerFlags")), rd32(p, symAddr("gHitMarker")));
+		writePng(p, "usr1");
+	}
 	snapVideo(p);
 	battleLog(p);
 	// FIXTURE `no_wild 1`: hold wild encounters off (map loads reset it).
@@ -928,13 +1012,41 @@ static void frameCallback(struct mCoreThread* t) {
 		// moves u16[4], currentPP u8[4] at +8). Unlike gBattleMons it is
 		// filled on the guest too, which runs controllers only.
 		unsigned res = rd32(p, symAddr("gBattleResources")), cur = symAddr("gMoveSelectionCursor"), info = symAddr("gMovesInfo");
+		// Score = power x type effectiveness against the healthier-looking
+		// foe x STAB (when gBattleMons is filled; the guest's may trail).
+		unsigned bm = symAddr("gBattleMons"), bmSize = symValue("harness.battleMonSize"), bmTypes = symValue("harness.battleMonTypes");
+		unsigned tsz = symValue("harness.typeSize"), ntypes = symValue("harness.numTypes"), bmHp = symValue("harness.battleMonHp");
+		unsigned chart = symAddr("gTypeEffectivenessTable");
 		for (int b = own; res && b < 4; b += 2) {
 			unsigned m = res + 0x10 + b * 0x200 + 4;
 			int best = -1; unsigned bestPow = 0;
 			for (int i = 0; i < 4; i++) {
 				unsigned mv = rd16(p, m + i * 2), pp = rd8(p, m + 8 + i);
 				if (!mv || !pp || mv >= 0x0E9C0u / 0x40) continue;
-				unsigned pow = rd32(p, info + mv * 0x40 + 8) >> 23;
+				unsigned word = rd32(p, info + mv * 0x40 + 8);
+				unsigned pow = word >> 23, mtype = (word >> 16) & 0x1F;
+				if (pow && bmSize && chart) {
+					unsigned bestEff = 0; int anyFoe = 0;
+					for (int f = (b & 1) ^ 1; f < 4; f += 2) {
+						unsigned fm = bm + f * bmSize;
+						if (!rd16(p, fm) || !rd16(p, fm + bmHp)) continue;
+						unsigned eff = 0x1000;
+						for (int t = 0; t < 2; t++) {
+							unsigned ft = tsz == 1 ? rd8(p, fm + bmTypes + t) : rd32(p, fm + bmTypes + t * tsz);
+							if (t == 1 && ft == (tsz == 1 ? rd8(p, fm + bmTypes) : rd32(p, fm + bmTypes))) break;
+							if (ft < ntypes && mtype < ntypes) eff = eff * rd16(p, chart + (mtype * ntypes + ft) * 2) / 0x1000;
+						}
+						anyFoe = 1;
+						if (eff > bestEff) bestEff = eff;
+					}
+					if (anyFoe) pow = pow * bestEff / 0x1000 * 4;
+					else pow *= 4;
+					unsigned am = bm + b * bmSize;
+					for (int t = 0; t < 2 && rd16(p, am); t++) {
+						unsigned at = tsz == 1 ? rd8(p, am + bmTypes + t) : rd32(p, am + bmTypes + t * tsz);
+						if (at == mtype) { pow = pow * 3 / 2; break; }
+					}
+				}
 				// smart_moves 2: a later move wins a tie (Ember over Scratch
 				// against a Ghost); 1 keeps the first.
 				if (best < 0 || pow > bestPow || (p->smartMoves == 2 && pow == bestPow)) { best = i; bestPow = pow; }
@@ -1467,13 +1579,55 @@ static void frameCallback(struct mCoreThread* t) {
                 dump(p, "fail"); writePng(p, "fail"); sFailures++;
                 p->grindCount = 0; p->grindInBattle = 0; advance = true; break;
             }
-            if (battling) { p->grindInBattle = 1; keys = autoKeys(p, p->step); break; }
+            if (battling || (c->addr && p->grindInBattle && (rd32(p, sMain + 4) & ~1u) == (symAddr("CB2_UpdatePartyMenu") & ~1u))) {
+                if (!p->grindInBattle) p->grindSwitched = 0;
+                p->grindInBattle = 1;
+                // grind_sw: at the first action menu, POKEMON, the slot,
+                // SHIFT; the trainee (lead) still shares the experience.
+                if (c->addr && !p->grindSwitched) {
+                    unsigned cb2 = rd32(p, sMain + 4) & ~1u, t = p->step % 20;
+                    if (cb2 == (symAddr("CB2_UpdatePartyMenu") & ~1u)) {
+                        int slot = (signed char)rd8(p, symAddr("gPartyMenu") + 9);
+                        if (t == 0) {
+                            if (slot != (int)c->addr) keys = 1u << 7;
+                            else { keys = 1; p->step += 60; p->grindSwitched = 2; }
+                        }
+                        break;
+                    }
+                    int atMenu = 0;
+                    unsigned funcs = symAddr("gBattlerControllerFuncs");
+                    for (int b = 0; b < 4; b++)
+                        if (!strcmp(symName(rd32(p, funcs + b * 4)), "HandleInputChooseAction")) atMenu = 1;
+                    if (atMenu) {
+                        unsigned cur = rd8(p, symAddr("gActionSelectionCursor"));
+                        if (t == 0) {
+                            if (cur & 1) keys = 1u << 5;
+                            else if (!(cur & 2)) keys = 1u << 7;
+                            else keys = 1;
+                        }
+                        break;
+                    }
+                    keys = (p->step % 24) < 2 ? 1 : 0;
+                    break;
+                }
+                if (p->grindSwitched == 2) {
+                    // The SHIFT submenu: confirm, then normal fighting.
+                    unsigned cb2 = rd32(p, sMain + 4) & ~1u;
+                    if (cb2 == (symAddr("CB2_UpdatePartyMenu") & ~1u)) { keys = (p->step % 30) == 0 ? 1 : 0; break; }
+                    p->grindSwitched = 1;
+                }
+                keys = autoKeys(p, p->step); break;
+            }
             if (!inField(p)) { keys = autoKeys(p, p->step); break; }
             if (p->grindInBattle) {
                 p->grindInBattle = 0;
                 p->grindCount++;
                 out("[f%06d p%d grind] battle %d done: lead lv=%u hp=%u/%u outcome=%u\n", p->frame, p->id, p->grindCount,
                     rd8(p, lead + 84), hp, maxhp, rd8(p, symAddr("gBattleOutcome")));
+            }
+            if (c->addr) {
+                unsigned sw = partyMon(0, c->addr), shp = rd16(p, sw + 86), smax = rd16(p, sw + 88);
+                if (shp * 100 < (unsigned)c->size * smax) { hp = shp; maxhp = smax; if (!hp) hp = 0; }
             }
             if (p->grindCount >= (int)c->value || hp == 0 || hp * 100 < (unsigned)c->size * maxhp) {
                 out("[p%d] grind stop after %d battles (lead hp %u/%u)\n", p->id, p->grindCount, hp, maxhp);
@@ -2178,6 +2332,15 @@ static void loadScript(const char* path, int depth) {
             c.value = strtoul(a, NULL, 0);
             c.size = atoi(b);
             c.frames = n >= 5 ? atoi(d) : 60000;
+        } else if (!strcmp(cmd, "grind_sw")) {
+            // grind_sw N PCT SLOT [timeout]: as grind, but each battle
+            // starts by switching the lead out for party slot SLOT (the
+            // lead shares the experience; Gen 6+ full experience).
+            c.kind = C_GRIND;
+            c.value = strtoul(a, NULL, 0);
+            c.size = atoi(b);
+            c.addr = strtoul(d, NULL, 0);
+            c.frames = n >= 6 ? atoi(e) : 60000;
         } else if (!strcmp(cmd, "pace_until_battle")) {
             // Walk up and down in place (grass) until a battle starts.
             c.kind = C_PACE;
@@ -2462,6 +2625,7 @@ static void quietLog(struct mLogger* l, int cat, enum mLogLevel lvl, const char*
 }
 
 int main(int argc, char** argv) {
+	signal(SIGUSR1, onUsr1);
 	if (argc < 6) {
 		fprintf(stderr, "usage: %s rom syms save0 save1 script [outdir] [maxframes]\n", argv[0]);
 		return 2;

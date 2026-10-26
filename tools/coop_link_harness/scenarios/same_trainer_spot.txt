@@ -1,0 +1,38 @@
+# Both players spotted by the same trainer (journey_06 saves: Rustboro
+# Centre, gym trainers unbeaten). Gameplay test, no fixtures.
+# Found in the main journey (segment 07): walking side by side into the
+# Rustboro Gym, Youngster Josh spotted both players at once. Each game ran
+# his approach and intro, asked the other, heard "busy", and both fought
+# him alone ("Solo: your partner is busy.").
+# Here: linked, Beacon ON, both stand below Josh and step into his sight line on the same frame;
+# Josh spots both. Expected: one co-op battle on both screens (4 battlers),
+# his trainer flag set on both saves afterwards, no second fight.
+# STAGGER=1 variant (same_trainer_spot_late): player 1 holds its A presses
+# for a while, so player 0's invite arrives while player 1's intro text is
+# still open; player 1 joins when its intro ends.
+include continue.inc
+include relink.inc
+b expect coop.sLinkState 2
+b smart_moves 1
+include beacon_on.inc
+b mash_field 2000 B
+b walk 7 8 2000
+b cross DOWN 0 3 2000
+0 walk 27 19 5000
+0 until_map 11 3 3000
+1 wait 200
+1 walk 27 19 5000
+1 until_map 11 3 3000
+b walk 5 16 3000
+b sync
+b dump lane
+# Both step into his sight line on the same frame.
+b press UP 8
+b until_cb2 BattleMainCB2 6000 A
+b expect coop.sInBattle 1
+b expect gBattlersCount 4
+b shot josh-coop
+b mash_field 30000
+b expect coop.sInBattle 0
+b expect_flag 0x640 1
+b dump after

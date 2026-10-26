@@ -36,9 +36,12 @@ for obj in coop coop_deal coop_outfit link battle_controllers battle_main start_
 done >> "$out/syms.txt"
 python3 - "$out/layout.bin" "$out/syms.txt" <<'PY_LAYOUT'
 import struct, sys
-values = struct.unpack('<IIIIIIIIII', open(sys.argv[1], 'rb').read())
+data = open(sys.argv[1], 'rb').read()
+values = struct.unpack('<%dI' % (len(data) // 4), data)
 with open(sys.argv[2], 'a') as f:
-    for name, value in zip(('saveVarsOffset', 'saveFlagsOffset', 'encryptionKeyOffset', 'storageBoxesOffset', 'boxMonSize', 'moneyOffset', 'dealOffset', 'partnerCaughtOffset', 'dexCaughtOffset', 'partnerDexValidOffset'), values):
+    for name, value in zip(('saveVarsOffset', 'saveFlagsOffset', 'encryptionKeyOffset', 'storageBoxesOffset', 'boxMonSize', 'moneyOffset', 'dealOffset', 'partnerCaughtOffset', 'dexCaughtOffset', 'partnerDexValidOffset', 'expGetterOffset',
+                              'hm0', 'hm1', 'hm2', 'hm3', 'hm4', 'hm5', 'hm6', 'hm7',
+                              'battleMonSize', 'battleMonTypes', 'typeSize', 'numTypes', 'battleMonHp'), values):
         f.write(f'{value:08x} 00000004 a harness.{name}\n')
 PY_LAYOUT
 echo "$out/coop_link_harness"
