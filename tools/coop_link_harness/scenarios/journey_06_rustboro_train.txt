@@ -1,0 +1,24 @@
+# JOURNEY 06 (main playthrough, no fixtures): CONTINUE journey_05's saves
+# in the Rustboro Centre. Both players put their new catch in front (Kai:
+# BUIZEL, Rosa: MARILL) and train it: four cycles in Route 104's north
+# grass (wild Lv3-5), then four on Route 116 (Lv6-8), healing at the
+# Centre after each. The Beacon stays off: every wild battle is solo.
+# Driver aids: smart_moves; grind (paces in grass, fights, stops at a
+# battle count or an HP floor).
+include continue.inc
+include relink.inc
+b expect coop.sLinkState 2
+b smart_moves 1
+b dump start
+include journey_lead_slot2.inc
+include journey_cycle_r104.inc
+include journey_cycle_r104.inc
+include journey_cycle_r104.inc
+include journey_cycle_r104.inc
+include journey_cycle_r116.inc
+include journey_cycle_r116.inc
+include journey_cycle_r116.inc
+include journey_cycle_r116.inc
+b dump trained
+include save_again.inc
+b party

@@ -373,6 +373,13 @@ static void showPartySpecies(struct Player* p) {
 		o += snprintf(line + o, sizeof(line) - o, "%u ", (rd8(p, mon + 19) & 2) ? (w & 0x7FF) : 0);
 	}
 	out("[f%06d p%d party-species] %s count=%u\n", p->frame, p->id, line, rd8(p, symAddr("gPartiesCount")));
+	o = 0;
+	for (int slot = 0; slot < 6; slot++) {
+		unsigned mon = partyMon(0, slot);
+		if (!(rd8(p, mon + 19) & 2)) break;
+		o += snprintf(line + o, sizeof(line) - o, "Lv%u %u/%u  ", rd8(p, mon + 84), rd16(p, mon + 86), rd16(p, mon + 88));
+	}
+	out("[f%06d p%d party-levels] %s\n", p->frame, p->id, line);
 }
 
 // Species and moves of a party slot of any trainer, decrypted.
@@ -1414,7 +1421,10 @@ static void frameCallback(struct mCoreThread* t) {
             }
             if (!p->grindInBattle) {
                 p->grindInBattle = 1;
-                unsigned sp = rd16(p, symAddr("gBattleMons") + 1 * 0x8C);
+                // The wild Pokemon is enemy party slot 0 (gBattleMons is
+                // not filled yet when the battle callback starts).
+                unsigned mon = partyMon(1, 0), personality = rd32(p, mon), key = personality ^ rd32(p, mon + 4);
+                unsigned sp = (rd32(p, mon + 32 + sSub0[personality % 24] * 12) ^ key) & 0x7FF;
                 char list[96]; snprintf(list, sizeof(list), ",%s,", c->text + 16);
                 char needle[16]; snprintf(needle, sizeof(needle), ",%u,", sp);
                 p->stable = strstr(list, needle) != NULL;
@@ -1430,16 +1440,15 @@ static void frameCallback(struct mCoreThread* t) {
             unsigned funcs = symAddr("gBattlerControllerFuncs");
             for (int b = 0; b < 4; b++)
                 if (!strcmp(symName(rd32(p, funcs + b * 4)), "HandleInputChooseAction")) atMenu = 1;
-            if (atMenu && !p->stable) {
-                unsigned t = p->step % 60;          // RUN: bottom right
-                keys = t == 0 ? (1u << 7) : t == 15 ? (1u << 4) : t == 30 ? 1 : 0;
-                break;
-            }
-            if (atMenu && p->grindCount < (int)c->value) {
-                unsigned t = p->step % 60;
-                if (t == 0) keys = 1u << 6;            // UP: top row
-                else if (t == 10) keys = 1u << 4;      // RIGHT: BAG
-                else if (t == 25) { keys = 1; p->grindCount++; out("[p%d] hunt: throw %d\n", p->id, p->grindCount); }
+            // Steer the action cursor (0 FIGHT, 1 BAG, 2 POKEMON, 3 RUN)
+            // to RUN or BAG by reading it, then press A.
+            if (atMenu && (!p->stable || p->grindCount < (int)c->value)) {
+                unsigned want = p->stable ? 1 : 3, t = p->step % 20;
+                unsigned cur = rd8(p, symAddr("gActionSelectionCursor"));
+                if (t != 0) { keys = 0; break; }
+                if ((cur & 1) != (want & 1)) keys = (want & 1) ? (1u << 4) : (1u << 5);
+                else if ((cur & 2) != (want & 2)) keys = (want & 2) ? (1u << 7) : (1u << 6);
+                else { keys = 1; if (p->stable) { p->grindCount++; out("[p%d] hunt: throw %d\n", p->id, p->grindCount); } p->step += 40; }
                 break;
             }
             if (atMenu) { keys = autoKeys(p, p->step); break; }
@@ -2070,7 +2079,7 @@ static void loadScript(const char* path, int depth) {
 			c.kind = C_HEX; c.addr = symAddr(a); c.size = atoi(b); c.value = 1; c.frames = n >= 5 ? (int)strtoul(d, NULL, 0) : 0;
 			snprintf(c.text, sizeof(c.text), "*%s+%s", a, n >= 5 ? d : "0");
 		} else if (!strcmp(cmd, "hex")) {
-			c.kind = C_HEX; c.addr = symAddr(a) + (n >= 5 ? strtoul(d, NULL, 0) : 0); c.size = n >= 4 ? atoi(b) : 16;
+			c.kind = C_HEX; c.addr = (a[0] == '0' && a[1] == 'x' ? strtoul(a, NULL, 16) : symAddr(a)) + (n >= 5 ? strtoul(d, NULL, 0) : 0); c.size = n >= 4 ? atoi(b) : 16;
 			strncpy(c.text, a, sizeof(c.text) - 1);
 		} else if (!strcmp(cmd, "dump")) {
 			c.kind = C_DUMP; strncpy(c.text, n >= 3 ? a : "-", sizeof(c.text) - 1);

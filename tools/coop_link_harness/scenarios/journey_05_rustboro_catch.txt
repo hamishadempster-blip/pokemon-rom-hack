@@ -1,0 +1,60 @@
+# JOURNEY 05 (main playthrough, no fixtures): CONTINUE journey_04's saves
+# in Rustboro, relink (the Beacon is off again after the reload, so wild
+# battles are each player's own). Player 1 leads into the Centre and both
+# heal; both buy ten POKe BALLS at the Mart; south to Route 104's north
+# grass, where each player hunts a counter for Roxanne's Rock types: Kai
+# (Torchic) a Water type (MARILL or BUIZEL), Rosa (Houndour) APPLIN or
+# MARILL. Anything else is run from. Back to the Centre, heal, save.
+# Driver aids: smart_moves, hunt (throws balls only at the listed species).
+include continue.inc
+include relink.inc
+b expect coop.sLinkState 2
+b expect coop.sBeacon+1:1 0
+b smart_moves 1
+b dump rustboro
+b party
+# Rosa leads to the Centre; Kai follows a few seconds later.
+1 walk 16 38 4000
+1 until_map 11 5 3000
+0 wait 300
+0 walk 16 38 4000
+0 until_map 11 5 3000
+include journey_heal_center.inc
+b walk 7 8 2000
+b cross DOWN 0 3 2000
+# Kai into the Mart first, Rosa after.
+0 walk 16 45 3000
+0 until_map 11 7 3000
+1 wait 200
+1 walk 16 45 3000
+1 until_map 11 7 3000
+include journey_buy_balls10.inc
+b walk 3 7 2000
+b cross DOWN 0 3 2000
+b dump after-mart
+# South to Route 104, separately: Kai first.
+0 walk 16 59 4000
+0 cross DOWN 0 19 3000
+1 wait 400
+1 walk 16 59 4000
+1 cross DOWN 0 19 3000
+0 walk 4 7 8000
+1 walk 6 7 8000
+b dump route104-grass
+0 hunt 6 183,418 120000
+1 hunt 6 840,183 120000
+b sync
+b party
+b dump after-hunt
+# Back north to Rustboro and the Centre.
+b walk 16 0 8000
+b cross UP 0 3 3000
+0 walk 16 38 4000
+0 until_map 11 5 3000
+1 wait 200
+1 walk 16 38 4000
+1 until_map 11 5 3000
+include journey_heal_center.inc
+b dump healed
+include save_again.inc
+b party

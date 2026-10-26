@@ -19,6 +19,7 @@
 #include "field_message_box.h"
 #include "link.h"
 #include "main.h"
+#include "union_room.h"
 #include "overworld.h"
 #include "field_weather.h"
 #include "palette.h"
@@ -2295,6 +2296,12 @@ u16 Coop_BeginLink(void)
 {
     if (sLinkState == COOP_LINK_UP)
         return TRUE;
+    // A Pokemon Center's wireless Union Room scan (run while unlinked)
+    // leaves the RFU serial and timer handlers installed and the comm type
+    // wireless, even after leaving the Center. The cable handshake then
+    // never gets a serial interrupt and LINK UP waits at "Cable players: 0".
+    UnionRoom_StopCenterScan();
+    RestoreSerialTimer3IntrHandlers();
     SetWirelessCommType0();
     gLinkType = LINKTYPE_COOP;
     SetSuppressLinkErrorMessage(TRUE);

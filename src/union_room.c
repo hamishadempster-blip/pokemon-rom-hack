@@ -3373,6 +3373,23 @@ static void Task_InitUnionRoom(u8 taskId)
     }
 }
 
+// Co-op: end the Center's wireless scan (frees its data, shuts the RFU
+// layer down) so the cable link can take the serial port.
+void UnionRoom_StopCenterScan(void)
+{
+    u8 taskId = FindTaskIdByFunc(Task_InitUnionRoom);
+
+    if (taskId != TASK_NONE && sWirelessLinkMain.uRoom != NULL)
+    {
+        sWirelessLinkMain.uRoom->state = 4;
+        Task_InitUnionRoom(taskId);
+    }
+    else if (gWirelessCommType != 0)
+    {
+        LinkRfu_Shutdown();
+    }
+}
+
 bool16 BufferUnionRoomPlayerName(void)
 {
     if (!ShouldCheckForUnionRoom())
