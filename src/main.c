@@ -22,6 +22,7 @@
 #include "text.h"
 #include "intro.h"
 #include "main.h"
+#include "coop_testhook.h"
 #include "trainer_hill.h"
 #include "test_runner.h"
 #include "constants/rgb.h"
@@ -145,6 +146,8 @@ void AgbMainLoop(void)
             rfu_waitREQComplete();
             DoSoftReset();
         }
+
+        CoopTest_Poll();
 
         if (Overworld_SendKeysToLinkIsRunning() == TRUE)
         {

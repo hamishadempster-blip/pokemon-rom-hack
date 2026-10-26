@@ -1,0 +1,25 @@
+# JOURNEY 29 (main playthrough, no fixtures): CONTINUE journey_27's saves
+# (Slateport Centre). Journey 28 lost to Brawly and Black Belt Reed (not
+# saved): Kai's Combusken (Lv18) went down to one Brick Break, Rosa's
+# Azumarill (Lv19) carried her side. Six more Route 110 cycles: the
+# WATTRELs lead and switch to Kai's COMBUSKEN (slot 1) and Rosa's AZUMARILL
+# (slot 2), towards the level cap (22).
+# Driver aids: smart_moves, heal_below, grind, switch_lead.
+include continue.inc
+include relink.inc
+b expect coop.sLinkState 2
+b smart_moves 1
+b heal_below 35 2
+b party
+0 switch_lead 1
+1 switch_lead 2
+include journey_cycle_r110.inc
+include journey_cycle_r110.inc
+include journey_cycle_r110.inc
+include journey_cycle_r110.inc
+include journey_cycle_r110.inc
+include journey_cycle_r110.inc
+b switch_lead 0
+b dump trained
+include save_again.inc
+b party

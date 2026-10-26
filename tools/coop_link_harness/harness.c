@@ -23,9 +23,10 @@
 #define MAX_CMDS 4096
 #define MAX_SYMS 500000
 
-enum { C_PARTNER, C_GOTO, C_HEX, C_PRESS, C_WAIT, C_SHOT, C_DUMP, C_BARRIER, C_UNTIL_CB2, C_UNTIL_FIELD, C_EXPECT, C_UNTIL_MEM, C_BATTLE, C_MENU, C_PARTY, C_FIXTURE, C_WRITE, C_LEAD, C_MOVE, C_SIX, C_VAR, C_FLAG, C_VS, C_EXPECT_FLAG, C_EXPECT_VAR, C_NO_OBJECT, C_MAP, C_OBJECT, C_TEXT_SPEED, C_PACE, C_MUTE, C_PARTNER_AT, C_ITEM, C_EXPECT_ITEM, C_UNTIL_TEXT, C_WARP, C_PC_COUNT, C_MONS, C_NO_COPIES, C_NOTE_MONEY, C_MONEY_GAIN, C_FORCE_ENC, C_EXPECT_RANGE, C_WALK, C_NO_WILD, C_CROSS, C_WALK_BATTLE, C_SMART, C_STRONG, C_UNTIL_TASK, C_MIRROR, C_SPECIES, C_NOTE_PARTY, C_SAME_PARTY, C_PATCH_RET, C_SLOT, C_TXN, C_MONEY_SAME, C_DEX, C_SWAP, C_GENDER, C_FILL, C_UNFILL, C_WRITEP, C_TINT, C_UNTIL_FTEXT, C_NICK, C_GRIND, C_CATCH, C_HUNT, C_SWITCH_LEAD, C_PARTY_SLOT, C_HEAL_BELOW, C_TALK_OBJ, C_BOXES };
+enum { C_PARTNER, C_GOTO, C_HEX, C_PRESS, C_WAIT, C_SHOT, C_DUMP, C_BARRIER, C_UNTIL_CB2, C_UNTIL_FIELD, C_EXPECT, C_UNTIL_MEM, C_BATTLE, C_MENU, C_PARTY, C_FIXTURE, C_WRITE, C_LEAD, C_MOVE, C_SIX, C_VAR, C_FLAG, C_VS, C_EXPECT_FLAG, C_EXPECT_VAR, C_NO_OBJECT, C_MAP, C_OBJECT, C_TEXT_SPEED, C_PACE, C_MUTE, C_PARTNER_AT, C_ITEM, C_EXPECT_ITEM, C_UNTIL_TEXT, C_WARP, C_PC_COUNT, C_MONS, C_NO_COPIES, C_NOTE_MONEY, C_MONEY_GAIN, C_FORCE_ENC, C_EXPECT_RANGE, C_WALK, C_NO_WILD, C_CROSS, C_WALK_BATTLE, C_SMART, C_STRONG, C_UNTIL_TASK, C_MIRROR, C_SPECIES, C_NOTE_PARTY, C_SAME_PARTY, C_PATCH_RET, C_SLOT, C_TXN, C_MONEY_SAME, C_DEX, C_SWAP, C_GENDER, C_FILL, C_UNFILL, C_WRITEP, C_TINT, C_UNTIL_FTEXT, C_NICK, C_GRIND, C_CATCH, C_HUNT, C_SWITCH_LEAD, C_PARTY_SLOT, C_HEAL_BELOW, C_TALK_OBJ, C_BOXES, C_TEST_HOOK, C_WATCH, C_EXPECT_WRITES };
 
 struct Cmd {
+	unsigned args[8];
 	int kind;
 	unsigned keys;
 	int frames;
@@ -58,6 +59,7 @@ struct Player {
     unsigned noWild;
     unsigned crashStart; // frames of START to leave an assert crash screen
     unsigned boxSum; int boxSumSet;
+    unsigned boxCopy[240];
     int crashSeen;
     unsigned smartMoves;
     int learnPhase, learnTarget; unsigned learnStart, partyBackFrame;
@@ -76,6 +78,8 @@ static struct Player P[2];
 // box watch below). Every store into it is logged with the code doing it.
 static unsigned sWatchLo[2], sWatchHi[2];
 static int sWatchLogs[2];
+static int sWatchHits[2];
+static int sWatchQuiet[2];
 static struct ARMMemory sOrigMem[2];
 static int watchPlayer(struct ARMCore* cpu) {
 	for (int i = 0; i < 2; i++)
@@ -85,7 +89,9 @@ static int watchPlayer(struct ARMCore* cpu) {
 static const char* symAt(unsigned addr);
 static void out(const char* fmt, ...);
 static void watchHit(struct ARMCore* cpu, int id, uint32_t addr, const char* kind) {
+	sWatchHits[id]++;
 	if (sWatchLogs[id] >= 400) return;
+	if (sWatchQuiet[id] && sWatchLogs[id] >= 20) return;
 	// The save-block shuffle at each battle start copies the boxes legitimately.
 	if (!strncmp(symAt(cpu->gprs[14]), "MoveSaveBlocks", 14)) return;
 	sWatchLogs[id]++;
@@ -168,7 +174,17 @@ static void loadSyms(const char* path) {
 	fclose(f);
 }
 
+static int symCacheGet(const char* name, int kind, unsigned* out);
+static void symCachePut(const char* name, int kind, unsigned val);
+static unsigned symValueSlow(const char* name);
 static unsigned symValue(const char* name) {
+	unsigned v;
+	if (symCacheGet(name, 2, &v)) return v;
+	v = symValueSlow(name);
+	symCachePut(name, 2, v);
+	return v;
+}
+static unsigned symValueSlow(const char* name) {
 	char* end = NULL;
 	unsigned v = strtoul(name, &end, 0);
 	if (end != name && *end == '\0') return v;
@@ -188,22 +204,61 @@ static unsigned symValue(const char* name) {
 
 // Lookups are memoised by name (a copy is kept), so per-frame lookups stay
 // cheap.
-#define SYM_CACHE 256
+#define SYM_CACHE 4096
 static struct { char* key; unsigned val; int kind; } sSymCache[SYM_CACHE];
 static pthread_mutex_t sSymLock = PTHREAD_MUTEX_INITIALIZER;
+static unsigned symHash(const char* name, int kind) {
+	unsigned h = 2166136261u ^ (unsigned)kind;
+	for (; *name; name++) h = (h ^ (unsigned char)*name) * 16777619u;
+	return h & (SYM_CACHE - 1);
+}
 static int symCacheGet(const char* name, int kind, unsigned* out) {
 	int found = 0;
 	pthread_mutex_lock(&sSymLock);
-	for (int i = 0; i < SYM_CACHE && sSymCache[i].key; i++)
+	for (unsigned i = symHash(name, kind), n = 0; n < SYM_CACHE && sSymCache[i].key; i = (i + 1) & (SYM_CACHE - 1), n++)
 		if (sSymCache[i].kind == kind && !strcmp(sSymCache[i].key, name)) { *out = sSymCache[i].val; found = 1; break; }
 	pthread_mutex_unlock(&sSymLock);
 	return found;
 }
 static void symCachePut(const char* name, int kind, unsigned val) {
 	pthread_mutex_lock(&sSymLock);
-	for (int i = 0; i < SYM_CACHE; i++)
+	for (unsigned i = symHash(name, kind), n = 0; n < SYM_CACHE; i = (i + 1) & (SYM_CACHE - 1), n++)
 		if (!sSymCache[i].key) { sSymCache[i].key = strdup(name); sSymCache[i].kind = kind; sSymCache[i].val = val; break; }
 	pthread_mutex_unlock(&sSymLock);
+}
+
+// Address-sorted indexes for the reverse lookups (built once).
+static int* sTextIdx; static int sNumText;   // code symbols, by address
+static int* sDataIdx; static int sNumData;   // everything >= 0x02000000
+static pthread_once_t sIdxOnce = PTHREAD_ONCE_INIT;
+static int cmpTextIdx(const void* a, const void* b) {
+	unsigned x = sSyms[*(const int*)a].addr & ~1u, y = sSyms[*(const int*)b].addr & ~1u;
+	return x < y ? -1 : x > y;
+}
+static int cmpDataIdx(const void* a, const void* b) {
+	unsigned x = sSyms[*(const int*)a].addr, y = sSyms[*(const int*)b].addr;
+	return x < y ? -1 : x > y;
+}
+static void buildSymIdx(void) {
+	sTextIdx = malloc(sizeof(int) * (sNumSyms + 1));
+	sDataIdx = malloc(sizeof(int) * (sNumSyms + 1));
+	for (int i = 0; i < sNumSyms; i++) {
+		if ((sSyms[i].type == 'T' || sSyms[i].type == 't') && sSyms[i].addr >= 0x02000000) sTextIdx[sNumText++] = i;
+		if (sSyms[i].addr >= 0x02000000) sDataIdx[sNumData++] = i;
+	}
+	// Stable: keep the first symbol (file order) among equal addresses.
+	qsort(sTextIdx, sNumText, sizeof(int), cmpTextIdx);
+	qsort(sDataIdx, sNumData, sizeof(int), cmpDataIdx);
+}
+// Index of the last entry with address <= addr (or -1).
+static int idxFloor(const int* idx, int n, unsigned addr, int text) {
+	int lo = 0, hi = n - 1, best = -1;
+	while (lo <= hi) {
+		int mid = (lo + hi) / 2;
+		unsigned a = text ? (sSyms[idx[mid]].addr & ~1u) : sSyms[idx[mid]].addr;
+		if (a <= addr) { best = mid; lo = mid + 1; } else hi = mid - 1;
+	}
+	return best;
 }
 
 static unsigned symAddrSlow(const char* name);
@@ -227,34 +282,36 @@ static const char* symName(unsigned addr) {
 	static __thread char buf[80];
 	addr &= ~1u;
 	if (!addr) return "NULL";
-	for (int i = 0; i < sNumSyms; i++)
-		if ((sSyms[i].type == 'T' || sSyms[i].type == 't') && (sSyms[i].addr & ~1u) == addr)
-			return sSyms[i].name;
+	pthread_once(&sIdxOnce, buildSymIdx);
+	int k = idxFloor(sTextIdx, sNumText, addr, 1);
+	if (k >= 0 && (sSyms[sTextIdx[k]].addr & ~1u) == addr) {
+		// The first-listed symbol at this address, as the linear scan gave.
+		while (k > 0 && (sSyms[sTextIdx[k - 1]].addr & ~1u) == addr) k--;
+		int best = sTextIdx[k];
+		for (int j = k; j < sNumText && (sSyms[sTextIdx[j]].addr & ~1u) == addr; j++)
+			if (sTextIdx[j] < best) best = sTextIdx[j];
+		return sSyms[best].name;
+	}
 	snprintf(buf, sizeof(buf), "%08x", addr);
 	return buf;
 }
 
 static const char* symAtAny(unsigned addr) {
 	static __thread char buf[120];
-	int best = -1;
-	for (int i = 0; i < sNumSyms; i++)
-		if (sSyms[i].addr >= 0x02000000 && sSyms[i].addr <= addr && (best < 0 || sSyms[i].addr > sSyms[best].addr))
-			best = i;
-	if (best < 0) snprintf(buf, sizeof(buf), "%08x", addr);
-	else snprintf(buf, sizeof(buf), "%s+0x%x", sSyms[best].name, addr - sSyms[best].addr);
+	pthread_once(&sIdxOnce, buildSymIdx);
+	int k = idxFloor(sDataIdx, sNumData, addr, 0);
+	if (k < 0) snprintf(buf, sizeof(buf), "%08x", addr);
+	else { int best = sDataIdx[k]; snprintf(buf, sizeof(buf), "%s+0x%x", sSyms[best].name, addr - sSyms[best].addr); }
 	return buf;
 }
 
 static const char* symAt(unsigned addr) {
 	static __thread char buf[120];
-	int best = -1;
 	addr &= ~1u;
-	for (int i = 0; i < sNumSyms; i++)
-		if ((sSyms[i].type == 'T' || sSyms[i].type == 't') && sSyms[i].addr >= 0x02000000 && (sSyms[i].addr & ~1u) <= addr
-		 && (best < 0 || sSyms[i].addr > sSyms[best].addr))
-			best = i;
-	if (best < 0) snprintf(buf, sizeof(buf), "%08x", addr);
-	else snprintf(buf, sizeof(buf), "%s+0x%x", sSyms[best].name, addr - (sSyms[best].addr & ~1u));
+	pthread_once(&sIdxOnce, buildSymIdx);
+	int k = idxFloor(sTextIdx, sNumText, addr, 1);
+	if (k < 0) snprintf(buf, sizeof(buf), "%08x", addr);
+	else { int best = sTextIdx[k]; snprintf(buf, sizeof(buf), "%s+0x%x", sSyms[best].name, addr - (sSyms[best].addr & ~1u)); }
 	return buf;
 }
 
@@ -1325,12 +1382,17 @@ static void frameCallback(struct mCoreThread* t) {
 			for (int k = 0; k < 240; k++) sum = sum * 31 + rd32(p, st + 4 + k * 4);
 			if (p->boxSumSet && sum != p->boxSum) {
 				struct ARMCore* cpu = ((struct GBA*)p->core->board)->cpu;
-				out("[f%06d p%d BOXWATCH] box 1 changed: cb1=%s cb2=%s pc=%s lr=%s\n", p->frame, p->id,
+				char diff[200]; int dn = 0, nd = 0;
+				for (int k = 0; k < 240; k++) {
+					unsigned w = rd32(p, st + 4 + k * 4);
+					if (w != p->boxCopy[k]) { if (nd < 4 && dn < 180) dn += snprintf(diff + dn, sizeof(diff) - dn, " +%03x:%08x>%08x", k * 4, p->boxCopy[k], w); nd++; }
+				}
+				out("[f%06d p%d BOXWATCH] box 1 changed (%d words%s): cb1=%s cb2=%s pc=%s lr=%s\n", p->frame, p->id, nd, nd ? diff : "",
 				    symName(rd32(p, sMain)), symName(rd32(p, sMain + 4)), symAt(cpu->gprs[15]), symAt(cpu->gprs[14]));
-				dump(p, "boxwatch");
 			}
+			for (int k = 0; k < 240; k++) p->boxCopy[k] = rd32(p, st + 4 + k * 4);
 			p->boxSum = sum; p->boxSumSet = 1;
-			if (getenv("WATCH_BOX")) { installWatch(p); sWatchLo[p->id] = st + 4; sWatchHi[p->id] = st + 4 + 960; }
+			if (getenv("WATCH_BOX") && !sWatchQuiet[p->id]) { installWatch(p); sWatchLo[p->id] = st + 4; sWatchHi[p->id] = st + 4 + 960; }
 		}
 	}
 	// An assert crash screen (debug builds) waits for START. Record it once
@@ -1730,10 +1792,12 @@ static void frameCallback(struct mCoreThread* t) {
 			if (p->barrierReached < c->barrier) p->barrierReached = c->barrier;
 			advance = P[1 - p->id].barrierReached >= c->barrier || P[1 - p->id].done;
 			pthread_mutex_unlock(&sLock);
-			// Waiting for the partner while in a battle (a wild Pokemon on
-			// the last step, or the partner's fight joined): play it out
-			// instead of standing at its first message (a player would).
-			if (!advance) {
+			// SYNC_PLAY=1 (the journey runner): waiting for the partner while
+			// in a battle (a wild Pokemon on the last step, or the partner's
+			// fight joined), play it out instead of standing at its first
+			// message (a player would). Off for the regression scenarios,
+			// which hold battles at a sync on purpose.
+			if (!advance && getenv("SYNC_PLAY")) {
 				static unsigned battleCb2;
 				if (!battleCb2) battleCb2 = symAddr("BattleMainCB2") & ~1u;
 				if ((rd32(p, sMain + 4) & ~1u) == battleCb2)
@@ -1954,6 +2018,9 @@ static void frameCallback(struct mCoreThread* t) {
                 p->grindInBattle = 1;
                 // grind_sw: at the first action menu, POKEMON, the slot,
                 // SHIFT; the trainee (lead) still shares the experience.
+                // A wild double (two in front already): no switch.
+                if (c->addr && !p->grindSwitched && (rd32(p, symAddr("gBattleTypeFlags")) & 1))
+                    p->grindSwitched = 1;
                 if (c->addr && !p->grindSwitched) {
                     unsigned cb2 = rd32(p, sMain + 4) & ~1u, t = p->step % 20;
                     if (cb2 == (symAddr("CB2_UpdatePartyMenu") & ~1u)) {
@@ -2423,6 +2490,38 @@ static void frameCallback(struct mCoreThread* t) {
             advance = true;
             break;
         }
+		case C_TEST_HOOK: {
+			unsigned mb = symAddr("gCoopTestMailbox");
+			if (p->step == 0) {
+				for (int k = 0; k < 8; k++) p->core->busWrite16(p->core, mb + 6 + k * 2, c->args[k]);
+				p->core->busWrite16(p->core, mb + 4, c->value);
+				p->core->busWrite16(p->core, mb + 22, 0);
+				p->core->busWrite32(p->core, mb, 0x7E57C0DEu);
+				out("[f%06d p%d TEST HELPER] %s %u %u %u %u %u %u %u\n", p->frame, p->id, c->text,
+				    c->args[0], c->args[1], c->args[2], c->args[3], c->args[4], c->args[5], c->args[6]);
+			}
+			if (rd32(p, mb) == 0) {
+				unsigned r = rd16(p, mb + 22);
+				if (r != 1) { out("[p%d] FAIL %s refused (result %u)\n", p->id, c->text, r); sFailures++; }
+				advance = true; break;
+			}
+			if (++p->step >= c->frames) { out("[p%d] FAIL %s: mailbox never served\n", p->id, c->text); sFailures++; advance = true; }
+			break;
+		}
+		case C_WATCH:
+			// watch SYM OFFSET LEN: log every store into that range (the
+			// box watch is replaced); expect_writes N checks the count.
+			installWatch(p);
+			sWatchLo[p->id] = c->addr; sWatchHi[p->id] = c->addr + c->value;
+			sWatchHits[p->id] = 0; sWatchLogs[p->id] = 0; sWatchQuiet[p->id] = 1;
+			out("[p%d] watch %08x..%08x\n", p->id, sWatchLo[p->id], sWatchHi[p->id]);
+			advance = true;
+			break;
+		case C_EXPECT_WRITES:
+			if (sWatchHits[p->id] != (int)c->value) { out("[p%d] FAIL %d stores in the watched range, expected %u\n", p->id, sWatchHits[p->id], c->value); sFailures++; }
+			else out("[p%d] ok %d stores in the watched range\n", p->id, sWatchHits[p->id]);
+			advance = true;
+			break;
 		case C_BOXES: {
 			// boxes: every occupied PC box slot (species and moves, decrypted).
 			unsigned st = rd32(p, symAddr("gPokemonStoragePtr"));
@@ -2672,6 +2771,22 @@ static void loadScript(const char* path, int depth) {
         	c.value = strtoul(a, NULL, 0);
         } else if (!strcmp(cmd, "smart_moves")) {
         	c.kind = C_SMART;
+        	c.value = strtoul(a, NULL, 0);
+        } else if (!strcmp(cmd, "test_mon") || !strcmp(cmd, "test_level") || !strcmp(cmd, "test_heal") || !strcmp(cmd, "test_item")) {
+        	// TEST HELPER (combat assistance, recorded in the log): the ROM's
+        	// harness-only mailbox, gCoopTestMailbox (src/coop_testhook.c).
+        	c.kind = C_TEST_HOOK;
+        	c.value = !strcmp(cmd, "test_mon") ? 1 : !strcmp(cmd, "test_level") ? 2 : !strcmp(cmd, "test_heal") ? 3 : 4;
+        	memset(c.args, 0, sizeof(c.args));
+        	sscanf(line, "%*s %*s %u %u %u %u %u %u %u %u", &c.args[0], &c.args[1], &c.args[2], &c.args[3], &c.args[4], &c.args[5], &c.args[6], &c.args[7]);
+        	snprintf(c.text, sizeof(c.text), "%s", cmd);
+        	c.frames = 600;
+        } else if (!strcmp(cmd, "watch")) {
+        	c.kind = C_WATCH;
+        	c.addr = symAddr(a) + strtoul(b, NULL, 0);
+        	c.value = strtoul(d, NULL, 0);
+        } else if (!strcmp(cmd, "expect_writes")) {
+        	c.kind = C_EXPECT_WRITES;
         	c.value = strtoul(a, NULL, 0);
         } else if (!strcmp(cmd, "boxes")) {
         	c.kind = C_BOXES;

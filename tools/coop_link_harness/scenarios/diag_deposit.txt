@@ -1,0 +1,9 @@
+# DIAGNOSTIC (driver check, no story change kept): the Centre PC deposit
+# includes, from journey_29's saves (Slateport Centre).
+include continue.inc
+include journey_p0_deposit_slot3.inc
+0 walk 7 4 2000
+b sync
+include journey_p1_deposit_slot4.inc
+b boxes
+b party

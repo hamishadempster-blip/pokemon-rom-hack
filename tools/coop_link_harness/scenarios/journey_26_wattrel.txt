@@ -1,0 +1,46 @@
+# JOURNEY 26 (main playthrough, no fixtures): CONTINUE journey_25's saves
+# (Slateport Centre; museum done on both saves).
+# Counters for Brawly's Fighting types: each catches a WATTREL
+# (Electric/Flying) on Route 110 with the new NEST BALLS.
+#  - Relink; the Beacon stays OFF (solo hunting).
+#  - Route 110 south grass: hunt WATTREL (others are run from).
+#  - North past Birch (each save's PokeNAV registration scene).
+#  - Back to the Slateport Centre: heal, save.
+# Driver aids: smart_moves, heal_below, hunt.
+include continue.inc
+include relink.inc
+b expect coop.sLinkState 2
+b expect coop.sBeacon+1:1 0
+b smart_moves 1
+b heal_below 35 2
+b dump start
+b walk 7 8 2000
+b cross DOWN 0 1 2000
+b walk 17 0 8000
+b cross UP 0 25 3000
+b dump route110
+0 walk 11 94 6000
+1 walk 13 95 6000
+0 hunt 6 1328 150000
+1 hunt 6 1328 150000
+b sync
+b party
+# North past Birch.
+0 walk 8 84 6000
+0 mash_field 6000
+1 wait 300
+1 walk 9 84 6000
+1 mash_field 6000
+b sync
+b dump after-birch
+b expect_var 0x40DA 2
+b walk 17 99 8000
+b cross DOWN 0 1 3000
+0 walk 19 19 6000
+0 until_map 9 11 3000
+1 wait 200
+1 walk 19 19 6000
+1 until_map 9 11 3000
+include journey_heal_center.inc
+include save_again.inc
+b party

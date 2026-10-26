@@ -1,0 +1,5 @@
+include continue.inc
+include relink.inc
+b smart_moves 1
+b heal_below 35 2
+include journey_cycle_r110.inc

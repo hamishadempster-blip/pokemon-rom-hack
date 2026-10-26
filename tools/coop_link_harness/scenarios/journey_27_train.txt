@@ -1,0 +1,30 @@
+# JOURNEY 27 (main playthrough, no fixtures): CONTINUE journey_26's saves
+# (Slateport Centre; each has a new WATTREL in slot 5).
+#  - Relink (Beacon OFF: solo training).
+#  - WATTREL to the front; eight Route 110 cycles, each battle opening with
+#    a switch to SHROOMISH (slot 5; Grass resists the Electric types there),
+#    so Wattrel shares the experience. (A first try with Wattrel alone saw
+#    it faint within two battles: `27a_wattrel_alone.log`.)
+#  - Heal, save in the Centre.
+# Driver aids: smart_moves, heal_below, grind, switch_lead.
+include continue.inc
+include relink.inc
+b expect coop.sLinkState 2
+b smart_moves 1
+b heal_below 35 2
+include journey_p0_slot5_front.inc
+include journey_p1_slot5_front.inc
+b party
+b switch_lead 5
+include journey_cycle_r110.inc
+include journey_cycle_r110.inc
+include journey_cycle_r110.inc
+include journey_cycle_r110.inc
+include journey_cycle_r110.inc
+include journey_cycle_r110.inc
+include journey_cycle_r110.inc
+include journey_cycle_r110.inc
+b switch_lead 0
+b dump trained
+include save_again.inc
+b party

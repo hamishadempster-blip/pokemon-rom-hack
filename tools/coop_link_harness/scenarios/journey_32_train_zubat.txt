@@ -1,0 +1,34 @@
+# JOURNEY 32 (main playthrough, no fixtures): CONTINUE journey_31's saves
+# (Dewford Centre; ZUBAT in front: Kai [Zubat, Combusken, Buizel, Nincada,
+# Shroomish, Wattrel], Rosa [Zubat, Skiddo, Azumarill, Houndour, Shroomish,
+# Wattrel]).
+#  - Relink (Beacon OFF: solo training).
+#  - Ten Granite Cave cycles; each battle opens with a switch to a strong
+#    member (Kai: Combusken, slot 1; Rosa: Azumarill, slot 2) so Zubat
+#    shares the experience; it evolves into GOLBAT at 22.
+#  - Heal, save.
+# Driver aids: smart_moves, heal_below, grind, switch_lead.
+include continue.inc
+include relink.inc
+b expect coop.sLinkState 2
+b smart_moves 1
+b heal_below 35 2
+b party
+0 switch_lead 1
+1 switch_lead 2
+include journey_cycle_granite.inc
+include journey_cycle_granite.inc
+include journey_cycle_granite.inc
+include journey_cycle_granite.inc
+include journey_cycle_granite.inc
+# Milestone save halfway.
+include save_again.inc
+include journey_cycle_granite.inc
+include journey_cycle_granite.inc
+include journey_cycle_granite.inc
+include journey_cycle_granite.inc
+include journey_cycle_granite.inc
+b switch_lead 0
+b dump trained
+include save_again.inc
+b party

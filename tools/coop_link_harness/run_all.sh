@@ -106,6 +106,8 @@ if [ -n "${SEG6:-}" ]; then
 	run nametag SAVE0="$SEG6/p0.sav" SAVE1="$SEG6/p1.sav"
 	# LINK UP after a Centre visit made while unlinked, and inside a Centre.
 	run centre_link SAVE0="$SEG6/p0.sav" SAVE1="$SEG6/p1.sav"
+	# Block continuations with no open block (playthrough finding #18).
+	run link_stray_block SAVE0="$SEG6/p0.sav" SAVE1="$SEG6/p1.sav"
 	# One trainer, two of his Pokemon down on one turn, one left in reserve.
 	run coop_one_trainer_faints SAVE0="$SEG6/p0.sav" SAVE1="$SEG6/p1.sav"
 	run lighting_link SAVE0="$SEG6/p0.sav" SAVE1="$SEG6/p1.sav" RTC_EPOCH0=1699963200 RTC_EPOCH1=1699923600

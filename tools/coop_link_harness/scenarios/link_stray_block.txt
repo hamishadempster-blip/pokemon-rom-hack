@@ -1,0 +1,28 @@
+# REGRESSION (fixtures; playthrough finding #18): block continuations that
+# arrive with no open block must not be written anywhere. In the playthrough
+# a full send queue dropped an INIT_BLOCK, the receiver kept writing the
+# continuations at a growing offset past gBlockRecvBuffer and into the PC
+# boxes. From any linked pair of saves (run_all uses story_seg6).
+# FIXTURES: player 1's receive state for player 0 is set to "complete, far
+# along" (pos 0x5A0 >= size 0x100); player 0 is made to send a 64-byte block
+# body without its INIT (its block sender started at the CONT stage).
+# Expected: no stores into the EWRAM after gBlockRecvBuffer (old code: one
+# per continuation, from ProcessRecvCmds); the link stays up.
+include continue.inc
+include relink.inc
+b expect coop.sLinkState 2
+b wait 120
+1 watch gBlockRecvBuffer 0x500 0xC00
+1 write link.sBlockRecv:2 0x5A0
+1 write link.sBlockRecv+2:2 0x100
+0 write link.sBlockSend:2 0
+0 write link.sBlockSend+2:2 0x40
+0 write link.sBlockSend+4:4 gBlockSendBuffer
+0 write link.sBlockSend+8:1 1
+0 write gLinkCallback:4 LinkCB_BlockSend
+b wait 240
+1 expect_writes 0
+b expect coop.sLinkState 2
+b wait 600
+b expect coop.sLinkState 2
+b dump after

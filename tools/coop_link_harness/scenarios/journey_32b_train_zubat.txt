@@ -1,0 +1,33 @@
+# JOURNEY 32b (main playthrough, no fixtures): checkpoint j32m = Kai's
+# journey-31 save (Dewford Centre, untrained ZUBAT in front) + Rosa's
+# journey-32 milestone save (five cycles done, Zubat ~Lv18). In journey 32
+# Kai's driver hung in a wild DOUBLE battle (expansion cave doubles): its
+# switch-to-slot step chose a Pokemon already on the field (driver fixed:
+# no switch in doubles). Kai's part from then on was lost.
+#  - Relink (Beacon OFF). Ten Granite Cave cycles for both (Kai switching
+#    to Combusken, Rosa to Azumarill), milestone saves every four.
+# Driver aids: smart_moves, heal_below, grind, switch_lead.
+include continue.inc
+include relink.inc
+b expect coop.sLinkState 2
+b smart_moves 1
+b heal_below 35 2
+b party
+0 switch_lead 1
+1 switch_lead 2
+include journey_cycle_granite.inc
+include journey_cycle_granite.inc
+include journey_cycle_granite.inc
+include journey_cycle_granite.inc
+include save_again.inc
+include journey_cycle_granite.inc
+include journey_cycle_granite.inc
+include journey_cycle_granite.inc
+include journey_cycle_granite.inc
+include save_again.inc
+include journey_cycle_granite.inc
+include journey_cycle_granite.inc
+b switch_lead 0
+b dump trained
+include save_again.inc
+b party
