@@ -4,20 +4,14 @@
 1 menu_to POKEMON
 1 press A 2
 1 wait 90
-1 press DOWN 2
-1 wait 16
+1 party_slot 1
 1 press A 2
 1 wait 30
 1 press DOWN 2
 1 wait 16
 1 press A 2
 1 wait 30
-1 press DOWN 2
-1 wait 16
-1 press DOWN 2
-1 wait 16
-1 press DOWN 2
-1 wait 16
+1 party_slot 4
 1 press A 2
 1 wait 60
 1 press B 2

@@ -23,7 +23,7 @@
 #define MAX_CMDS 4096
 #define MAX_SYMS 500000
 
-enum { C_PARTNER, C_GOTO, C_HEX, C_PRESS, C_WAIT, C_SHOT, C_DUMP, C_BARRIER, C_UNTIL_CB2, C_UNTIL_FIELD, C_EXPECT, C_UNTIL_MEM, C_BATTLE, C_MENU, C_PARTY, C_FIXTURE, C_WRITE, C_LEAD, C_MOVE, C_SIX, C_VAR, C_FLAG, C_VS, C_EXPECT_FLAG, C_EXPECT_VAR, C_NO_OBJECT, C_MAP, C_OBJECT, C_TEXT_SPEED, C_PACE, C_MUTE, C_PARTNER_AT, C_ITEM, C_EXPECT_ITEM, C_UNTIL_TEXT, C_WARP, C_PC_COUNT, C_MONS, C_NO_COPIES, C_NOTE_MONEY, C_MONEY_GAIN, C_FORCE_ENC, C_EXPECT_RANGE, C_WALK, C_NO_WILD, C_CROSS, C_WALK_BATTLE, C_SMART, C_STRONG, C_UNTIL_TASK, C_MIRROR, C_SPECIES, C_NOTE_PARTY, C_SAME_PARTY, C_PATCH_RET, C_SLOT, C_TXN, C_MONEY_SAME, C_DEX, C_SWAP, C_GENDER, C_FILL, C_UNFILL, C_WRITEP, C_TINT, C_UNTIL_FTEXT, C_NICK, C_GRIND, C_CATCH, C_HUNT, C_SWITCH_LEAD };
+enum { C_PARTNER, C_GOTO, C_HEX, C_PRESS, C_WAIT, C_SHOT, C_DUMP, C_BARRIER, C_UNTIL_CB2, C_UNTIL_FIELD, C_EXPECT, C_UNTIL_MEM, C_BATTLE, C_MENU, C_PARTY, C_FIXTURE, C_WRITE, C_LEAD, C_MOVE, C_SIX, C_VAR, C_FLAG, C_VS, C_EXPECT_FLAG, C_EXPECT_VAR, C_NO_OBJECT, C_MAP, C_OBJECT, C_TEXT_SPEED, C_PACE, C_MUTE, C_PARTNER_AT, C_ITEM, C_EXPECT_ITEM, C_UNTIL_TEXT, C_WARP, C_PC_COUNT, C_MONS, C_NO_COPIES, C_NOTE_MONEY, C_MONEY_GAIN, C_FORCE_ENC, C_EXPECT_RANGE, C_WALK, C_NO_WILD, C_CROSS, C_WALK_BATTLE, C_SMART, C_STRONG, C_UNTIL_TASK, C_MIRROR, C_SPECIES, C_NOTE_PARTY, C_SAME_PARTY, C_PATCH_RET, C_SLOT, C_TXN, C_MONEY_SAME, C_DEX, C_SWAP, C_GENDER, C_FILL, C_UNFILL, C_WRITEP, C_TINT, C_UNTIL_FTEXT, C_NICK, C_GRIND, C_CATCH, C_HUNT, C_SWITCH_LEAD, C_PARTY_SLOT, C_HEAL_BELOW };
 
 struct Cmd {
 	int kind;
@@ -64,6 +64,7 @@ struct Player {
     unsigned patchAddr, patchOpcode, patchFrames;
     int grindCount, grindInBattle, grindSwitched;
     int switchLead, switchState;
+    int healPct, healState, healsLeft, healTarget, healUses; unsigned healFrame;
 };
 
 static struct Player P[2];
@@ -752,6 +753,86 @@ static unsigned autoKeys(struct Player* p, unsigned step) {
 			}
 		}
 	}
+	// heal_below PCT [USES] (driver aid): at this player's action menu, when
+	// its Pokemon is below PCT% HP, use a POTION or SUPER POTION from the
+	// bag on it (up to USES times per battle).
+	if (!battling) { p->healState = 0; p->healsLeft = -1; }
+	if (battling && p->healPct) {
+		static unsigned bagCb;
+		if (!bagCb) bagCb = symAddr("CB2_BagMenuRun") & ~1u;
+		if (p->healsLeft < 0) p->healsLeft = p->healUses;
+		unsigned bm = symAddr("gBattleMons"), bmSize = symValue("harness.battleMonSize");
+		unsigned bmHp = symValue("harness.battleMonHp"), bmMax = symValue("harness.battleMonMaxHp");
+		unsigned t = step % 20;
+		if (p->healState == 0 && p->healsLeft > 0) {
+			int me = -1;
+			unsigned funcs = symAddr("gBattlerControllerFuncs");
+			for (int b = 0; b < 4; b++)
+				if (!strcmp(symName(rd32(p, funcs + b * 4)), "HandleInputChooseAction")) me = b;
+			if (me >= 0) {
+				unsigned hp = rd16(p, bm + me * bmSize + bmHp), mx = rd16(p, bm + me * bmSize + bmMax);
+				// The potion's place in the ITEMS pocket list.
+				unsigned pocket = symAddr("gBagPockets"), slots = rd32(p, pocket), cap = rd16(p, pocket + 4) & 0x3FF;
+				int k = -1, n = 0;
+				for (unsigned i = 0; i < cap && i < 64; i++) {
+					unsigned id = rd16(p, slots + i * 4);
+					if (!id) continue;
+					if (k < 0 && (id == 28 || id == 29)) k = n;
+					n++;
+				}
+				if (hp && mx && hp * 100 < (unsigned)p->healPct * mx && k >= 0) {
+					p->healState = 1; p->healTarget = k; p->healFrame = p->frame;
+					out("[f%06d p%d heal] battler %d hp %u/%u: potion at list %d\n", p->frame, p->id, me, hp, mx, k);
+				}
+			}
+		}
+		if (p->healState && p->frame - p->healFrame > 1500) { p->healState = 0; p->healsLeft--; }   // give up
+		if (p->healState == 1) {
+			if (cbNow == bagCb) {
+				unsigned bp = symAddr("gBagPosition");
+				unsigned pk = rd8(p, bp + 5);
+				if (t != 0) return 0;
+				if (pk != 0) return 1u << 5;
+				int idx = rd16(p, bp + 8) + rd16(p, bp + 18);
+				if (idx < p->healTarget) return 1u << 7;
+				if (idx > p->healTarget) return 1u << 6;
+				p->healState = 2;
+				return 1;
+			}
+			int atMenu = 0;
+			unsigned funcs = symAddr("gBattlerControllerFuncs");
+			for (int b = 0; b < 4; b++)
+				if (!strcmp(symName(rd32(p, funcs + b * 4)), "HandleInputChooseAction")) atMenu = 1;
+			if (atMenu) {
+				unsigned cur = rd8(p, symAddr("gActionSelectionCursor"));
+				if (t != 0) return 0;
+				if (!(cur & 1)) return 1u << 4;
+				if (cur & 2) return 1u << 6;
+				return 1;
+			}
+			return 0;
+		}
+		if (p->healState == 2) {
+			// The item's small menu (USE first), then the party menu.
+			if (partyCb && cbNow == partyCb) { p->healState = 3; return 0; }
+			return (step % 30) == 0 ? 1 : 0;
+		}
+		if (p->healState == 3) {
+			if (partyCb && cbNow == partyCb) {
+				int slot = (signed char)rd8(p, symAddr("gPartyMenu") + 9);
+				if (t != 0) return 0;
+				if (slot != 0) return 1u << 6;
+				p->healState = 4;
+				return 1;
+			}
+			return 0;
+		}
+		if (p->healState == 4) {
+			if (partyCb && cbNow == partyCb) return (step % 30) == 0 ? 1 : 0;   // "HP was restored" text
+			p->healState = 0; p->healsLeft--;
+			out("[f%06d p%d heal] used, %d left this battle\n", p->frame, p->id, p->healsLeft);
+		}
+	}
 	if (battling && partyCb && cbNow == partyCb) {
 		// Replacement or switch: move the cursor to a slot whose Pokemon
 		// can fight (HP > 0), then A (the mon) and A (SHIFT). Coming back
@@ -1080,11 +1161,12 @@ static void frameCallback(struct mCoreThread* t) {
 		// foe x STAB (when gBattleMons is filled; the guest's may trail).
 		unsigned bm = symAddr("gBattleMons"), bmSize = symValue("harness.battleMonSize"), bmTypes = symValue("harness.battleMonTypes");
 		unsigned tsz = symValue("harness.typeSize"), ntypes = symValue("harness.numTypes"), bmHp = symValue("harness.battleMonHp");
-		unsigned chart = symAddr("gTypeEffectivenessTable");
+		unsigned chart = symAddr("gTypeEffectivenessTable"), esz = symValue("harness.effSize");
 		for (int b = own; res && b < 4; b += 2) {
 			unsigned m = res + 0x10 + b * 0x200 + 4;
-			int best = -1; unsigned bestPow = 0;
+			int best = -1; unsigned bestPow = 0; int bestFoe = -1;
 			for (int i = 0; i < 4; i++) {
+				int foeHere = -1;
 				unsigned mv = rd16(p, m + i * 2), pp = rd8(p, m + 8 + i);
 				if (!mv || !pp || mv >= 0x0E9C0u / 0x40) continue;
 				unsigned word = rd32(p, info + mv * 0x40 + 8);
@@ -1098,10 +1180,10 @@ static void frameCallback(struct mCoreThread* t) {
 						for (int t = 0; t < 2; t++) {
 							unsigned ft = tsz == 1 ? rd8(p, fm + bmTypes + t) : rd32(p, fm + bmTypes + t * tsz);
 							if (t == 1 && ft == (tsz == 1 ? rd8(p, fm + bmTypes) : rd32(p, fm + bmTypes))) break;
-							if (ft < ntypes && mtype < ntypes) eff = eff * rd16(p, chart + (mtype * ntypes + ft) * 2) / 0x1000;
+							if (ft < ntypes && mtype < ntypes) eff = eff * rd16(p, chart + (mtype * ntypes + ft) * esz) / 0x1000;
 						}
 						anyFoe = 1;
-						if (eff > bestEff) bestEff = eff;
+						if (eff > bestEff) { bestEff = eff; foeHere = f; }
 					}
 					if (anyFoe) pow = pow * bestEff / 0x1000 * 4;
 					else pow *= 4;
@@ -1113,9 +1195,13 @@ static void frameCallback(struct mCoreThread* t) {
 				}
 				// smart_moves 2: a later move wins a tie (Ember over Scratch
 				// against a Ghost); 1 keeps the first.
-				if (best < 0 || pow > bestPow || (p->smartMoves == 2 && pow == bestPow)) { best = i; bestPow = pow; }
+				if (best < 0 || pow > bestPow || (p->smartMoves == 2 && pow == bestPow)) { best = i; bestPow = pow; bestFoe = foeHere; }
 			}
 			if (best >= 0) p->core->busWrite8(p->core, cur + b, best);
+			// Aim at the foe that move hurts most when the game asks for a
+			// target (doubles).
+			if (bestFoe >= 0 && !strcmp(symName(rd32(p, symAddr("gBattlerControllerFuncs") + b * 4)), "HandleInputChooseTarget"))
+				p->core->busWrite8(p->core, symAddr("gMultiUsePlayerCursor"), bestFoe);
 		}
 	}
     // Controlled application-heartbeat outage: serial hardware keeps running.
@@ -1130,8 +1216,18 @@ static void frameCallback(struct mCoreThread* t) {
 		unsigned cb2 = rd32(p, sMain + 4);
 		if (cb2 != sLastCb2[p->id]) {
 			sLastCb2[p->id] = cb2;
-			if (sCb2Logs[p->id]++ < 30)
-				out("[f%06d p%d] cb2 %08x %s\n", p->frame, p->id, cb2, symName(cb2));
+			const char* nm = symName(cb2);
+			if (sCb2Logs[p->id]++ < 30 || strstr(nm, "LinkError") || strstr(nm, "ErrorMessage") || strstr(nm, "SoftReset") || strstr(nm, "Copyright"))
+				out("[f%06d p%d] cb2 %08x %s\n", p->frame, p->id, cb2, nm);
+			// A link error screen is never expected in co-op play: record it.
+			if (strstr(nm, "CB2_LinkError")) {
+				out("[f%06d p%d] LINK ERROR SCREEN: wireless=%u linkStatus=%08x errOccurred=%u suppress=%u hold=%u recvPlayers=%u\n", p->frame, p->id,
+				    rd8(p, symAddr("gWirelessCommType")), rd32(p, symAddr("gLinkStatus")), rd8(p, symAddr("gLinkErrorOccurred")),
+				    rd8(p, symAddr("gSuppressLinkErrorMessage")), rd8(p, symAddr("gCoopHoldLink")), rd8(p, symAddr("gReceivedRemoteLinkPlayers")));
+				dump(p, "linkerror");
+				battleDump(p);
+				writePng(p, "linkerror");
+			}
 		}
 	}
 	recordSide(p);
@@ -1189,6 +1285,23 @@ static void frameCallback(struct mCoreThread* t) {
         }
         case C_STRONG:
             p->strongBattlers = c->value;
+            advance = true;
+            break;
+        case C_PARTY_SLOT: {
+            // In SWITCH (and Softboiled) mode the moving cursor is slotId2.
+            unsigned act = rd8(p, symAddr("gPartyMenu") + 11);
+            int slot = (signed char)rd8(p, symAddr("gPartyMenu") + ((act == 8 || act == 10) ? 10 : 9));
+            if (slot == (int)c->value) { out("[p%d] party cursor at slot %d\n", p->id, slot); advance = true; break; }
+            if (++p->step >= c->frames) { out("[p%d] FAIL party cursor at %d, wanted %u\n", p->id, slot, c->value); sFailures++; advance = true; break; }
+            keys = (p->step % 16) == 0 ? (slot < (int)c->value ? (1u << 7) : (1u << 6)) : 0;
+            break;
+        }
+        case C_HEAL_BELOW:
+            p->healPct = c->value;
+            p->healUses = c->size;
+            p->healState = 0;
+            p->healsLeft = -1;
+            out("[p%d] heal_below %u%% (%d per battle)\n", p->id, c->value, c->size);
             advance = true;
             break;
         case C_SWITCH_LEAD:
@@ -2402,6 +2515,17 @@ static void loadScript(const char* path, int depth) {
             c.value = strtoul(a, NULL, 0);
             c.size = atoi(b);
             c.frames = n >= 5 ? atoi(d) : 60000;
+        } else if (!strcmp(cmd, "heal_below")) {
+            // heal_below PCT [USES]: driver aid, see autoKeys. 0 turns it off.
+            c.kind = C_HEAL_BELOW;
+            c.value = strtoul(a, NULL, 0);
+            c.size = n >= 4 ? atoi(b) : 2;
+        } else if (!strcmp(cmd, "party_slot")) {
+            // party_slot N [timeout]: in the party menu, move the cursor to
+            // slot N (the menu remembers the last slot when reopened).
+            c.kind = C_PARTY_SLOT;
+            c.value = strtoul(a, NULL, 0);
+            c.frames = n >= 4 ? atoi(b) : 600;
         } else if (!strcmp(cmd, "switch_lead")) {
             // switch_lead SLOT: driver aid, see autoKeys. 0 turns it off.
             c.kind = C_SWITCH_LEAD;

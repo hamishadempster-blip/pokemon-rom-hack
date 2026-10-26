@@ -82,14 +82,14 @@ include journey_p1_slot3_front.inc
 b party
 0 switch_lead 3
 1 switch_lead 3
-include journey_cycle_r116_s3.inc
-include journey_cycle_r116_s3.inc
-include journey_cycle_r116_s3.inc
-include journey_cycle_r116_s3.inc
-include journey_cycle_r116_s3.inc
-include journey_cycle_r116_s3.inc
-include journey_cycle_r116_s3.inc
-include journey_cycle_r116_s3.inc
+include journey_cycle_r116_sw.inc
+include journey_cycle_r116_sw.inc
+include journey_cycle_r116_sw.inc
+include journey_cycle_r116_sw.inc
+include journey_cycle_r116_sw.inc
+include journey_cycle_r116_sw.inc
+include journey_cycle_r116_sw.inc
+include journey_cycle_r116_sw.inc
 b dump trained
 b switch_lead 0
 include save_again.inc

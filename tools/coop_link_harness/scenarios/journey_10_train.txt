@@ -1,0 +1,23 @@
+# JOURNEY 10 (main playthrough, no fixtures): CONTINUE journey_08's saves
+# in the Rustboro Centre. Journey 09 lost the Roxanne rematch narrowly
+# (Roxanne's three and Anorith down; Lileep and Onix left) and did not
+# save. More training toward the level cap (16) before the next try:
+# Kai leads with Shroomish and switches to Buizel (slot 3); Rosa leads with
+# Shroomish and switches to Houndour (slot 2). Five Route 116 cycles, heal,
+# save. Driver aids: smart_moves, grind, switch_lead.
+include continue.inc
+include relink.inc
+b expect coop.sLinkState 2
+b smart_moves 1
+b party
+0 switch_lead 3
+1 switch_lead 2
+include journey_cycle_r116_sw.inc
+include journey_cycle_r116_sw.inc
+include journey_cycle_r116_sw.inc
+include journey_cycle_r116_sw.inc
+include journey_cycle_r116_sw.inc
+b switch_lead 0
+b dump trained
+include save_again.inc
+b party

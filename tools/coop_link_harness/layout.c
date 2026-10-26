@@ -21,4 +21,6 @@ const u32 harnessSaveLayout[] = {
     sizeof(enum Type),
     NUMBER_OF_MON_TYPES,
     offsetof(struct BattlePokemon, hp),
+    sizeof(uq4_12_t),
+    offsetof(struct BattlePokemon, maxHP),
 };
