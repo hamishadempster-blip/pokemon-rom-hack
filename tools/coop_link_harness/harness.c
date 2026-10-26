@@ -23,7 +23,7 @@
 #define MAX_CMDS 4096
 #define MAX_SYMS 500000
 
-enum { C_PARTNER, C_GOTO, C_HEX, C_PRESS, C_WAIT, C_SHOT, C_DUMP, C_BARRIER, C_UNTIL_CB2, C_UNTIL_FIELD, C_EXPECT, C_UNTIL_MEM, C_BATTLE, C_MENU, C_PARTY, C_FIXTURE, C_WRITE, C_LEAD, C_MOVE, C_SIX, C_VAR, C_FLAG, C_VS, C_EXPECT_FLAG, C_EXPECT_VAR, C_NO_OBJECT, C_MAP, C_OBJECT, C_TEXT_SPEED, C_PACE, C_MUTE, C_PARTNER_AT, C_ITEM, C_EXPECT_ITEM, C_UNTIL_TEXT, C_WARP, C_PC_COUNT, C_MONS, C_NO_COPIES, C_NOTE_MONEY, C_MONEY_GAIN, C_FORCE_ENC, C_EXPECT_RANGE, C_WALK, C_NO_WILD, C_CROSS, C_WALK_BATTLE, C_SMART, C_STRONG, C_UNTIL_TASK, C_MIRROR, C_SPECIES, C_NOTE_PARTY, C_SAME_PARTY, C_PATCH_RET, C_SLOT, C_TXN, C_MONEY_SAME, C_DEX, C_SWAP, C_GENDER, C_FILL, C_UNFILL, C_WRITEP, C_TINT, C_UNTIL_FTEXT, C_NICK, C_GRIND, C_CATCH, C_HUNT };
+enum { C_PARTNER, C_GOTO, C_HEX, C_PRESS, C_WAIT, C_SHOT, C_DUMP, C_BARRIER, C_UNTIL_CB2, C_UNTIL_FIELD, C_EXPECT, C_UNTIL_MEM, C_BATTLE, C_MENU, C_PARTY, C_FIXTURE, C_WRITE, C_LEAD, C_MOVE, C_SIX, C_VAR, C_FLAG, C_VS, C_EXPECT_FLAG, C_EXPECT_VAR, C_NO_OBJECT, C_MAP, C_OBJECT, C_TEXT_SPEED, C_PACE, C_MUTE, C_PARTNER_AT, C_ITEM, C_EXPECT_ITEM, C_UNTIL_TEXT, C_WARP, C_PC_COUNT, C_MONS, C_NO_COPIES, C_NOTE_MONEY, C_MONEY_GAIN, C_FORCE_ENC, C_EXPECT_RANGE, C_WALK, C_NO_WILD, C_CROSS, C_WALK_BATTLE, C_SMART, C_STRONG, C_UNTIL_TASK, C_MIRROR, C_SPECIES, C_NOTE_PARTY, C_SAME_PARTY, C_PATCH_RET, C_SLOT, C_TXN, C_MONEY_SAME, C_DEX, C_SWAP, C_GENDER, C_FILL, C_UNFILL, C_WRITEP, C_TINT, C_UNTIL_FTEXT, C_NICK, C_GRIND, C_CATCH, C_HUNT, C_SWITCH_LEAD };
 
 struct Cmd {
 	int kind;
@@ -63,6 +63,7 @@ struct Player {
     unsigned char partyNote[600];
     unsigned patchAddr, patchOpcode, patchFrames;
     int grindCount, grindInBattle, grindSwitched;
+    int switchLead, switchState;
 };
 
 static struct Player P[2];
@@ -715,6 +716,42 @@ static unsigned autoKeys(struct Player* p, unsigned step) {
 	}
 	unsigned cbNow = rd32(p, sMain + 4) & ~1u;
 	bool battling = rd8(p, sMain + 0x439) & 2;
+	// switch_lead SLOT (driver aid): in a solo battle, the first action is to
+	// switch the lead out for party slot SLOT, so a weak lead shares the
+	// experience (Gen 6+ full experience) without fighting. 0 is off.
+	if (!battling) p->switchState = 0;
+	if (battling && p->switchLead && p->switchState < 3 && !(rd32(p, symAddr("gBattleTypeFlags")) & (1u << 6))) {
+		unsigned t = step % 20;
+		if (partyCb && cbNow == partyCb) {
+			int slot = (signed char)rd8(p, symAddr("gPartyMenu") + 9);
+			if (rd8(p, symAddr("gPartyMenu") + 11) == 1) p->switchState = 3;   // forced replacement: normal handling
+			else if (p->switchState == 2) return (step % 30) == 0 ? 1 : 0;      // SHIFT in the submenu
+			else if (t == 0) {
+				if (slot != p->switchLead) return 1u << 7;
+				p->switchState = 2;
+				return 1;
+			} else return 0;
+		} else if (p->switchState == 2) {
+			p->switchState = 3;
+		} else {
+			int atMenu = 0;
+			unsigned funcs = symAddr("gBattlerControllerFuncs");
+			for (int b = 0; b < 4; b++)
+				if (!strcmp(symName(rd32(p, funcs + b * 4)), "HandleInputChooseAction")) atMenu = 1;
+			if (atMenu) {
+				if (rd16(p, partyMon(0, p->switchLead) + 86) == 0
+				 || rd16(p, symAddr("gBattlerPartyIndexes")) == (unsigned)p->switchLead) { p->switchState = 3; }
+				else {
+					unsigned cur = rd8(p, symAddr("gActionSelectionCursor"));
+					p->switchState = 1;
+					if (t != 0) return 0;
+					if (cur & 1) return 1u << 5;
+					if (!(cur & 2)) return 1u << 7;
+					return 1;
+				}
+			}
+		}
+	}
 	if (battling && partyCb && cbNow == partyCb) {
 		// Replacement or switch: move the cursor to a slot whose Pokemon
 		// can fight (HP > 0), then A (the mon) and A (SHIFT). Coming back
@@ -723,8 +760,15 @@ static unsigned autoKeys(struct Player* p, unsigned step) {
 		if (p->learnPhase) { p->learnPhase = 0; p->partyBackFrame = p->frame; }
 		if (p->partyBackFrame && p->frame - p->partyBackFrame < 30) return (p->frame - p->partyBackFrame) < 2 ? 2 : 0;
 		int slot = (signed char)rd8(p, symAddr("gPartyMenu") + 9);
-		bool multi = rd32(p, symAddr("gBattleTypeFlags")) & (1u << 6);
-		bool usable = slot >= 0 && slot < (multi ? 3 : 6) && rd16(p, partyMon(0, slot) + 86) > 0;
+		unsigned bflags = rd32(p, symAddr("gBattleTypeFlags"));
+		bool multi = bflags & (1u << 6), dbl = bflags & 1;
+		// An optional switch (the "Will you switch?" prompt; the menu's action
+		// is not SEND_OUT): keep the Pokemon on the field, B out. While the
+		// menu is open the party data is in battle order (the menu reorders
+		// it): slot 0 (and slot 1 in an ordinary double) is on the field.
+		if (rd8(p, symAddr("gPartyMenu") + 11) != 1) return (step % 30) < 2 ? 2 : 0;
+		int first = (dbl && !multi) ? 2 : 1;
+		bool usable = slot >= first && slot < (multi ? 3 : 6) && rd16(p, partyMon(0, slot) + 86) > 0;
 		if (!usable) return t < 2 ? 0x80 : 0;
 		return ((t >= 40 && t < 42) || (t >= 90 && t < 92)) ? 1 : 0;
 	}
@@ -958,6 +1002,26 @@ static void battleLog(struct Player* p) {
 		n += snprintf(state + n, sizeof(state) - n, " b%u=%u:%u/%u%s", b, rd16(p, mons + b * 0x8C),
 		              rd16(p, mons + b * 0x8C + 42), rd16(p, mons + b * 0x8C + 46), (absent >> b) & 1 ? "(absent)" : "");
 	out("[f%06d p%d battle] %s |%s\n", p->frame, p->id, text, state);
+	// BATTLE_PARTY=1: the local player and partner party arrays (species:HP)
+	// with each battle line, to follow switches and replacements.
+	static int partyLog = -1;
+	if (partyLog < 0) { const char* e = getenv("BATTLE_PARTY"); partyLog = e && e[0] == '1'; }
+	if (partyLog) {
+		char line[300]; int o = 0;
+		for (int tr = 0; tr < 3; tr += 2) {
+			o += snprintf(line + o, sizeof(line) - o, "%s[", tr ? " partner" : "player");
+			for (int sl = 0; sl < 6; sl++) {
+				unsigned mon = partyMon(tr, sl), pers = rd32(p, mon), key = pers ^ rd32(p, mon + 4);
+				unsigned sp = (rd32(p, mon + 32 + sSub0[pers % 24] * 12) ^ key) & 0x7FF;
+				o += snprintf(line + o, sizeof(line) - o, "%u:%u ", (rd8(p, mon + 19) & 2) ? sp : 0, rd16(p, mon + 86));
+			}
+			o += snprintf(line + o, sizeof(line) - o, "]");
+		}
+		unsigned ord = symAddr("gBattlePartyCurrentOrder");
+		out("[f%06d p%d bparty] %s order=%02x%02x%02x idx=%u,%u,%u,%u\n", p->frame, p->id, line, rd8(p, ord), rd8(p, ord + 1), rd8(p, ord + 2),
+		    rd16(p, symAddr("gBattlerPartyIndexes")), rd16(p, symAddr("gBattlerPartyIndexes") + 2),
+		    rd16(p, symAddr("gBattlerPartyIndexes") + 4), rd16(p, symAddr("gBattlerPartyIndexes") + 6));
+	}
 }
 
 // kill -USR1 <pid>: each core dumps its state (field, battle, screenshot)
@@ -1125,6 +1189,12 @@ static void frameCallback(struct mCoreThread* t) {
         }
         case C_STRONG:
             p->strongBattlers = c->value;
+            advance = true;
+            break;
+        case C_SWITCH_LEAD:
+            p->switchLead = c->value;
+            p->switchState = 0;
+            out("[p%d] switch_lead %u\n", p->id, c->value);
             advance = true;
             break;
         case C_SMART:
@@ -1625,8 +1695,8 @@ static void frameCallback(struct mCoreThread* t) {
                 out("[f%06d p%d grind] battle %d done: lead lv=%u hp=%u/%u outcome=%u\n", p->frame, p->id, p->grindCount,
                     rd8(p, lead + 84), hp, maxhp, rd8(p, symAddr("gBattleOutcome")));
             }
-            if (c->addr) {
-                unsigned sw = partyMon(0, c->addr), shp = rd16(p, sw + 86), smax = rd16(p, sw + 88);
+            if (c->addr || p->switchLead) {
+                unsigned sw = partyMon(0, c->addr ? c->addr : (unsigned)p->switchLead), shp = rd16(p, sw + 86), smax = rd16(p, sw + 88);
                 if (shp * 100 < (unsigned)c->size * smax) { hp = shp; maxhp = smax; if (!hp) hp = 0; }
             }
             if (p->grindCount >= (int)c->value || hp == 0 || hp * 100 < (unsigned)c->size * maxhp) {
@@ -2332,6 +2402,10 @@ static void loadScript(const char* path, int depth) {
             c.value = strtoul(a, NULL, 0);
             c.size = atoi(b);
             c.frames = n >= 5 ? atoi(d) : 60000;
+        } else if (!strcmp(cmd, "switch_lead")) {
+            // switch_lead SLOT: driver aid, see autoKeys. 0 turns it off.
+            c.kind = C_SWITCH_LEAD;
+            c.value = strtoul(a, NULL, 0);
         } else if (!strcmp(cmd, "grind_sw")) {
             // grind_sw N PCT SLOT [timeout]: as grind, but each battle
             // starts by switching the lead out for party slot SLOT (the

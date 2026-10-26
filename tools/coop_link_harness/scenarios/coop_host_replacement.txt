@@ -1,0 +1,42 @@
+# DIAGNOSTIC FIXTURE (not the main run): the link host sends in a
+# replacement in a co-op battle, then its team goes down (journey_06 saves).
+# Variant of coop_partner_wiped with slot 1 also at 1 HP, so the host picks a
+# replacement before its team is gone.
+# Found in the main journey (segment 07): in the Roxanne co-op battle Kai's
+# last Pokemon fainted; Rosa chose a move ("Ready. Waiting for Kai...") and
+# both games then crawled at a few frames a second without finishing the
+# turn. Here: FIXTURE leaves Kai (the host) one Pokemon at 1 HP (party data,
+# the others at 0), then both meet Youngster Josh together; Kai's team is
+# gone after one hit and Rosa must be able to finish the battle alone.
+include continue.inc
+include relink.inc
+b expect coop.sLinkState 2
+b smart_moves 1
+include beacon_on.inc
+# FIXTURE: Kai (player 0, the link host): slots 0 and 1 at 1 HP, slot 2 at
+# 0 HP (fainted).
+0 write gParties+86:2 1
+0 write gParties+186:2 1
+0 write gParties+286:2 0
+0 party
+b mash_field 2000 B
+b walk 7 8 2000
+b cross DOWN 0 3 2000
+0 walk 27 19 5000
+0 until_map 11 3 3000
+1 wait 200
+1 walk 27 19 5000
+1 until_map 11 3 3000
+b walk 5 16 3000
+b sync
+b dump lane
+# Both step into his sight line on the same frame.
+b press UP 8
+b until_cb2 BattleMainCB2 6000 A
+b expect coop.sInBattle 1
+b expect gBattlersCount 4
+b shot josh-coop
+b mash_field 30000
+b expect coop.sInBattle 0
+b expect_flag 0x640 1
+b dump after

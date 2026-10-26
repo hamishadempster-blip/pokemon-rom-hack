@@ -3758,7 +3758,17 @@ static void Cmd_switchhandleorder(void)
         gBattleCommunication[0] = gBattleResources->bufferB[battler][1];
         gBattleStruct->monToSwitchIntoId[battler] = gBattleResources->bufferB[battler][1];
 
-        if (gBattleTypeFlags & BATTLE_TYPE_LINK && gBattleTypeFlags & BATTLE_TYPE_MULTI)
+        if (gBattleTypeFlags & BATTLE_TYPE_COOP)
+        {
+            // Each co-op player has a party of their own, and its menu
+            // returns that party's whole order. The link-multi split below
+            // assumes one shared six-slot party: it wrote half of this
+            // player's order into the partner battler's, duplicating party
+            // ids; the next party menu then copied one Pokemon over another,
+            // and a fainted team still "had" a replacement.
+            memcpy(gBattleStruct->battlerPartyOrders[battler], &gBattleResources->bufferB[battler][2], sizeof(gBattleStruct->battlerPartyOrders[battler]));
+        }
+        else if (gBattleTypeFlags & BATTLE_TYPE_LINK && gBattleTypeFlags & BATTLE_TYPE_MULTI)
         {
             *(battler * 3 + (u8 *)(gBattleStruct->battlerPartyOrders) + 0) &= 0xF;
             *(battler * 3 + (u8 *)(gBattleStruct->battlerPartyOrders) + 0) |= (gBattleResources->bufferB[battler][2] & 0xF0);
@@ -5763,7 +5773,9 @@ static void Cmd_forcerandomswitch(void)
                 || (gBattleTypeFlags & BATTLE_TYPE_RECORDED_LINK && gBattleTypeFlags & BATTLE_TYPE_MULTI))
             {
                 SwitchPartyOrderLinkMulti(gBattlerTarget, gBattleStruct->monToSwitchIntoId[gBattlerTarget], 0);
-                SwitchPartyOrderLinkMulti(GetPartnerBattler(gBattlerTarget), gBattleStruct->monToSwitchIntoId[gBattlerTarget], 1);
+                // Co-op partners do not share a party (see the switch-in order above).
+                if (!(gBattleTypeFlags & BATTLE_TYPE_COOP))
+                    SwitchPartyOrderLinkMulti(GetPartnerBattler(gBattlerTarget), gBattleStruct->monToSwitchIntoId[gBattlerTarget], 1);
             }
 
             if (gBattleTypeFlags & BATTLE_TYPE_INGAME_PARTNER)

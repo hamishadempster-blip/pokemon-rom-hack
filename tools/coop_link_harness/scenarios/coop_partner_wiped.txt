@@ -3,18 +3,19 @@
 # Found in the main journey (segment 07): in the Roxanne co-op battle Kai's
 # last Pokemon fainted; Rosa chose a move ("Ready. Waiting for Kai...") and
 # both games then crawled at a few frames a second without finishing the
-# turn. Here: FIXTURE writes Kai's three Pokemon to 1 HP (party data), then
-# both meet Youngster Josh together; Kai's team faints in the first turns
-# and Rosa must be able to finish the battle alone.
+# turn. Here: FIXTURE leaves Kai (the host) one Pokemon at 1 HP (party data,
+# the others at 0), then both meet Youngster Josh together; Kai's team is
+# gone after one hit and Rosa must be able to finish the battle alone.
 include continue.inc
 include relink.inc
 b expect coop.sLinkState 2
 b smart_moves 1
 include beacon_on.inc
-# FIXTURE: Kai (player 0) at 1 HP on all three Pokemon.
+# FIXTURE: Kai (player 0, the link host): slot 0 at 1 HP, slots 1 and 2 at
+# 0 HP (fainted).
 0 write gParties+86:2 1
-0 write gParties+186:2 1
-0 write gParties+286:2 1
+0 write gParties+186:2 0
+0 write gParties+286:2 0
 0 party
 b mash_field 2000 B
 b walk 7 8 2000

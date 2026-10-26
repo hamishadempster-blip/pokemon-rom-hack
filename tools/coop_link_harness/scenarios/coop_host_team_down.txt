@@ -1,0 +1,52 @@
+# DIAGNOSTIC FIXTURE (not the main run): the link host sends in two
+# replacements in a co-op battle against two trainers (journey_06 saves).
+# Found in the main journey (segment 07, Roxanne and Hiker Heath): after the
+# host (Kai) had sent in two replacements, his party held three copies of
+# his last Pokemon and a full-HP copy of an earlier one in slot 5; when his
+# team was down the game still asked him for a replacement and the battle
+# could not go on.
+# Here: Josh together as in same_trainer_spot, then FIXTURE sets Kai's three
+# Pokemon to 1 HP (party data) and both walk on into Youngster Tommy and
+# Hiker Marc (two trainers): Kai sends in two replacements and his team goes
+# down while Rosa fights on. Party arrays are logged with BATTLE_PARTY=1.
+include continue.inc
+include relink.inc
+b expect coop.sLinkState 2
+b smart_moves 1
+include beacon_on.inc
+b mash_field 2000 B
+b walk 7 8 2000
+b cross DOWN 0 3 2000
+0 walk 27 19 5000
+0 until_map 11 3 3000
+1 wait 200
+1 walk 27 19 5000
+1 until_map 11 3 3000
+b walk 5 16 3000
+b sync
+b dump lane
+# Both step into his sight line on the same frame.
+b press UP 8
+b until_cb2 BattleMainCB2 6000 A
+b expect coop.sInBattle 1
+b expect gBattlersCount 4
+b shot josh-coop
+b mash_field 30000
+b expect coop.sInBattle 0
+b expect_flag 0x640 1
+# FIXTURE: Kai (player 0, the link host): slots 0, 1 and 2 at 1 HP.
+0 write gParties+86:2 1
+0 write gParties+186:2 1
+0 write gParties+286:2 1
+0 party
+1 walk 4 3 9000
+0 walk 5 4 9000
+b sync
+# Whatever the outcome (Rosa wins alone, or both white out), the battle
+# ends, and Kai's party still holds his own three Pokemon once each.
+b expect coop.sInBattle 0
+0 expect_species 0 418
+0 expect_species 1 261
+0 expect_species 2 256
+b party
+b dump after

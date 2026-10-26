@@ -4441,7 +4441,13 @@ static void UpdateBattlerPartyOrdersOnSwitch(enum BattlerId battler)
     gBattleStruct->monToSwitchIntoId[battler] = gBattleResources->bufferB[battler][1];
     RecordedBattle_SetBattlerAction(battler, gBattleResources->bufferB[battler][1]);
 
-    if (gBattleTypeFlags & BATTLE_TYPE_LINK && gBattleTypeFlags & BATTLE_TYPE_MULTI)
+    if (gBattleTypeFlags & BATTLE_TYPE_COOP)
+    {
+        // A co-op player's own party and whole order; see the switch-in
+        // order update in battle_script_commands.c.
+        memcpy(gBattleStruct->battlerPartyOrders[battler], &gBattleResources->bufferB[battler][2], sizeof(gBattleStruct->battlerPartyOrders[battler]));
+    }
+    else if (gBattleTypeFlags & BATTLE_TYPE_LINK && gBattleTypeFlags & BATTLE_TYPE_MULTI)
     {
         *(battler * 3 + (u8 *)(gBattleStruct->battlerPartyOrders) + 0) &= 0xF;
         *(battler * 3 + (u8 *)(gBattleStruct->battlerPartyOrders) + 0) |= (gBattleResources->bufferB[battler][2] & 0xF0);
