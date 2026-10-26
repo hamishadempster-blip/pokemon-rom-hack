@@ -1,0 +1,51 @@
+# A join question nobody answers (journey_16 saves: both healed, in
+# Rusturf Tunnel). DIAGNOSTIC (fixtures below).
+# Found while setting up partner_busy_trainer: Rosa ran into a wild Pokemon
+# with the Beacon ON; Kai's game asked "Join the battle?" while Kai's player
+# was not pressing anything. Rosa fought alone after the 600-frame wait
+# ("Solo: your partner didn't answer.") but the YES/NO prompt stayed open on
+# Kai's screen after her fight had ended, the field locked behind it.
+# Expected now: the prompt closes itself at the answer limit, Kai's screen
+# says the fight went ahead without him (one A to dismiss), Rosa fights alone
+# with "didn't answer", and both can move on, still linked.
+include continue.inc
+include relink.inc
+b expect coop.sLinkState 2
+include beacon_on.inc
+b mash_field 2000 B
+b expect coop.sBeacon+1:1 1
+# FIXTURE: no random encounters on the walk.
+b no_wild 1
+0 walk 4 10 4000
+0 cross DOWN 0 31 3000
+1 wait 100
+1 walk 4 10 4000
+1 cross DOWN 0 31 3000
+0 walk 37 14 6000
+1 walk 34 14 6000
+b sync
+b dump lane
+# FIXTURE: Rosa's next grass step rolls an encounter.
+1 no_wild 0
+1 force_encounter 1
+1 press LEFT 8
+1 until_cb2 BattleMainCB2 1500
+1 force_encounter 0
+1 no_wild 1
+1 until_battle_text your_partner_didn 1200
+1 expect gBattlersCount 2
+1 shot rosa-solo
+# Kai presses nothing: the question opens, then closes by itself.
+0 until_mem sGlobalScriptContextStatus:1 1 1200
+0 shot kai-asked
+0 wait 700
+0 dump kai-after-limit
+0 expect coop.sGuestPairPending 0
+0 until_field_text went_ahead_without_you 600
+0 shot kai-too-late
+0 mash_field 2000
+1 mash_field 30000
+b sync
+b expect coop.sLinkState 2
+b expect coop.sInBattle 0
+b dump after

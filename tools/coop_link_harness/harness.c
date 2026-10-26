@@ -1594,6 +1594,15 @@ static void frameCallback(struct mCoreThread* t) {
 			if (p->barrierReached < c->barrier) p->barrierReached = c->barrier;
 			advance = P[1 - p->id].barrierReached >= c->barrier || P[1 - p->id].done;
 			pthread_mutex_unlock(&sLock);
+			// Waiting for the partner while a wild Pokemon jumped out on the
+			// last step: play the solo fight out instead of standing at its
+			// first message (a player would). Co-op fights are left alone.
+			if (!advance) {
+				static unsigned battleCb2;
+				if (!battleCb2) battleCb2 = symAddr("BattleMainCB2") & ~1u;
+				if ((rd32(p, sMain + 4) & ~1u) == battleCb2 && !rd8(p, coopStatic("sInBattle")))
+					keys = autoKeys(p, p->step++);
+			}
 			break;
 		case C_UNTIL_TASK:
 		case C_UNTIL_CB2:

@@ -29,6 +29,7 @@
 #include "pokemon_storage_system.h"
 #include "region_map.h"
 #include "script.h"
+#include "script_menu.h"
 #include "start_menu.h"
 #include "script_pokemon_util.h"
 #include "string_util.h"
@@ -2162,6 +2163,34 @@ static void Coop_Drop(const u8 *message)
         sPendingMessage = message;
 }
 
+// In a solo (non-link) fight the block buffers are free. An optional invite
+// that crossed the start of this fight would otherwise wait unread until it
+// ends, while the inviter sits out its timeout: answer "busy" now. Other
+// blocks stay unread for after the fight.
+static void Coop_RefuseInvitesInSoloBattle(void)
+{
+    u8 status;
+    u32 i;
+
+    if (sInBattle || (gBattleTypeFlags & BATTLE_TYPE_LINK) || gLinkTransferringData)
+        return;
+    status = GetBlockReceivedStatus();
+    for (i = 0; i < MAX_LINK_PLAYERS; i++)
+    {
+        const struct CoopInvite *invite = (const struct CoopInvite *)gBlockRecvBuffer[i];
+
+        if (!(status & (1 << i)) || i == GetMultiplayerId())
+            continue;
+        if (invite->magic != COOP_INVITE_MAGIC || invite->checksum != Coop_InviteChecksum(invite))
+            continue;
+        if (!Coop_IsOptionalKind(invite->kind))
+            continue;
+        ResetBlockReceivedFlag(i);
+        Coop_SendReplyWhy(COOP_KIND_NACK, invite->seq, COOP_SOLO_BUSY);
+    }
+    Coop_FlushReply();
+}
+
 static void Task_CoopSession(u8 taskId)
 {
     if (sLinkState == COOP_LINK_CONNECTING)
@@ -2174,7 +2203,10 @@ static void Task_CoopSession(u8 taskId)
         // clears the flag, the fight never sees the party, and both screens
         // stay black while the music plays.
         if (gMain.inBattle)
+        {
+            Coop_RefuseInvitesInSoloBattle();
             return;
+        }
         if (sUnlinkTimer != 0)
         {
             sRequest = COOP_REQ_UNLINK;
@@ -2196,6 +2228,13 @@ static void Task_CoopSession(u8 taskId)
         Coop_PollStory();
         if (sGuestPairPending && sGuestPairTimer < 0xFFFF)
             sGuestPairTimer++;
+        // Nobody answered the join question in time (or the inviter stopped
+        // waiting): close it as a NO, so the prompt does not sit on screen
+        // for a fight that has already gone ahead. The ask script then says
+        // so ("couldn't wait") and tells the inviter.
+        if (sGuestPairPending
+         && sGuestPairTimer >= (sGuestPairInvite.kind == COOP_KIND_PAIR ? COOP_PAIR_ANSWER_LIMIT : COOP_JOIN_ANSWER_LIMIT))
+            ScriptMenu_CancelYesNo();
         if (sRescueGuestFollow && !gMain.inBattle)
         {
             if (sRescueGuestTimer < 0xFFFF)
@@ -2867,6 +2906,11 @@ bool8 Coop_TryQueueOrdinaryDouble(void)
         sSoloNote = Coop_SoloReasonHere();
         if (sSoloNote == COOP_SOLO_NONE && sBeacon.on && Coop_SessionActive() && Coop_CoupleStaysSolo(trainerA))
             sSoloNote = COOP_SOLO_KIND;
+        // The partner is in a fight of their own (or the link is mending):
+        // an invite would sit out its whole timeout and then read "didn't
+        // answer". Fight alone at once with the real reason.
+        if (sSoloNote == COOP_SOLO_BUSY || sSoloNote == COOP_SOLO_RECOVERING)
+            return FALSE;
     }
     if (!Coop_SessionActive() || !Coop_PartnerOnSameMap())
         return FALSE;

@@ -1,7 +1,7 @@
 # JOURNEY 15 (main playthrough, no fixtures): CONTINUE journey_14's saves
 # in Rustboro (Stone Badge on both saves). The Devon Goods chain, each
 # player's own scenes on its own save:
-#  - Rosa first collects Roxanne's TM (talking to her again).
+#  - Rosa first collects Roxanne's TM (talking to her again); both heal.
 #  - Rosa walks west from the gym first: the stolen-goods scene (grunt runs
 #    off, Devon employee chases). Kai follows later and gets his own.
 #  - Both talk to the Devon employee by the east exit (each asks for help).
@@ -35,6 +35,15 @@ b dump start
 1 walk 5 19 4000
 1 cross DOWN 0 3 3000
 b sync
+# Both heal first (the Roxanne fight left several Pokemon fainted).
+0 walk 16 38 5000
+0 until_map 11 5 3000
+1 wait 200
+1 walk 16 38 5000
+1 until_map 11 5 3000
+include journey_heal_center.inc
+b walk 7 8 2000
+b cross DOWN 0 3 2000
 # Rosa walks west past the gym first.
 1 walk 23 22 3000
 1 mash_field 3000
@@ -62,7 +71,7 @@ b dump route116
 0 walk 47 9 8000
 0 mash_field 3000
 1 wait 120
-1 walk 48 9 8000
+1 walk 47 10 8000
 1 walk 47 9 3000
 1 mash_field 3000
 b expect_var 0x406F 2

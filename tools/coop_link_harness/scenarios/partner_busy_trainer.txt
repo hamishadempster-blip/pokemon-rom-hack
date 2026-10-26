@@ -1,0 +1,61 @@
+# A trainer fight while the partner is in a solo fight of their own
+# (journey_16 saves: both healed, in Rusturf Tunnel; School Kid Karen on
+# Route 116 unbeaten on Rosa's save). DIAGNOSTIC (one fixture, below).
+# Found in the main journey (segment 16): Kai was in a wild battle in Rusturf
+# Tunnel (solo: Rosa was on another map at its start); Rosa then talked to
+# the Aqua grunt with the Beacon ON. Her game asked Kai anyway, Kai's game
+# never read the invite during his battle, and Rosa waited out the whole
+# timeout before fighting alone with "Solo: your partner didn't answer."
+# Here: linked, Beacon ON. Kai leaves the tunnel first and steps into tall
+# grass on Route 116 while Rosa is still inside; a wild Pokemon appears (FIXTURE: force_encounter makes that step roll an
+# encounter); he leaves the battle at its first message. Rosa follows and
+# steps into
+# School Kid Karen's sight line (walking west past her).
+# Expected: Rosa's fight starts right after Karen's speech (no 600-frame
+# invite wait), solo, with "Solo: your partner is busy.". Then Kai finishes.
+include continue.inc
+include relink.inc
+b expect coop.sLinkState 2
+b smart_moves 1
+include beacon_on.inc
+b mash_field 2000 B
+b expect coop.sBeacon+1:1 1
+1 expect_flag 0x618 0
+# FIXTURE: no random encounters on the way (a wild fight on the walk would
+# put the other player in a join question).
+b no_wild 1
+0 walk 4 10 4000
+0 cross DOWN 0 31 3000
+0 walk 34 14 6000
+0 dump lane
+# Kai's wild fight starts while Rosa is still in the tunnel (solo: partner
+# on another map). He then leaves it at its first message.
+0 no_wild 0
+0 force_encounter 1
+0 press LEFT 8
+0 until_cb2 BattleMainCB2 600
+0 force_encounter 0
+0 no_wild 1
+0 until_battle_text another_map 600
+0 shot kai-wild
+0 wait 3500
+0 expect coop.sInBattle 0
+# Rosa comes out, walks up beside Karen and talks to her.
+1 wait 1200
+1 walk 4 10 4000
+1 cross DOWN 0 31 3000
+1 walk 23 16 8000
+1 press LEFT 2
+1 wait 10
+1 press A 2
+1 until_cb2 BattleMainCB2 900 A
+1 until_battle_text partner_is_busy 600
+1 expect gBattlersCount 2
+1 expect coop.sInBattle 0
+1 shot rosa-karen-solo
+1 mash_field 30000
+b sync
+b mash_field 30000
+b expect coop.sLinkState 2
+1 expect_flag 0x618 1
+b dump after

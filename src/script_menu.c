@@ -652,6 +652,21 @@ static void Task_HandleYesNoInput(u8 taskId)
     ScriptContext_Enable();
 }
 
+// Closes an open YES/NO prompt as if NO was chosen (for a question that
+// stopped mattering while it was on screen). FALSE when none is open.
+bool8 ScriptMenu_CancelYesNo(void)
+{
+    u8 taskId = FindTaskIdByFunc(Task_HandleYesNoInput);
+
+    if (taskId == TASK_NONE)
+        return FALSE;
+    EraseYesNoWindow();
+    gSpecialVar_Result = 0;
+    DestroyTask(taskId);
+    ScriptContext_Enable();
+    return TRUE;
+}
+
 bool8 ScriptMenu_MultichoiceGrid(u8 left, u8 top, u8 multichoiceId, bool8 ignoreBPress, u8 columnCount)
 {
     if (FuncIsActiveTask(Task_HandleMultichoiceGridInput) == TRUE)
