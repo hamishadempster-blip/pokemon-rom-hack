@@ -629,6 +629,77 @@ Coop_EventScript_GuestRoute128::
 	releaseall
 	end
 
+@ The partner talked to the leader and got the gym's TM from the stock
+@ script; this player fought the same battle, so the leader hands it over
+@ here too (its own flag; the leader's after-battle talk gives it otherwise).
+Coop_EventScript_GuestGiveRockTomb::
+	msgbox Coop_Text_GuestGymPrize, MSGBOX_DEFAULT
+	giveitem ITEM_TM_ROCK_TOMB
+	goto_if_eq VAR_RESULT, FALSE, Coop_EventScript_GuestGymPrizeBagFull
+	setflag FLAG_RECEIVED_TM_ROCK_TOMB
+	return
+
+Coop_EventScript_GuestGiveBulkUp::
+	msgbox Coop_Text_GuestGymPrize, MSGBOX_DEFAULT
+	giveitem ITEM_TM_BULK_UP
+	goto_if_eq VAR_RESULT, FALSE, Coop_EventScript_GuestGymPrizeBagFull
+	setflag FLAG_RECEIVED_TM_BULK_UP
+	return
+
+Coop_EventScript_GuestGiveShockWave::
+	msgbox Coop_Text_GuestGymPrize, MSGBOX_DEFAULT
+	giveitem ITEM_TM_SHOCK_WAVE
+	goto_if_eq VAR_RESULT, FALSE, Coop_EventScript_GuestGymPrizeBagFull
+	setflag FLAG_RECEIVED_TM_SHOCK_WAVE
+	return
+
+Coop_EventScript_GuestGiveOverheat::
+	msgbox Coop_Text_GuestGymPrize, MSGBOX_DEFAULT
+	giveitem ITEM_TM_OVERHEAT
+	goto_if_eq VAR_RESULT, FALSE, Coop_EventScript_GuestGymPrizeBagFull
+	setflag FLAG_RECEIVED_TM_OVERHEAT
+	return
+
+Coop_EventScript_GuestGiveFacade::
+	msgbox Coop_Text_GuestGymPrize, MSGBOX_DEFAULT
+	giveitem ITEM_TM_FACADE
+	goto_if_eq VAR_RESULT, FALSE, Coop_EventScript_GuestGymPrizeBagFull
+	setflag FLAG_RECEIVED_TM_FACADE
+	return
+
+Coop_EventScript_GuestGiveAerialAce::
+	msgbox Coop_Text_GuestGymPrize, MSGBOX_DEFAULT
+	giveitem ITEM_TM_AERIAL_ACE
+	goto_if_eq VAR_RESULT, FALSE, Coop_EventScript_GuestGymPrizeBagFull
+	setflag FLAG_RECEIVED_TM_AERIAL_ACE
+	return
+
+Coop_EventScript_GuestGiveCalmMind::
+	msgbox Coop_Text_GuestGymPrize, MSGBOX_DEFAULT
+	giveitem ITEM_TM_CALM_MIND
+	goto_if_eq VAR_RESULT, FALSE, Coop_EventScript_GuestGymPrizeBagFull
+	setflag FLAG_RECEIVED_TM_CALM_MIND
+	return
+
+Coop_EventScript_GuestGiveWaterPulse::
+	msgbox Coop_Text_GuestGymPrize, MSGBOX_DEFAULT
+	giveitem ITEM_TM_WATER_PULSE
+	goto_if_eq VAR_RESULT, FALSE, Coop_EventScript_GuestGymPrizeBagFull
+	setflag FLAG_RECEIVED_TM_WATER_PULSE
+	return
+
+Coop_EventScript_GuestGymPrizeBagFull::
+	msgbox Coop_Text_GuestGymPrizeBagFull, MSGBOX_DEFAULT
+	return
+
+Coop_Text_GuestGymPrize:
+	.string "The GYM LEADER: You fought well too.\n"
+	.string "This is for you!$"
+
+Coop_Text_GuestGymPrizeBagFull:
+	.string "The BAG is full. Talk to the GYM\n"
+	.string "LEADER again to get it later.$"
+
 Coop_EventScript_GuestCountBadge::
 	goto_if_ge VAR_PETALBURG_GYM_STATE, 7, Coop_EventScript_GuestCountBadgeDone
 	addvar VAR_PETALBURG_GYM_STATE, 1
@@ -642,6 +713,7 @@ Coop_EventScript_GuestReadyNorman::
 	return
 
 Coop_EventScript_GuestRustboro::
+	call_if_unset FLAG_RECEIVED_TM_ROCK_TOMB, Coop_EventScript_GuestGiveRockTomb
 	call Coop_EventScript_GuestCountBadge
 	goto_if_ge VAR_RUSTBORO_CITY_STATE, 1, Coop_EventScript_GuestRustboroTrainers
 	setvar VAR_RUSTBORO_CITY_STATE, 1
@@ -652,6 +724,7 @@ Coop_EventScript_GuestRustboroTrainers::
 	end
 
 Coop_EventScript_GuestDewford::
+	call_if_unset FLAG_RECEIVED_TM_BULK_UP, Coop_EventScript_GuestGiveBulkUp
 	call Coop_EventScript_GuestCountBadge
 	setvar VAR_0x8008, 2
 	call Common_EventScript_SetGymTrainers
@@ -662,6 +735,7 @@ Coop_EventScript_GuestDewford::
 	end
 
 Coop_EventScript_GuestMauville::
+	call_if_unset FLAG_RECEIVED_TM_SHOCK_WAVE, Coop_EventScript_GuestGiveShockWave
 	call Coop_EventScript_GuestCountBadge
 	goto_if_ge VAR_SLATEPORT_OUTSIDE_MUSEUM_STATE, 3, Coop_EventScript_GuestMauvillePuzzle
 	setvar VAR_SLATEPORT_OUTSIDE_MUSEUM_STATE, 3
@@ -675,6 +749,7 @@ Coop_EventScript_GuestMauvillePuzzle::
 	end
 
 Coop_EventScript_GuestLavaridge::
+	call_if_unset FLAG_RECEIVED_TM_OVERHEAT, Coop_EventScript_GuestGiveOverheat
 	call Coop_EventScript_GuestCountBadge
 	setflag FLAG_WHITEOUT_TO_LAVARIDGE
 	setflag FLAG_HIDE_VERDANTURF_TOWN_WANDAS_HOUSE_WALLY
@@ -687,6 +762,7 @@ Coop_EventScript_GuestLavaridgeTrainers::
 	end
 
 Coop_EventScript_GuestPetalburg::
+	call_if_unset FLAG_RECEIVED_TM_FACADE, Coop_EventScript_GuestGiveFacade
 	goto_if_ge VAR_PETALBURG_GYM_STATE, 7, Coop_EventScript_GuestPetalburgStory
 	setvar VAR_PETALBURG_GYM_STATE, 7
 Coop_EventScript_GuestPetalburgStory::
@@ -703,6 +779,7 @@ Coop_EventScript_GuestPetalburgStory::
 	end
 
 Coop_EventScript_GuestFortree::
+	call_if_unset FLAG_RECEIVED_TM_AERIAL_ACE, Coop_EventScript_GuestGiveAerialAce
 	setvar VAR_0x8008, 6
 	call Common_EventScript_SetGymTrainers
 	setflag FLAG_ENABLE_WINONA_MATCH_CALL
@@ -712,6 +789,7 @@ Coop_EventScript_GuestFortree::
 	end
 
 Coop_EventScript_GuestMossdeep::
+	call_if_unset FLAG_RECEIVED_TM_CALM_MIND, Coop_EventScript_GuestGiveCalmMind
 	setflag FLAG_HIDE_AQUA_HIDEOUT_GRUNTS
 	clearflag FLAG_HIDE_SLATEPORT_CITY_STERNS_SHIPYARD_MR_BRINEY
 	clearflag FLAG_HIDE_SLATEPORT_CITY_HARBOR_PATRONS
@@ -730,6 +808,7 @@ Coop_EventScript_GuestMossdeepTrainers::
 	end
 
 Coop_EventScript_GuestSootopolis::
+	call_if_unset FLAG_RECEIVED_TM_WATER_PULSE, Coop_EventScript_GuestGiveWaterPulse
 	setflag FLAG_HIDE_SOOTOPOLIS_CITY_RESIDENTS
 	setflag FLAG_HIDE_SOOTOPOLIS_CITY_STEVEN
 	setflag FLAG_HIDE_SOOTOPOLIS_CITY_WALLACE

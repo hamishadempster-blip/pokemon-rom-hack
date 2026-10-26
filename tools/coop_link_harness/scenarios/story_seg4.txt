@@ -44,6 +44,9 @@ b expect gBattleOutcome 1
 b mash_field 6000
 b expect_flag 0x4F0 1
 b expect_flag 0x867 1
+# The gym TM on both saves: the talker from Roxanne's script, the partner
+# from the co-op catch-up (journey 15 found the partner without it).
+b expect_flag 0xA5 1
 b expect coop.sLinkState 2
 b shot seg4-badge
 include save_again.inc

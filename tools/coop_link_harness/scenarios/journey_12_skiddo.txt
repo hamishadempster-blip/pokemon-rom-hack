@@ -3,10 +3,9 @@
 # did not save): Rosa's Houndour (Fire/Dark) does little against Rock, and
 # the driver's Mart purchase had failed (fixed: it now waits on the shop's
 # own menus). Rosa catches a SKIDDO (Grass; Razor Leaf at 13) on Route 116
-# and Kai a NINCADA (Bug/Ground, for later Electric types); both new
-# catches lead and are switch-trained (Rosa switching to Marill, Kai to
-# Combusken) on Route 116 for eight cycles; heal; save.
-# Driver aids: smart_moves, hunt, grind, switch_lead.
+# and Kai a NINCADA (Bug/Ground, for later Electric types); heal; save.
+# (Training follows in journey 13.)
+# Driver aids: smart_moves, hunt.
 include continue.inc
 include relink.inc
 b expect coop.sLinkState 2
@@ -30,20 +29,5 @@ b cross LEFT 0 3 3000
 0 walk 16 38 5000
 0 until_map 11 5 3000
 include journey_heal_center.inc
-include journey_p0_swap04.inc
-include journey_p1_swap04.inc
-b party
-0 switch_lead 2
-1 switch_lead 3
-include journey_cycle_r116_sw.inc
-include journey_cycle_r116_sw.inc
-include journey_cycle_r116_sw.inc
-include journey_cycle_r116_sw.inc
-include journey_cycle_r116_sw.inc
-include journey_cycle_r116_sw.inc
-include journey_cycle_r116_sw.inc
-include journey_cycle_r116_sw.inc
-b switch_lead 0
-b dump trained
 include save_again.inc
 b party

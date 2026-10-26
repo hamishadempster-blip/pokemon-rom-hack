@@ -1,0 +1,99 @@
+# JOURNEY 15 (main playthrough, no fixtures): CONTINUE journey_14's saves
+# in Rustboro (Stone Badge on both saves). The Devon Goods chain, each
+# player's own scenes on its own save:
+#  - Rosa first collects Roxanne's TM (talking to her again).
+#  - Rosa walks west from the gym first: the stolen-goods scene (grunt runs
+#    off, Devon employee chases). Kai follows later and gets his own.
+#  - Both talk to the Devon employee by the east exit (each asks for help).
+#  - Route 116: Mr. Briney by Rusturf Tunnel (each save's own trigger).
+#  - Rusturf Tunnel: Kai walks up to the grunt first; the fight is the
+#    story's; Rosa is next to him (check: co-op or not, and what Rosa's save
+#    gets: DEVON GOODS, Peeko returned, tunnel state).
+# Then back to Rustboro (next segment: returning the goods, Devon Corp).
+# Driver aids: smart_moves, heal_below. Checks are read-only (vars, flags,
+# items); nothing is written.
+include continue.inc
+include relink.inc
+b expect coop.sLinkState 2
+b smart_moves 1
+b heal_below 35 2
+b expect_flag 0x867 1
+b expect_var 0x405A 1
+b expect_flag 0x4F0 1
+0 expect_flag 0xA5 1
+b dump start
+# Rosa did not get Roxanne's TM (the partner's catch-up gave none; fixed
+# for later gyms). The stock way still works: talk to Roxanne again.
+1 walk 27 19 4000
+1 until_map 11 3 3000
+1 walk 5 3 6000
+1 press UP 4
+1 wait 20
+1 press A 2
+1 mash_field 3000
+1 expect_flag 0xA5 1
+1 walk 5 19 4000
+1 cross DOWN 0 3 3000
+b sync
+# Rosa walks west past the gym first.
+1 walk 23 22 3000
+1 mash_field 3000
+1 expect_var 0x405A 2
+1 expect_flag 0x8E 1
+1 shot rosa-stolen-goods
+0 wait 300
+0 walk 23 21 3000
+0 mash_field 3000
+0 expect_var 0x405A 2
+b sync
+b dump after-stolen
+# The employee by the east exit asks each of them for help.
+0 walk 30 12 4000
+0 mash_field 3000
+1 wait 120
+1 walk 30 11 4000
+1 mash_field 3000
+b expect_var 0x405A 3
+b sync
+# Route 116, east to Rusturf Tunnel.
+b walk 39 10 5000
+b cross RIGHT 0 31 3000
+b dump route116
+0 walk 47 9 8000
+0 mash_field 3000
+1 wait 120
+1 walk 48 9 8000
+1 walk 47 9 3000
+1 mash_field 3000
+b expect_var 0x406F 2
+b dump briney
+b shot briney
+0 walk 47 8 2000
+0 until_map 24 4 3000
+1 wait 120
+1 walk 47 8 2000
+1 until_map 24 4 3000
+b dump tunnel
+# Up to the grunt: the back-up trigger at (9,4); then talk to him.
+0 walk 9 4 4000
+0 mash_field 3000
+1 walk 9 5 4000
+1 mash_field 3000
+b sync
+b dump grunt-backed-up
+0 walk 12 5 3000
+0 press RIGHT 4
+0 wait 20
+0 press A 2
+b until_cb2 BattleMainCB2 6000 A
+b dump grunt-battle
+b shot grunt-battle
+b mash_field 40000
+b dump after-grunt
+b party
+b expect_var 0x409A 3
+b expect_flag 0x8F 1
+b expect_item 4 733 1
+b shot after-grunt
+include save_again.inc
+b party

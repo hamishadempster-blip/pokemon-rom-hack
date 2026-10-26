@@ -5,6 +5,7 @@
 1 press A 2
 1 wait 90
 1 party_slot 0
+1 wait 20
 1 press A 2
 1 wait 30
 1 press DOWN 2
@@ -12,6 +13,7 @@
 1 press A 2
 1 wait 30
 1 party_slot 3
+1 wait 20
 1 press A 2
 1 wait 60
 1 press B 2

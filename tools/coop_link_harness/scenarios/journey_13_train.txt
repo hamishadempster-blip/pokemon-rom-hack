@@ -1,0 +1,27 @@
+# JOURNEY 13 (main playthrough, no fixtures): CONTINUE journey_12's saves
+# in the Rustboro Centre. The new catches lead and are switch-trained on
+# Route 116 for eight cycles (Kai: Nincada, switching to Combusken; Rosa:
+# Skiddo, switching to Marill); heal; save.
+# Driver aids: smart_moves, grind, switch_lead.
+include continue.inc
+include relink.inc
+b expect coop.sLinkState 2
+b smart_moves 1
+b party
+include journey_p0_swap04.inc
+include journey_p1_swap04.inc
+b party
+0 switch_lead 2
+1 switch_lead 3
+include journey_cycle_r116_sw.inc
+include journey_cycle_r116_sw.inc
+include journey_cycle_r116_sw.inc
+include journey_cycle_r116_sw.inc
+include journey_cycle_r116_sw.inc
+include journey_cycle_r116_sw.inc
+include journey_cycle_r116_sw.inc
+include journey_cycle_r116_sw.inc
+b switch_lead 0
+b dump trained
+include save_again.inc
+b party

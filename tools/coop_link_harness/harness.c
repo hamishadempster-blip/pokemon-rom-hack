@@ -757,7 +757,9 @@ static unsigned autoKeys(struct Player* p, unsigned step) {
 	// its Pokemon is below PCT% HP, use a POTION or SUPER POTION from the
 	// bag on it (up to USES times per battle).
 	if (!battling) { p->healState = 0; p->healsLeft = -1; }
-	if (battling && p->healPct) {
+	// Co-op trainer battles are link battles: the bag is closed there
+	// ("Items can't be used now."); co-op wild battles allow it.
+	if (battling && p->healPct && (!(rd32(p, symAddr("gBattleTypeFlags")) & (1u << 1)) || !(rd32(p, symAddr("gBattleTypeFlags")) & (1u << 3)))) {
 		static unsigned bagCb;
 		if (!bagCb) bagCb = symAddr("CB2_BagMenuRun") & ~1u;
 		if (p->healsLeft < 0) p->healsLeft = p->healUses;
@@ -770,7 +772,11 @@ static unsigned autoKeys(struct Player* p, unsigned step) {
 			for (int b = 0; b < 4; b++)
 				if (!strcmp(symName(rd32(p, funcs + b * 4)), "HandleInputChooseAction")) me = b;
 			if (me >= 0) {
-				unsigned hp = rd16(p, bm + me * bmSize + bmHp), mx = rd16(p, bm + me * bmSize + bmMax);
+				// Party data, not gBattleMons: the co-op guest's gBattleMons
+				// trails the host's, but its own party is kept current.
+				unsigned pidx = rd16(p, symAddr("gBattlerPartyIndexes") + me * 2);
+				unsigned hp = pidx < 6 ? rd16(p, partyMon(0, pidx) + 86) : 0, mx = pidx < 6 ? rd16(p, partyMon(0, pidx) + 88) : 0;
+				(void)bm; (void)bmSize; (void)bmHp; (void)bmMax;
 				// The potion's place in the ITEMS pocket list.
 				unsigned pocket = symAddr("gBagPockets"), slots = rd32(p, pocket), cap = rd16(p, pocket + 4) & 0x3FF;
 				int k = -1, n = 0;
@@ -799,12 +805,12 @@ static unsigned autoKeys(struct Player* p, unsigned step) {
 				p->healState = 2;
 				return 1;
 			}
-			int atMenu = 0;
+			int atMenu = -1;
 			unsigned funcs = symAddr("gBattlerControllerFuncs");
 			for (int b = 0; b < 4; b++)
-				if (!strcmp(symName(rd32(p, funcs + b * 4)), "HandleInputChooseAction")) atMenu = 1;
-			if (atMenu) {
-				unsigned cur = rd8(p, symAddr("gActionSelectionCursor"));
+				if (!strcmp(symName(rd32(p, funcs + b * 4)), "HandleInputChooseAction")) atMenu = b;
+			if (atMenu >= 0) {
+				unsigned cur = rd8(p, symAddr("gActionSelectionCursor") + atMenu);
 				if (t != 0) return 0;
 				if (!(cur & 1)) return 1u << 4;
 				if (cur & 2) return 1u << 6;
@@ -832,6 +838,20 @@ static unsigned autoKeys(struct Player* p, unsigned step) {
 			p->healState = 0; p->healsLeft--;
 			out("[f%06d p%d heal] used, %d left this battle\n", p->frame, p->id, p->healsLeft);
 		}
+	}
+	// Default battle input: keep the action cursor on FIGHT (the game
+	// remembers the last action, so after one BAG the A presses would keep
+	// opening the bag), and leave a bag nobody asked for.
+	if (battling && p->healState == 0) {
+		static unsigned bagCb2;
+		if (!bagCb2) bagCb2 = symAddr("CB2_BagMenuRun") & ~1u;
+		if (cbNow == bagCb2) return (step % 30) < 2 ? 2 : 0;
+		unsigned funcs = symAddr("gBattlerControllerFuncs");
+		for (int b = 0; b < 4; b++)
+			if (!strcmp(symName(rd32(p, funcs + b * 4)), "HandleInputChooseAction")) {
+				unsigned cur = rd8(p, symAddr("gActionSelectionCursor") + b);
+				if (cur != 0) return (step % 16) == 0 ? ((cur & 1) ? (1u << 5) : (1u << 6)) : 0;
+			}
 	}
 	if (battling && partyCb && cbNow == partyCb) {
 		// Replacement or switch: move the cursor to a slot whose Pokemon
@@ -1110,6 +1130,14 @@ static void battleLog(struct Player* p) {
 static volatile sig_atomic_t sUsr1[2];
 static void onUsr1(int sig) { (void)sig; sUsr1[0] = sUsr1[1] = 1; }
 
+static bool taskActive(struct Player* p, const char* name) {
+	// gTasks[16]: func at +0, isActive at +4, 0x28 bytes each.
+	unsigned tasks = symAddr("gTasks"), fn = symAddr(name) & ~1u;
+	for (int t = 0; t < 16; t++)
+		if (rd8(p, tasks + t * 0x28 + 4) && (rd32(p, tasks + t * 0x28) & ~1u) == fn) return true;
+	return false;
+}
+
 static void frameCallback(struct mCoreThread* t) {
 	struct Player* p = t->userData;
 	p->frame++;
@@ -1183,7 +1211,9 @@ static void frameCallback(struct mCoreThread* t) {
 							if (ft < ntypes && mtype < ntypes) eff = eff * rd16(p, chart + (mtype * ntypes + ft) * esz) / 0x1000;
 						}
 						anyFoe = 1;
-						if (eff > bestEff) { bestEff = eff; foeHere = f; }
+						// Equal effect: aim at the weaker foe (finish it).
+						if (eff > bestEff || (eff == bestEff && foeHere >= 0
+						    && rd16(p, fm + bmHp) < rd16(p, bm + foeHere * bmSize + bmHp))) { bestEff = eff; foeHere = f; }
 					}
 					if (anyFoe) pow = pow * bestEff / 0x1000 * 4;
 					else pow *= 4;
@@ -1288,6 +1318,11 @@ static void frameCallback(struct mCoreThread* t) {
             advance = true;
             break;
         case C_PARTY_SLOT: {
+            // Only once the party menu is up and reading input.
+            if ((rd32(p, sMain + 4) & ~1u) != (symAddr("CB2_UpdatePartyMenu") & ~1u) || !taskActive(p, "Task_HandleChooseMonInput")) {
+                if (++p->step >= c->frames) { out("[p%d] FAIL party menu not ready for party_slot\n", p->id); sFailures++; advance = true; }
+                break;
+            }
             // In SWITCH (and Softboiled) mode the moving cursor is slotId2.
             unsigned act = rd8(p, symAddr("gPartyMenu") + 11);
             int slot = (signed char)rd8(p, symAddr("gPartyMenu") + ((act == 8 || act == 10) ? 10 : 9));
