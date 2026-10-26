@@ -105,8 +105,16 @@ def main():
     def own(t):
         return 'Go' in t or any(t.startswith(n + ' sent out') for n in players)
 
+    # Co-op battles open with "<partner> sent out X! Go, Y!"; a player's
+    # solo double opens with "Go! X and Y!". Only lines within 4000 frames
+    # after a co-op opening on that screen count.
+    def coop_opens(p):
+        return [f for f, t, _ in msgs[p] if re.search(r'^\S+ sent out [^!]+! Go, ', t)]
+
     def outs(p):
-        return [(f, t, own(t)) for f, t, st in msgs[p] if len(st) >= 4 and re.search(r'sent out|Go[,!] ', t)]
+        opens = coop_opens(p)
+        return [(f, t, own(t)) for f, t, st in msgs[p] if len(st) >= 4 and re.search(r'sent out|Go[,!] ', t)
+                and any(0 <= f - g <= 4000 for g in opens) or (len(st) >= 4 and re.search(r'^\S+ sent out [^!]+! Go, ', t))]
     o0, o1 = outs(0), outs(1)
     mism, pairs = [], 0
     for f, t, own in o0:
@@ -119,12 +127,21 @@ def main():
             mism.append('f%d p0 "%s" / p1 "%s"' % (f, t[:60], near[0][:60]))
     report('send-out-match', not mism, '; '.join(mism[:3]) or '%d co-op send-outs seen on both screens' % pairs)
 
-    # The engine's screen is the one whose battler table is filled at the
-    # challenge; the other screen fills it in later.
+    # The battle engine runs on the link master (player 0); the guest's
+    # battler table trails it, so in a shared battle only the master's
+    # lines are judged. A guest's solo battle (no master line nearby) is
+    # judged on the guest's own lines.
+    f0 = [f for f, _, _ in msgs[0]]
+    def master_busy(f):
+        import bisect
+        i = bisect.bisect_left(f0, f - 600)
+        return i < len(f0) and f0[i] <= f + 600
     phantom = []
     for p in (0, 1):
         for f, t, st in msgs[p]:
             if not t.startswith('What will'):
+                continue
+            if p == 1 and master_busy(f):
                 continue
             filled = [b for b, (sp, hp, mx, ab) in st.items() if sp]
             if not filled:
@@ -134,8 +151,19 @@ def main():
                     phantom.append('p%d f%d battler %d' % (p, f, b))
     report('no-phantom', not phantom, '; '.join(phantom[:3]))
 
-    blank = [(p, f, t) for p in (0, 1) for f, t, _ in msgs[p]
-             if t.startswith('<no name>') or re.search(r'sent out\s*!|Go[,!]\s*!', t)]
+    # Healthbox names are drawn for all four slots while a battle sets up,
+    # an empty slot included; only a nameless Pokemon announced after the
+    # opening line counts (the 0xC0170132 Lv0 box).
+    blank = []
+    for p in (0, 1):
+        opened = False
+        for f, t, st in msgs[p]:
+            if re.search(r'challenged by|appeared!|wants to battle', t):
+                opened = True
+            elif re.search(r'won|defeated|lost|got away|out of the fight|blacked out', t, re.I):
+                opened = False
+            if (opened and t.startswith('<no name>')) or re.search(r'sent out\s*!|Go[,!]\s*!', t):
+                blank.append((p, f, t))
     report('no-blank-name', not blank, '; '.join('p%d f%d "%s"' % b for b in blank[:3]))
 
     overlap = [(p, f, t) for p in (0, 1) for f, t, _ in msgs[p] if 'choosing' in t and 'What will' in t]

@@ -22,7 +22,7 @@
 #define MAX_CMDS 4096
 #define MAX_SYMS 500000
 
-enum { C_PARTNER, C_GOTO, C_HEX, C_PRESS, C_WAIT, C_SHOT, C_DUMP, C_BARRIER, C_UNTIL_CB2, C_UNTIL_FIELD, C_EXPECT, C_UNTIL_MEM, C_BATTLE, C_MENU, C_PARTY, C_FIXTURE, C_WRITE, C_LEAD, C_MOVE, C_SIX, C_VAR, C_FLAG, C_VS, C_EXPECT_FLAG, C_EXPECT_VAR, C_NO_OBJECT, C_MAP, C_OBJECT, C_TEXT_SPEED, C_PACE, C_MUTE, C_PARTNER_AT, C_ITEM, C_EXPECT_ITEM, C_UNTIL_TEXT, C_WARP, C_PC_COUNT, C_MONS, C_NO_COPIES, C_NOTE_MONEY, C_MONEY_GAIN, C_FORCE_ENC, C_EXPECT_RANGE, C_WALK, C_NO_WILD, C_CROSS, C_WALK_BATTLE, C_SMART, C_STRONG, C_UNTIL_TASK, C_MIRROR, C_SPECIES, C_NOTE_PARTY, C_SAME_PARTY, C_PATCH_RET, C_SLOT, C_TXN, C_MONEY_SAME, C_DEX, C_SWAP, C_GENDER, C_FILL, C_UNFILL, C_WRITEP, C_TINT, C_UNTIL_FTEXT, C_NICK, C_GRIND, C_CATCH };
+enum { C_PARTNER, C_GOTO, C_HEX, C_PRESS, C_WAIT, C_SHOT, C_DUMP, C_BARRIER, C_UNTIL_CB2, C_UNTIL_FIELD, C_EXPECT, C_UNTIL_MEM, C_BATTLE, C_MENU, C_PARTY, C_FIXTURE, C_WRITE, C_LEAD, C_MOVE, C_SIX, C_VAR, C_FLAG, C_VS, C_EXPECT_FLAG, C_EXPECT_VAR, C_NO_OBJECT, C_MAP, C_OBJECT, C_TEXT_SPEED, C_PACE, C_MUTE, C_PARTNER_AT, C_ITEM, C_EXPECT_ITEM, C_UNTIL_TEXT, C_WARP, C_PC_COUNT, C_MONS, C_NO_COPIES, C_NOTE_MONEY, C_MONEY_GAIN, C_FORCE_ENC, C_EXPECT_RANGE, C_WALK, C_NO_WILD, C_CROSS, C_WALK_BATTLE, C_SMART, C_STRONG, C_UNTIL_TASK, C_MIRROR, C_SPECIES, C_NOTE_PARTY, C_SAME_PARTY, C_PATCH_RET, C_SLOT, C_TXN, C_MONEY_SAME, C_DEX, C_SWAP, C_GENDER, C_FILL, C_UNFILL, C_WRITEP, C_TINT, C_UNTIL_FTEXT, C_NICK, C_GRIND, C_CATCH, C_HUNT };
 
 struct Cmd {
 	int kind;
@@ -1371,12 +1371,75 @@ static void frameCallback(struct mCoreThread* t) {
             }
             int atMenu = 0;
             unsigned funcs = symAddr("gBattlerControllerFuncs");
+            // Several controllers have a static HandleInputChooseAction:
+            // match by name, not by one address.
             for (int b = 0; b < 4; b++)
-                if ((rd32(p, funcs + b * 4) & ~1u) == chooseAction) atMenu = 1;
+                if (!strcmp(symName(rd32(p, funcs + b * 4)), "HandleInputChooseAction")) atMenu = 1;
+            (void)chooseAction;
             if (atMenu && p->grindCount < (int)c->value) {
                 unsigned t = p->step % 60;
                 if (t == 0) keys = 1u << 4;            // RIGHT: BAG
                 else if (t == 20) { keys = 1; p->grindCount++; out("[p%d] catch: throw %d\n", p->id, p->grindCount); }
+                break;
+            }
+            if (atMenu) { keys = autoKeys(p, p->step); break; }
+            keys = (p->step % 24) < 2 ? 2 : 0;
+            break;
+        }
+        case C_HUNT: {
+            // hunt THROWS SPECIES[,SPECIES...] [timeout]: pace in grass; in a
+            // wild battle against a wanted species, throw balls (up to
+            // THROWS per battle, then fight); against anything else, RUN.
+            // Done when a wanted Pokemon is caught (gBattleOutcome 7).
+            bool battling = rd8(p, sMain + 0x439) & 2;
+            unsigned cb2 = rd32(p, sMain + 4) & ~1u;
+            static unsigned bagCb;
+            if (!bagCb) bagCb = symAddr("CB2_BagMenuRun") & ~1u;
+            if (++p->step >= c->frames) {
+                out("[p%d] FAIL hunt timeout\n", p->id);
+                dump(p, "fail"); writePng(p, "fail"); sFailures++;
+                p->grindCount = 0; p->grindInBattle = 0; advance = true; break;
+            }
+            if (!battling && cb2 != bagCb) {
+                if (p->grindInBattle) {
+                    if (!inField(p)) { keys = (p->step % 24) < 2 ? 2 : 0; break; }
+                    unsigned outcome = rd8(p, symAddr("gBattleOutcome"));
+                    out("[f%06d p%d hunt] battle over: outcome=%u throws=%d party=%u\n", p->frame, p->id, outcome, p->grindCount, rd8(p, symAddr("gPartiesCount")));
+                    p->grindInBattle = 0; p->grindCount = 0;
+                    if (outcome == 7) { advance = true; break; }
+                }
+                if (!inField(p)) { keys = (p->step % 24) < 2 ? 2 : 0; break; }
+                keys = ((p->step / 24) & 1) ? (1u << 7) : (1u << 6);
+                break;
+            }
+            if (!p->grindInBattle) {
+                p->grindInBattle = 1;
+                unsigned sp = rd16(p, symAddr("gBattleMons") + 1 * 0x8C);
+                char list[96]; snprintf(list, sizeof(list), ",%s,", c->text + 16);
+                char needle[16]; snprintf(needle, sizeof(needle), ",%u,", sp);
+                p->stable = strstr(list, needle) != NULL;
+                out("[f%06d p%d hunt] wild species %u: %s\n", p->frame, p->id, sp, p->stable ? "wanted" : "run");
+            }
+            if (cb2 == bagCb) {
+                unsigned t = p->step % 30;
+                if (rd8(p, symAddr("gBagPosition") + 5) != 1) keys = t < 2 ? (1u << 4) : 0;
+                else keys = t < 2 ? 1 : 0;
+                break;
+            }
+            int atMenu = 0;
+            unsigned funcs = symAddr("gBattlerControllerFuncs");
+            for (int b = 0; b < 4; b++)
+                if (!strcmp(symName(rd32(p, funcs + b * 4)), "HandleInputChooseAction")) atMenu = 1;
+            if (atMenu && !p->stable) {
+                unsigned t = p->step % 60;          // RUN: bottom right
+                keys = t == 0 ? (1u << 7) : t == 15 ? (1u << 4) : t == 30 ? 1 : 0;
+                break;
+            }
+            if (atMenu && p->grindCount < (int)c->value) {
+                unsigned t = p->step % 60;
+                if (t == 0) keys = 1u << 6;            // UP: top row
+                else if (t == 10) keys = 1u << 4;      // RIGHT: BAG
+                else if (t == 25) { keys = 1; p->grindCount++; out("[p%d] hunt: throw %d\n", p->id, p->grindCount); }
                 break;
             }
             if (atMenu) { keys = autoKeys(p, p->step); break; }
@@ -2088,6 +2151,13 @@ static void loadScript(const char* path, int depth) {
             c.size = size;
             c.value = strtoul(b, NULL, 0);
             c.frames = n >= 5 ? atoi(d) : 6000;
+        } else if (!strcmp(cmd, "hunt")) {
+            // hunt THROWS SPECIES[,SPECIES...] [timeout] (species numbers)
+            c.kind = C_HUNT;
+            c.value = strtoul(a, NULL, 0);
+            snprintf(c.text, sizeof(c.text), "hunt");
+            snprintf(c.text + 16, sizeof(c.text) - 16, "%s", b);
+            c.frames = n >= 5 ? atoi(d) : 60000;
         } else if (!strcmp(cmd, "catch")) {
             // catch N [timeout]
             c.kind = C_CATCH;
