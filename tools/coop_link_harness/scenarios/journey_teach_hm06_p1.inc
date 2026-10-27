@@ -6,12 +6,49 @@
 1 press A 2
 1 until_cb2 CB2_BagMenuRun 2500
 1 wait 80
-# The TM/HM pocket (2), then the top of its list, then HM06 (row 5).
+# The TM/HM pocket (2), then the top of its list (14 UPs: the bag remembers its place;
+# its saved cursor fields are not live), then down, then HM06 (row 5).
 1 until_mem gBagPosition+5:1 2 600 RIGHT
 1 wait 40
-1 until_mem gBagPosition+12:2 0 600 UP
+1 press UP 2
+1 wait 8
+1 press UP 2
+1 wait 8
+1 press UP 2
+1 wait 8
+1 press UP 2
+1 wait 8
+1 press UP 2
+1 wait 8
+1 press UP 2
+1 wait 8
+1 press UP 2
+1 wait 8
+1 press UP 2
+1 wait 8
+1 press UP 2
+1 wait 8
+1 press UP 2
+1 wait 8
+1 press UP 2
+1 wait 8
+1 press UP 2
+1 wait 8
+1 press UP 2
+1 wait 8
+1 press UP 2
+1 wait 8
 1 wait 20
-1 until_mem gBagPosition+12:2 5 600 DOWN
+1 press DOWN 2
+1 wait 8
+1 press DOWN 2
+1 wait 8
+1 press DOWN 2
+1 wait 8
+1 press DOWN 2
+1 wait 8
+1 press DOWN 2
+1 wait 8
 1 wait 20
 1 shot tm-pocket
 # USE; "Booted up an HM." "It contained Rock Smash." "Teach ...?" YES.

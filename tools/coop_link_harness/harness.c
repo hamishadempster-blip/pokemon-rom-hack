@@ -23,7 +23,7 @@
 #define MAX_CMDS 4096
 #define MAX_SYMS 500000
 
-enum { C_PARTNER, C_GOTO, C_HEX, C_PRESS, C_WAIT, C_SHOT, C_DUMP, C_BARRIER, C_UNTIL_CB2, C_UNTIL_FIELD, C_EXPECT, C_UNTIL_MEM, C_BATTLE, C_MENU, C_PARTY, C_FIXTURE, C_WRITE, C_LEAD, C_MOVE, C_SIX, C_VAR, C_FLAG, C_VS, C_EXPECT_FLAG, C_EXPECT_VAR, C_NO_OBJECT, C_MAP, C_OBJECT, C_TEXT_SPEED, C_PACE, C_MUTE, C_PARTNER_AT, C_ITEM, C_EXPECT_ITEM, C_UNTIL_TEXT, C_WARP, C_PC_COUNT, C_MONS, C_NO_COPIES, C_NOTE_MONEY, C_MONEY_GAIN, C_FORCE_ENC, C_EXPECT_RANGE, C_WALK, C_NO_WILD, C_CROSS, C_WALK_BATTLE, C_SMART, C_STRONG, C_UNTIL_TASK, C_MIRROR, C_SPECIES, C_NOTE_PARTY, C_SAME_PARTY, C_PATCH_RET, C_SLOT, C_TXN, C_MONEY_SAME, C_DEX, C_SWAP, C_GENDER, C_FILL, C_UNFILL, C_WRITEP, C_TINT, C_UNTIL_FTEXT, C_NICK, C_GRIND, C_CATCH, C_HUNT, C_SWITCH_LEAD, C_PARTY_SLOT, C_HEAL_BELOW, C_TALK_OBJ, C_BOXES, C_TEST_HOOK, C_WATCH, C_EXPECT_WRITES };
+enum { C_PARTNER, C_GOTO, C_HEX, C_PRESS, C_WAIT, C_SHOT, C_DUMP, C_BARRIER, C_UNTIL_CB2, C_UNTIL_FIELD, C_EXPECT, C_UNTIL_MEM, C_BATTLE, C_MENU, C_PARTY, C_FIXTURE, C_WRITE, C_LEAD, C_MOVE, C_SIX, C_VAR, C_FLAG, C_VS, C_EXPECT_FLAG, C_EXPECT_VAR, C_NO_OBJECT, C_MAP, C_OBJECT, C_TEXT_SPEED, C_PACE, C_MUTE, C_PARTNER_AT, C_ITEM, C_EXPECT_ITEM, C_UNTIL_TEXT, C_WARP, C_PC_COUNT, C_MONS, C_NO_COPIES, C_NOTE_MONEY, C_MONEY_GAIN, C_FORCE_ENC, C_EXPECT_RANGE, C_WALK, C_NO_WILD, C_CROSS, C_WALK_BATTLE, C_SMART, C_STRONG, C_UNTIL_TASK, C_MIRROR, C_SPECIES, C_NOTE_PARTY, C_SAME_PARTY, C_PATCH_RET, C_SLOT, C_TXN, C_MONEY_SAME, C_DEX, C_SWAP, C_GENDER, C_FILL, C_UNFILL, C_WRITEP, C_TINT, C_UNTIL_FTEXT, C_NICK, C_GRIND, C_CATCH, C_HUNT, C_SWITCH_LEAD, C_PARTY_SLOT, C_HEAL_BELOW, C_TALK_OBJ, C_BOXES, C_TEST_HOOK, C_WATCH, C_EXPECT_WRITES, C_SURF };
 
 struct Cmd {
 	unsigned args[8];
@@ -65,6 +65,7 @@ struct Player {
     int learnPhase, learnTarget; unsigned learnStart, partyBackFrame;
     unsigned strongBattlers;
     unsigned offField;
+    unsigned noPath;      // walk: consecutive field frames with no path
     unsigned char partyNote[600];
     unsigned patchAddr, patchOpcode, patchFrames;
     int grindCount, grindInBattle, grindSwitched;
@@ -1156,8 +1157,10 @@ static int walkStep(struct Player* p, int tx, int ty) {
 	if (sx == gx && sy == gy) return 0;
 	bool surfing = rd8(p, sAvatar) & 8;
 	static __thread uint8_t blocked[10240];
-	static __thread int16_t prev[10240];
-	static __thread uint8_t elev[10240];
+	// Search nodes are (tile, carried elevation): a bridge tile (15) can be
+	// reached at two levels, and only one of them may lead on.
+	static __thread int32_t prev[10240 * 16];
+	static __thread int32_t queue[10240 * 16];
 	memset(blocked, 0, (size_t)(w * h));
 	for (unsigned i = 0; i < 16; i++) {
 		unsigned o = sObjEvents + i * 0x24;
@@ -1174,55 +1177,62 @@ static int walkStep(struct Player* p, int tx, int ty) {
 	}
 	#define BLK(x, y) rd16(p, map + 2u * (unsigned)((y) * w + (x)))
 	#define BEH(b) (((b) & 0x3FF) < 512 ? rd16(p, pattr + 2u * ((b) & 0x3FF)) : rd16(p, sattr + 2u * (((b) & 0x3FF) - 512))) & 0xFF
-	for (int i = 0; i < w * h; i++) prev[i] = -2;
-	static __thread int queue[10240];
-	int qh = 0, qt = 0, start = sy * w + sx;
+	#define ISWATER(beh) (((beh) >= 0x10 && (beh) <= 0x16) || (beh) == 0x19 || (beh) == 0x22 || ((beh) >= 0x50 && (beh) <= 0x53))
+	for (int i = 0; i < w * h * 16; i++) prev[i] = -2;
+	int qh = 0, qt = 0, startTile = sy * w + sx;
+	int start = startTile * 16 + ((BLK(sx, sy) >> 12) & 0xF);
 	prev[start] = -1;
-	elev[start] = (BLK(sx, sy) >> 12) & 0xF;
 	queue[qt++] = start;
 	static const int DX[4] = {0, 0, -1, 1}, DY[4] = {1, -1, 0, 0};
 	static const unsigned JUMP[4] = {0x3B, 0x3A, 0x39, 0x38};
-	bool found = false;
-	while (qh < qt && !found) {
-		if (qt > 10200) { out("[p%d] walk: queue overflow\n", p->id); return -1; }
-		int cur = queue[qh++], cx = cur % w, cy = cur / w;
+	int found = -1;
+	while (qh < qt && found < 0) {
+		int cur = queue[qh++], ct = cur / 16, ce0 = cur % 16, cx = ct % w, cy = ct / w;
+		// On water means surfing (the start tile tells for the start).
+		bool curSurf = ct == startTile ? surfing : ISWATER(BEH(BLK(cx, cy)));
 		for (int d = 0; d < 4; d++) {
-			int nx = cx + DX[d], ny = cy + DY[d];
+			int nx = cx + DX[d], ny = cy + DY[d], ce = ce0;
 			if (nx < 0 || ny < 0 || nx >= w || ny >= h) continue;
 			unsigned b = BLK(nx, ny), beh = BEH(b);
-			int ex = (b >> 12) & 0xF, ce = elev[cur];
+			int ex = (b >> 12) & 0xF;
 			if (beh >= 0x38 && beh <= 0x3B) {
-				if (beh != JUMP[d]) continue;
+				if (beh != JUMP[d] || curSurf) continue;
 				nx += DX[d]; ny += DY[d];
 				if (nx < 0 || ny < 0 || nx >= w || ny >= h) continue;
 				b = BLK(nx, ny); beh = BEH(b); ex = (b >> 12) & 0xF; ce = ex;
 			}
-			int ni = ny * w + nx;
-			if (prev[ni] != -2 || blocked[ni]) continue;
+			int ti = ny * w + nx;
+			if (blocked[ti]) continue;
 			// Stay on this map unless the target is off it (a connected map).
 			if (goalInside && (nx < 7 || ny < 7 || nx >= 7 + lw || ny >= 7 + lh)) continue;
 			bool goal = nx == gx && ny == gy; // a door warp tile has collision set
 			if (((b >> 10) & 3) && !goal) continue;
-			bool water = (beh >= 0x10 && beh <= 0x16) || beh == 0x19 || beh == 0x22 || (beh >= 0x50 && beh <= 0x53);
-			if (water != surfing) continue;
-			if (!goal && !(ex == 0 || ex == 15 || ce == 0 || ce == 15 || ex == ce)) continue;
-			prev[ni] = (int16_t)cur;
+			bool water = ISWATER(beh);
+			// Surfing: on along the water, or off onto land (the game
+			// dismounts there); once on land, land only (Surf is used
+			// from the bank with A, not walked into).
+			if (water && !curSurf) continue;
+			if (!goal && !(ex == 0 || ex == 15 || ce == 0 || ce == 15 || ex == ce) && !(curSurf && !water)) continue;
 			// As ObjectEventUpdateElevation: a transition tile (0) sets the
 			// player's elevation to 0 (any level next); a bridge (15) keeps it.
-			elev[ni] = ex == 15 ? (uint8_t)ce : (uint8_t)ex;
+			int ne = ex == 15 ? ce : ex;
+			int ni = ti * 16 + ne;
+			if (prev[ni] != -2) continue;
+			prev[ni] = cur;
 			queue[qt++] = ni;
-			if (nx == gx && ny == gy) { found = true; break; }
+			if (goal) { found = ni; break; }
 		}
 	}
 	#undef BLK
 	#undef BEH
-	if (gx < 0 || gy < 0 || gx >= w || gy >= h) return -1;
-	int g = gy * w + gx;
-	if (prev[g] == -2) return -1;
+	#undef ISWATER
+	if (found < 0) return -1;
+	int g = found;
 	for (int guard = 0; prev[g] != start && prev[g] >= 0; guard++) {
-		if (guard > w * h) { out("[p%d] walk: path loop\n", p->id); return -1; }
+		if (guard > w * h * 16) { out("[p%d] walk: path loop\n", p->id); return -1; }
 		g = prev[g];
 	}
+	g /= 16;
 	int fx = g % w, fy = g / w;
 	if (fx > sx) return 1 << 4;
 	if (fx < sx) return 1 << 5;
@@ -1587,6 +1597,10 @@ static void frameCallback(struct mCoreThread* t) {
             p->stable = 0;
             if (inField(p)) keys = c->keys;
             else keys = autoKeys(p, p->step);
+            // A battle on the way (a hidden trainer, a wild encounter) does
+            // not use up the map-change budget; it has its own cap.
+            if ((rd8(p, sMain + 0x439) & 2) && p->offField < 60000u) { p->offField++; break; }
+            p->offField = 0;
             if (++p->step >= c->frames) {
                 out("[p%d] FAIL %s: on map %u.%u\n", p->id, c->text, mg, mn);
                 dump(p, "fail");
@@ -1854,6 +1868,10 @@ static void frameCallback(struct mCoreThread* t) {
 				if (k > 0) keys = (unsigned)k;
 				if (k < 0 && (p->step % 600) == 0)
 					out("[f%06d p%d] walk: no path to (%d,%d) from (%d,%d)\n", p->frame, p->id, (int)c->addr, c->value, x, y);
+				// No progress: no path for 30 s of field time ends the walk
+				// now (with diagnostics) instead of at the end of its budget.
+				p->noPath = k < 0 ? p->noPath + 1 : 0;
+				if (p->noPath >= 1800) { p->noPath = 0; p->step = c->frames; }
 			}
 			// The budget counts overworld frames; battles and scenes on the
 			// way have a separate, generous cap.
@@ -1958,6 +1976,11 @@ static void frameCallback(struct mCoreThread* t) {
 			// faint): step the cursor down before each A, so a fainted
 			// first slot does not hold the masher on "no energy left".
 			if ((c->kind == C_UNTIL_FIELD || c->kind == C_UNTIL_CB2) && c->keys == 1) keys = autoKeys(p, p->step);
+			// mash_field: a battle on the way (wild, trainer) does not use up
+			// the budget; it has its own generous cap.
+			bool inBattleNow = (rd8(p, sMain + 0x439) & 2) != 0;
+			if (c->kind == C_UNTIL_FIELD && inBattleNow && p->offField < 60000u) { p->offField++; break; }
+			if (!inBattleNow) p->offField = 0;
 			if (++p->step >= c->frames) {
 				out("[p%d] FAIL timeout waiting for %s (line cmd %d)\n", p->id, c->text, p->pc);
 				dump(p, "fail");
@@ -2653,6 +2676,33 @@ static void frameCallback(struct mCoreThread* t) {
 			else out("[p%d] ok %d stores in the watched range\n", p->id, sWatchHits[p->id]);
 			advance = true;
 			break;
+		case C_SURF: {
+			if (rd8(p, sAvatar) & 8) {
+				if (++p->stable >= 30) { p->stable = 0; p->step = 0; advance = true; }
+				break;
+			}
+			p->stable = 0;
+			// Face the water while in the field; A starts and answers the
+			// question (YES is the default).
+			unsigned ph = (unsigned)p->frame % 40;
+			bool fieldNow = inField(p);
+			if (fieldNow) keys = ph < 3 ? c->keys : (ph >= 20 && ph < 22) ? 1 : 0;
+			else if (rd8(p, sMain + 0x439) & 2) keys = autoKeys(p, p->offField);
+			else keys = (ph % 20) < 2 ? 1 : 0; // A only: B would answer NO
+			// Scenes and battles on the way don't count against the budget.
+			if (!fieldNow && p->offField < 60000u) { p->offField++; break; }
+			p->offField = 0;
+			if (getenv("CMD_TRACE") && p->step % 250 == 0) {
+				unsigned me = sObjEvents + rd8(p, sAvatar + 5) * 0x24;
+				out("[f%06d p%d surf] step %d keys %x facing %u script %u\n", p->frame, p->id, p->step, keys, rd8(p, me + 0x18) & 15, sScriptStatus ? rd8(p, sScriptStatus) : 9);
+			}
+			if (++p->step >= c->frames) {
+				unsigned me = sObjEvents + rd8(p, sAvatar + 5) * 0x24;
+				out("[p%d] FAIL %s: not surfing (avatar flags %02x, facing %u, obj bytes %02x %02x %02x %02x, lock %u)\n", p->id, c->text, rd8(p, sAvatar), rd8(p, me + 0x18) & 15, rd8(p, me), rd8(p, me + 1), rd8(p, me + 2), rd8(p, me + 3), rd8(p, sLockCtl));
+				dump(p, "fail"); writePng(p, "fail"); sFailures++; p->done = 1;
+			}
+			break;
+		}
 		case C_BOXES: {
 			// boxes: every occupied PC box slot (species and moves, decrypted).
 			unsigned st = rd32(p, symAddr("gPokemonStoragePtr"));
@@ -2752,6 +2802,9 @@ static void frameCallback(struct mCoreThread* t) {
 		if (!advance) break;
 		p->pc++;
 		p->step = 0;
+		p->offField = 0;
+		{ static int tr = -1; if (tr < 0) tr = getenv("CMD_TRACE") != NULL;
+		  if (tr && p->pc < p->ncmds) out("[f%06d p%d cmd] %d %s\n", p->frame, p->id, p->pc, p->cmds[p->pc].text); }
 		if (c->kind == C_PRESS || c->kind == C_WAIT) break;
 	}
 	if (p->crashStart) { p->crashStart--; keys = p->crashStart >= 4 ? 8 /* START */ : 0; }
@@ -2919,6 +2972,13 @@ static void loadScript(const char* path, int depth) {
         } else if (!strcmp(cmd, "expect_writes")) {
         	c.kind = C_EXPECT_WRITES;
         	c.value = strtoul(a, NULL, 0);
+        } else if (!strcmp(cmd, "surf")) {
+        	// surf DIR [T]: from the bank, face DIR and answer the game's
+        	// "use SURF?" question until the player is surfing.
+        	c.kind = C_SURF;
+        	c.keys = parseKeys(a);
+        	c.frames = n >= 4 ? atoi(b) : 4000;
+        	snprintf(c.text, sizeof(c.text), "surf %s", a);
         } else if (!strcmp(cmd, "boxes")) {
         	c.kind = C_BOXES;
         } else if (!strcmp(cmd, "talk_obj")) {
@@ -3200,6 +3260,7 @@ static void loadScript(const char* path, int depth) {
 			fprintf(stderr, "bad command %s\n", cmd);
 			exit(1);
 		}
+		if (!c.text[0]) snprintf(c.text, sizeof(c.text), "%s %s %s %s", cmd, a, b, d);
 		addCmd(w, c);
 	}
 	fclose(f);

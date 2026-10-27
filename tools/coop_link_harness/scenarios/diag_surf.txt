@@ -1,0 +1,45 @@
+# JOURNEY 48 (main playthrough, no fixtures): CONTINUE journey_47's saves
+# (Mauville Centre; SURF taught to both leads).
+#  - Relink, Beacon ON (Rosa).
+#  - Route 118: SURF across from the west bank; Steven's scene east of the
+#    water (each player walks into it on their own save).
+#  - North onto Route 119 (its trainers), up to the Weather Institute.
+#  - Save outside it.
+# Driver aids: smart_moves, heal_below.
+include continue.inc
+include relink.inc
+b expect coop.sLinkState 2
+b smart_moves 1
+b heal_below 35 2
+include beacon_on_p1.inc
+b mash_field 2000 B
+b expect coop.sBeacon+1:1 1
+b expect_var 0x4071 0
+b walk 7 8 2000
+b cross DOWN 0 2 2000
+b walk 39 9 8000
+b cross RIGHT 0 33 3000
+b dump route118
+0 walk 17 10 8000
+0 dump at-bank
+0 press RIGHT 3
+0 wait 20
+0 shot s1
+0 press A 2
+0 wait 40
+0 shot s2
+0 press A 2
+0 wait 40
+0 shot s3
+0 press A 2
+0 wait 40
+0 shot s4
+0 press A 2
+0 wait 60
+0 shot s5
+0 dump after
+0 mash_field 30000
+0 dump after-battle
+0 shot t0
+0 surf RIGHT 600
+0 dump end

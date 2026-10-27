@@ -1,0 +1,17 @@
+# DIAGNOSTIC: the TM/HM pocket's rows (journey 46 saves), Kai.
+include continue.inc
+b press START 2
+b wait 40
+b menu_to BAG
+b press A 2
+b until_cb2 CB2_BagMenuRun 2500
+b wait 80
+b until_mem gBagPosition+5:1 2 600 RIGHT
+b wait 40
+b until_mem gBagPosition+12:2 0 600 UP
+b wait 20
+b shot top
+b until_mem gBagPosition+12:2 7 600 DOWN
+b wait 20
+b shot row7
+b wait 20

@@ -1,0 +1,60 @@
+# JOURNEY 48 (main playthrough, no fixtures): CONTINUE journey_47's saves
+# (Mauville Centre; SURF taught to both leads).
+#  - Relink, Beacon ON (Rosa).
+#  - Route 118: SURF across from the west bank; Steven's scene east of the
+#    water (each player walks into it on their own save).
+#  - North onto Route 119 (its trainers), up to the Weather Institute.
+#  - Save outside it.
+# Driver aids: smart_moves, heal_below.
+include continue.inc
+include relink.inc
+b expect coop.sLinkState 2
+b smart_moves 1
+b heal_below 35 2
+include beacon_on_p1.inc
+b mash_field 2000 B
+b expect coop.sBeacon+1:1 1
+b expect_var 0x4071 0
+b walk 7 8 2000
+b cross DOWN 0 2 2000
+b walk 39 9 8000
+b cross RIGHT 0 33 3000
+b dump route118
+0 walk 17 10 8000
+1 walk 17 9 8000
+b sync
+b surf RIGHT
+0 walk 32 10 8000
+1 walk 32 9 8000
+b sync
+b dump landed
+# Steven's scene (triggers 43-45,11). Kai first, Rosa after.
+0 walk 44 11 12000
+0 mash_field 20000
+0 dump after-steven-kai
+0 shot steven-kai
+0 walk 47 9 3000
+b sync
+1 walk 44 11 12000
+1 mash_field 20000
+1 dump after-steven-rosa
+b sync
+b expect_var 0x4071 1
+b walk 58 0 30000
+b cross UP 0 34 3000
+b dump route119
+# North through the grass to the pond at (22,109): SURF across it (the
+# only way on to the north part; route found from the map data), then on
+# to the Weather Institute.
+0 walk 22 110 60000
+0 surf UP
+0 walk 26 107 4000
+1 walk 22 110 60000
+1 surf UP
+1 walk 27 107 4000
+b sync
+b walk 6 33 120000
+b dump near-institute
+b shot near-institute
+include save_again.inc
+b party

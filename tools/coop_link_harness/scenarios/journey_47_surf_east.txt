@@ -1,0 +1,61 @@
+# JOURNEY 47 (main playthrough, no fixtures): CONTINUE journey_46's saves
+# (Petalburg Centre; SURF on both).
+#  - Relink, Beacon ON (Kai).
+#  - Each player teaches HM03 SURF from the Bag to the lead (DIG forgotten).
+#  - Route 102 east to Oldale, north onto Route 103; SURF east across the
+#    water (each player starts surfing from the bank), land on the east
+#    side, east onto Route 110, SURF over its narrow channel, north to
+#    Mauville.
+#  - Mauville Centre: heal, save.
+# Driver aids: smart_moves, heal_below.
+include continue.inc
+include relink.inc
+b expect coop.sLinkState 2
+b smart_moves 1
+b heal_below 35 2
+include beacon_on.inc
+b mash_field 2000 B
+b expect coop.sBeacon+1:1 1
+include journey_teach_hm03_p0.inc
+include journey_teach_hm03_p1.inc
+b sync
+b expect_move 57
+b party
+b walk 7 8 2000
+b cross DOWN 0 0 2000
+b walk 29 17 8000
+b cross RIGHT 0 17 3000
+b walk 49 10 30000
+b cross RIGHT 0 10 3000
+b walk 10 0 8000
+b cross UP 0 18 3000
+b dump route103
+# The bank (21,10), facing the water: A, "Want to SURF?" YES.
+0 walk 21 10 12000
+1 walk 21 11 12000
+b sync
+b surf RIGHT
+b shot surfing
+0 walk 49 10 12000
+1 walk 49 11 12000
+b sync
+b dump landed
+b walk 79 10 20000
+b cross RIGHT 0 25 3000
+b dump route110
+# The narrow channel (16-18, 68-72) between Route 110's west bank and the
+# east path north: SURF across from (15,69).
+0 walk 15 69 12000
+1 walk 15 70 12000
+b sync
+b surf RIGHT
+0 walk 19 69 4000
+1 walk 19 70 4000
+b sync
+b walk 15 0 60000
+b cross UP 0 2 3000
+b walk 22 6 6000
+b cross UP 10 5 3000
+include journey_heal_center.inc
+include save_again.inc
+b party
