@@ -1,4 +1,5 @@
 #include "global.h"
+#include "coop_protocol.h"
 #include "malloc.h"
 #include "battle.h"
 #include "battle_anim.h"
@@ -4862,9 +4863,31 @@ static bool32 IsItemFlute(enum Item item)
 }
 
 // Battle scripts called in HandleAction_UseItem
+// Co-op: items only for this player's own team; the partner's Pokémon
+// shown beside them are theirs to look after.
+static bool8 IsPartnersMonInBattleMenu(s8 menuId)
+{
+    struct Pokemon *party = NULL;
+    s8 slot = 0;
+
+    if (!(gBattleTypeFlags & BATTLE_TYPE_COOP))
+        return FALSE;
+    GetPartyAndSlotFromPartyMenuId(menuId, &party, &slot);
+    return party != gParties[B_TRAINER_PLAYER] || slot >= COOP_BATTLE_SLOTS;
+}
+
 void ItemUseCB_BattleScript(u8 taskId, TaskFunc task)
 {
     struct Pokemon *mon = GetPartyMonFromPartyMenuId(gPartyMenu.slotId);
+    if (IsPartnersMonInBattleMenu(gPartyMenu.slotId))
+    {
+        gPartyMenuUseExitCallback = FALSE;
+        PlaySE(SE_SELECT);
+        DisplayPartyMenuMessage(COMPOUND_STRING("Only for your own POKéMON."), TRUE);
+        ScheduleBgCopyTilemapToVram(2);
+        gTasks[taskId].func = task;
+        return;
+    }
     if (CannotUseItemsInBattle(gSpecialVar_ItemId, mon))
     {
         gPartyMenuUseExitCallback = FALSE;
@@ -5482,7 +5505,7 @@ static void TryUseItemOnMove(u8 taskId)
     // In battle, set appropriate variables to be used in battle script.
     if (gMain.inBattle)
     {
-        if (CannotUseItemsInBattle(gSpecialVar_ItemId, mon))
+        if (IsPartnersMonInBattleMenu(ptr->slotId) || CannotUseItemsInBattle(gSpecialVar_ItemId, mon))
         {
             gPartyMenuUseExitCallback = FALSE;
             PlaySE(SE_SELECT);

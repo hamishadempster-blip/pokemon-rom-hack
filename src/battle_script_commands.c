@@ -9457,6 +9457,29 @@ void ApplyExperienceMultipliers(s32 *expAmount, u8 expGetterMonId, u8 faintedBat
     }
 }
 
+// The other active battler holds this party index only when it is from the
+// same party: in a multi battle (co-op) the ally's index belongs to another
+// trainer's party.
+static bool32 ItemTargetIsAllyBattler(enum BattlerId user)
+{
+    enum BattlerId ally = GetPartnerBattler(user);
+
+    return IsDoubleBattle() && GetBattlerTrainer(ally) == GetBattlerTrainer(user)
+        && gBattleStruct->itemPartyIndex[user] == gBattlerPartyIndexes[ally];
+}
+
+// Co-op: the joining player's party is a copy in the link master's battle.
+// An item it uses changes that copy here; its own game gets the same value
+// for that party slot (a benched Pokémon has no other way to hear of it).
+static void CoopSendItemTargetData(enum BattlerId user, u8 request, void *data, u32 size)
+{
+    if (!(gBattleTypeFlags & BATTLE_TYPE_COOP) || GetBattlerTrainer(user) != B_TRAINER_PARTNER
+     || gBattleStruct->itemPartyIndex[user] >= PARTY_SIZE)
+        return;
+    BtlController_EmitSetMonData(user, B_COMM_TO_CONTROLLER, request, 1u << gBattleStruct->itemPartyIndex[user], size, data);
+    MarkBattlerForControllerExec(user);
+}
+
 void BS_ItemRestoreHP(void)
 {
     NATIVE_ARGS(const u8 *alreadyMaxHpInstr, const u8 *restoreBattlerInstr);
@@ -9481,7 +9504,7 @@ void BS_ItemRestoreHP(void)
         // Check if the recipient is an active battler.
         if (gBattleStruct->itemPartyIndex[gBattlerAttacker] == gBattlerPartyIndexes[gBattlerAttacker])
             battler = gBattlerAttacker;
-        else if (IsDoubleBattle() && gBattleStruct->itemPartyIndex[gBattlerAttacker] == gBattlerPartyIndexes[GetPartnerBattler(gBattlerAttacker)])
+        else if (ItemTargetIsAllyBattler(gBattlerAttacker))
             battler = GetPartnerBattler(gBattlerAttacker);
 
         // Get amount to heal.
@@ -9516,10 +9539,13 @@ void BS_ItemRestoreHP(void)
         {
             hp += healAmount;
             SetMonData(&party[gBattleStruct->itemPartyIndex[gBattlerAttacker]], MON_DATA_HP, &hp);
+            CoopSendItemTargetData(gBattlerAttacker, REQUEST_HP_BATTLE, &hp, sizeof(hp));
 
             enum BattlerId partner = GetPartnerBattler(gBattlerAttacker);
-            // Absent battlers on the field need to be replaced
-            if (IsDoubleBattle() && (gAbsentBattlerFlags & (1u << partner)))
+            // Absent battlers on the field need to be replaced (only from
+            // their own party: a co-op ally's empty slot is not this one's).
+            if (IsDoubleBattle() && (gAbsentBattlerFlags & (1u << partner))
+             && GetBattlerTrainer(partner) == GetBattlerTrainer(gBattlerAttacker))
             {
                 gAbsentBattlerFlags &= ~(1u << partner);
                 gBattleCommunication[MULTIUSE_STATE] = TRUE;
@@ -9544,8 +9570,7 @@ void BS_ItemCureStatus(void)
         statusChanged = ItemHealMonVolatile(gBattlerAttacker, gLastUsedItem);
         targetBattler = gBattlerAttacker;
     }
-    else if (IsDoubleBattle()
-     && gBattleStruct->itemPartyIndex[gBattlerAttacker] == gBattlerPartyIndexes[GetPartnerBattler(gBattlerAttacker)])
+    else if (ItemTargetIsAllyBattler(gBattlerAttacker))
     {
         statusChanged = ItemHealMonVolatile(GetPartnerBattler(gBattlerAttacker), gLastUsedItem);
         targetBattler = GetPartnerBattler(gBattlerAttacker);
@@ -9566,6 +9591,10 @@ void BS_ItemCureStatus(void)
     }
 
     PREPARE_SPECIES_BUFFER(gBattleTextBuff1, GetMonData(&party[gBattleStruct->itemPartyIndex[gBattlerAttacker]], MON_DATA_SPECIES));
+    {
+        u32 status = GetMonData(&party[gBattleStruct->itemPartyIndex[gBattlerAttacker]], MON_DATA_STATUS);
+        CoopSendItemTargetData(gBattlerAttacker, REQUEST_STATUS_BATTLE, &status, sizeof(status));
+    }
     if (targetBattler == MAX_BATTLERS_COUNT)
     {
         gBattlescriptCurrInstr = cmd->nextInstr;
@@ -9581,7 +9610,8 @@ void BS_ItemIncreaseStat(void)
 {
     NATIVE_ARGS();
 
-    if (gBattlerPartyIndexes[gBattlerAttacker] != gBattleStruct->itemPartyIndex[gBattlerAttacker])
+    if (gBattlerPartyIndexes[gBattlerAttacker] != gBattleStruct->itemPartyIndex[gBattlerAttacker]
+     && GetBattlerTrainer(GetPartnerBattler(gBattlerAttacker)) == GetBattlerTrainer(gBattlerAttacker))
         gBattlerAttacker = GetPartnerBattler(gBattlerAttacker);
 
     if (GetItemBattleUsage(gLastUsedItem) == EFFECT_ITEM_INCREASE_STAT)
@@ -9625,8 +9655,7 @@ void BS_ItemRestorePP(void)
     // Check if the recipient is an active battler.
     if (gBattleStruct->itemPartyIndex[gBattlerAttacker] == gBattlerPartyIndexes[gBattlerAttacker])
         battler = gBattlerAttacker;
-    else if (IsDoubleBattle()
-                && gBattleStruct->itemPartyIndex[gBattlerAttacker] == gBattlerPartyIndexes[GetPartnerBattler(gBattlerAttacker)])
+    else if (ItemTargetIsAllyBattler(gBattlerAttacker))
         battler = GetPartnerBattler(gBattlerAttacker);
 
     // Heal PP!
@@ -9650,6 +9679,13 @@ void BS_ItemRestorePP(void)
                 gBattleMons[battler].pp[i] = pp;
             }
         }
+    }
+    {
+        u8 ppData[MAX_MON_MOVES + 1];
+        for (i = 0; i < MAX_MON_MOVES; i++)
+            ppData[i] = GetMonData(mon, MON_DATA_PP1 + i);
+        ppData[MAX_MON_MOVES] = GetMonData(mon, MON_DATA_PP_BONUSES);
+        CoopSendItemTargetData(gBattlerAttacker, REQUEST_PP_DATA_BATTLE, ppData, sizeof(ppData));
     }
     gBattleScripting.battler = battler;
     PREPARE_SPECIES_BUFFER(gBattleTextBuff1, GetMonData(mon, MON_DATA_SPECIES));

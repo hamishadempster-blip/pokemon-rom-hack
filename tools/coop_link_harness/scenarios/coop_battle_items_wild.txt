@@ -1,0 +1,49 @@
+# Bag items in a co-op wild battle (Route 116, j16 saves, linked, Beacon ON).
+# FIXTURES: Route 116 grass all ABRA; a forced encounter step; Karen's sight
+# hidden for the whole run; both leads at 5 HP; two POTIONs each.
+# Checks: each player uses a POTION on their own lead in the same turn
+# (before the Abras Teleport away); one POTION gone from each bag, both
+# leads healed on their own saves; the battle ends on both games.
+include continue.inc
+include relink.inc
+b expect coop.sLinkState 2
+b smart_moves 1
+include beacon_on.inc
+b mash_field 2000 B
+b expect coop.sBeacon+1:1 1
+b no_wild 1
+b fixture_rom16 gRoute116_LandMons+2 63
+b fixture_rom16 gRoute116_LandMons+6 63
+b fixture_rom16 gRoute116_LandMons+10 63
+b fixture_rom16 gRoute116_LandMons+14 63
+b fixture_rom16 gRoute116_LandMons+18 63
+b fixture_rom16 gRoute116_LandMons+22 63
+b fixture_rom16 gRoute116_LandMons+26 63
+b fixture_rom16 gRoute116_LandMons+30 63
+b fixture_rom16 gRoute116_LandMons+34 63
+b fixture_rom16 gRoute116_LandMons+38 63
+b fixture_rom16 gRoute116_LandMons+42 63
+b fixture_rom16 gRoute116_LandMons+46 63
+b fixture_item 0 28 2
+b write gParties+86:2 5
+0 fixture_warp 0 31 23 17
+1 fixture_warp 0 31 25 17
+b until_field 3000
+b sync
+b wait 0
+b fixture_obj 17 7 0
+0 no_wild 0
+0 press LEFT 3
+0 wait 20
+0 force_encounter 1
+0 write sWildEncounterImmunitySteps:1 4
+0 write sPrevMetatileBehavior:2 2
+0 press LEFT 10
+b until_cb2 BattleMainCB2 4000 A
+b battle_item 28 0
+b mash_field 20000
+b until_field 3000
+b expect_item 0 28 1
+b expect_range gParties+86:2 6 999
+b expect_tasks MAX 2
+b expect coop.sLinkState 2

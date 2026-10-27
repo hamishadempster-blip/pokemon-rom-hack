@@ -209,6 +209,7 @@ void Coop_AbortBattle(void);
 bool8 Coop_WildPairReady(void);
 void Coop_QueueWildPair(void);
 bool8 Coop_IsWildBattle(void);
+bool8 Coop_BattleItemsAllowed(void);
 bool8 Coop_HasCatchRoom(void);
 bool8 Coop_CanCatchTarget(u32 target);
 void Coop_ClaimCatch(u32 thrower, u32 target);

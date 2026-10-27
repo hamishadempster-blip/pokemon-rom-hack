@@ -87,7 +87,7 @@ run bedroom_reload SAVE0="$out/mays_house_doorway/p0.sav" SAVE1="$out/mays_house
 # J16=dir with p0.sav/p1.sav from the main journey's checkpoint 16 (Route
 # 116, by Rustboro): finding #16 sequences and shared NPC movement.
 if [ -n "${J16:-}" ]; then
-	for s in finding16_wild_teleport_karen finding16_partner_wild_karen npc_town_order npc_interior_talk npc_reconnect; do
+	for s in finding16_wild_teleport_karen finding16_partner_wild_karen npc_town_order npc_interior_talk npc_reconnect coop_battle_items coop_battle_items_wild; do
 		run "$s" SAVE0="$J16/p0.sav" SAVE1="$J16/p1.sav"
 	done
 fi
@@ -151,6 +151,8 @@ if [ -n "${SEG6:-}" ]; then
 	run link_stray_block SAVE0="$SEG6/p0.sav" SAVE1="$SEG6/p1.sav"
 	run battle_stray_block SAVE0="$SEG6/p0.sav" SAVE1="$SEG6/p1.sav"
 	run coop_field_move_fly SAVE0="$SEG6/p0.sav" SAVE1="$SEG6/p1.sav"
+	# Doors, nurse, menus, save, bikes, FLY, a solo and a co-op battle, UNLINK/LINK UP.
+	run transitions_tour SAVE0="$SEG6/p0.sav" SAVE1="$SEG6/p1.sav"
 	run coop_partner_mach_bike SAVE0="$SEG6/p0.sav" SAVE1="$SEG6/p1.sav"
 	# One trainer, two of his Pokemon down on one turn, one left in reserve.
 	run coop_one_trainer_faints SAVE0="$SEG6/p0.sav" SAVE1="$SEG6/p1.sav"

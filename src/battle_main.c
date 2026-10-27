@@ -1,6 +1,7 @@
 #include "global.h"
 #include "battle.h"
 #include "coop.h"
+#include "coop_protocol.h"
 #include "coop_deal.h"
 #include "constants/coop.h"
 #include "battle_anim.h"
@@ -4014,7 +4015,7 @@ static void HandleTurnActionSelectionState(void)
                                             | BATTLE_TYPE_EREADER_TRAINER
                                             | BATTLE_TYPE_RECORDED_LINK))
                                             && !gTestRunnerEnabled
-                                            && !Coop_IsWildBattle())
+                                            && !Coop_BattleItemsAllowed())
                                             // Practice copies: the bag stays closed.
                                             || gCoopPracticeBattle
                                             // Or if currently held by Sky Drop
@@ -4248,7 +4249,23 @@ static void HandleTurnActionSelectionState(void)
                         if (GetItemPocket(gLastUsedItem) == POCKET_POKE_BALLS)
                             gBattleStruct->throwingPokeBall = TRUE;
                         if (gBattleTypeFlags & BATTLE_TYPE_COOP)
+                        {
                             gCoopBallTargetFor[battler] = gBattleResources->bufferB[battler][3];
+                            // Any other item: the user's own party slot, chosen
+                            // on the user's game (party index + 1). Only the
+                            // battle team (first three) can be a target.
+                            if (!gBattleStruct->throwingPokeBall)
+                            {
+                                u8 slot = gBattleResources->bufferB[battler][3] & 0xF;
+                                if (slot == 0 || slot > COOP_BATTLE_SLOTS)
+                                {
+                                    gBattleCommunication[battler] = STATE_BEFORE_ACTION_CHOSEN;
+                                    break;
+                                }
+                                gBattleStruct->itemPartyIndex[battler] = slot - 1;
+                                gBattleStruct->itemMoveIndex[battler] = gBattleResources->bufferB[battler][3] >> 4;
+                            }
+                        }
                         gBattleCommunication[battler]++;
                     }
                     break;

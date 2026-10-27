@@ -1694,7 +1694,13 @@ static void CompleteWhenChoseItem(enum BattlerId battler)
             BtlController_Complete(battler);
             return;
         }
-        BtlController_EmitOneReturnValue(battler, B_COMM_TO_ENGINE, gSpecialVar_ItemId);
+        // Co-op: the engine runs on the link master, so the party slot the
+        // item is for travels with it.
+        if ((gBattleTypeFlags & BATTLE_TYPE_COOP) && gSpecialVar_ItemId != ITEM_NONE)
+            BtlController_EmitChosenBall(battler, B_COMM_TO_ENGINE, gSpecialVar_ItemId,
+                                         (gBattleStruct->itemPartyIndex[battler] & 0xF) | ((gBattleStruct->itemMoveIndex[battler] & 3) << 4));
+        else
+            BtlController_EmitOneReturnValue(battler, B_COMM_TO_ENGINE, gSpecialVar_ItemId);
         BtlController_Complete(battler);
     }
 }

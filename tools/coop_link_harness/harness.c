@@ -23,7 +23,7 @@
 #define MAX_CMDS 4096
 #define MAX_SYMS 500000
 
-enum { C_PARTNER, C_GOTO, C_HEX, C_PRESS, C_WAIT, C_SHOT, C_DUMP, C_BARRIER, C_UNTIL_CB2, C_UNTIL_FIELD, C_EXPECT, C_UNTIL_MEM, C_BATTLE, C_MENU, C_PARTY, C_FIXTURE, C_WRITE, C_LEAD, C_MOVE, C_SIX, C_VAR, C_FLAG, C_VS, C_EXPECT_FLAG, C_EXPECT_VAR, C_NO_OBJECT, C_MAP, C_OBJECT, C_TEXT_SPEED, C_PACE, C_MUTE, C_PARTNER_AT, C_ITEM, C_EXPECT_ITEM, C_UNTIL_TEXT, C_WARP, C_PC_COUNT, C_MONS, C_NO_COPIES, C_NOTE_MONEY, C_MONEY_GAIN, C_FORCE_ENC, C_EXPECT_RANGE, C_WALK, C_NO_WILD, C_CROSS, C_WALK_BATTLE, C_SMART, C_STRONG, C_UNTIL_TASK, C_MIRROR, C_SPECIES, C_NOTE_PARTY, C_SAME_PARTY, C_PATCH_RET, C_SLOT, C_TXN, C_MONEY_SAME, C_DEX, C_SWAP, C_GENDER, C_FILL, C_UNFILL, C_WRITEP, C_TINT, C_UNTIL_FTEXT, C_NICK, C_GRIND, C_CATCH, C_HUNT, C_SWITCH_LEAD, C_PARTY_SLOT, C_HEAL_BELOW, C_TALK_OBJ, C_BOXES, C_TEST_HOOK, C_WATCH, C_EXPECT_WRITES, C_SURF, C_BAG_ITEM, C_FLY_MAP, C_STEP_TO, C_PARTY_ACTION, C_DIVE, C_RIDE, C_LEGEND, C_OWNED, C_PCFILL, C_TASKS, C_ALLOW_RESET, C_ROMWRITE, C_OBJBYTE, C_NPC_SYNC };
+enum { C_PARTNER, C_GOTO, C_HEX, C_PRESS, C_WAIT, C_SHOT, C_DUMP, C_BARRIER, C_UNTIL_CB2, C_UNTIL_FIELD, C_EXPECT, C_UNTIL_MEM, C_BATTLE, C_MENU, C_PARTY, C_FIXTURE, C_WRITE, C_LEAD, C_MOVE, C_SIX, C_VAR, C_FLAG, C_VS, C_EXPECT_FLAG, C_EXPECT_VAR, C_NO_OBJECT, C_MAP, C_OBJECT, C_TEXT_SPEED, C_PACE, C_MUTE, C_PARTNER_AT, C_ITEM, C_EXPECT_ITEM, C_UNTIL_TEXT, C_WARP, C_PC_COUNT, C_MONS, C_NO_COPIES, C_NOTE_MONEY, C_MONEY_GAIN, C_FORCE_ENC, C_EXPECT_RANGE, C_WALK, C_NO_WILD, C_CROSS, C_WALK_BATTLE, C_SMART, C_STRONG, C_UNTIL_TASK, C_MIRROR, C_SPECIES, C_NOTE_PARTY, C_SAME_PARTY, C_PATCH_RET, C_SLOT, C_TXN, C_MONEY_SAME, C_DEX, C_SWAP, C_GENDER, C_FILL, C_UNFILL, C_WRITEP, C_TINT, C_UNTIL_FTEXT, C_NICK, C_GRIND, C_CATCH, C_HUNT, C_SWITCH_LEAD, C_PARTY_SLOT, C_HEAL_BELOW, C_TALK_OBJ, C_BOXES, C_TEST_HOOK, C_WATCH, C_EXPECT_WRITES, C_SURF, C_BAG_ITEM, C_FLY_MAP, C_STEP_TO, C_PARTY_ACTION, C_DIVE, C_RIDE, C_LEGEND, C_OWNED, C_PCFILL, C_TASKS, C_ALLOW_RESET, C_ROMWRITE, C_OBJBYTE, C_NPC_SYNC, C_BATTLE_ITEM };
 
 struct Cmd {
 	unsigned args[8];
@@ -81,6 +81,7 @@ struct Player {
     int catchFightLeft, catchWasMenu;   // catch: action menus to fight at first
     unsigned maxSessionTasks;   // most live co-op session tasks seen in a frame (C_TASKS max)
     int switchLead, switchState;
+    int itemPhase;        // battle_item: step within the bag
     int healPct, healState, healsLeft, healTarget, healUses; unsigned healFrame;
 };
 
@@ -2608,6 +2609,94 @@ static void frameCallback(struct mCoreThread* t) {
             advance = true;
             break;
         }
+        case C_BATTLE_ITEM: {
+            // battle_item ITEM SLOT [MOVE]: at this player's next action menu,
+            // BAG, the item, USE; in the party menu SLOT downs then A (MOVE
+            // downs and A for a one-move item). Done back in the battle.
+            static unsigned bagCb2, partyCb2, mainCb2;
+            if (!bagCb2) { bagCb2 = symAddr("CB2_BagMenuRun") & ~1u; partyCb2 = symFind("CB2_UpdatePartyMenu") & ~1u; mainCb2 = symAddr("BattleMainCB2") & ~1u; }
+            unsigned cb2 = rd32(p, sMain + 4) & ~1u, ph = (unsigned)p->step++;
+            unsigned funcs = symAddr("gBattlerControllerFuncs");
+            int item = c->value & 0xFFFF, slot = (c->value >> 16) & 0xFF, mv = (c->value >> 24) & 0xFF;
+            if (ph >= (unsigned)c->frames) {
+                out("[p%d] FAIL battle_item %d: timeout in phase %d\n", p->id, item, p->stable);
+                dump(p, "fail"); writePng(p, "fail"); sFailures++; p->stable = 0; advance = true; break;
+            }
+            if (p->stable == 0) {
+                int me = -1;
+                for (int b = 0; b < 4; b++)
+                    if (!strcmp(symName(rd32(p, funcs + b * 4)), "HandleInputChooseAction")) me = b;
+                if (me < 0 || cb2 != mainCb2) { keys = 0; break; }
+                unsigned t = ph % 20, cur = rd8(p, symAddr("gActionSelectionCursor") + me);
+                if (t != 0) break;
+                if (cur & 2) keys = 1u << 6; else if (!(cur & 1)) keys = 1u << 4;
+                else { keys = 1; p->stable = 1; p->offField = 0; p->itemPhase = 0; }
+                break;
+            }
+            if (p->stable == 1) {   // the bag: pocket, top, row, A (USE)
+                if (cb2 != bagCb2) {
+                    // Gone on to the party menu, or straight back to the battle.
+                    if (p->itemPhase >= 3) { p->stable = 2; p->offField = 0; p->itemPhase = 0; }
+                    break;
+                }
+                unsigned pockets = symAddr("gBagPockets");
+                int pocket = -1, index = -1;
+                for (int pk = 0; pk < 5 && pocket < 0; pk++) {
+                    unsigned slots = rd32(p, pockets + pk * 8), cap = rd16(p, pockets + pk * 8 + 4) & 0x3FF;
+                    if (slots < 0x02000000) continue;
+                    for (unsigned i = 0, n = 0; i < cap && i < 400; i++) {
+                        unsigned id = rd16(p, slots + i * 4);
+                        if (!id) continue;
+                        if ((int)id == item) { pocket = pk; index = n; break; }
+                        n++;
+                    }
+                }
+                if (pocket < 0) { out("[p%d] FAIL battle_item %d: not in the bag\n", p->id, item); sFailures++; p->stable = 0; advance = true; break; }
+                unsigned q = p->offField++;
+                unsigned curPocket = rd8(p, symAddr("gBagPosition") + 5);
+                if (p->itemPhase == 0) {
+                    if (curPocket != (unsigned)pocket) { keys = (q % 30) < 2 ? (1u << 4) : 0; break; }
+                    if (q > 60) { p->itemPhase = 1; p->offField = 0; }
+                    break;
+                }
+                if (p->itemPhase == 1) { if (q < 40 * 8) keys = (q % 8) < 2 ? (1u << 6) : 0; else { p->itemPhase = 2; p->offField = 0; } break; }
+                if (p->itemPhase == 2) { if (q < (unsigned)index * 8) keys = (q % 8) < 2 ? (1u << 7) : 0; else if (q > (unsigned)index * 8 + 20) { p->itemPhase = 3; p->offField = 0; } break; }
+                // A until the bag gives way (the party menu, or the battle for
+                // an item with no Pokémon to choose).
+                if (p->itemPhase == 3) { keys = (q % 40) < 2 ? 1 : 0; break; }
+                break;
+            }
+            if (p->stable == 2) {   // the party menu (or straight back to the battle)
+                unsigned q = p->offField++;
+                if (cb2 == mainCb2 && q > 120) {
+                    out("[f%06d p%d] battle_item %d used\n", p->frame, p->id, item);
+                    p->stable = 0; p->itemPhase = 0; advance = true; break;
+                }
+                if (cb2 != partyCb2) break;
+                // Steer by the menu's own cursor (gPartyMenu.slotId), then A.
+                int cur = (int8_t)rd8(p, symAddr("gPartyMenu") + 9);
+                if (p->itemPhase == 0) {
+                    if (q < 40) break;
+                    if (cur != slot) { keys = (q % 12) < 2 ? (1u << 7) : 0; if (q > 600) p->itemPhase = 9; break; }
+                    p->itemPhase = 1; p->offField = 0; break;
+                }
+                if (p->itemPhase == 1) {
+                    keys = q < 2 ? 1 : 0;
+                    if (q > 30) { p->itemPhase = mv ? 2 : 3; p->offField = 0; out("[p%d] battle_item %d: party slot %d\n", p->id, item, cur); }
+                    break;
+                }
+                if (p->itemPhase == 2) {   // the move list
+                    if (q < 40) break;
+                    if (q < 40 + (unsigned)(mv - 1) * 12) { keys = ((q - 40) % 12) < 2 ? (1u << 7) : 0; break; }
+                    keys = q < 40 + (unsigned)(mv - 1) * 12 + 2 ? 1 : 0;
+                    if (q > 40 + (unsigned)(mv - 1) * 12 + 30) { p->itemPhase = 3; p->offField = 0; }
+                    break;
+                }
+                if (q > 240) keys = (q % 30) < 2 ? 1 : 0; // a message to close
+                break;
+            }
+            break;
+        }
         case C_NPC_SYNC: {
             // npc_sync T [MAXLAG]: for T frames, compare every shared-NPC object
             // (random walkers and turners, not trainers) on both games by local
@@ -3603,6 +3692,11 @@ static void loadScript(const char* path, int depth) {
         } else if (!strcmp(cmd, "force_encounter")) {
             c.kind = C_FORCE_ENC;
             c.value = strtoul(a, NULL, 0);
+        } else if (!strcmp(cmd, "battle_item")) {
+            c.kind = C_BATTLE_ITEM;
+            c.value = (strtoul(a, NULL, 0) & 0xFFFF) | ((n >= 4 ? strtoul(b, NULL, 0) : 0) << 16) | ((n >= 5 ? strtoul(d, NULL, 0) + 1 : 0) << 24);
+            c.frames = 3000;
+            snprintf(c.text, sizeof(c.text), "battle_item %s", a);
         } else if (!strcmp(cmd, "npc_sync")) {
             c.kind = C_NPC_SYNC;
             c.frames = atoi(a);

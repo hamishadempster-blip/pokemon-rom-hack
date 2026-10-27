@@ -204,6 +204,8 @@ static EWRAM_DATA bool8 sStorySentValid = FALSE;
 static EWRAM_DATA u16 sStoryPartner = 0;
 static EWRAM_DATA u8 sSceneAnnounce = COOP_SCENE_NONE;
 static EWRAM_DATA u8 sSceneJoin = COOP_SCENE_NONE;
+static EWRAM_DATA bool8 sHandlingStash = FALSE;
+EWRAM_DATA u16 gCoopStaleInvites = 0; // test visibility: old or unknown requests refused
 static EWRAM_DATA u16 sSceneJoinAge = 0; // frames a coord-scene join has waited
 static EWRAM_DATA u8 sSceneJoinGroup = 0;
 static EWRAM_DATA u8 sSceneJoinNum = 0;
@@ -1626,6 +1628,13 @@ static void Coop_HandleInvite(u32 playerId, const struct CoopInvite *invite)
         return;
     if (invite->magic != COOP_INVITE_MAGIC || invite->checksum != Coop_InviteChecksum(invite))
         return;
+    // A kind this build does not know: dropped, never acted on.
+    if (invite->kind == 0 || invite->kind > COOP_KIND_WITHDRAW)
+    {
+        if (gCoopStaleInvites < 0xFFFF)
+            gCoopStaleInvites++;
+        return;
+    }
 
     if (invite->kind == COOP_KIND_ACK)
     {
@@ -1679,6 +1688,17 @@ static void Coop_HandleInvite(u32 playerId, const struct CoopInvite *invite)
 
     if (sInBattle || gMain.inBattle)
         return;
+
+    // A request that arrived during this player's battle (kept aside and
+    // read now) is old: its sender has stopped waiting or will ask again.
+    // Answer "busy" instead of asking about a fight that is over.
+    if (sHandlingStash && invite->kind != COOP_KIND_NACK)
+    {
+        if (gCoopStaleInvites < 0xFFFF)
+            gCoopStaleInvites++;
+        Coop_SendReplyWhy(COOP_KIND_NACK, invite->seq, COOP_SOLO_BUSY);
+        return;
+    }
 
     if (CoopProtocol_KeepOwnInvite(GetMultiplayerId(), sWaitingAck, Coop_IsMandatoryKind(sBattleKind), Coop_IsMandatoryKind(invite->kind)))
         return;
@@ -1920,7 +1940,9 @@ static void Coop_PollBlocks(void)
             memcpy(sStash[i], sStash[i + 1], sizeof(sStash[0]));
             sStashFrom[i] = sStashFrom[i + 1];
         }
+        sHandlingStash = TRUE;
         Coop_HandleBlock(from, words);
+        sHandlingStash = FALSE;
     }
     status = GetBlockReceivedStatus();
 
@@ -4659,6 +4681,18 @@ void Coop_QueueWildPair(void)
     LockPlayerFieldControls();
     FreezeObjectEvents();
     StopPlayerAvatar();
+}
+
+// Co-op battles against the game (wild Pokémon, trainers): each player may
+// use their own bag. Not in practice copies or the Twin Trial (a
+// facility-style challenge), and not in friendly battles (no co-op flag).
+bool8 Coop_BattleItemsAllowed(void)
+{
+    if (!(gBattleTypeFlags & BATTLE_TYPE_COOP) || gCoopPracticeBattle)
+        return FALSE;
+    if ((gBattleTypeFlags & BATTLE_TYPE_TRAINER) && Coop_IsTwinTrialTrainer(TRAINER_BATTLE_PARAM.opponentA))
+        return FALSE;
+    return TRUE;
 }
 
 bool8 Coop_IsWildBattle(void)

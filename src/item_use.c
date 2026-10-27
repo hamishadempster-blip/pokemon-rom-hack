@@ -1142,6 +1142,9 @@ static u32 GetBallThrowableState(void)
             return BALL_THROW_UNABLE_DISABLED_FLAG;
         return BALL_THROW_ABLE;
     }
+    // Co-op trainer battles: no ball at another trainer's Pokémon.
+    if ((gBattleTypeFlags & BATTLE_TYPE_COOP) && (gBattleTypeFlags & BATTLE_TYPE_TRAINER))
+        return BALL_THROW_UNABLE_DISABLED_FLAG;
     if (IsBattlerAlive(GetBattlerAtPosition(B_POSITION_OPPONENT_LEFT))
      && IsBattlerAlive(GetBattlerAtPosition(B_POSITION_OPPONENT_RIGHT)))
         return BALL_THROW_UNABLE_TWO_MONS;
@@ -1178,15 +1181,43 @@ static void ItemUseInBattle_ShowPartyMenu(u8 taskId)
     }
 }
 
-static const u8 sText_CoopBallsOnly[] = _("Only POKé BALLS can be used\nin a co-op battle.\p");
+static const u8 sText_CoopItemNotHere[] = _("That item can't be used in a\nco-op battle.\p");
+static const u8 sText_CoopNoBallsTrainer[] = _("POKé BALLS are for wild POKéMON.\p");
 
-// Co-op wild fights only take balls: healing and escape items would run on
-// the link master's copy of the battle.
+// Co-op battles against the game: each player uses their own bag on their
+// own team (the link master runs the effect and tells the user's game).
+// Healing, status, revive, PP and stat items work; balls only on wild
+// Pokémon; escape items and the flutes, which would end or change the
+// battle for both players, do not.
 static bool32 Coop_RefuseBattleItem(u8 taskId)
 {
-    if (!Coop_IsWildBattle() || GetItemBattleUsage(gSpecialVar_ItemId) == EFFECT_ITEM_THROW_BALL)
+    const u8 *text = NULL;
+
+    if (!(gBattleTypeFlags & BATTLE_TYPE_COOP))
         return FALSE;
-    DisplayItemMessage(taskId, FONT_NORMAL, sText_CoopBallsOnly, CloseItemMessage);
+    switch (GetItemBattleUsage(gSpecialVar_ItemId))
+    {
+    case EFFECT_ITEM_THROW_BALL:
+        if (gBattleTypeFlags & BATTLE_TYPE_TRAINER)
+            text = sText_CoopNoBallsTrainer;
+        break;
+    case EFFECT_ITEM_RESTORE_HP:
+    case EFFECT_ITEM_CURE_STATUS:
+    case EFFECT_ITEM_HEAL_AND_CURE_STATUS:
+    case EFFECT_ITEM_REVIVE:
+    case EFFECT_ITEM_RESTORE_PP:
+    case EFFECT_ITEM_INCREASE_STAT:
+    case EFFECT_ITEM_INCREASE_ALL_STATS:
+    case EFFECT_ITEM_SET_FOCUS_ENERGY:
+    case EFFECT_ITEM_SET_MIST:
+        break;
+    default:
+        text = sText_CoopItemNotHere;
+        break;
+    }
+    if (text == NULL)
+        return FALSE;
+    DisplayItemMessage(taskId, FONT_NORMAL, text, CloseItemMessage);
     return TRUE;
 }
 

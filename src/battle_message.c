@@ -2868,6 +2868,9 @@ void BufferStringBattle(enum StringID stringID, enum BattlerId battler)
         else
         {
             stringPtr = gBattleStringsTable[stringID];
+            // Co-op: both players use their bags, so say who did.
+            if ((gBattleTypeFlags & BATTLE_TYPE_COOP) && stringID == STRINGID_PLAYERUSEDITEM)
+                stringPtr = COMPOUND_STRING("{B_ATK_TRAINER_NAME} used {B_LAST_ITEM}!");
             // Co-op: only the link master's own Pokémon learn moves in the
             // battle, and only that player gets the YES/NO and the move list.
             // The other screen says who is deciding instead of asking a
