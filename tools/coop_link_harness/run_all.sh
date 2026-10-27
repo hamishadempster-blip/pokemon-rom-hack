@@ -5,6 +5,7 @@
 #
 #   tools/coop_link_harness/run_all.sh            # all scenarios
 #   ONLY="rival_join rival_pending" run_all.sh    # a subset (fresh-save ones)
+#   J16=dir J37=dir: finding #16, shared NPCs, scene joins
 #   J65=dir J68=dir: late-game checkpoints (Wally; shared legendaries)
 #   SEG6=/path/dir run_all.sh                     # also the story_seg6-based
 #                                                 # partner menu, QoL, and quest runs
@@ -82,6 +83,22 @@ if [ -n "${LONG:-}" ]; then
 fi
 
 run bedroom_reload SAVE0="$out/mays_house_doorway/p0.sav" SAVE1="$out/mays_house_doorway/p1.sav"
+
+# J16=dir with p0.sav/p1.sav from the main journey's checkpoint 16 (Route
+# 116, by Rustboro): finding #16 sequences and shared NPC movement.
+if [ -n "${J16:-}" ]; then
+	for s in finding16_wild_teleport_karen finding16_partner_wild_karen npc_town_order npc_interior_talk npc_reconnect; do
+		run "$s" SAVE0="$J16/p0.sav" SAVE1="$J16/p1.sav"
+	done
+fi
+
+# J37=dir with p0.sav/p1.sav from checkpoint 37 (Fallarbor, before Meteor
+# Falls): joining a partner's story scene on its trigger tile.
+if [ -n "${J37:-}" ]; then
+	for s in scene_meteor_join scene_meteor_menu; do
+		run "$s" SAVE0="$J37/p0.sav" SAVE1="$J37/p1.sav"
+	done
+fi
 
 # J65=dir with p0.sav/p1.sav from the main journey's checkpoint 65 (Ever
 # Grande, eight badges): late-game co-op regressions.

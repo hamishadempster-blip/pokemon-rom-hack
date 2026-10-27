@@ -1,4 +1,5 @@
 #include "global.h"
+#include "coop_npc.h"
 #include "coop_outfit.h"
 #include "malloc.h"
 #include "battle_anim.h"
@@ -6855,7 +6856,7 @@ void UpdateObjectEventCurrentMovement(struct ObjectEvent *objectEvent, struct Sp
 
     if (ObjectEventIsHeldMovementActive(objectEvent))
         ObjectEventExecHeldMovementAction(objectEvent, sprite);
-    else if (!objectEvent->frozen)
+    else if (!objectEvent->frozen && !CoopNpc_BlocksLocalMovement(objectEvent))
         while (callback(objectEvent, sprite));
 
     DoGroundEffects_OnBeginStep(objectEvent, sprite);
@@ -6982,6 +6983,7 @@ static void ObjectEventSetSingleMovement(struct ObjectEvent *objectEvent, struct
 {
     objectEvent->movementActionId = TryUpdateMovementActionOnStairs(objectEvent, animId);
     sprite->sActionFuncId = 0;
+    CoopNpc_NoteSingleMovement(objectEvent);
 }
 
 static void FaceDirection(struct ObjectEvent *objectEvent, struct Sprite *sprite, enum Direction direction)

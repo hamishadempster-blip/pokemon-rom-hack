@@ -1,0 +1,50 @@
+# Shared NPC movement in a town, both arrival orders (Rustboro City, from
+# the journey j16 saves, linked).
+# FIXTURES: fixture_warp places the players; no random wild battles.
+# Checks:
+# - whoever arrives first is the movement authority (role 1), the other
+#   replays (role 2), and the walkers and turners agree on both screens
+#   (npc_sync: never apart for long, no jumps);
+# - the first player leaves (into the Centre) and comes back: the player who
+#   stayed now holds the map, with nothing reset, and both agree again;
+# - an NPC that exists only on one save (story progress) is left to that
+#   game and breaks nothing.
+include continue.inc
+include relink.inc
+b expect coop.sLinkState 2
+b no_wild 1
+# The Devon scientist (Rustboro NPC 15) only on player 1's save.
+0 fixture_flag 0x34C 1
+1 fixture_flag 0x34C 0
+0 fixture_warp 0 3 16 40
+0 until_field 3000
+1 wait 400
+1 fixture_warp 0 3 18 40
+1 until_field 3000
+b sync
+b wait 120
+0 expect gCoopNpcStats:1 1
+1 expect gCoopNpcStats:1 2
+b npc_sync 1800
+b shot kai-first
+# Player 0 goes into the Centre and back out.
+0 walk 16 38 2000
+0 until_map 11 5 3000
+0 wait 200
+b sync
+1 expect gCoopNpcStats:1 0
+1 expect_no_partner
+0 walk 7 8 2000
+0 cross DOWN 0 3 2000
+0 until_field 3000
+b sync
+b wait 120
+0 expect gCoopNpcStats:1 2
+1 expect gCoopNpcStats:1 1
+b npc_sync 1800
+b shot rosa-holds
+# Both walk about while the NPCs move.
+0 walk 20 40 1500
+1 walk 14 40 1500
+b npc_sync 900
+b expect coop.sLinkState 2

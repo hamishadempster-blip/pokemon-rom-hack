@@ -1,5 +1,6 @@
 #include "global.h"
 #include "coop.h"
+#include "coop_npc.h"
 #include "coop_protocol.h"
 #include "battle.h"
 #include "battle_controllers.h"
@@ -203,6 +204,7 @@ static EWRAM_DATA bool8 sStorySentValid = FALSE;
 static EWRAM_DATA u16 sStoryPartner = 0;
 static EWRAM_DATA u8 sSceneAnnounce = COOP_SCENE_NONE;
 static EWRAM_DATA u8 sSceneJoin = COOP_SCENE_NONE;
+static EWRAM_DATA u16 sSceneJoinAge = 0; // frames a coord-scene join has waited
 static EWRAM_DATA u8 sSceneJoinGroup = 0;
 static EWRAM_DATA u8 sSceneJoinNum = 0;
 
@@ -271,6 +273,7 @@ static void Coop_PollSharedItems(void);
 static u8 Coop_RivalId(void);
 static u8 Coop_SoloReasonHere(void);
 static void Coop_PollStory(void);
+static void Coop_PollCoordJoin(void);
 static bool8 Coop_GuestBusy(void);
 static void Coop_SendReply(u8 kind, u16 seq);
 
@@ -1230,6 +1233,13 @@ void Coop_LinkCallback(void)
     if (!gReceivedRemoteLinkPlayers || gLinkTransferringData
      || (gMain.inBattle && (gBattleTypeFlags & BATTLE_TYPE_LINK)))
         return;
+    // Shared NPC moves (src/coop_npc.c) take the slot at most every other
+    // frame; the position frame keeps the rest.
+    if (CoopNpc_TakeOutgoing(words))
+    {
+        memcpy(gSendCmd, words, sizeof(words));
+        return;
+    }
     Coop_FillFrame(&frame);
     CoopProtocol_Pack(words, &frame, COOP_SEND_AS_HELD_KEYS);
     memcpy(gSendCmd, words, sizeof(words));
@@ -1380,6 +1390,8 @@ bool8 Coop_TryParseHeldKeys(u32 playerId)
     memcpy(words, gRecvCmds[playerId], sizeof(words));
     if (words[0] != COOP_HELD_KEYS_CMD)
         return FALSE;
+    if (CoopNpc_TryHandleFrame(words))
+        return TRUE;
     memcpy(probe, words, sizeof(probe));
     probe[0] = COOP_LINKCMD;
     if (CoopProtocol_Checksum(probe) != words[7])
@@ -2550,6 +2562,17 @@ static EWRAM_DATA u8 sFreeBeforeScript = 0;
 
 // The partner's position in this map's grid (with MAP_OFFSET, like
 // currentCoords), when linked and on the same map.
+// The partner's map and what they are doing (src/coop_npc.c).
+bool8 Coop_PartnerFrameInfo(u8 *mapGroup, u8 *mapNum, u8 *activity)
+{
+    if (!Coop_SessionActive() || !sPartnerValid)
+        return FALSE;
+    *mapGroup = sPartner.mapGroup;
+    *mapNum = sPartner.mapNum;
+    *activity = sPartner.activity;
+    return TRUE;
+}
+
 bool8 Coop_PartnerMapPos(s16 *x, s16 *y)
 {
     if (!sPartnerValid || !Coop_PartnerOnSameMap())
@@ -2603,6 +2626,8 @@ void Coop_OverworldFrame(void)
     }
     CoopDeal_FieldFrame();
     CoopOutfit_FieldFrame();
+    CoopNpc_FieldFrame();
+    Coop_PollCoordJoin();
     Coop_PollSharedItems();
     // Shared legendary rewards (src/coop_legend.c): resends, a waiting
     // delivery, the partner's confirmation. Only for an idle player; a
@@ -3785,10 +3810,106 @@ u16 Coop_AnnounceScene(void)
     return 0;
 }
 
+// Story scenes started from a trigger tile that both players can be part
+// of. Only one player fits on the tile (the other is blocked by them), so a
+// partner who is nearby and free, with the scene still ahead on their own
+// save, is taken to the tile and plays the scene too. Each save keeps its
+// own state; nothing is copied across.
+struct CoopCoordScene
+{
+    u16 map;
+    s8 x;
+    s8 y;
+    u8 elevation;
+};
+
+static const struct CoopCoordScene sCoordScenes[] = {
+    { MAP_METEOR_FALLS_1F_1R, 14, 18, 4 }, // Magma takes the meteorite (journey 38)
+};
+
+#define COOP_SCENE_COORD_BASE 16
+#define COOP_SCENE_JOIN_RANGE 12
+static EWRAM_DATA u8 sCoordJoinPending = 0; // scene index + 1, across the warp
+EWRAM_DATA u16 gCoopSceneJoins = 0;           // test visibility
+
+void Coop_NoteCoordScene(s16 x, s16 y)
+{
+    u16 map = (u16)(gSaveBlock1Ptr->location.mapNum | (gSaveBlock1Ptr->location.mapGroup << 8));
+    u32 i;
+
+    if (!Coop_SessionActive() || !Coop_PartnerOnSameMap())
+        return;
+    for (i = 0; i < ARRAY_COUNT(sCoordScenes); i++)
+    {
+        if (sCoordScenes[i].map == map && sCoordScenes[i].x == x && sCoordScenes[i].y == y)
+        {
+            sSceneAnnounce = COOP_SCENE_COORD_BASE + i;
+            return;
+        }
+    }
+}
+
+static bool8 Coop_CanJoinCoordScene(u8 index)
+{
+    const struct CoopCoordScene *scene = &sCoordScenes[index];
+    s16 x, y;
+
+    if (gSaveBlock1Ptr->location.mapGroup != MAP_GROUP(scene->map) || gSaveBlock1Ptr->location.mapNum != MAP_NUM(scene->map))
+        return FALSE;
+    PlayerGetDestCoords(&x, &y);
+    x -= MAP_OFFSET;
+    y -= MAP_OFFSET;
+    if (abs(x - scene->x) + abs(y - scene->y) > COOP_SCENE_JOIN_RANGE)
+        return FALSE;
+    return GetCoordEventScriptAt(scene->x, scene->y, scene->elevation) != NULL;
+}
+
+// The joining player's game: over to the tile (a short fade); the scene
+// starts once the map is back (Coop_PollCoordJoin).
+u16 Coop_WarpToCoordScene(void)
+{
+    u8 index = gSpecialVar_0x8004;
+    const struct CoopCoordScene *scene;
+
+    if (index >= ARRAY_COUNT(sCoordScenes))
+        return FALSE;
+    scene = &sCoordScenes[index];
+    sCoordJoinPending = index + 1;
+    SetWarpDestination(MAP_GROUP(scene->map), MAP_NUM(scene->map), WARP_ID_NONE, scene->x, scene->y);
+    DoWarp();
+    ResetInitialPlayerAvatarState();
+    return TRUE;
+}
+
+static void Coop_PollCoordJoin(void)
+{
+    const struct CoopCoordScene *scene;
+    const u8 *script;
+    s16 x, y;
+
+    if (sCoordJoinPending == 0 || ScriptContext_IsEnabled() || ArePlayerFieldControlsLocked()
+     || gMain.callback2 != CB2_Overworld)
+        return;
+    scene = &sCoordScenes[sCoordJoinPending - 1];
+    sCoordJoinPending = 0;
+    PlayerGetDestCoords(&x, &y);
+    if (gSaveBlock1Ptr->location.mapGroup != MAP_GROUP(scene->map) || gSaveBlock1Ptr->location.mapNum != MAP_NUM(scene->map)
+     || x - MAP_OFFSET != scene->x || y - MAP_OFFSET != scene->y)
+        return;
+    script = GetCoordEventScriptAt(scene->x, scene->y, scene->elevation);
+    if (script == NULL)
+        return;
+    if (gCoopSceneJoins < 0xFFFF)
+        gCoopSceneJoins++;
+    ScriptContext_SetupScript(script);
+}
+
 static bool8 Coop_CanJoinScene(u8 scene, u8 mapGroup, u8 mapNum)
 {
     if (mapGroup != gSaveBlock1Ptr->location.mapGroup || mapNum != gSaveBlock1Ptr->location.mapNum)
         return FALSE;
+    if (scene >= COOP_SCENE_COORD_BASE && scene < COOP_SCENE_COORD_BASE + ARRAY_COUNT(sCoordScenes))
+        return Coop_CanJoinCoordScene(scene - COOP_SCENE_COORD_BASE);
     switch (scene)
     {
     case COOP_SCENE_RIVAL_INTRO:
@@ -3814,12 +3935,14 @@ static void Coop_HandleStoryMsg(u32 playerId, const struct CoopStoryMsg *msg)
     if (msg->kind == COOP_STORY_MSG_SCENE && Coop_CanJoinScene(msg->scene, msg->mapGroup, msg->mapNum))
     {
         sSceneJoin = msg->scene;
+        sSceneJoinAge = 0;
         sSceneJoinGroup = msg->mapGroup;
         sSceneJoinNum = msg->mapNum;
     }
 }
 
 extern const u8 Coop_EventScript_JoinRivalIntro[];
+extern const u8 Coop_EventScript_JoinCoordScene[];
 
 // Runs from the session task while linked, outside battle.
 static void Coop_PollStory(void)
@@ -3842,6 +3965,10 @@ static void Coop_PollStory(void)
         sSceneJoinGroup = gSaveBlock1Ptr->location.mapGroup;
         sSceneJoinNum = gSaveBlock1Ptr->location.mapNum;
     }
+    // A partner's trigger-tile scene is joined only soon after it began
+    // (a long menu here means this player walks in on their own later).
+    if (sSceneJoin >= COOP_SCENE_COORD_BASE && ++sSceneJoinAge > 600)
+        sSceneJoin = COOP_SCENE_NONE;
     if (sSceneJoin != COOP_SCENE_NONE && idle)
     {
         u8 scene = sSceneJoin;
@@ -3849,6 +3976,11 @@ static void Coop_PollStory(void)
         sSceneJoin = COOP_SCENE_NONE;
         if (scene == COOP_SCENE_RIVAL_INTRO && Coop_CanJoinScene(scene, sSceneJoinGroup, sSceneJoinNum))
             ScriptContext_SetupScript(Coop_EventScript_JoinRivalIntro);
+        else if (scene >= COOP_SCENE_COORD_BASE && Coop_CanJoinScene(scene, sSceneJoinGroup, sSceneJoinNum))
+        {
+            gSpecialVar_0x8004 = scene - COOP_SCENE_COORD_BASE;
+            ScriptContext_SetupScript(Coop_EventScript_JoinCoordScene);
+        }
     }
 
     if (gLinkTransferringData || sWaitingAck || gCoopBattleLaunching || gMain.callback2 != CB2_Overworld)

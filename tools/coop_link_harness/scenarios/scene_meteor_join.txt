@@ -1,0 +1,29 @@
+# Meteor Falls: both players walk up to the Magma/Aqua scene together (the
+# journey 38 case, which was played one after the other). j37 saves, linked.
+# FIXTURES: fixture_warp into Meteor Falls 1F; no random wild battles.
+# Checks:
+# - Kai takes the trigger tile; Rosa, two steps away and free, gets "Kai has
+#   run into something!", is taken to the tile and plays the scene on her
+#   save at the same time (gCoopSceneJoins 1). Both saves: meteorite scene
+#   done (VAR_METEOR_FALLS_STATE 1, met Archie, Route 112 grunts hidden).
+# - The scene's actors leave both screens; no player is left locked.
+include continue.inc
+include relink.inc
+b expect coop.sLinkState 2
+b no_wild 1
+0 fixture_warp 24 0 16 18
+1 fixture_warp 24 0 17 17
+b until_field 3000
+b sync
+b wait 60
+0 walk 15 18 3000
+0 walk 14 18 2000
+b mash_field 25000
+b shot after-scene
+b expect_var 0x40BF 1
+b expect_flag 0xCF 1
+b expect_flag 0x333 1
+1 expect gCoopSceneJoins 1
+0 expect gCoopSceneJoins 0
+b expect sGlobalScriptContextStatus:1 2
+b expect coop.sLinkState 2

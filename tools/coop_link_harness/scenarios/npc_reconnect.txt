@@ -1,0 +1,28 @@
+# Shared NPC movement across a lost link (Rustboro, j16 saves, linked).
+# KIND: recovery (a fault is induced on purpose; the game must recover)
+# FIXTURES: fixture_warp; no random wild battles; the co-op heartbeat is
+# muted for 10 s on both games.
+# Checks: during the loss each game runs its own NPCs (role 0); after the
+# link mends, one authority is chosen again and both screens agree.
+include continue.inc
+include relink.inc
+b expect coop.sLinkState 2
+b no_wild 1
+0 fixture_warp 0 3 16 40
+1 fixture_warp 0 3 18 40
+b until_field 3000
+b sync
+b wait 120
+b npc_sync 900
+b mute_coop 600
+b wait 400
+b expect gCoopNpcStats:1 0
+b until_mem coop.sLinkState 2 3000
+b wait 300
+b sync
+b wait 120
+0 expect gCoopNpcStats:1 1
+1 expect gCoopNpcStats:1 2
+b npc_sync 1500
+b shot after-reconnect
+b expect coop.sLinkState 2

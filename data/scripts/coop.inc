@@ -1,5 +1,7 @@
 .global Coop_EventScript_NeedPartner
 .global Coop_EventScript_TrainerRefused
+.global Coop_EventScript_NpcBusy
+.global Coop_EventScript_JoinCoordScene
 .global Coop_EventScript_RivalWaits
 	.global Coop_EventScript_PartnerDeclined
 	.global Coop_EventScript_NotReady
@@ -31,6 +33,34 @@
 Coop_EventScript_TrainerRefused::
 	releaseall
 	end
+
+@ A story scene the partner walked into nearby (src/coop.c, sCoordScenes):
+@ over to the trigger tile, where the scene runs on this save too.
+Coop_EventScript_JoinCoordScene::
+	lockall
+	special CoopNpc_BufferBusy
+	msgbox Coop_Text_JoinCoordScene, MSGBOX_DEFAULT
+	closemessage
+	special Coop_WarpToCoordScene
+	waitstate
+	releaseall
+	end
+
+Coop_Text_JoinCoordScene:
+	.string "{STR_VAR_1} has run into something!\n"
+	.string "You hurry over.$"
+
+@ A shared NPC the partner is talking to (src/coop_npc.c).
+Coop_EventScript_NpcBusy::
+	lock
+	special CoopNpc_BufferBusy
+	msgbox Coop_Text_NpcBusy, MSGBOX_DEFAULT
+	release
+	end
+
+Coop_Text_NpcBusy:
+	.string "They're talking with {STR_VAR_1}\n"
+	.string "right now.$"
 
 Coop_EventScript_NeedPartner::
 	lockall

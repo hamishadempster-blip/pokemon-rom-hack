@@ -1,0 +1,41 @@
+# Meteor Falls scene with the partner busy, then with different story
+# progress (j37 saves, linked).
+# FIXTURES: fixture_warp; no random wild battles.
+# Checks:
+# - Rosa has the START menu open when Kai walks into the scene: she is not
+#   pulled out of it; after more than 10 s she closes it and nothing more
+#   happens to her;
+# - she then walks onto the tile herself and plays the scene on her save.
+#   Kai's save is past it now (different progress), so Kai is not pulled
+#   in (no join on either side).
+include continue.inc
+include relink.inc
+b expect coop.sLinkState 2
+b no_wild 1
+0 fixture_warp 24 0 16 18
+1 fixture_warp 24 0 17 17
+b until_field 3000
+b sync
+b wait 60
+1 press START 2
+1 wait 60
+0 walk 15 18 3000
+0 walk 14 18 2000
+0 mash_field 25000
+0 expect_var 0x40BF 1
+0 walk 17 17 3000
+1 wait 900
+1 press B 2
+1 wait 120
+1 expect gCoopSceneJoins 0
+1 expect_var 0x40BF 0
+b sync
+1 walk 15 18 3000
+1 walk 14 18 2000
+1 mash_field 25000
+1 expect_var 0x40BF 1
+1 expect gCoopSceneJoins 0
+0 expect gCoopSceneJoins 0
+0 expect_var 0x40BF 1
+b expect sGlobalScriptContextStatus:1 2
+b expect coop.sLinkState 2

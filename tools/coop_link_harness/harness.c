@@ -23,7 +23,7 @@
 #define MAX_CMDS 4096
 #define MAX_SYMS 500000
 
-enum { C_PARTNER, C_GOTO, C_HEX, C_PRESS, C_WAIT, C_SHOT, C_DUMP, C_BARRIER, C_UNTIL_CB2, C_UNTIL_FIELD, C_EXPECT, C_UNTIL_MEM, C_BATTLE, C_MENU, C_PARTY, C_FIXTURE, C_WRITE, C_LEAD, C_MOVE, C_SIX, C_VAR, C_FLAG, C_VS, C_EXPECT_FLAG, C_EXPECT_VAR, C_NO_OBJECT, C_MAP, C_OBJECT, C_TEXT_SPEED, C_PACE, C_MUTE, C_PARTNER_AT, C_ITEM, C_EXPECT_ITEM, C_UNTIL_TEXT, C_WARP, C_PC_COUNT, C_MONS, C_NO_COPIES, C_NOTE_MONEY, C_MONEY_GAIN, C_FORCE_ENC, C_EXPECT_RANGE, C_WALK, C_NO_WILD, C_CROSS, C_WALK_BATTLE, C_SMART, C_STRONG, C_UNTIL_TASK, C_MIRROR, C_SPECIES, C_NOTE_PARTY, C_SAME_PARTY, C_PATCH_RET, C_SLOT, C_TXN, C_MONEY_SAME, C_DEX, C_SWAP, C_GENDER, C_FILL, C_UNFILL, C_WRITEP, C_TINT, C_UNTIL_FTEXT, C_NICK, C_GRIND, C_CATCH, C_HUNT, C_SWITCH_LEAD, C_PARTY_SLOT, C_HEAL_BELOW, C_TALK_OBJ, C_BOXES, C_TEST_HOOK, C_WATCH, C_EXPECT_WRITES, C_SURF, C_BAG_ITEM, C_FLY_MAP, C_STEP_TO, C_PARTY_ACTION, C_DIVE, C_RIDE, C_LEGEND, C_OWNED, C_PCFILL, C_TASKS, C_ALLOW_RESET, C_ROMWRITE, C_OBJBYTE };
+enum { C_PARTNER, C_GOTO, C_HEX, C_PRESS, C_WAIT, C_SHOT, C_DUMP, C_BARRIER, C_UNTIL_CB2, C_UNTIL_FIELD, C_EXPECT, C_UNTIL_MEM, C_BATTLE, C_MENU, C_PARTY, C_FIXTURE, C_WRITE, C_LEAD, C_MOVE, C_SIX, C_VAR, C_FLAG, C_VS, C_EXPECT_FLAG, C_EXPECT_VAR, C_NO_OBJECT, C_MAP, C_OBJECT, C_TEXT_SPEED, C_PACE, C_MUTE, C_PARTNER_AT, C_ITEM, C_EXPECT_ITEM, C_UNTIL_TEXT, C_WARP, C_PC_COUNT, C_MONS, C_NO_COPIES, C_NOTE_MONEY, C_MONEY_GAIN, C_FORCE_ENC, C_EXPECT_RANGE, C_WALK, C_NO_WILD, C_CROSS, C_WALK_BATTLE, C_SMART, C_STRONG, C_UNTIL_TASK, C_MIRROR, C_SPECIES, C_NOTE_PARTY, C_SAME_PARTY, C_PATCH_RET, C_SLOT, C_TXN, C_MONEY_SAME, C_DEX, C_SWAP, C_GENDER, C_FILL, C_UNFILL, C_WRITEP, C_TINT, C_UNTIL_FTEXT, C_NICK, C_GRIND, C_CATCH, C_HUNT, C_SWITCH_LEAD, C_PARTY_SLOT, C_HEAL_BELOW, C_TALK_OBJ, C_BOXES, C_TEST_HOOK, C_WATCH, C_EXPECT_WRITES, C_SURF, C_BAG_ITEM, C_FLY_MAP, C_STEP_TO, C_PARTY_ACTION, C_DIVE, C_RIDE, C_LEGEND, C_OWNED, C_PCFILL, C_TASKS, C_ALLOW_RESET, C_ROMWRITE, C_OBJBYTE, C_NPC_SYNC };
 
 struct Cmd {
 	unsigned args[8];
@@ -2608,6 +2608,74 @@ static void frameCallback(struct mCoreThread* t) {
             advance = true;
             break;
         }
+        case C_NPC_SYNC: {
+            // npc_sync T [MAXLAG]: for T frames, compare every shared-NPC object
+            // (random walkers and turners, not trainers) on both games by local
+            // id. A pair counts as agreeing when either game's current tile
+            // equals the other's current or previous tile (a step in flight).
+            // FAIL when one stays apart for more than MAXLAG frames (default
+            // 96), or jumps more than one tile between 8-frame samples.
+            static unsigned apart[256], jumps[2], samples, objs, worst, facings; static int lastX[2][256], lastY[2][256];
+            if (p->id == 1) { if (++p->step >= c->frames) { p->step = 0; advance = true; } break; }
+            struct Player *q = &P[1];
+            if (p->step == 0) { memset(apart, 0, sizeof(apart)); jumps[0] = jumps[1] = samples = objs = worst = facings = 0;
+                memset(lastX, 0xFF, sizeof(lastX)); memset(lastY, 0xFF, sizeof(lastY)); }
+            unsigned maxLag = c->value ? c->value : 96;
+            if ((p->step & 7) == 0 && inField(p) && inField(q)) {
+                samples++;
+                for (int k = 0; k < 16; k++) {
+                    unsigned o = sObjEvents + k * 0x24;
+                    if (!(rd8(p, o) & 1) || (rd8(p, o + 2) & 1)) continue;
+                    unsigned id = rd8(p, o + 8), mt = rd8(p, o + 6), tt = rd8(p, o + 7);
+                    if (id == 0 || id >= 0xF0 || tt != 0) continue;
+                    if (!((mt >= 1 && mt <= 6) || (mt >= 0xD && mt <= 0x34) || mt == 0x52)) continue;
+                    unsigned o2 = 0; int found = 0;
+                    for (int m = 0; m < 16; m++) {
+                        o2 = sObjEvents + m * 0x24;
+                        if ((rd8(q, o2) & 1) && rd8(q, o2 + 8) == id && !(rd8(q, o2 + 2) & 1)) { found = 1; break; }
+                    }
+                    if (!found) continue;
+                    if (samples == 1) objs++;
+                    int ax = (int16_t)rd16(p, o + 0x10), ay = (int16_t)rd16(p, o + 0x12);
+                    int apx = (int16_t)rd16(p, o + 0x14), apy = (int16_t)rd16(p, o + 0x16);
+                    int bx = (int16_t)rd16(q, o2 + 0x10), by = (int16_t)rd16(q, o2 + 0x12);
+                    int bpx = (int16_t)rd16(q, o2 + 0x14), bpy = (int16_t)rd16(q, o2 + 0x16);
+                    int same = (ax == bx && ay == by) || (ax == bpx && ay == bpy) || (apx == bx && apy == by);
+                    // At rest on the same tile: the facing must agree too (turners).
+                    unsigned fa = rd8(p, o), fb = rd8(q, o2);
+                    int aRest = !(fa & 0x02) && (!(fa & 0x40) || (fa & 0x80)), bRest = !(fb & 0x02) && (!(fb & 0x40) || (fb & 0x80));
+                    if (same && ax == bx && ay == by && aRest && bRest && (rd8(p, o + 0x18) & 15) != (rd8(q, o2 + 0x18) & 15))
+                        { same = 0; facings++; }
+                    if (same) apart[id] = 0;
+                    else {
+                        apart[id] += 8;
+                        if (apart[id] > worst) worst = apart[id];
+                        if (apart[id] == maxLag + 8)
+                            out("[f%06d p0] npc %u apart: p0 (%d,%d) p1 (%d,%d)\n", p->frame, id, ax - 7, ay - 7, bx - 7, by - 7);
+                    }
+                    int pos[2][2] = { { ax, ay }, { bx, by } };
+                    for (int side = 0; side < 2; side++) {
+                        if (lastX[side][id] != -1 && abs(pos[side][0] - lastX[side][id]) + abs(pos[side][1] - lastY[side][id]) > 1) {
+                            jumps[side]++;
+                            out("[f%06d p%d] npc %u jumped (%d,%d) -> (%d,%d)\n", p->frame, side, id,
+                                lastX[side][id] - 7, lastY[side][id] - 7, pos[side][0] - 7, pos[side][1] - 7);
+                        }
+                        lastX[side][id] = pos[side][0]; lastY[side][id] = pos[side][1];
+                    }
+                }
+            }
+            if (++p->step >= c->frames) {
+                p->step = 0;
+                int bad = worst > maxLag || jumps[0] || jumps[1] || objs == 0;
+                unsigned st0 = symAddr("gCoopNpcStats");
+                out("[p0] %s npc_sync: %u shared objects, %u samples, longest apart %u frames (limit %u), facing mismatches %u, jumps p0=%u p1=%u; replayed p0=%u p1=%u corrected %u/%u placed %u/%u\n",
+                    bad ? "FAIL" : "ok", objs, samples, worst, maxLag, facings, jumps[0], jumps[1],
+                    rd16(p, st0 + 8), rd16(q, st0 + 8), rd16(p, st0 + 10), rd16(q, st0 + 10), rd16(p, st0 + 12), rd16(q, st0 + 12));
+                if (bad) sFailures++;
+                advance = true;
+            }
+            break;
+        }
         case C_ALLOW_RESET:
             p->resetAllowed = 1;
             out("[p%d] resets allowed from here (deliberate)\n", p->id);
@@ -3535,6 +3603,11 @@ static void loadScript(const char* path, int depth) {
         } else if (!strcmp(cmd, "force_encounter")) {
             c.kind = C_FORCE_ENC;
             c.value = strtoul(a, NULL, 0);
+        } else if (!strcmp(cmd, "npc_sync")) {
+            c.kind = C_NPC_SYNC;
+            c.frames = atoi(a);
+            c.value = n >= 4 ? strtoul(b, NULL, 0) : 0;
+            snprintf(c.text, sizeof(c.text), "npc_sync %s", a);
         } else if (!strcmp(cmd, "fixture_obj")) {
             c.kind = C_OBJBYTE;
             c.addr = (strtoul(a, NULL, 0) & 0xFF) | (strtoul(b, NULL, 0) << 8);

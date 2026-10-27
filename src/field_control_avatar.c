@@ -1,4 +1,6 @@
 #include "global.h"
+#include "coop_npc.h"
+#include "coop.h"
 #include "battle_setup.h"
 #include "bike.h"
 #include "coord_event_weather.h"
@@ -415,6 +417,10 @@ static const u8 *GetInteractedObjectEventScript(struct MapPosition *position, u8
         script = GetObjectEventScriptPointerByObjectEventId(objectEventId);
 
     script = GetRamScript(gSpecialVar_LastTalked, script);
+    // Shared NPCs (src/coop_npc.c): busy while the partner talks to them.
+    script = CoopNpc_InteractionScript(objectEventId, script);
+    if (script != NULL && script != Coop_EventScript_NpcBusy)
+        CoopNpc_NoteTalkStart(objectEventId);
     return script;
 }
 
@@ -713,7 +719,16 @@ static bool8 TryStartCoordEventScript(struct MapPosition *position)
         return FALSE;
 
     ScriptContext_ContinueScript(&ctx);
+    // A shared story scene on this tile: the partner can join (src/coop.c).
+    Coop_NoteCoordScene(position->x - MAP_OFFSET, position->y - MAP_OFFSET);
     return TRUE;
+}
+
+// The trigger script this save would run on that tile now (its own story
+// state decides), or NULL.
+const u8 *GetCoordEventScriptAt(s16 x, s16 y, u8 elevation)
+{
+    return GetCoordEventScriptAtPosition(&gMapHeader, x, y, elevation);
 }
 
 static bool8 TryStartMiscWalkingScripts(u16 metatileBehavior)

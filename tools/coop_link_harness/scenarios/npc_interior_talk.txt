@@ -1,0 +1,59 @@
+# Shared NPC movement indoors and talking to a shared NPC (Rustboro, j16
+# saves, linked).
+# FIXTURES: fixture_warp; no random wild battles.
+# Checks:
+# - both enter the Pokemon Centre one after the other; its wandering
+#   visitor agrees on both screens;
+# - in the city, player 0 talks to the wandering woman (NPC 1) and keeps the
+#   message open; player 1 tries to talk to her too and gets the short
+#   "busy" answer, not her script; after player 0 is done, player 1 can talk
+#   to her normally; she agrees on both screens afterwards.
+include continue.inc
+include relink.inc
+b expect coop.sLinkState 2
+b no_wild 1
+0 fixture_warp 0 3 16 40
+1 fixture_warp 0 3 17 40
+b until_field 3000
+b sync
+b wait 60
+0 walk 16 38 2000
+0 until_map 11 5 3000
+1 wait 90
+1 walk 16 38 2000
+1 until_map 11 5 3000
+b sync
+b wait 120
+b npc_sync 1500
+b shot centre
+0 walk 7 8 2000
+0 cross DOWN 0 3 2000
+1 wait 60
+1 walk 7 8 2000
+1 cross DOWN 0 3 2000
+b sync
+0 walk 21 34 2000
+1 walk 23 34 2000
+b sync
+b wait 60
+0 talk_obj 1 4000
+0 wait 30
+0 shot p0-talking
+1 wait 40
+1 talk_obj 1 4000
+1 wait 60
+1 shot p1-busy
+1 expect gCoopNpcStats+18:2 1
+1 mash_field 600 B
+0 mash_field 1200 B
+b sync
+b wait 120
+1 talk_obj 1 4000
+1 wait 60
+1 shot p1-talks
+1 mash_field 1200 B
+1 expect gCoopNpcStats+18:2 1
+b sync
+b wait 60
+b npc_sync 900
+b expect coop.sLinkState 2
