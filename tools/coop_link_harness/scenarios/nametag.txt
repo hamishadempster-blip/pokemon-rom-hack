@@ -1,16 +1,15 @@
-# Partner name tag and status window (story_seg6 saves, Rustboro). Gameplay
-# test: no fixtures beyond no_wild. Player 0 is MISTY's save; player 1's
-# partner tag reads player 0's name and the other way round.
-#  - Tag ON (default) over the partner, both screens; hidden while the
-#    start menu is open; the status window names the partner, what they are
-#    doing and where.
-#  - NEARBY (player 0): hidden when the partner is more than three steps
-#    away, while player 1 (ON) still sees it.
-#  - Partner walks into the Centre: no tag and no partner left outside, one
-#    note ("went inside") and no second note for going out and in again;
-#    the status window says "inside".
+# Partner mark (src/coop_outfit.c) and status window (story_seg6 saves,
+# Rustboro). Gameplay test: no fixtures beyond no_wild. Player 0 is MISTY's
+# save. Modes: INDICATOR (default: a small outlined marker over the partner,
+# in the partner's stable player colour), NAME (compact outlined name), OFF.
+#  - INDICATOR by default on both screens; no name tag; hidden while the
+#    start menu is open; the status window names the partner and place.
+#  - Player 0 cycles PARTNER MARK: NAME (name tag, no marker), OFF (nothing),
+#    then back to INDICATOR. Player 1's screen is unaffected throughout.
+#  - Partner walks into the Centre: no marker and no partner left outside,
+#    one note ("went inside") and no second note for going out and in again.
 #  - Player 0 chooses UNLINK: player 0 reads "You unlinked", player 1 reads
-#    "<name> unlinked" (not "The link dropped"); no tag left on either.
+#    "<name> unlinked"; no marker left on either.
 include continue.inc
 b no_wild 1
 b wait 60
@@ -21,29 +20,29 @@ b wait 120
 1 walk 18 50 3000
 b sync
 b wait 60
-b expect gCoopNameTagShown 1
-b expect gCoopMarkerShown 0
-b shot tag-on
+b expect gCoopMarkerShown 1
+b expect gCoopNameTagShown 0
+b shot mark-indicator
 # Player 1 just south of player 0: player 0's sprite stays in front of the
-# tag over player 1's head.
+# marker over player 1's head.
 1 walk 19 51 3000
 b sync
 b wait 30
-b expect gCoopNameTagShown 1
-b shot tag-south
+b expect gCoopMarkerShown 1
+b shot mark-south
 1 walk 18 50 3000
 b sync
 b wait 30
-# Start menu: tag hidden, status window up.
+# Start menu: marker hidden, status window up.
 0 press START 2
 0 wait 60
-0 expect gCoopNameTagShown 0
+0 expect gCoopMarkerShown 0
 0 shot status-together
 0 mash_field 600 B
 0 wait 20
-0 expect gCoopNameTagShown 1
+0 expect gCoopMarkerShown 1
 b sync
-# Player 0: NAME TAG -> NEARBY.
+# Player 0: PARTNER MARK -> NAME.
 0 press START 2
 0 wait 40
 0 menu_to COOP
@@ -57,21 +56,69 @@ b sync
 0 wait 8
 0 press DOWN 2
 0 wait 8
-0 shot coop-menu-nametag
+0 shot coop-menu-mark
 0 press A 2
 0 wait 60
-0 shot nametag-nearby-msg
+0 shot mark-name-msg
 0 mash_field 900 B
 0 wait 20
 0 expect gCoopNameTagShown 1
+0 expect gCoopMarkerShown 0
+1 expect gCoopMarkerShown 1
+1 expect gCoopNameTagShown 0
+b shot mark-name
 b sync
-# Player 1 steps away: four rows up and three left of player 0.
+# NAME -> OFF.
+0 press START 2
+0 wait 40
+0 menu_to COOP
+0 press A 2
+0 wait 40
+0 press DOWN 2
+0 wait 8
+0 press DOWN 2
+0 wait 8
+0 press DOWN 2
+0 wait 8
+0 press DOWN 2
+0 wait 8
+0 press A 2
+0 wait 60
+0 shot mark-off-msg
+0 mash_field 900 B
+0 wait 20
+0 expect gCoopNameTagShown 0
+0 expect gCoopMarkerShown 0
+1 expect gCoopMarkerShown 1
+b shot mark-off
+b sync
+# OFF -> INDICATOR again.
+0 press START 2
+0 wait 40
+0 menu_to COOP
+0 press A 2
+0 wait 40
+0 press DOWN 2
+0 wait 8
+0 press DOWN 2
+0 wait 8
+0 press DOWN 2
+0 wait 8
+0 press DOWN 2
+0 wait 8
+0 press A 2
+0 wait 60
+0 shot mark-indicator-msg
+0 mash_field 900 B
+0 wait 20
+0 expect gCoopMarkerShown 1
+b sync
+# Player 1 walks away (four rows up, three left): still marked on screen.
 1 walk 16 46 3000
 b sync
 b wait 60
-0 expect gCoopNameTagShown 0
-1 expect gCoopNameTagShown 1
-b shot tag-nearby-far
+b expect gCoopMarkerShown 1
+b shot mark-apart
 # Player 1 goes into the Centre.
 1 walk 16 39 4000
 1 walk 16 38 2000
@@ -79,7 +126,7 @@ b shot tag-nearby-far
 b sync
 b wait 90
 0 expect_no_partner
-0 expect gCoopNameTagShown 0
+0 expect gCoopMarkerShown 0
 0 expect_nz coop.sPartnerPopupCooldown
 0 shot partner-went-inside
 0 wait 60
@@ -119,6 +166,7 @@ b sync
 b wait 60
 b shot unlinked-msg
 b mash_field 900 B
+b expect gCoopMarkerShown 0
 b expect gCoopNameTagShown 0
 b expect coop.sLinkState 0
 b shot unlinked-field

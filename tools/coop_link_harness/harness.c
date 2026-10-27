@@ -23,7 +23,7 @@
 #define MAX_CMDS 4096
 #define MAX_SYMS 500000
 
-enum { C_PARTNER, C_GOTO, C_HEX, C_PRESS, C_WAIT, C_SHOT, C_DUMP, C_BARRIER, C_UNTIL_CB2, C_UNTIL_FIELD, C_EXPECT, C_UNTIL_MEM, C_BATTLE, C_MENU, C_PARTY, C_FIXTURE, C_WRITE, C_LEAD, C_MOVE, C_SIX, C_VAR, C_FLAG, C_VS, C_EXPECT_FLAG, C_EXPECT_VAR, C_NO_OBJECT, C_MAP, C_OBJECT, C_TEXT_SPEED, C_PACE, C_MUTE, C_PARTNER_AT, C_ITEM, C_EXPECT_ITEM, C_UNTIL_TEXT, C_WARP, C_PC_COUNT, C_MONS, C_NO_COPIES, C_NOTE_MONEY, C_MONEY_GAIN, C_FORCE_ENC, C_EXPECT_RANGE, C_WALK, C_NO_WILD, C_CROSS, C_WALK_BATTLE, C_SMART, C_STRONG, C_UNTIL_TASK, C_MIRROR, C_SPECIES, C_NOTE_PARTY, C_SAME_PARTY, C_PATCH_RET, C_SLOT, C_TXN, C_MONEY_SAME, C_DEX, C_SWAP, C_GENDER, C_FILL, C_UNFILL, C_WRITEP, C_TINT, C_UNTIL_FTEXT, C_NICK, C_GRIND, C_CATCH, C_HUNT, C_SWITCH_LEAD, C_PARTY_SLOT, C_HEAL_BELOW, C_TALK_OBJ, C_BOXES, C_TEST_HOOK, C_WATCH, C_EXPECT_WRITES, C_SURF, C_BAG_ITEM, C_FLY_MAP, C_STEP_TO, C_PARTY_ACTION, C_DIVE, C_RIDE };
+enum { C_PARTNER, C_GOTO, C_HEX, C_PRESS, C_WAIT, C_SHOT, C_DUMP, C_BARRIER, C_UNTIL_CB2, C_UNTIL_FIELD, C_EXPECT, C_UNTIL_MEM, C_BATTLE, C_MENU, C_PARTY, C_FIXTURE, C_WRITE, C_LEAD, C_MOVE, C_SIX, C_VAR, C_FLAG, C_VS, C_EXPECT_FLAG, C_EXPECT_VAR, C_NO_OBJECT, C_MAP, C_OBJECT, C_TEXT_SPEED, C_PACE, C_MUTE, C_PARTNER_AT, C_ITEM, C_EXPECT_ITEM, C_UNTIL_TEXT, C_WARP, C_PC_COUNT, C_MONS, C_NO_COPIES, C_NOTE_MONEY, C_MONEY_GAIN, C_FORCE_ENC, C_EXPECT_RANGE, C_WALK, C_NO_WILD, C_CROSS, C_WALK_BATTLE, C_SMART, C_STRONG, C_UNTIL_TASK, C_MIRROR, C_SPECIES, C_NOTE_PARTY, C_SAME_PARTY, C_PATCH_RET, C_SLOT, C_TXN, C_MONEY_SAME, C_DEX, C_SWAP, C_GENDER, C_FILL, C_UNFILL, C_WRITEP, C_TINT, C_UNTIL_FTEXT, C_NICK, C_GRIND, C_CATCH, C_HUNT, C_SWITCH_LEAD, C_PARTY_SLOT, C_HEAL_BELOW, C_TALK_OBJ, C_BOXES, C_TEST_HOOK, C_WATCH, C_EXPECT_WRITES, C_SURF, C_BAG_ITEM, C_FLY_MAP, C_STEP_TO, C_PARTY_ACTION, C_DIVE, C_RIDE, C_LEGEND, C_OWNED, C_PCFILL, C_TASKS };
 
 struct Cmd {
 	unsigned args[8];
@@ -70,6 +70,9 @@ struct Player {
     unsigned char partyNote[600];
     unsigned patchAddr, patchOpcode, patchFrames;
     int grindCount, grindInBattle, grindSwitched;
+    int catchBallDowns;   // catch with a chosen ball: DOWN presses still to make (-1 done)
+    int catchFightLeft, catchWasMenu;   // catch: action menus to fight at first
+    unsigned maxSessionTasks;   // most live co-op session tasks seen in a frame (C_TASKS max)
     int switchLead, switchState;
     int healPct, healState, healsLeft, healTarget, healUses; unsigned healFrame;
 };
@@ -465,6 +468,8 @@ static void dump(struct Player* p, const char* tag);
 
 static unsigned partyMon(int trainer, int slot);
 static const unsigned char sSub0[24] = {0, 0, 0, 0, 0, 0, 1, 1, 2, 3, 2, 3, 1, 1, 2, 3, 2, 3, 1, 1, 2, 3, 2, 3};
+// Position of substruct 3 (misc: met location, met level, IVs) per order.
+static const unsigned char sSub3[24] = {3, 2, 3, 2, 1, 1, 3, 2, 3, 2, 1, 1, 3, 2, 3, 2, 1, 1, 0, 0, 0, 0, 0, 0};
 
 static void readLead(struct Player* p, unsigned* species, unsigned* exp, unsigned* held) {
 	unsigned mon = partyMon(0, 0);
@@ -1349,6 +1354,40 @@ static void battleLog(struct Player* p) {
 		}
 		if (active != lastActive[p->id & 1])
 			out("[f%06d p%d ctl] gAnimScriptActive=%u\n", p->frame, p->id, active);
+		// The live task list, whenever its functions change (in battle).
+		{
+			static char lastTasks[2][600];
+			char cur[600]; int o = 0;
+			for (int t = 0; t < 16 && o < 560; t++) {
+				unsigned tb = symAddr("gTasks") + t * 40;
+				if (rd8(p, tb + 4)) o += snprintf(cur + o, sizeof(cur) - o, " %d:%s@%08x/p%u", t, symName(rd32(p, tb)), rd32(p, tb), rd8(p, tb + 7));
+			}
+			cur[o] = 0;
+			if (strcmp(cur, lastTasks[p->id & 1])) {
+				out("[f%06d p%d tasks]%s\n", p->frame, p->id, cur);
+				snprintf(lastTasks[p->id & 1], sizeof(lastTasks[0]), "%s", cur);
+			}
+		}
+		// A move animation running 600 frames: what it waits on (the cry
+		// player, its channel, and the live tasks).
+		static unsigned animSince[2];
+		if (!active) animSince[p->id & 1] = 0;
+		else if (!animSince[p->id & 1]) animSince[p->id & 1] = p->frame;
+		else if (p->frame - animSince[p->id & 1] == 600) {
+			unsigned cry = rd32(p, symAddr("gMPlay_PokemonCry"));
+			out("[f%06d p%d stuck-anim] gMPlay_PokemonCry=%08x", p->frame, p->id, cry);
+			if (cry) {
+				unsigned tr = rd32(p, cry + 44), ch = tr ? rd32(p, tr + 32) : 0;
+				out(" status=%08x track0=%08x flags=%02x chan=%08x", rd32(p, cry + 4), tr, tr ? rd8(p, tr) : 0, ch);
+				if (ch) out(" chanStatus=%02x chanTrack=%08x wav=%08x count=%08x", rd8(p, ch), rd32(p, ch + 44), rd32(p, ch + 36), rd32(p, ch + 24));
+			}
+			out(" visualTasks=%u soundTasks=%u\n", rd8(p, symAddr("gAnimVisualTaskCount")), rd8(p, symAddr("gAnimSoundTaskCount")));
+			for (int t = 0; t < 16; t++) {
+				unsigned tb = symAddr("gTasks") + t * 40;
+				if (rd8(p, tb + 4)) out("[f%06d p%d stuck-anim] task %d %s data0=%04x data9=%04x\n", p->frame, p->id, t, symName(rd32(p, tb)),
+				                        rd16(p, tb + 8), rd16(p, tb + 8 + 18));
+			}
+		}
 		if (p->frame % 300 == 0) {
 			struct ARMCore* cpu = ((struct GBA*)p->core->board)->cpu;
 			char pc[120];
@@ -1428,6 +1467,16 @@ static void frameCallback(struct mCoreThread* t) {
 		writePng(p, "usr1");
 	}
 	snapVideo(p);
+		{
+			static unsigned sess;
+			if (!sess) sess = symFind("Task_CoopSession") & ~1u;
+			unsigned nt = 0;
+			for (int t = 0; sess && t < 16; t++) {
+				unsigned tb = symAddr("gTasks") + t * 40;
+				if (rd8(p, tb + 4) && (rd32(p, tb) & ~1u) == sess) nt++;
+			}
+			if (nt > p->maxSessionTasks) p->maxSessionTasks = nt;
+		}
 	battleLog(p);
 	// FIXTURE `no_wild 1`: hold wild encounters off (map loads reset it).
 	if (p->noWild) p->core->busWrite8(p->core, symAddr("sWildEncountersDisabled"), 1);
@@ -2112,11 +2161,33 @@ static void frameCallback(struct mCoreThread* t) {
                 keys = (p->step % 24) < 2 ? 2 : 0; // B: nickname NO, dex page, messages
                 break;
             }
+            if (!p->grindInBattle) { p->catchBallDowns = 0; p->catchFightLeft = c->addr; p->catchWasMenu = 0; }
             p->grindInBattle = 1;
             if (cb2 == bagCb) {
                 unsigned t = p->step % 30;
-                if (rd8(p, symAddr("gBagPosition") + 5) != 1) keys = t < 2 ? (1u << 4) : 0;
-                else keys = t < 2 ? 1 : 0;
+                if (rd8(p, symAddr("gBagPosition") + 5) != 1) { keys = t < 2 ? (1u << 4) : 0; break; }
+                // catch N T BALL: the first time in the pocket this battle,
+                // move the cursor down to BALL (the bag keeps the place for
+                // the next throws); without one, the first row.
+                if (c->size && p->catchBallDowns == 0) {
+                    unsigned pocket = symAddr("gBagPockets") + 8, slots = rd32(p, pocket), cap = rd16(p, pocket + 4) & 0x3FF;
+                    int k = -1, n = 0;
+                    for (unsigned i = 0; i < cap && i < 64; i++) {
+                        unsigned id = rd16(p, slots + i * 4);
+                        if (!id) continue;
+                        if (id == (unsigned)c->size) { k = n; break; }
+                        n++;
+                    }
+                    p->catchBallDowns = k > 0 ? k + 1 : -1;
+                    if (k >= 0) out("[p%d] catch: ball %u at row %d\n", p->id, c->size, k);
+                }
+                if (p->catchBallDowns > 1) {
+                    if (t == 10) p->catchBallDowns--;
+                    keys = (t == 10 || t == 11) ? (1u << 7) : 0;
+                    break;
+                }
+                p->catchBallDowns = -1;
+                keys = t < 2 ? 1 : 0;
                 break;
             }
             int atMenu = 0;
@@ -2126,11 +2197,52 @@ static void frameCallback(struct mCoreThread* t) {
             for (int b = 0; b < 4; b++)
                 if (!strcmp(symName(rd32(p, funcs + b * 4)), "HandleInputChooseAction")) atMenu = 1;
             (void)chooseAction;
+            // catch N T BALL FIGHT: the first FIGHT action menus fight (to
+            // weaken it), then the throws.
+            if (p->catchWasMenu && !atMenu && p->catchFightLeft > 0 && p->catchFightLeft < 100) p->catchFightLeft--;
+            p->catchWasMenu = atMenu;
+            if (atMenu && p->catchFightLeft > 0 && p->catchFightLeft < 100) { keys = autoKeys(p, p->step); break; }
+            // FIGHT 100+P: fight while the wild Pokemon (battler 1) has more
+            // than P% HP, throw at or below it (a player's usual way).
+            if (atMenu && c->addr >= 100) {
+                unsigned bm = symAddr("gBattleMons") + symValue("harness.battleMonSize");
+                unsigned hp = rd16(p, bm + symValue("harness.battleMonHp")), mx = rd16(p, bm + symValue("harness.battleMonMaxHp"));
+                if (mx && hp * 100 > (c->addr - 100) * mx) { keys = autoKeys(p, p->step); break; }
+            }
             if (atMenu && p->grindCount < (int)c->value) {
-                unsigned t = p->step % 60;
-                if (t == 0) keys = 1u << 4;            // RIGHT: BAG
-                else if (t == 20) { keys = 1; p->grindCount++; out("[p%d] catch: throw %d\n", p->id, p->grindCount); }
+                // Steer the action cursor to BAG (1) by reading it, then A
+                // (a battler just sent in starts on BATTLE).
+                int me = 0;
+                for (int b = 0; b < 4; b++)
+                    if (!strcmp(symName(rd32(p, funcs + b * 4)), "HandleInputChooseAction")) me = b;
+                unsigned t = p->step % 20, cur = rd8(p, symAddr("gActionSelectionCursor") + me);
+                if (t != 0) { keys = 0; break; }
+                if (cur & 2) keys = 1u << 6;               // UP
+                else if (!(cur & 1)) keys = 1u << 4;       // RIGHT
+                else { keys = 1; p->grindCount++; out("[p%d] catch: throw %d\n", p->id, p->grindCount); p->step += 30; }
                 break;
+            }
+            if (atMenu) { keys = autoKeys(p, p->step); break; }
+            // A fainted battler's forced replacement: the party menu.
+            {
+                static unsigned partyCbC;
+                if (!partyCbC) partyCbC = symFind("CB2_UpdatePartyMenu") & ~1u;
+                if (partyCbC && cb2 == partyCbC) { keys = autoKeys(p, p->step); break; }
+            }
+            // Doubles (a shared legend): the move and target menus are the
+            // fight's, not text to close with B.
+            for (int b = 0; b < 4; b++) {
+                const char* fn = symName(rd32(p, funcs + b * 4));
+                if (!strcmp(fn, "HandleInputChooseMove") || !strcmp(fn, "HandleInputChooseTarget")) atMenu = 1;
+                // A move with no PP left: move the cursor once to the first
+                // move that has some (smart_moves stays off in these runs).
+                if (!strcmp(fn, "HandleInputChooseMove")) {
+                    unsigned res = rd32(p, symAddr("gBattleResources")), cur = symAddr("gMoveSelectionCursor");
+                    unsigned m = res + 0x10 + b * 0x200 + 4, at = rd8(p, cur + b);
+                    if (res && at < 4 && rd8(p, m + 8 + at) == 0)
+                        for (int i = 0; i < 4; i++)
+                            if (rd16(p, m + i * 2) && rd8(p, m + 8 + i)) { p->core->busWrite8(p->core, cur + b, i); break; }
+                }
             }
             if (atMenu) { keys = autoKeys(p, p->step); break; }
             keys = (p->step % 24) < 2 ? 2 : 0;
@@ -2433,6 +2545,48 @@ static void frameCallback(struct mCoreThread* t) {
             advance = true;
             break;
         }
+        case C_TASKS: {
+            // expect_tasks FUNC N: exactly N live tasks run FUNC.
+            // expect_tasks MAX N: never more than N co-op session tasks at once
+            // so far in the run (counted every frame, battles included).
+            if (!strcmp(c->text, "MAX")) {
+                if (p->maxSessionTasks > c->value) { out("[p%d] FAIL session tasks peaked at %u, expected at most %u\n", p->id, p->maxSessionTasks, c->value); sFailures++; }
+                else out("[p%d] ok session tasks peaked at %u\n", p->id, p->maxSessionTasks);
+                advance = true;
+                break;
+            }
+            unsigned n = 0, want = symAddr(c->text) & ~1u;
+            for (int t = 0; t < 16; t++) {
+                unsigned tb = symAddr("gTasks") + t * 40;
+                if (rd8(p, tb + 4) && (rd32(p, tb) & ~1u) == want) n++;
+            }
+            if (n != c->value) { out("[p%d] FAIL tasks %s: %u live, expected %u\n", p->id, c->text, n, c->value); sFailures++; }
+            else out("[p%d] ok tasks %s: %u\n", p->id, c->text, n);
+            advance = true;
+            break;
+        }
+        case C_PCFILL: {
+            // fixture_fill_pc: every empty PC slot gets a copy of party slot
+            // 0's BoxPokemon (encrypted as is), so nothing new fits.
+            // fixture_unfill_pc: those copies (same personality) go again.
+            unsigned storage = rd32(p, symAddr("gPokemonStoragePtr"));
+            unsigned boxes = storage + symValue("harness.storageBoxesOffset"), size = symValue("harness.boxMonSize");
+            unsigned src = partyMon(0, 0), pid = rd32(p, src), n = 0;
+            for (unsigned i = 0; i < 14 * 30; i++) {
+                unsigned m = boxes + i * size;
+                if (c->value) {
+                    if (rd8(p, m + 19) & 2) continue;
+                    for (unsigned k = 0; k < size; k += 4) p->core->busWrite32(p->core, m + k, rd32(p, src + k));
+                    n++;
+                } else if ((rd8(p, m + 19) & 2) && rd32(p, m) == pid) {
+                    for (unsigned k = 0; k < size; k += 4) p->core->busWrite32(p->core, m + k, 0);
+                    n++;
+                }
+            }
+            out("[p%d] fixture %s pc: %u slots\n", p->id, c->value ? "fill" : "unfill", n);
+            advance = true;
+            break;
+        }
         case C_PC_COUNT: {
             // Occupied PC slots across all boxes (BoxPokemon.hasSpecies).
             unsigned storage = rd32(p, symAddr("gPokemonStoragePtr")), count = 0;
@@ -2538,6 +2692,7 @@ static void frameCallback(struct mCoreThread* t) {
                 if (id == c->addr) { have = rd16(p, slots + i * 4 + 2) ^ key; freeSlot = i; break; }
                 if (id == 0 && freeSlot == 0xFFFF) freeSlot = i;
             }
+            if (c->kind == C_ITEM && c->frames >= 0 && (unsigned)c->frames < cap) freeSlot = c->frames;
             if (c->kind == C_ITEM) {
                 if (freeSlot == 0xFFFF) { out("[p%d] FAIL fixture_item: pocket full\n", p->id); sFailures++; }
                 else {
@@ -2556,7 +2711,12 @@ static void frameCallback(struct mCoreThread* t) {
             // dex_caught NUM VALUE (set this save's own caught flag, a fixture)
             // expect_partner_dex NUM VALUE (the cached partner flag)
             unsigned n = c->addr - 1, got;
-            if (c->size == 1) {
+            if (c->size == 2) {
+                // expect_dex_caught NUM VALUE: this save's own caught flag.
+                got = (rd8(p, rd32(p, sSave1) + symValue("harness.dexCaughtOffset") + n / 8) >> (n % 8)) & 1;
+                if (got != c->value) { out("[p%d] FAIL dex caught %u = %u, expected %u\n", p->id, c->addr, got, c->value); sFailures++; }
+                else out("[p%d] ok dex caught %u = %u\n", p->id, c->addr, got);
+            } else if (c->size == 1) {
                 unsigned a = rd32(p, sSave1) + symValue("harness.dexCaughtOffset") + n / 8;
                 unsigned v = rd8(p, a);
                 v = c->value ? (v | (1u << (n % 8))) : (v & ~(1u << (n % 8)));
@@ -2796,6 +2956,51 @@ static void frameCallback(struct mCoreThread* t) {
 			else if (cx != tx) keys = (ph % 12) < 2 ? (cx < tx ? (1u << 4) : (1u << 5)) : 0;
 			else if (cy != ty) keys = (ph % 12) < 2 ? (cy < ty ? (1u << 7) : (1u << 6)) : 0;
 			if (ph > 6000) { out("[p%d] FAIL fly_map %u: cursor at (%u,%u) sec %u\n", p->id, c->value, cx, cy, sec); writePng(p, "fail"); sFailures++; p->done = 1; }
+			break;
+		}
+		case C_LEGEND: {
+			unsigned base = rd32(p, symAddr("gSaveBlock3Ptr"));
+			static const char* const names[3] = {"claimed", "pending", "owed"};
+			unsigned off = symValue(c->size == 0 ? "harness.legendClaimedOffset" : c->size == 1 ? "harness.legendPendingOffset" : "harness.legendOwedOffset");
+			unsigned v = rd8(p, base + off);
+			if (c->frames) {
+				p->core->busWrite8(p->core, base + off, c->value);
+				out("[p%d] fixture legend %s %02x (was %02x)\n", p->id, names[c->size], c->value, v);
+			} else if (v != c->value) {
+				out("[p%d] FAIL legend %s %02x, expected %02x\n", p->id, names[c->size], v, c->value);
+				sFailures++;
+			} else {
+				out("[p%d] ok legend %s %02x\n", p->id, names[c->size], v);
+			}
+			advance = true;
+			break;
+		}
+		case C_OWNED: {
+			unsigned sb2 = rd32(p, symAddr("gSaveBlock2Ptr"));
+			unsigned myId = rd16(p, sb2 + 10) | (rd16(p, sb2 + 12) << 16);   // playerTrainerId (SaveBlock2 +0x0A)
+			unsigned st = rd32(p, symAddr("gPokemonStoragePtr")) + symValue("harness.storageBoxesOffset");
+			unsigned bsz = symValue("harness.boxMonSize");
+			int count = 0;
+			for (int i = 0; i < 6 + 14 * 30; i++) {
+				unsigned mon = i < 6 ? partyMon(0, i) : st + (i - 6) * bsz;
+				unsigned pid = rd32(p, mon), ot = rd32(p, mon + 4), key = pid ^ ot;
+				if (!pid && !ot) continue;
+				unsigned g = rd32(p, mon + 32 + sSub0[pid % 24] * 12) ^ key;
+				if ((g & 0x7FF) != c->value) continue;
+				unsigned m0 = rd32(p, mon + 32 + sSub3[pid % 24] * 12) ^ key;
+				unsigned m1 = rd32(p, mon + 32 + sSub3[pid % 24] * 12 + 4) ^ key;
+				out("[p%d owned] %s%d species=%u pid=%08x ot=%08x%s metLoc=%u metLv=%u ivs=%u/%u/%u/%u/%u/%u\n", p->id,
+				    i < 6 ? "party " : "box ", i < 6 ? i : i - 6, g & 0x7FF, pid, ot, ot == myId ? "(own)" : "(other)",
+				    (m0 >> 8) & 0xFF, (m0 >> 16) & 0x7F, m1 & 31, (m1 >> 5) & 31, (m1 >> 10) & 31, (m1 >> 15) & 31, (m1 >> 20) & 31, (m1 >> 25) & 31);
+				if (ot == myId) count++;
+			}
+			if (count < (int)c->addr || count > c->size) {
+				out("[p%d] FAIL %s: %d own\n", p->id, c->text, count);
+				sFailures++;
+			} else {
+				out("[p%d] ok %s: %d own\n", p->id, c->text, count);
+			}
+			advance = true;
 			break;
 		}
 		case C_RIDE: {
@@ -3261,6 +3466,13 @@ static void loadScript(const char* path, int depth) {
         } else if (!strcmp(cmd, "force_encounter")) {
             c.kind = C_FORCE_ENC;
             c.value = strtoul(a, NULL, 0);
+        } else if (!strcmp(cmd, "expect_tasks")) {
+            c.kind = C_TASKS;
+            snprintf(c.text, sizeof(c.text), "%s", a);
+            c.value = strtoul(b, NULL, 0);
+        } else if (!strcmp(cmd, "fixture_fill_pc") || !strcmp(cmd, "fixture_unfill_pc")) {
+            c.kind = C_PCFILL;
+            c.value = !strcmp(cmd, "fixture_fill_pc");
         } else if (!strcmp(cmd, "mute_coop")) {
             c.kind = C_MUTE;
             c.frames = atoi(a);
@@ -3285,10 +3497,12 @@ static void loadScript(const char* path, int depth) {
             snprintf(c.text + 16, sizeof(c.text) - 16, "%s", b);
             c.frames = n >= 5 ? atoi(d) : 60000;
         } else if (!strcmp(cmd, "catch")) {
-            // catch N [timeout]
+            // catch N [timeout] [BALL]
             c.kind = C_CATCH;
             c.value = strtoul(a, NULL, 0);
             c.frames = n >= 4 ? atoi(b) : 20000;
+            c.size = n >= 5 ? atoi(d) : 0;   // the ball's item id (0: the first row)
+            c.addr = n >= 6 ? (unsigned)atoi(e) : 0;   // action menus to fight first
         } else if (!strcmp(cmd, "grind")) {
             // grind N PCT [timeout]
             c.kind = C_GRIND;
@@ -3393,14 +3607,16 @@ static void loadScript(const char* path, int depth) {
             snprintf(c.text + 16, sizeof(c.text) - 16, "%s", a);
             for (char* q = c.text + 16; *q; q++) if (*q == '_') *q = ' ';
         } else if (!strcmp(cmd, "fixture_item") || !strcmp(cmd, "expect_item")) {
-            // POCKET (0 items, 1 balls, 2 TM/HM, 3 berries, 4 key) ITEM QTY
+            // POCKET (0 items, 1 balls, 2 TM/HM, 3 berries, 4 key) ITEM QTY [SLOT]
+            // (fixture_item with SLOT: that pocket row, whatever it held)
             c.kind = !strcmp(cmd, "fixture_item") ? C_ITEM : C_EXPECT_ITEM;
             c.size = atoi(a);
             c.addr = strtoul(b, NULL, 0);
             c.value = strtoul(d, NULL, 0);
-        } else if (!strcmp(cmd, "dex_caught") || !strcmp(cmd, "expect_partner_dex")) {
+            c.frames = n >= 6 ? atoi(e) : -1;
+        } else if (!strcmp(cmd, "dex_caught") || !strcmp(cmd, "expect_partner_dex") || !strcmp(cmd, "expect_dex_caught")) {
             c.kind = C_DEX;
-            c.size = !strcmp(cmd, "dex_caught");
+            c.size = !strcmp(cmd, "dex_caught") ? 1 : !strcmp(cmd, "expect_dex_caught") ? 2 : 0;
             c.addr = strtoul(a, NULL, 0);
             c.value = strtoul(b, NULL, 0);
         } else if (!strcmp(cmd, "expect_txn")) {
@@ -3433,6 +3649,24 @@ static void loadScript(const char* path, int depth) {
         } else if (!strcmp(cmd, "fixture_gender")) {
             c.kind = C_GENDER;
             c.value = strtoul(a, NULL, 0);
+        } else if (!strcmp(cmd, "expect_legend") || !strcmp(cmd, "fixture_legend")) {
+            // expect_legend FIELD VALUE / fixture_legend FIELD VALUE: this save's
+            // shared-legendary records (CoopSave layout 3), FIELD claimed,
+            // pending or owed: a mask with one bit per COOP_ENC_* (bit id - 1).
+            c.kind = C_LEGEND;
+            c.size = !strcmp(a, "pending") ? 1 : !strcmp(a, "owed") ? 2 : 0;
+            c.value = strtoul(b, NULL, 0);
+            c.frames = !strcmp(cmd, "fixture_legend");
+            snprintf(c.text, sizeof(c.text), "%s %s %s", cmd, a, b);
+        } else if (!strcmp(cmd, "legend_owned")) {
+            // legend_owned SPECIES MIN [MAX]: Pokemon of SPECIES in the party and
+            // PC whose OT is this save's own trainer; each is printed (where,
+            // personality, met location and level, IVs).
+            c.kind = C_OWNED;
+            c.value = strtoul(a, NULL, 0);
+            c.addr = strtoul(b, NULL, 0);
+            c.size = n >= 5 ? atoi(d) : (int)c.addr;
+            snprintf(c.text, sizeof(c.text), "legend_owned %s %s", a, b);
         } else if (!strcmp(cmd, "fixture_six")) {
             c.kind = C_SIX;
         } else if (!strcmp(cmd, "expect_move") || !strcmp(cmd, "expect_no_move")) {
@@ -3698,6 +3932,17 @@ int main(int argc, char** argv) {
 		usleep(20000);
 		if (mCoreThreadHasCrashed(&P[0].thread) || mCoreThreadHasCrashed(&P[1].thread)) {
 			fprintf(stderr, "core crashed\n");
+			for (int i = 0; i < 2; i++) {
+				if (!mCoreThreadHasCrashed(&P[i].thread)) continue;
+				struct ARMCore* cpu = ((struct GBA*)P[i].core->board)->cpu;
+				out("[p%d CRASH] pc=%08x lr=%s (%08x) sp=%08x r0=%08x r1=%08x r2=%08x r3=%08x cb2=%s\n", i, cpu->gprs[15],
+				    symAt(cpu->gprs[14]), cpu->gprs[14], cpu->gprs[13], cpu->gprs[0], cpu->gprs[1], cpu->gprs[2], cpu->gprs[3],
+				    symName(rd32(&P[i], sMain + 4)));
+				for (int k = 0; k < 24; k++) {
+					unsigned w = rd32(&P[i], cpu->gprs[13] + k * 4);
+					if ((w >> 24) == 0x08) out("[p%d CRASH] stack+%02x %s\n", i, k * 4, symAt(w));
+				}
+			}
 			sFailures++;
 			break;
 		}

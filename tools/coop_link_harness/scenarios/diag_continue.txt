@@ -1,0 +1,3 @@
+include continue.inc
+b wait 200
+b shot cont

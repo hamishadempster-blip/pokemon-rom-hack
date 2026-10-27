@@ -33,30 +33,17 @@ MarineCave_End_EventScript_Kyogre::
 	delay 40
 	waitmoncry
 	setvar VAR_LAST_TALKED, LOCALID_MARINE_CAVE_KYOGRE
-	specialvar VAR_RESULT, Coop_MandatoryGate
-	goto_if_eq VAR_RESULT, FALSE, Coop_EventScript_NeedPartner
-	setvar VAR_0x8004, 0
-	setflag FLAG_SYS_CTRL_OBJ_DELETE
-	special Coop_StartLegendaryBattle
-	goto_if_eq VAR_RESULT, 0, MarineCave_End_EventScript_LegendAborted
-	clearflag FLAG_SYS_CTRL_OBJ_DELETE
-	specialvar VAR_RESULT, GetBattleOutcome
-	goto_if_eq VAR_RESULT, B_OUTCOME_LOST, MarineCave_End_EventScript_LegendAborted
-	setvar VAR_TEMP_1, 0
-	specialvar VAR_RESULT, GetBattleOutcome
-	goto_if_eq VAR_RESULT, B_OUTCOME_WON, MarineCave_End_EventScript_DefeatedKyogre
-	goto_if_eq VAR_RESULT, B_OUTCOME_RAN, MarineCave_End_EventScript_RanFromKyogre
-	goto_if_eq VAR_RESULT, B_OUTCOME_PLAYER_TELEPORTED, MarineCave_End_EventScript_RanFromKyogre
-	setvar VAR_SHOULD_END_ABNORMAL_WEATHER, 1
-	setflag FLAG_DEFEATED_KYOGRE
-	special Coop_MarkDuoLegends
+	@ Shared with a partner on this map, or alone (data/scripts/coop_legend.inc).
+	@ A knockout ends its weather, as stock, but it is not gone for good.
+	setvar VAR_0x8004, COOP_ENC_KYOGRE
+	call Coop_EventScript_LegendEncounter
+	goto_if_eq VAR_RESULT, 0, MarineCave_End_EventScript_CaughtKyogre
+	goto_if_eq VAR_RESULT, 1, MarineCave_End_EventScript_RanFromKyogre
 	releaseall
 	end
 
-MarineCave_End_EventScript_DefeatedKyogre::
-	setvar VAR_SHOULD_END_ABNORMAL_WEATHER, 1
-	setflag FLAG_DEFEATED_KYOGRE
-	special Coop_MarkDuoLegends
+MarineCave_End_EventScript_CaughtKyogre::
+	setvar VAR_TEMP_1, 0
 	goto Common_EventScript_RemoveStaticPokemon
 	end
 
@@ -75,8 +62,3 @@ MarineCave_End_Movement_KyogreApproach:
 	delay_16
 	walk_down_affine
 	step_end
-
-
-MarineCave_End_EventScript_LegendAborted::
-	clearflag FLAG_SYS_CTRL_OBJ_DELETE
-	goto Coop_EventScript_NeedPartner

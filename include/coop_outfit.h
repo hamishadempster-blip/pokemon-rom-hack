@@ -21,10 +21,14 @@ void CoopOutfit_OnPartnerLook(u8 outfit, u8 gender);
 void CoopOutfit_OnSessionStart(void);
 void CoopOutfit_RefreshLoaded(void);
 void CoopOutfit_FieldFrame(void);
+// The partner's BEACON STYLE + 1 from their look block (0: none sent).
+void CoopOutfit_OnPartnerStyle(u8 styleCode);
+u8 CoopOutfit_LocalStyle(void);
 
 // Specials.
 void CoopOutfit_OpenMenu(void);
 u16 CoopOutfit_CycleNameTag(void);
+void CoopOutfit_SendLook(void);
 
 enum {
     COOP_OUTFIT_POSE_NORMAL,

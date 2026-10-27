@@ -46,27 +46,14 @@ SkyPillar_Top_EventScript_Rayquaza::
 	playmoncry SPECIES_RAYQUAZA, CRY_MODE_ENCOUNTER
 	delay 40
 	waitmoncry
-	specialvar VAR_RESULT, Coop_MandatoryGate
-	goto_if_eq VAR_RESULT, FALSE, Coop_EventScript_NeedPartner
-	setvar VAR_0x8004, 1
-	setflag FLAG_SYS_CTRL_OBJ_DELETE
-	special Coop_StartLegendaryBattle
-	goto_if_eq VAR_RESULT, 0, SkyPillar_Top_EventScript_LegendAborted
-	clearflag FLAG_SYS_CTRL_OBJ_DELETE
-	specialvar VAR_RESULT, GetBattleOutcome
-	goto_if_eq VAR_RESULT, B_OUTCOME_LOST, SkyPillar_Top_EventScript_LegendAborted
-	specialvar VAR_RESULT, GetBattleOutcome
-	goto_if_eq VAR_RESULT, B_OUTCOME_WON, SkyPillar_Top_EventScript_DefeatedRayquaza
-	goto_if_eq VAR_RESULT, B_OUTCOME_RAN, SkyPillar_Top_EventScript_RanFromRayquaza
-	goto_if_eq VAR_RESULT, B_OUTCOME_PLAYER_TELEPORTED, SkyPillar_Top_EventScript_RanFromRayquaza
-	setflag FLAG_DEFEATED_RAYQUAZA
+	@ Shared with a partner on this map, or alone (data/scripts/coop_legend.inc).
+	setvar VAR_0x8004, COOP_ENC_RAYQUAZA
+	call Coop_EventScript_LegendEncounter
+	goto_if_eq VAR_RESULT, 0, SkyPillar_Top_EventScript_DefeatedRayquaza2
+	goto_if_eq VAR_RESULT, 1, SkyPillar_Top_EventScript_RanFromRayquaza
 	releaseall
 	end
 
-SkyPillar_Top_EventScript_DefeatedRayquaza::
-	setflag FLAG_DEFEATED_RAYQUAZA
-	goto SkyPillar_Top_EventScript_DefeatedRayquaza2
-	end
 
 SkyPillar_Top_EventScript_RanFromRayquaza::
 	setvar VAR_0x8004, SPECIES_RAYQUAZA

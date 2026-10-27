@@ -61,20 +61,15 @@ AncientTomb_EventScript_Registeel::
 	playmoncry SPECIES_REGISTEEL, CRY_MODE_ENCOUNTER
 	delay 40
 	waitmoncry
-	setwildbattle SPECIES_REGISTEEL, 40
-	setflag FLAG_SYS_CTRL_OBJ_DELETE
-	special StartRegiBattle
-	clearflag FLAG_SYS_CTRL_OBJ_DELETE
-	specialvar VAR_RESULT, GetBattleOutcome
-	goto_if_eq VAR_RESULT, B_OUTCOME_WON, AncientTomb_EventScript_DefeatedRegisteel
-	goto_if_eq VAR_RESULT, B_OUTCOME_RAN, AncientTomb_EventScript_RanFromRegisteel
-	goto_if_eq VAR_RESULT, B_OUTCOME_PLAYER_TELEPORTED, AncientTomb_EventScript_RanFromRegisteel
-	setflag FLAG_DEFEATED_REGISTEEL
+	@ Shared with a partner on this map, or alone (data/scripts/coop_legend.inc).
+	setvar VAR_0x8004, COOP_ENC_REGISTEEL
+	call Coop_EventScript_LegendEncounter
+	goto_if_eq VAR_RESULT, 0, AncientTomb_EventScript_CaughtRegisteel
+	goto_if_eq VAR_RESULT, 1, AncientTomb_EventScript_RanFromRegisteel
 	release
 	end
 
-AncientTomb_EventScript_DefeatedRegisteel::
-	setflag FLAG_DEFEATED_REGISTEEL
+AncientTomb_EventScript_CaughtRegisteel::
 	goto Common_EventScript_RemoveStaticPokemon
 	end
 

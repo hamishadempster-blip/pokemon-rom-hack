@@ -1,11 +1,11 @@
 # Outfits with the same base (lab saves: both players are Brendan). Player
 # 0 picks FOREST, player 1 keeps CLASSIC: both screens show one green and
 # one classic Brendan in the bedroom, in a Twin Beacon wild double (the two
-# back pics), and surfing. Then player 1 picks FOREST too: the looks match,
-# so the partner marker shows (AUTO); OFF hides it, ALWAYS shows it with
-# different looks. Saved for outfit_same_base_reload.txt.
-# The CO-OP menu's NAME TAG is set to OFF on both (the setting is saved,
-# so the reload test sees it OFF too).
+# back pics), and surfing. Then player 1 picks FOREST too: the looks match.
+# The partner INDICATOR (the default) marks the partner whatever the
+# outfits, matching or not. Player 0 then sets PARTNER MARK to OFF at the
+# dresser (INDICATOR -> NAME -> OFF): no marker on player 0's screen, still
+# one on player 1's. Saved for outfit_same_base_reload.txt.
 # FIXTURES: player 1's lab save is the girl, so fixture_gender makes it the
 # boy before linking (the same base is the case under test); fixture_warp
 # between the bedroom, Granite Cave and Route 103's water (landing on water
@@ -18,10 +18,7 @@ b expect coop_outfit.sShownLocal 0
 1 fixture_warp 1 1 6 4
 b until_field 3000
 b wait 60
-# The name tag (ON by default) would stand in for the arrow; this test is
-# about the arrow, so both turn the tag OFF in the CO-OP menu (twice).
-include nametag_cycle.inc
-include nametag_cycle.inc
+# The default INDICATOR, no name.
 b expect gCoopNameTagShown 0
 # Player 0: FOREST (second).
 0 walk 4 2 2000
@@ -46,7 +43,7 @@ b wait 120
 b sync
 b wait 60
 b shot same-bedroom-different
-b expect gCoopMarkerShown 0
+b expect gCoopMarkerShown 1
 # Twin Beacon wild double: both back pics, each in its own outfit.
 0 fixture_lead 255 40 56660
 1 fixture_lead 255 40 56660
@@ -90,7 +87,7 @@ b wait 60
 b shot same-surf
 b wait 120
 b shot same-surf-b
-# Player 1 matches: FOREST too. The marker appears (AUTO).
+# Player 1 matches: FOREST too. The marker stays.
 0 fixture_warp 1 1 3 5
 1 fixture_warp 1 1 4 4
 b until_field 3000
@@ -114,8 +111,8 @@ b wait 90
 b expect coop_outfit.sPartnerOutfit 1
 b expect gCoopMarkerShown 1
 b shot same-bedroom-marker
-# Player 0 sets the marker to OFF (seventh entry: AUTO -> ON -> OFF) and
-# leaves with B, so the outfit stays FOREST.
+# Player 0 sets the mark to OFF (the dresser's MARK entry: INDICATOR -> NAME
+# -> OFF) and leaves with B, so the outfit stays FOREST.
 0 walk 4 2 2000
 0 press UP 2
 0 wait 10

@@ -23,6 +23,7 @@
 #include "coop_deal.h"
 #include "coop_quest.h"
 #include "coop_outfit.h"
+#include "coop_legend.h"
 #include "coop_protocol.h"
 #include "battle.h"
 #include "battle_setup.h"
@@ -76,6 +77,7 @@ enum
     DMSG_QUEST,         // arg: COOP_QUEST_*, arg2: value, qty: 1 live change, 0 report
     DMSG_LOOK,          // arg: COOP_OUTFIT preset, arg2: gender (src/coop_outfit.c)
     DMSG_CLOCK,         // arg: the link master's local hours, arg2: minutes (shared time of day)
+    DMSG_LEGEND,        // arg: COOP_LEGEND_MSG_*, arg2: COOP_ENC_*, item: ball, qty: result (src/coop_legend.c)
 };
 
 // The link master's time of day, received with DMSG_CLOCK (see Clock_Poll).
@@ -122,6 +124,7 @@ enum
     AFTER_READY,
     AFTER_DONE,
     AFTER_COMMITTED,
+    AFTER_LEGEND,       // a shared legendary reward is in the flash: ACK it (kind: encounter, dealId: result)
 };
 
 // The game saves a sector every other frame, as the cable trade does, so
@@ -151,6 +154,12 @@ struct DealSaver
     bool8 pending;      // another save was asked for while this one ran
     struct DealAfter now;
     struct DealAfter next;
+    // Where the save blocks were when this save began: a map load or a
+    // battle start moves them (MoveSaveBlocks_ResetHeap), and the sector
+    // table LinkFullSave_Init built would then copy stale memory.
+    const void *sb1;
+    const void *sb2;
+    const void *storage;
 };
 
 // Reconciliation states carried by STATUS.
@@ -573,7 +582,29 @@ static void Deal_SendAfter(const struct DealAfter *a)
     case AFTER_COMMITTED:
         Deal_SendStatus(a->dealId, TXN_REPORT_COMMITTED);
         break;
+    case AFTER_LEGEND:
+    {
+        struct CoopDealMsg *msg = Deal_Push(DMSG_LEGEND, COOP_LEGEND_MSG_ACK, 0xFFFF, COOP_DEAL_NONE);
+
+        msg->arg2 = a->kind;
+        msg->qty = a->dealId;
+        break;
     }
+    }
+}
+
+// The save blocks moved since this save began (a warp or a battle in
+// between): start it again from the blocks' new place, into the same slot
+// (the counters go back to where LinkFullSave_Init found them, so the last
+// complete save in the other slot stays the one a reset would load).
+static bool8 Deal_SaveBlocksMoved(void)
+{
+    if (sSaver.sb1 == gSaveBlock1Ptr && sSaver.sb2 == gSaveBlock2Ptr && sSaver.storage == gPokemonStoragePtr)
+        return FALSE;
+    gSaveCounter = gLastSaveCounter;
+    gLastWrittenSector = gLastKnownGoodSector;
+    sSaver.state = SAVER_INIT;
+    return TRUE;
 }
 
 static void Deal_SaveStep(void)
@@ -590,10 +621,15 @@ static void Deal_SaveStep(void)
         }
         gSoftResetDisabled = TRUE;
         LinkFullSave_Init();
+        sSaver.sb1 = gSaveBlock1Ptr;
+        sSaver.sb2 = gSaveBlock2Ptr;
+        sSaver.storage = gPokemonStoragePtr;
         sSaver.timer = 0;
         sSaver.state = SAVER_SECTORS;
         break;
     case SAVER_SECTORS:
+        if (Deal_SaveBlocksMoved())
+            break;
         if (++sSaver.timer < 2)
             break;
         sSaver.timer = 0;
@@ -601,6 +637,8 @@ static void Deal_SaveStep(void)
             sSaver.state = SAVER_LAST;
         break;
     case SAVER_LAST:
+        if (Deal_SaveBlocksMoved())
+            break;
         LinkFullSave_ReplaceLastSector();
         sSaver.state = SAVER_SIGN;
         break;
@@ -901,9 +939,15 @@ void CoopDeal_HandleBlock(u32 playerId, const u16 *words)
         CoopQuest_HandleSync(msg.arg, msg.arg2, msg.qty != 0);
         return;
     }
+    if (msg.type == DMSG_LEGEND)
+    {
+        CoopLegend_HandleMsg(msg.arg, msg.arg2, msg.item, msg.qty, msg.otId);
+        return;
+    }
     if (msg.type == DMSG_LOOK)
     {
         CoopOutfit_OnPartnerLook(msg.arg, msg.arg2);
+        CoopOutfit_OnPartnerStyle(msg.qty);
         return;
     }
     if (msg.type == DMSG_CLOCK)
@@ -1188,6 +1232,7 @@ void CoopDeal_Poll(void)
     {
         struct CoopDealMsg *look = Deal_Push(DMSG_LOOK, CoopOutfit_Local(), 0xFFFF, COOP_DEAL_NONE);
         look->arg2 = gSaveBlock2Ptr->playerGender;
+        look->qty = CoopOutfit_LocalStyle() + 1;   // this player's marker colour
         sLookDue = FALSE;
     }
     Deal_PumpSend();
@@ -1519,6 +1564,33 @@ void CoopDeal_OnSessionStart(void)
         Deal_Reset();
     CoopQuest_OnSessionStart();
     CoopOutfit_OnSessionStart();
+}
+
+// Shared legendary encounters (src/coop_legend.c): EARN and ACK over this
+// link, so a lost block is resent like any deal message.
+void CoopDeal_SendLegend(u8 sub, u8 enc, u16 ball, u16 result)
+{
+    struct CoopDealMsg *msg;
+
+    if (!Coop_SessionActive())
+        return;
+    msg = Deal_Push(DMSG_LEGEND, sub, 0xFFFF, COOP_DEAL_NONE);
+    msg->arg2 = enc;
+    msg->item = ball;
+    msg->qty = result;
+}
+
+// Save the game in the background (the deal saver: a sector every other
+// frame, the link kept running); then, for enc != 0, ACK that legendary
+// reward to the partner.
+void CoopDeal_SaveInBackground(u8 enc, u16 result)
+{
+    Deal_StartSave(enc != 0 ? AFTER_LEGEND : AFTER_NONE, result, enc);
+}
+
+bool8 CoopDeal_SaveBusy(void)
+{
+    return Deal_Saving();
 }
 
 // This save's outfit for the partner: sent at the next chance (new link, or

@@ -1,0 +1,21 @@
+# Diagnostic: the shared Rayquaza battle with Rayquaza's moves all set to
+# HYPER VOICE (journey 70 stalled both games after it used Hyper Voice),
+# and Kai's WHISCASH at 1 HP, so Hyper Voice knocks it out.
+include legend_top.inc
+0 fixture_warp 24 85 14 7
+1 fixture_warp 24 85 13 8
+b until_field 3000
+b sync
+b wait 60
+0 press UP 2
+0 wait 10
+0 press A 2
+b until_cb2 BattleMainCB2 12000 A
+b wait 300
+b write gBattleMons+152:2 304
+b write gBattleMons+154:2 304
+b write gBattleMons+156:2 304
+b write gBattleMons+158:2 304
+b write gBattleMons+42:2 1
+b catch 0 20000
+b shot after

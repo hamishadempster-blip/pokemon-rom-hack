@@ -1,0 +1,22 @@
+# Finding #29: one player throws balls in a co-op battle (each throw opens
+# the Bag while linked). Never more than one co-op session task at a time
+# (counted every frame). Before the fix (0xC0170135): 7 copies after six
+# throws, and in journey 70 nine, until a move animation hung.
+# FIXTURES: j68 saves at the Sky Pillar top; twelve POKe BALLs for Kai.
+include continue.inc
+include relink.inc
+b no_wild 1
+0 fixture_item 1 1 12 0
+0 fixture_warp 24 85 14 7
+1 fixture_warp 24 85 13 8
+b until_field 3000
+b sync
+b wait 60
+0 press UP 2
+0 wait 10
+0 press A 2
+b until_cb2 BattleMainCB2 12000 A
+0 catch 8 20000 1
+1 catch 0 20000
+b expect_tasks Task_CoopSession 1
+b expect_tasks MAX 1

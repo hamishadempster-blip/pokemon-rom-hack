@@ -61,20 +61,15 @@ DesertRuins_EventScript_Regirock::
 	playmoncry SPECIES_REGIROCK, CRY_MODE_ENCOUNTER
 	delay 40
 	waitmoncry
-	setwildbattle SPECIES_REGIROCK, 40
-	setflag FLAG_SYS_CTRL_OBJ_DELETE
-	special StartRegiBattle
-	clearflag FLAG_SYS_CTRL_OBJ_DELETE
-	specialvar VAR_RESULT, GetBattleOutcome
-	goto_if_eq VAR_RESULT, B_OUTCOME_WON, DesertRuins_EventScript_DefeatedRegirock
-	goto_if_eq VAR_RESULT, B_OUTCOME_RAN, DesertRuins_EventScript_RanFromRegirock
-	goto_if_eq VAR_RESULT, B_OUTCOME_PLAYER_TELEPORTED, DesertRuins_EventScript_RanFromRegirock
-	setflag FLAG_DEFEATED_REGIROCK
+	@ Shared with a partner on this map, or alone (data/scripts/coop_legend.inc).
+	setvar VAR_0x8004, COOP_ENC_REGIROCK
+	call Coop_EventScript_LegendEncounter
+	goto_if_eq VAR_RESULT, 0, DesertRuins_EventScript_CaughtRegirock
+	goto_if_eq VAR_RESULT, 1, DesertRuins_EventScript_RanFromRegirock
 	release
 	end
 
-DesertRuins_EventScript_DefeatedRegirock::
-	setflag FLAG_DEFEATED_REGIROCK
+DesertRuins_EventScript_CaughtRegirock::
 	goto Common_EventScript_RemoveStaticPokemon
 	end
 

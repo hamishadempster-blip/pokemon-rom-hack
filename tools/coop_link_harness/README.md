@@ -375,3 +375,41 @@ send-out-match "Nacli / Marshtomp", prompt-overlap, bg1-layout).
 Scenarios marked `DEBUG-ONLY` in their first line (`pre_rival`,
 `pre_woods`) only make saves just before a fight for debugging; they are
 not in `run_all.sh`.
+
+## Shared legendaries and the partner mark (build 0xC0170136)
+
+Saves: the main journey's checkpoint 68 (`J68=dir run_all.sh`), warped to
+the Sky Pillar top (`legend_top.inc`). Each run plays the real encounter,
+battle, catch, link messages, saves and delivery on both cores.
+
+| Scenario | What it checks |
+| --- | --- |
+| `legend_shared_ray` | Kai starts it, both agree, Kai's ball catches it: one Rayquaza each (own OT), records once, Pokédex, partner seen after |
+| `legend_ray_rosa` | Rosa (link guest) starts it and catches it with her ball (used up; Kai's bag untouched) |
+| `legend_ray_solo` | Not linked: the stock battle; linking afterwards gives the partner nothing |
+| `legend_ray_claimed` | A partner whose record already says claimed is refused by their game (no prompt); Kai faces it alone; Rosa then talks to hers: no battle, it goes |
+| `legend_ray_story` | The partner's world hasn't woken Rayquaza: refused; her Sky Pillar state untouched |
+| `legend_ray_simul` | Both press A at Rayquaza on the same frame: one battle, Rosa's ball, one each |
+| `legend_ray_ko` | Knocked out: nothing granted, it flies off on both screens and comes back; retried and caught |
+| `legend_ray_full` (+`_resume`) | Party and PC full: the reward waits (recorded, confirmed); after a reload, still waiting; room made, delivered once; relinking adds nothing |
+| `legend_ray_interrupt` (+`legend_ray_reconnect`) | The partner's game drops deal messages: no reward, the catcher keeps the debt and is told it comes later; on the next link it is sent again and delivered |
+| `legend_ray_lostack` (+`legend_ray_reconnect2`) | The catcher's game drops the confirmation: the partner has hers, the catcher's debt stays; on the next link the repeat notice is confirmed without a second Rayquaza |
+| `legend_groudon`, `legend_regirock` | The same flow for Groudon (Terra Cave: its weather ends on both saves) and Regirock (puzzle flag as a fixture) |
+| `legend_migration` | An old one-owner record written into the running game: PARTNER becomes a pending reward delivered once, LOCAL a claim with nothing delivered |
+| `coop_bag_battle_tasks` | Kai throws six balls in a co-op battle: at most one co-op session task at any frame (finding #29) |
+| `indicator_tour` | The default partner INDICATOR through a town, a map connection, a house door both ways, the Mach Bike and a dark cave (day or night from `RTC_EPOCH0/1`) |
+| `nametag` | INDICATOR by default; PARTNER MARK cycles NAME, OFF, INDICATOR; hidden in menus; partner inside a Centre; UNLINK |
+| `journey_70_shared_rayquaza` | Main journey, no fixtures: from checkpoint 68, Fly, Mart, sea route, bike climb, the shared catch with the players' own balls, delivery, back down to 5F, save |
+
+New verbs: `expect_legend FIELD VALUE` and `fixture_legend FIELD VALUE`
+(FIELD claimed, pending or owed; one bit per COOP_ENC_*), `legend_owned
+SPECIES MIN [MAX]` (party and PC, own OT counted; prints OT, met location
+and level, IVs), `expect_dex_caught NUM VALUE`, `expect_tasks FUNC N` (live tasks running FUNC; `expect_tasks MAX N`: the most co-op session tasks seen in any frame), `catch N [T] [BALL] [FIGHT]` (pick a ball; fight the first FIGHT turns, or with FIGHT 100+P fight while the foe has more than P% HP; reads the cursor to reach BAG; skips a move with no PP), `fixture_fill_pc` (every
+empty PC slot gets a copy of party slot 1) and `fixture_unfill_pc`. A
+crashed core now prints its PC, LR and the code addresses on its stack.
+
+Driver limits found here: `smart_moves` makes the link master's move menu
+never confirm in the one-foe co-op double (the legend scenarios leave it
+off; plain A presses work on both screens, `diag_master_move`), and the
+Sky Pillar top's cracked floor is not avoided by `walk` (the scenarios walk
+the solid tiles by waypoints).

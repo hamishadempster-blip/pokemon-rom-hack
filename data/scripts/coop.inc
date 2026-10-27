@@ -235,7 +235,7 @@ Coop_EventScript_MenuLinkedChoice::
 	case 4, Coop_EventScript_MenuNameTag
 	goto Coop_EventScript_MenuBack
 
-@ ON, NEARBY, OFF in turn: the partner's name over their head.
+@ INDICATOR, NAME, OFF in turn: how the partner is marked on the field.
 Coop_EventScript_MenuNameTag::
 	special CoopOutfit_CycleNameTag
 	msgbox gStringVar4, MSGBOX_DEFAULT
@@ -416,7 +416,7 @@ Coop_Text_OptJournal:
 	.string "JOURNAL$"
 
 Coop_Text_OptNameTag:
-	.string "NAME TAG$"
+	.string "PARTNER MARK$"
 
 Coop_Text_OptLevelCap:
 	.string "LEVEL CAP$"
@@ -844,6 +844,10 @@ Coop_EventScript_GuestHallOfFame::
 @ catcher's game only.
 Coop_EventScript_CaughtNickname::
 	lockall
+	@ A shared legendary: one catch, a Pokémon for each trainer.
+	specialvar VAR_RESULT, CoopLegend_TakeSharedNote
+	goto_if_eq VAR_RESULT, FALSE, Coop_EventScript_PartnerCatchNext
+	msgbox Coop_Text_LegendCaughtShared, MSGBOX_DEFAULT
 Coop_EventScript_PartnerCatchNext::
 	specialvar VAR_RESULT, Coop_NextPartnerCatch
 	goto_if_eq VAR_RESULT, SPECIES_NONE, Coop_EventScript_CaughtNicknameNext

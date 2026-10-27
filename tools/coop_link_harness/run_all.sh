@@ -5,6 +5,7 @@
 #
 #   tools/coop_link_harness/run_all.sh            # all scenarios
 #   ONLY="rival_join rival_pending" run_all.sh    # a subset (fresh-save ones)
+#   J65=dir J68=dir: late-game checkpoints (Wally; shared legendaries)
 #   SEG6=/path/dir run_all.sh                     # also the story_seg6-based
 #                                                 # partner menu, QoL, and quest runs
 #   AFFECTED=/path/dir run_all.sh                 # also run mays_house_recovery
@@ -85,6 +86,20 @@ if [ -n "${J65:-}" ]; then
 	run coop_wally_vr_partner SAVE0="$J65/p0.sav" SAVE1="$J65/p1.sav"
 fi
 
+# J68=dir with p0.sav/p1.sav from the main journey's checkpoint 68 (after the
+# Hall of Fame, Rayquaza waiting at the Sky Pillar top on both saves): shared
+# legendaries (src/coop_legend.c) and the partner indicator tour, then the
+# runs that continue their saves (reload, reconnect).
+if [ -n "${J68:-}" ]; then
+	for s in legend_shared_ray legend_ray_rosa legend_ray_solo legend_ray_claimed legend_ray_story legend_groudon legend_regirock \
+	         legend_ray_simul legend_ray_ko legend_ray_full legend_ray_interrupt legend_ray_lostack legend_migration coop_bag_battle_tasks indicator_tour; do
+		run "$s" SAVE0="$J68/p0.sav" SAVE1="$J68/p1.sav"
+	done
+	run legend_ray_resume SAVE0="$out/legend_ray_full/p0.sav" SAVE1="$out/legend_ray_full/p1.sav"
+	run legend_ray_reconnect SAVE0="$out/legend_ray_interrupt/p0.sav" SAVE1="$out/legend_ray_interrupt/p1.sav"
+	run legend_ray_reconnect2 SAVE0="$out/legend_ray_lostack/p0.sav" SAVE1="$out/legend_ray_lostack/p1.sav"
+fi
+
 # SEG6=dir with p0.sav/p1.sav from story_seg6 (Rustboro, linked play): the
 # partner menu, QoL, and Power Problems scenarios, then their reloads.
 if [ -n "${SEG6:-}" ]; then
@@ -106,7 +121,7 @@ if [ -n "${SEG6:-}" ]; then
 		run "$s" SAVE0="$SEG6/p0.sav" SAVE1="$SEG6/p1.sav"
 	done
 	run outfit_bases_reload SAVE0="$out/outfit_bases/p0.sav" SAVE1="$out/outfit_bases/p1.sav"
-	# Visual polish on the seg6 pair: the partner's name tag, the status
+	# Visual polish on the seg6 pair: the partner mark (INDICATOR, NAME, OFF), the status
 	# window and UNLINK messages; and the outdoor lighting across linking,
 	# menus and the Centre with the two clocks set apart (23:00 and 12:00).
 	run nametag SAVE0="$SEG6/p0.sav" SAVE1="$SEG6/p1.sav"

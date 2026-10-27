@@ -1,0 +1,20 @@
+# legend_ray_reconnect on legend_ray_lostack's saves: Rosa already has her
+# Rayquaza; Kai's repeat EARN gets "recorded" back (the same debt), Kai's
+# debt clears, and Rosa still has exactly one.
+include continue.inc
+b no_wild 1
+0 expect_legend owed 1
+1 expect_legend pending 0
+include relink.inc
+b expect coop.sLinkState 2
+b wait 900
+b mash_field 4000 B
+b wait 600
+b mash_field 3000 B
+b wait 300
+b shot reconnected
+0 expect_legend owed 0
+1 expect_legend pending 0
+1 expect_legend claimed 1
+b legend_owned 384 1 1
+1 expect_dex_caught 384 1

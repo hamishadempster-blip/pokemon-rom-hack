@@ -30,7 +30,7 @@ typedef uint32_t u32;
 #endif
 #include "constants/coop.h"
 
-#define COOP_BUILD_ID 0xC0170135u
+#define COOP_BUILD_ID 0xC0170136u
 // Missing application heartbeats mark the partner unavailable. They never
 // revoke the user's link/Beacon choice; valid frames restore availability.
 #define COOP_LINK_QUIET_LIMIT 240
@@ -224,7 +224,9 @@ static inline int CoopProtocol_Unpack(const u16 in[8], struct CoopFrame *frame, 
     return COOP_UNPACK_OK;
 }
 
-// Remote owner 1 means the other save has the Pokémon, which is owner 2 here.
+// Badges and the rival stage merge. Legendary Pokémon no longer do: since
+// build 0xC0170136 each save keeps its own record of each shared encounter
+// (src/coop_legend.c), so two saves that both own Rayquaza never conflict.
 static inline int CoopProtocol_Merge(const struct CoopProgress *local, const struct CoopProgress *remote, struct CoopProgress *out)
 {
     int i;
@@ -235,20 +237,8 @@ static inline int CoopProtocol_Merge(const struct CoopProgress *local, const str
     out->capOn = local->capOn;
     out->badges = (u8)(local->badges | remote->badges);
     out->rivalStage = local->rivalStage > remote->rivalStage ? local->rivalStage : remote->rivalStage;
-
     for (i = 0; i < 3; i++)
-    {
-        u8 mine = local->legend[i];
-        u8 theirs = remote->legend[i];
-        u8 theirsHere = theirs == COOP_OWNER_LOCAL ? COOP_OWNER_PARTNER : theirs == COOP_OWNER_PARTNER ? COOP_OWNER_LOCAL : COOP_OWNER_NONE;
-
-        if (mine == COOP_OWNER_NONE)
-            out->legend[i] = theirsHere;
-        else if (theirsHere == COOP_OWNER_NONE || mine == theirsHere)
-            out->legend[i] = mine;
-        else
-            return 2;
-    }
+        out->legend[i] = local->legend[i];
     return 0;
 }
 

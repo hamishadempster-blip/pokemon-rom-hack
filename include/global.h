@@ -276,6 +276,7 @@ struct CoopDealRecord
 };
 
 #define COOP_DEX_FLAG_BYTES 132
+#define COOP_LEGEND_SLOTS 6     // COOP_ENC_COUNT - 1 (include/constants/coop.h)
 
 struct CoopSave
 {
@@ -305,6 +306,16 @@ struct CoopSave
     u8 questFlags;                 // reserved for quest foundations
     u8 rewardsClaimed[4];          // COOP_REWARD_* bits claimed on this save
     u16 dealHistory[3];            // earlier committed deal ids, newest first
+    // Layout 3 (build 0xC0170136): shared legendary encounters, one bit per
+    // COOP_ENC_* (bit id - 1). src/coop_legend.c.
+    u8 legendClaimed;              // this save has received its Pokémon from that encounter
+    u8 legendPending;              // earned, not yet delivered (no room, or interrupted)
+    u8 legendOwed;                 // this save caught it together with a partner whose
+                                   // reward that partner's save has not confirmed yet
+    u8 legendPendingBall[COOP_LEGEND_SLOTS]; // ball for each pending reward (0: POKé BALL)
+    u32 legendOwedOtId;            // the partner owed
+    u8 legendOwedBall[COOP_LEGEND_SLOTS];    // the ball the shared catch used
+    u32 legendFromOtId[COOP_LEGEND_SLOTS];   // whose shared catch earned this save's reward
 };
 
 struct SaveBlock3

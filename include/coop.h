@@ -69,10 +69,8 @@ extern const u8 Coop_EventScript_TalkPartner[];
 #define COOP_SOLO_RECOVERING        7
 #define COOP_SOLO_PLACE             8
 #define COOP_SOLO_KIND              9
-#define COOP_SOLO_COUNT             10
-
-#define COOP_LEGEND_DUO 0
-#define COOP_LEGEND_RAY 1
+#define COOP_SOLO_LEGEND_NOT_ELIGIBLE 10   // a shared legendary the partner's save cannot take part in
+#define COOP_SOLO_COUNT             11
 
 struct Pokemon;
 
@@ -132,7 +130,8 @@ u16 Coop_MandatoryGate(void);
 u16 Coop_SoloRivalTrainer(u8 stage);
 void Coop_NoteSoloTrainerWin(void);
 u16 Coop_StartSoloRescueBattle(void);
-void Coop_MarkDuoLegends(void);
+u8 Coop_PeekSoloNote(void);
+void Coop_ClearSoloNote(void);
 void Nurse_NoteHeal(void);
 bool8 Coop_IsRivalGraphics(u16 gfx);
 u8 Coop_PartnerSpriteId(u8 *gender);
@@ -216,6 +215,11 @@ extern const u8 Coop_EventScript_LegendConflict[];
 extern const u8 Coop_EventScript_BattleAborted[];
 extern const u8 Coop_EventScript_TradeDone[];
 extern const u8 Coop_EventScript_PartnerDeclined[];
+extern const u8 Coop_EventScript_LegendAskGuest[];
+extern const u8 Coop_EventScript_LegendDeliver[];
+extern const u8 Coop_EventScript_LegendNoRoom[];
+extern const u8 Coop_EventScript_LegendAckNote[];
+extern const u8 Coop_EventScript_LegendGuestAway[];
 extern const u8 Coop_EventScript_NotReady[];
 extern const u8 Coop_EventScript_GuestAfterBattle[];
 extern const u8 Coop_EventScript_BeaconAsk[];

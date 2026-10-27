@@ -1,0 +1,34 @@
+# Shared Groudon (Terra Cave), the same system as Rayquaza: Kai steps onto
+# the trigger, Groudon comes forward, both agree, Kai's ball catches it.
+# One Groudon each (own OT), Groudon resolved on both saves (defeated flag,
+# and its abnormal weather ends on both, as stock after a catch).
+# FIXTURES: j68 saves (post-clear), warped into Terra Cave's last room (the
+# cave entrance moves with the weather and is not walked here); a MASTER
+# BALL for Kai.
+include legend_top.inc
+0 fixture_item 1 4 3 0
+0 fixture_warp 24 105 16 26
+1 fixture_warp 24 105 13 26
+b until_field 3000
+b sync
+b wait 60
+b shot before
+0 walk 17 26 3000
+b until_cb2 BattleMainCB2 15000 A
+b shot shared-battle
+0 catch 2 30000 4
+1 catch 0 30000
+b mash_field 6000 B
+b wait 900
+b mash_field 6000 B
+b wait 300
+b shot after-delivery
+b expect_legend claimed 2
+b expect_legend pending 0
+b expect_legend owed 0
+b expect_flag 0x1BF 1
+b expect_var 0x4039 1
+b legend_owned 383 1 1
+b expect_dex_caught 383 1
+b expect_partner after-shared
+b expect_tasks Task_CoopSession 1

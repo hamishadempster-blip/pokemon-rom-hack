@@ -19,6 +19,7 @@
 #include "agb_flash.h"
 #include "event_data.h"
 #include "constants/event_objects.h"
+#include "coop.h"
 
 static void ApplyNewEncryptionKeyToAllEncryptedData(u32 encryptionKey);
 
@@ -213,6 +214,10 @@ void SaveObjectEvents(void)
         // To avoid crash on vanilla, save follower as inactive
         if (gObjectEvents[i].localId == OBJ_EVENT_ID_FOLLOWER)
             gSaveBlock1Ptr->objectEvents[i].active = FALSE;
+        // The co-op partner is the link's, never the save's: a save made
+        // while linked must not bring them back as a ghost when loaded alone.
+        if (gObjectEvents[i].localId == OBJ_EVENT_ID_COOP_PARTNER)
+            gSaveBlock1Ptr->objectEvents[i].active = FALSE;
     }
 }
 
@@ -232,6 +237,9 @@ void LoadObjectEvents(void)
         if (gObjectEvents[i].spriteId != 127)
             gObjectEvents[i].graphicsId &= 0xFF;
         gObjectEvents[i].spriteId = 0;
+        // A partner saved by an earlier build: the link spawns its own.
+        if (gObjectEvents[i].localId == OBJ_EVENT_ID_COOP_PARTNER)
+            gObjectEvents[i].active = FALSE;
         // Try to restore saved inactive follower
         if (gObjectEvents[i].localId == OBJ_EVENT_ID_FOLLOWER &&
             !gObjectEvents[i].active &&

@@ -23,4 +23,7 @@ const u32 harnessSaveLayout[] = {
     offsetof(struct BattlePokemon, hp),
     sizeof(uq4_12_t),
     offsetof(struct BattlePokemon, maxHP),
+    offsetof(struct SaveBlock3, coop) + offsetof(struct CoopSave, legendClaimed),
+    offsetof(struct SaveBlock3, coop) + offsetof(struct CoopSave, legendPending),
+    offsetof(struct SaveBlock3, coop) + offsetof(struct CoopSave, legendOwed),
 };

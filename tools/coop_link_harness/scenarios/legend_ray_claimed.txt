@@ -1,0 +1,38 @@
+# A partner who already claimed this encounter (with anyone) can't claim
+# again: Rosa's record says claimed (her Rayquaza still on the map, as a save
+# from before could have it). Kai asks; Rosa's game answers "not eligible"
+# without a prompt; Kai reads why and faces Rayquaza alone. Rosa gets
+# nothing. Then Rosa talks to her own Rayquaza: no battle, it goes.
+include legend_top.inc
+1 fixture_legend claimed 1
+0 fixture_item 1 4 3 0
+0 fixture_warp 24 85 14 8
+1 fixture_warp 24 85 13 6
+b until_field 3000
+b sync
+b wait 60
+0 walk 14 7 3000
+0 press UP 2
+0 wait 10
+0 press A 2
+0 until_cb2 BattleMainCB2 12000 A
+0 shot solo-after-decline
+0 catch 2 30000
+0 mash_field 6000 B
+0 wait 600
+0 expect_legend claimed 1
+0 expect_legend owed 0
+0 legend_owned 384 1 1
+1 expect_legend claimed 1
+1 expect_legend pending 0
+1 legend_owned 384 0 0
+b sync
+1 press RIGHT 2
+1 wait 10
+1 press A 2
+1 wait 200
+1 shot claimed-gone
+1 mash_field 3000 B
+1 wait 60
+1 expect_flag 0x1C0 1
+1 legend_owned 384 0 0

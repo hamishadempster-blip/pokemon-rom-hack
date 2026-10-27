@@ -1,0 +1,82 @@
+# Partner indicator tour (src/coop_outfit.c), recorded for review: the
+# default INDICATOR over the partner through a town, a map connection
+# (Littleroot <-> Route 101), door warps into and out of a house (no marker
+# while the partner is on another map), the Mach Bike, and a dark cave
+# (Granite Cave B1F, no FLASH). Day or night comes from RTC_EPOCH0/1.
+# FIXTURES: journey saves j68 (post-clear), warped to Littleroot; a Mach
+# Bike for Kai.
+include continue.inc
+include relink.inc
+b expect coop.sLinkState 2
+b no_wild 1
+0 fixture_item 4 707 1
+0 fixture_warp 0 9 10 11
+1 fixture_warp 0 9 12 11
+b until_field 3000
+b sync
+b wait 60
+b expect gCoopMarkerShown 1
+b expect gCoopNameTagShown 0
+b shot town
+# Side by side to Route 101 (a connection, no warp), then back.
+0 walk 10 3 3000
+1 walk 11 3 3000
+b sync
+1 cross UP 0 16 3000
+b wait 20
+0 shot partner-crossing
+0 cross UP 0 16 3000
+b sync
+b wait 60
+b expect gCoopMarkerShown 1
+b shot route101
+0 cross DOWN 0 9 3000
+b wait 20
+1 shot partner-back-in-town
+1 cross DOWN 0 9 3000
+b sync
+b wait 60
+b expect gCoopMarkerShown 1
+# Rosa goes in through May's house door: no marker on Kai's screen.
+1 walk 14 9 3000
+1 cross UP 1 2 3000
+b sync
+b wait 60
+0 expect gCoopMarkerShown 0
+0 shot partner-inside
+0 walk 14 9 3000
+0 cross UP 1 2 3000
+b sync
+b wait 60
+b expect gCoopMarkerShown 1
+b shot interior
+1 cross DOWN 0 9 3000
+b sync
+b wait 30
+0 expect gCoopMarkerShown 0
+0 cross DOWN 0 9 3000
+b sync
+b wait 60
+b expect gCoopMarkerShown 1
+b shot back-outside
+# Kai on the Mach Bike around Rosa.
+0 walk 13 11 3000
+1 walk 11 12 3000
+b sync
+include bike_on_p0.inc
+0 ride RRRUULLLLLLDDDRRR
+b wait 30
+b expect gCoopMarkerShown 1
+b shot bike
+# One co-op session task, however often the bag was opened while linked.
+b expect_tasks Task_CoopSession 1
+# Granite Cave B1F, dark.
+0 fixture_warp 24 8 12 12
+1 fixture_warp 24 8 15 12
+b until_field 3000
+b sync
+b wait 60
+b shot dark-cave
+0 walk 8 12 3000
+b wait 30
+b shot dark-cave-apart

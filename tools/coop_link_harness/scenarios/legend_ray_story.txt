@@ -1,0 +1,24 @@
+# Different progress: Rosa's world hasn't woken Rayquaza yet (Sky Pillar
+# state 1 on her save). Kai's ask is refused by her game; Kai catches it
+# alone; Rosa's record stays empty and her Sky Pillar state is untouched.
+include legend_top.inc
+1 fixture_var 0x40CA 1
+0 fixture_item 1 4 3 0
+0 fixture_warp 24 85 14 7
+1 fixture_warp 24 85 12 11
+b until_field 3000
+b sync
+b wait 60
+0 press UP 2
+0 wait 10
+0 press A 2
+0 until_cb2 BattleMainCB2 12000 A
+0 catch 2 30000
+0 mash_field 6000 B
+0 wait 600
+0 expect_legend claimed 1
+0 expect_legend owed 0
+1 expect_legend claimed 0
+1 expect_legend pending 0
+1 expect_var 0x40CA 1
+1 legend_owned 384 0 0

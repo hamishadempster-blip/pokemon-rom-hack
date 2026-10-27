@@ -1,0 +1,45 @@
+# Shared Rayquaza (src/coop_legend.c): Kai starts it, both agree, Kai's
+# ball catches it. Each trainer must end with their own Rayquaza (own OT),
+# recorded once per save; the partner's reward needs no ball of theirs.
+# FIXTURES: the main journey's post-clear saves (j68: Sky Pillar state 3,
+# Rayquaza at the top on both saves), warped to the Sky Pillar top; a MASTER
+# BALL first in Kai's ball pocket.
+include continue.inc
+include relink.inc
+b expect coop.sLinkState 2
+b smart_moves 1
+b no_wild 1
+0 fixture_item 1 4 3 0
+b expect_legend claimed 0
+b expect_legend pending 0
+0 fixture_warp 24 85 14 8
+1 fixture_warp 24 85 13 8
+b until_field 3000
+b sync
+b wait 60
+0 walk 14 7 3000
+b sync
+b shot before
+0 press UP 2
+0 wait 10
+0 press A 2
+b until_cb2 BattleMainCB2 12000 A
+b shot shared-battle
+0 catch 2 30000
+1 catch 0 30000
+b shot after-battle
+b mash_field 6000 B
+b wait 900
+b mash_field 6000 B
+b wait 300
+b shot after-delivery
+b expect_legend claimed 1
+b expect_legend pending 0
+b expect_legend owed 0
+b expect_flag 0x1C0 1
+b legend_owned 384 1 1
+b expect_dex_caught 384 1
+b expect_partner after-shared
+b expect_tasks Task_CoopSession 1
+b party
+b wait 600

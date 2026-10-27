@@ -33,30 +33,17 @@ TerraCave_End_EventScript_Groudon::
 	delay 40
 	waitmoncry
 	setvar VAR_LAST_TALKED, LOCALID_TERRA_CAVE_GROUDON
-	specialvar VAR_RESULT, Coop_MandatoryGate
-	goto_if_eq VAR_RESULT, FALSE, Coop_EventScript_NeedPartner
-	setvar VAR_0x8004, 0
-	setflag FLAG_SYS_CTRL_OBJ_DELETE
-	special Coop_StartLegendaryBattle
-	goto_if_eq VAR_RESULT, 0, TerraCave_End_EventScript_LegendAborted
-	clearflag FLAG_SYS_CTRL_OBJ_DELETE
-	specialvar VAR_RESULT, GetBattleOutcome
-	goto_if_eq VAR_RESULT, B_OUTCOME_LOST, TerraCave_End_EventScript_LegendAborted
-	setvar VAR_TEMP_1, 0
-	specialvar VAR_RESULT, GetBattleOutcome
-	goto_if_eq VAR_RESULT, B_OUTCOME_WON, TerraCave_End_EventScript_DefeatedGroudon
-	goto_if_eq VAR_RESULT, B_OUTCOME_RAN, TerraCave_End_EventScript_RanFromGroudon
-	goto_if_eq VAR_RESULT, B_OUTCOME_PLAYER_TELEPORTED, TerraCave_End_EventScript_RanFromGroudon
-	setvar VAR_SHOULD_END_ABNORMAL_WEATHER, 1
-	setflag FLAG_DEFEATED_GROUDON
-	special Coop_MarkDuoLegends
+	@ Shared with a partner on this map, or alone (data/scripts/coop_legend.inc).
+	@ A knockout ends its weather, as stock, but it is not gone for good.
+	setvar VAR_0x8004, COOP_ENC_GROUDON
+	call Coop_EventScript_LegendEncounter
+	goto_if_eq VAR_RESULT, 0, TerraCave_End_EventScript_CaughtGroudon
+	goto_if_eq VAR_RESULT, 1, TerraCave_End_EventScript_RanFromGroudon
 	releaseall
 	end
 
-TerraCave_End_EventScript_DefeatedGroudon::
-	setvar VAR_SHOULD_END_ABNORMAL_WEATHER, 1
-	setflag FLAG_DEFEATED_GROUDON
-	special Coop_MarkDuoLegends
+TerraCave_End_EventScript_CaughtGroudon::
+	setvar VAR_TEMP_1, 0
 	goto Common_EventScript_RemoveStaticPokemon
 	end
 
@@ -75,8 +62,3 @@ TerraCave_End_Movement_GroudonApproach:
 	delay_16
 	walk_down_affine
 	step_end
-
-
-TerraCave_End_EventScript_LegendAborted::
-	clearflag FLAG_SYS_CTRL_OBJ_DELETE
-	goto Coop_EventScript_NeedPartner

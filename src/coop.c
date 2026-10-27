@@ -60,6 +60,7 @@
 #include "constants/field_effects.h"
 #include "field_effect.h"
 #include "coop_deal.h"
+#include "coop_legend.h"
 #include "coop_outfit.h"
 #include "coop_quest.h"
 
@@ -81,7 +82,7 @@
 // need time to say yes. 30 seconds at 60 frames.
 #define COOP_LINK_WAIT_LIMIT 1800
 #define COOP_CASE_NONE    0xFF
-#define COOP_SAVE_LAYOUT  2
+#define COOP_SAVE_LAYOUT  3
 // A ledger is re-sent this often while linked, so a dropped block heals.
 #define COOP_STORY_RESEND 300
 
@@ -310,9 +311,9 @@ static struct CoopSave *CoopSave(void)
     }
     // Saves from before the story ledger kept a zero here and arbitrary
     // bytes after it. Start the new fields clean.
-    if (save->layout < COOP_SAVE_LAYOUT)
+    if (save->layout < 1)
     {
-        save->layout = COOP_SAVE_LAYOUT;
+        save->layout = 1;
         save->storyDone = 0;
         save->storyApplied = 0;
         save->rivalId = COOP_RIVAL_NONE;
@@ -337,6 +338,36 @@ static struct CoopSave *CoopSave(void)
         save->questFlags = 0;
         memset(save->rewardsClaimed, 0, sizeof(save->rewardsClaimed));
         memset(save->dealHistory, 0, sizeof(save->dealHistory));
+    }
+    // Layout 3: shared legendary encounters. Records from the earlier
+    // one-owner design (legendaryOwner: who of the pair kept Groudon, Kyogre
+    // or Rayquaza) become per-save claims: the owner's catch is that save's
+    // claim, and the partner's save, which took part but got nothing then,
+    // is owed its own Pokémon (delivered once, like any pending reward).
+    if (save->layout < 3)
+    {
+        static const u8 sOldLegendEnc[3] = { COOP_ENC_GROUDON, COOP_ENC_KYOGRE, COOP_ENC_RAYQUAZA };
+        u32 i;
+
+        save->layout = 3;
+        save->legendClaimed = 0;
+        save->legendPending = 0;
+        save->legendOwed = 0;
+        save->legendOwedOtId = 0;
+        memset(save->legendPendingBall, 0, sizeof(save->legendPendingBall));
+        memset(save->legendOwedBall, 0, sizeof(save->legendOwedBall));
+        memset(save->legendFromOtId, 0, sizeof(save->legendFromOtId));
+        for (i = 0; i < 3; i++)
+        {
+            u8 bit = 1 << (sOldLegendEnc[i] - 1);
+
+            if (save->legendaryOwner[i] == COOP_OWNER_LOCAL)
+                save->legendClaimed |= bit;
+            else if (save->legendaryOwner[i] == COOP_OWNER_PARTNER)
+                save->legendPending |= bit;
+            save->legendaryOwner[i] = COOP_OWNER_NONE;
+        }
+        save->pendingLegendary = 0;
     }
     return save;
 }
@@ -982,8 +1013,9 @@ static void Coop_FillFrame(struct CoopFrame *frame)
     {
         frame->badges = save->jointBadges;
         frame->rivalStage = save->rivalStage;
+        // Legend records are each save's own since layout 3 (src/coop_legend.c).
         for (i = 0; i < 3; i++)
-            frame->legend[i] = save->legendaryOwner[i];
+            frame->legend[i] = COOP_OWNER_NONE;
     }
     // In a solo battle (frames keep coming, see Coop_LinkCallback).
     if (gMain.inBattle)
@@ -1217,11 +1249,6 @@ static void Coop_ApplyProgress(const struct CoopProgress *progress)
         if (save->jointBadges & (1 << i))
             FlagSet(FLAG_BADGE01_GET + i);
     }
-    for (i = 0; i < 3; i++)
-    {
-        if (progress->legend[i] != COOP_OWNER_NONE)
-            save->legendaryOwner[i] = progress->legend[i];
-    }
 }
 
 static const u16 sLegendSpecies[] = { SPECIES_GROUDON, SPECIES_KYOGRE, SPECIES_RAYQUAZA };
@@ -1427,11 +1454,10 @@ static void Coop_LaunchBattle(bool8 isGuest)
     gCoopBattleLaunching = TRUE;
     if (sBattleKind == COOP_KIND_LEGEND)
     {
+        // One wild legendary against both players: the co-op double with the
+        // opposing right battler absent (src/coop_legend.c).
         gCoopArmWild = TRUE;
-        if (sLegendKind == COOP_LEGEND_RAY)
-            CreateScriptedWildMon(SPECIES_RAYQUAZA, 70, ITEM_NONE);
-        else
-            CreateScriptedDoubleWildMon(SPECIES_GROUDON, 70, ITEM_NONE, SPECIES_KYOGRE, 70, ITEM_NONE);
+        CreateScriptedWildMon(CoopLegend_Species(sLegendKind), CoopLegend_Level(sLegendKind), ITEM_NONE);
         BattleSetup_StartLegendaryBattle();
         return;
     }
@@ -1468,7 +1494,7 @@ static bool8 Coop_IsOptionalKind(u8 kind)
 static bool8 Coop_IsMandatoryKind(u8 kind)
 {
     return kind == COOP_KIND_GYM || kind == COOP_KIND_RIVAL || kind == COOP_KIND_E4
-        || kind == COOP_KIND_CHAMPION || kind == COOP_KIND_LEGEND || kind == COOP_KIND_STORY;
+        || kind == COOP_KIND_CHAMPION || kind == COOP_KIND_STORY;
 }
 
 // An optional invite never pulls a player out of a menu, a script, a trade,
@@ -1517,7 +1543,7 @@ static u16 Coop_InviteTimeout(u8 kind)
         return COOP_WILD_TIMEOUT;
     if (kind == COOP_KIND_RESCUE)
         return COOP_RESCUE_TIMEOUT;
-    if (kind == COOP_KIND_PAIR)
+    if (kind == COOP_KIND_PAIR || kind == COOP_KIND_LEGEND)
         return COOP_PAIR_TIMEOUT;
     return COOP_ACK_TIMEOUT;
 }
@@ -1646,6 +1672,51 @@ static void Coop_HandleInvite(u32 playerId, const struct CoopInvite *invite)
         TRAINER_BATTLE_PARAM.opponentB = 0;
         Coop_SendReply(COOP_KIND_ACK, invite->seq);
         Coop_LaunchBattle(TRUE);
+        return;
+    }
+
+    // A shared legendary: asked, like an optional fight, but never needs the
+    // Beacon. A partner whose save cannot take part says so (the inviter is
+    // offered the encounter alone). Both players talking to it at once: link
+    // player 0's invite wins and the other game joins it.
+    if (invite->kind == COOP_KIND_LEGEND)
+    {
+        u8 why = COOP_SOLO_NONE;
+
+        if (sWaitingAck && sBattleKind == COOP_KIND_LEGEND && sLegendKind == invite->aux)
+        {
+            if (GetMultiplayerId() == 0)
+                return;
+            sWaitingAck = FALSE;
+            sWaitKind = 0;
+            sRequest = COOP_REQ_NONE;
+            sResumeScript = FALSE;
+            sBattleBadge = 0;
+            sBattleFlag = 0;
+            sRivalFightStage = 0xFF;
+            TRAINER_BATTLE_PARAM.opponentA = 0;
+            TRAINER_BATTLE_PARAM.opponentB = 0;
+            Coop_SendReply(COOP_KIND_ACK, invite->seq);
+            Coop_LaunchBattle(TRUE);
+            return;
+        }
+        if (Coop_GuestBusy() || sGuestPairPending)
+            why = COOP_SOLO_BUSY;
+        else if (!Coop_HasBattleReadyLead())
+            why = COOP_SOLO_PARTNER_NOT_READY;
+        else if (!Coop_PartnerOnSameMap())
+            why = COOP_SOLO_ELSEWHERE;
+        else if (!CoopLegend_Eligible((u8)invite->aux))
+            why = COOP_SOLO_LEGEND_NOT_ELIGIBLE;
+        if (why != COOP_SOLO_NONE)
+        {
+            Coop_SendReplyWhy(COOP_KIND_NACK, invite->seq, why);
+            return;
+        }
+        sGuestPairInvite = *invite;
+        sGuestPairPending = TRUE;
+        sGuestPairTimer = 0;
+        ScriptContext_SetupScript(Coop_EventScript_LegendAskGuest);
         return;
     }
 
@@ -2127,6 +2198,7 @@ static void Coop_PollHandshake(void)
             gLinkCallback = Coop_LinkCallback;
             SetSuppressLinkErrorMessage(TRUE);
             CoopDeal_OnSessionStart();
+            CoopLegend_OnSessionStart();
         }
         break;
     }
@@ -2333,7 +2405,7 @@ static void Task_CoopSession(u8 taskId)
         // for a fight that has already gone ahead. The ask script then says
         // so ("couldn't wait") and tells the inviter.
         if (sGuestPairPending
-         && sGuestPairTimer >= (sGuestPairInvite.kind == COOP_KIND_PAIR ? COOP_PAIR_ANSWER_LIMIT : COOP_JOIN_ANSWER_LIMIT))
+         && sGuestPairTimer >= (sGuestPairInvite.kind == COOP_KIND_PAIR || sGuestPairInvite.kind == COOP_KIND_LEGEND ? COOP_PAIR_ANSWER_LIMIT : COOP_JOIN_ANSWER_LIMIT))
             ScriptMenu_CancelYesNo();
         if (sRescueGuestFollow && !gMain.inBattle)
         {
@@ -2387,10 +2459,19 @@ static void Task_CoopSession(u8 taskId)
     (void)taskId;
 }
 
+// Exactly one session task. Callers that expect a ResetTasks to have run
+// (Coop_ResumeAfterTasksReset) are also reached when it did not (the bag, a
+// battle's end, Flash): a second copy then piled up each time, every copy
+// polled the link, and eight of them filled the task table so that a long
+// battle's move animation could not create its tasks (CreateTask then hands
+// back task 0) and waited forever (journey 70, Rayquaza's HYPER VOICE).
 static void Coop_EnsureTask(void)
 {
-    if (sTaskId == TASK_NONE || !FuncIsActiveTask(Task_CoopSession))
-        sTaskId = CreateTask(Task_CoopSession, 80);
+    u8 taskId = FindTaskIdByFunc(Task_CoopSession);
+
+    if (taskId == TASK_NONE)
+        taskId = CreateTask(Task_CoopSession, 80);
+    sTaskId = taskId;
 }
 
 // Door transitions call ResetTasks, which deletes the session task.
@@ -2495,6 +2576,22 @@ void Coop_OverworldFrame(void)
     CoopDeal_FieldFrame();
     CoopOutfit_FieldFrame();
     Coop_PollSharedItems();
+    // Shared legendary rewards (src/coop_legend.c): resends, a waiting
+    // delivery, the partner's confirmation. Only for an idle player; a
+    // delivery never interrupts a script, a menu or a battle.
+    CoopLegend_FieldFrame();
+    if (sPendingMessage == NULL && sFieldFreeFrames >= 30 && !sInBattle && !gMain.inBattle && sWaitKind == 0
+     && !sWaitingAck && !sGuestPairPending && !sJoinLaunchPending)
+    {
+        bool8 noRoom;
+
+        if (CoopLegend_DeliveryDue(&noRoom))
+            sPendingMessage = Coop_EventScript_LegendDeliver;
+        else if (noRoom)
+            sPendingMessage = Coop_EventScript_LegendNoRoom;
+        else if (CoopLegend_NoteDue())
+            sPendingMessage = Coop_EventScript_LegendAckNote;
+    }
     if (sLinkState != COOP_LINK_IDLE || sPendingMessage != NULL)
         Coop_EnsureTask();
 }
@@ -3139,36 +3236,38 @@ u16 Coop_StartStoryBattle(void)
     return TRUE;
 }
 
-static EWRAM_DATA bool8 sLegendSolo = FALSE;
-
+// Special (waitstate; VAR_0x8004 = COOP_ENC_*): ask the partner on this map
+// to share the legendary encounter (src/coop_legend.c). The script has
+// already offered it and this player said yes. VAR_RESULT: the battle
+// outcome once fought, or 0 when it did not start (the reason is the solo
+// note: CoopLegend_BufferDeclined), and the script offers it alone.
 u16 Coop_StartLegendaryBattle(void)
 {
-    if (!Coop_SessionActive())
-    {
-        u16 species;
+    u8 enc = VarGet(VAR_0x8004);
 
-        if (VarGet(VAR_0x8004) == COOP_LEGEND_RAY)
-            species = SPECIES_RAYQUAZA;
-        else if (gSaveBlock1Ptr->location.mapGroup == MAP_GROUP(MAP_MARINE_CAVE_END)
-              && gSaveBlock1Ptr->location.mapNum == MAP_NUM(MAP_MARINE_CAVE_END))
-            species = SPECIES_KYOGRE;
-        else
-            species = SPECIES_GROUDON;
-        sLegendSolo = TRUE;
-        sLegendKind = 0;
-        gSpecialVar_Result = TRUE;
-        CreateScriptedWildMon(species, 70, ITEM_NONE);
-        BattleSetup_StartLegendaryBattle();
-        return TRUE;
-    }
-    sLegendSolo = FALSE;
-    if (Coop_RefuseMandatory())
+    if (CoopLegend_Species(enc) == SPECIES_NONE || !Coop_SessionActive() || !Coop_PartnerOnSameMap()
+     || !Coop_HasBattleReadyLead())
+    {
+        sSoloNote = !Coop_HasBattleReadyLead() ? COOP_SOLO_SELF_NOT_READY : COOP_SOLO_ELSEWHERE;
+        gSpecialVar_Result = FALSE;
+        CreateTask(Task_CoopEnableScript, 0);
         return FALSE;
+    }
     sResumeScript = TRUE;
-    sLegendKind = VarGet(VAR_0x8004) == COOP_LEGEND_RAY ? COOP_LEGEND_RAY : COOP_LEGEND_DUO;
-    Coop_QueueInvite(COOP_KIND_LEGEND, 0, 0, 0, sLegendKind);
+    sLegendKind = enc;
+    Coop_QueueInvite(COOP_KIND_LEGEND, 0, 0, 0, enc);
     gSpecialVar_Result = FALSE;
     return TRUE;
+}
+
+u8 Coop_PeekSoloNote(void)
+{
+    return sSoloNote;
+}
+
+void Coop_ClearSoloNote(void)
+{
+    sSoloNote = COOP_SOLO_NONE;
 }
 
 u16 Coop_ProposeCase(void)
@@ -4144,46 +4243,6 @@ bool8 Coop_FinishTrainerBattle(void)
     return FALSE;
 }
 
-static u8 Coop_LegendIndex(u16 species)
-{
-    if (species == SPECIES_GROUDON)
-        return 0;
-    if (species == SPECIES_KYOGRE)
-        return 1;
-    if (species == SPECIES_RAYQUAZA)
-        return 2;
-    return 0xFF;
-}
-
-static void Coop_ApplyLegendOutcome(bool8 won)
-{
-    static const u16 defeatedFlags[3] = { FLAG_DEFEATED_GROUDON, FLAG_DEFEATED_KYOGRE, FLAG_DEFEATED_RAYQUAZA };
-    struct CoopSave *save = CoopSave();
-    u8 caught = sLocalLegendMask | sPartnerLegendMask;
-    u32 i;
-
-    if (won)
-    {
-        if (sLegendKind == COOP_LEGEND_RAY)
-            FlagSet(FLAG_DEFEATED_RAYQUAZA);
-        else
-        {
-            FlagSet(FLAG_DEFEATED_GROUDON);
-            FlagSet(FLAG_DEFEATED_KYOGRE);
-        }
-    }
-    for (i = 0; i < 3; i++)
-    {
-        if (!(caught & (1 << i)))
-            continue;
-        FlagSet(defeatedFlags[i]);
-        if (save != NULL)
-            save->legendaryOwner[i] = (sLocalLegendMask & (1 << i)) ? COOP_OWNER_LOCAL : COOP_OWNER_PARTNER;
-    }
-    if (save != NULL)
-        save->pendingLegendary = 0;
-}
-
 // Catches stay off the save until the fight ends cleanly on this machine.
 // A cable pull before then goes through Coop_CB2_AbortToField instead,
 // which throws them away.
@@ -4272,7 +4331,23 @@ bool8 Coop_FinishWildBattle(void)
         sIsGuest = FALSE;
         return FALSE;
     }
-    Coop_ApplyLegendOutcome(won);
+    {
+        u8 bit = CoopLegend_Species(sLegendKind) != SPECIES_NONE ? 1 << (sLegendKind - 1) : 0;
+
+        CoopLegend_OnSharedEnd(sLegendKind, (sLocalLegendMask & bit) != 0, (sPartnerLegendMask & bit) != 0, gCoopLastBall);
+        if (((sLocalLegendMask | sPartnerLegendMask) & bit) && sPendingMessage == NULL)
+            sPendingMessage = Coop_EventScript_CaughtNickname;
+        // Not caught: on the guest's screen it flies off too, as it does on
+        // the starter's (whose map script shows that); back next visit.
+        else if (!((sLocalLegendMask | sPartnerLegendMask) & bit) && sIsGuest
+              && gBattleOutcome != B_OUTCOME_LOST && gBattleOutcome != B_OUTCOME_DREW)
+        {
+            CoopLegend_OnSharedAway(sLegendKind, gBattleOutcome);
+            if (sPendingMessage == NULL)
+                sPendingMessage = Coop_EventScript_LegendGuestAway;
+        }
+    }
+    (void)won;
     // 0 means the invite timed out and no battle outcome should be trusted.
     // A finished battle stores the real outcome so the cave script can tell
     // a KO, a catch, and a flee apart.
@@ -4510,7 +4585,8 @@ bool8 Coop_HasCatchRoom(void)
 void Coop_NoteCatch(u32 thrower, u32 target)
 {
     struct Pokemon *mon = GetBattlerMon(target);
-    u8 index = Coop_LegendIndex(GetMonData(mon, MON_DATA_SPECIES));
+    u8 enc = CoopLegend_EncForSpecies(GetMonData(mon, MON_DATA_SPECIES));
+    u8 index = enc != 0 ? enc - 1 : 0xFF;
 
     if (BattlerIsPlayer(thrower))
     {
@@ -4530,7 +4606,9 @@ void Coop_NoteCatch(u32 thrower, u32 target)
     }
     else
     {
-        if (sPartnerCaughtCount < COOP_WILD_SLOTS)
+        // A shared legendary is not "theirs": each trainer receives one
+        // (the after-battle note says so instead).
+        if (sPartnerCaughtCount < COOP_WILD_SLOTS && !(sBattleKind == COOP_KIND_LEGEND && index != 0xFF))
             sPartnerCaught[sPartnerCaughtCount++] = GetMonData(mon, MON_DATA_SPECIES);
         if (index != 0xFF)
             sPartnerLegendMask |= 1 << index;
@@ -4657,7 +4735,7 @@ u16 Coop_PairGuestAnswer(void)
     if (!sGuestPairPending)
         return 2;
     sGuestPairPending = FALSE;
-    if (sGuestPairTimer >= (kind == COOP_KIND_PAIR ? COOP_PAIR_ANSWER_LIMIT : COOP_JOIN_ANSWER_LIMIT)
+    if (sGuestPairTimer >= (kind == COOP_KIND_PAIR || kind == COOP_KIND_LEGEND ? COOP_PAIR_ANSWER_LIMIT : COOP_JOIN_ANSWER_LIMIT)
      || !Coop_SessionActive() || !Coop_PartnerOnSameMap())
     {
         Coop_SendReplyWhy(COOP_KIND_NACK, seq, COOP_SOLO_NO_ANSWER);
@@ -4669,11 +4747,24 @@ u16 Coop_PairGuestAnswer(void)
         Coop_SendReplyWhy(COOP_KIND_NACK, seq, !accepted ? COOP_SOLO_DECLINED : COOP_SOLO_PARTNER_NOT_READY);
         return 0;
     }
+    if (kind == COOP_KIND_LEGEND && !CoopLegend_Eligible((u8)sGuestPairInvite.aux))
+    {
+        Coop_SendReplyWhy(COOP_KIND_NACK, seq, COOP_SOLO_LEGEND_NOT_ELIGIBLE);
+        return 0;
+    }
     sBattleKind = kind;
     sBattleBadge = 0;
     sBattleFlag = 0;
-    sLegendKind = 0;
+    sLegendKind = kind == COOP_KIND_LEGEND ? (u8)sGuestPairInvite.aux : 0;
     sRivalFightStage = 0xFF;
+    if (kind == COOP_KIND_LEGEND)
+    {
+        TRAINER_BATTLE_PARAM.opponentA = 0;
+        TRAINER_BATTLE_PARAM.opponentB = 0;
+        Coop_SendReply(COOP_KIND_ACK, seq);
+        Coop_LaunchBattle(TRUE);
+        return 1;
+    }
     if (kind == COOP_KIND_WILD)
     {
         TRAINER_BATTLE_PARAM.opponentA = 0;
@@ -4875,10 +4966,3 @@ u16 Coop_StartSoloRescueBattle(void)
 
 // Terra/Marine Cave scripts: a co-op duo fight settles both legends; a solo
 // fight settles only the one in this cave, so the other cave stays open.
-void Coop_MarkDuoLegends(void)
-{
-    if (sLegendSolo)
-        return;
-    FlagSet(FLAG_DEFEATED_GROUDON);
-    FlagSet(FLAG_DEFEATED_KYOGRE);
-}

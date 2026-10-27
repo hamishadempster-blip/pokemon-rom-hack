@@ -18,9 +18,8 @@
 //
 // The partner's choice travels as a DMSG_LOOK deal block, sent at every new
 // link and whenever the choice changes. Until it arrives the partner is
-// drawn in CLASSIC. When both players have the same base and outfit, a small
-// marker over the partner tells them apart (AUTO); it can also be ALWAYS on
-// or OFF (CoopSave.partnerMarker).
+// drawn in CLASSIC. The partner indicator (below) marks the partner in the
+// partner's own colour, whatever either player wears.
 
 #include "global.h"
 #include "coop.h"
@@ -78,13 +77,11 @@ static EWRAM_DATA u8 sMarkerSpriteId = 0;
 static EWRAM_DATA u8 sMarkerTimer = 0;
 EWRAM_DATA bool8 gCoopMarkerShown = FALSE;
 EWRAM_DATA bool8 gCoopCompassShown = FALSE;  // the edge compass is on screen (read by tests)
-static EWRAM_DATA u8 sShownStyle = 0;        // marker palette style + 1 last loaded
 // The partner's name tag: its sprite (checked against the template like the
 // marker), and the name its tiles hold.
 static EWRAM_DATA u8 sTagSpriteId = 0;
 static EWRAM_DATA u8 sTagName[PLAYER_NAME_LENGTH + 1] = {0};
 EWRAM_DATA bool8 gCoopNameTagShown = FALSE;  // the name tag is on screen (read by tests)
-static EWRAM_DATA bool8 sTagShownNow = FALSE;
 
 static u8 Base(u8 gender)
 {
@@ -105,26 +102,6 @@ u8 CoopOutfit_Local(void)
     if (sPreviewActive)
         return sPreviewOutfit;
     return SavedOutfit();
-}
-
-static u8 MarkerMode(void)
-{
-    struct CoopSave *save = Coop_GetSave();
-
-    if (save == NULL || (save->partnerMarker & COOP_MARKER_MODE_MASK) > COOP_MARKER_OFF)
-        return COOP_MARKER_AUTO;
-    return save->partnerMarker & COOP_MARKER_MODE_MASK;
-}
-
-static u8 TagMode(void)
-{
-    struct CoopSave *save = Coop_GetSave();
-    u8 mode;
-
-    if (save == NULL)
-        return COOP_TAG_ON;
-    mode = (save->partnerMarker & COOP_TAG_MASK) >> COOP_TAG_SHIFT;
-    return mode > COOP_TAG_OFF ? COOP_TAG_ON : mode;
 }
 
 const u16 *CoopOutfit_ObjectPalette(u16 tag)
@@ -222,19 +199,50 @@ void CoopOutfit_OnSessionStart(void)
 {
     sPartnerKnown = FALSE;
     sPartnerOutfit = 0;
+    CoopOutfit_OnPartnerStyle(0);
     CoopDeal_QueueLook();
 }
 
-// ------------------------------------------------------------ partner marker
+// Special: the BEACON STYLE changed at the shrine; tell the partner, whose
+// screen draws this player's marker in it.
+void CoopOutfit_SendLook(void)
+{
+    CoopDeal_QueueLook();
+}
+
+// ------------------------------------------------------- partner indicator
+//
+// How the partner is told apart on the field (CoopSave.partnerMarker bits
+// 4-5, COOP_SHOW_*): INDICATOR (the default) is a small outlined marker over
+// the partner's head; NAME is the partner's name in small outlined letters,
+// with no background box; OFF shows neither. The marker's colour belongs to
+// the partner, not to their outfit: each player's own colour (their BEACON
+// STYLE from the Twin Beacon shrine, else one picked from their trainer ID)
+// travels with the DMSG_LOOK block, so a player is the same colour on every
+// partner's screen whatever they wear. The marker's palette tag is blend
+// immune, so night tinting does not dull it; its dark outline keeps it
+// readable on grass, water, buildings and cave floors.
+//
+// Both are drawn only while this player can move: never over a message box,
+// a menu, a scene, a warp or a fade, and never for a partner who is not
+// drawn here (another map, in a battle, a quiet link). They follow the
+// partner's sprite every frame (its own pixel offsets while walking, running,
+// cycling or surfing, and the camera offset while the map scrolls or crosses
+// a connection), at the partner's layer so a tree top that hides the partner
+// hides the marker too. A map load frees every sprite: the template checks
+// below notice, and the next field frame draws them again; battles never see
+// them (they exist only in the field). With the shrine's compass, a diamond
+// at the screen edge points to a partner on this map who is out of sight.
 
 static const u32 sMarkerTiles[] = {
-    // Tile 0, 8x8 4bpp: a small down arrow (14 fill, 15 outline).
-    0x0FFFFFFF,
-    0x0FEEEEEF,
+    // Tile 0, 8x8 4bpp: the indicator, a small rounded marker pointing down
+    // (13 highlight, 14 fill, 15 outline).
+    0x00FFFFF0,
+    0x0FDDEEEF,
+    0x0FDEEEEF,
     0x00FEEEF0,
     0x000FEF00,
     0x0000F000,
-    0x00000000,
     0x00000000,
     0x00000000,
     // Tile 1: a diamond, the compass at the screen edge.
@@ -250,15 +258,85 @@ static const u32 sMarkerTiles[] = {
 
 static const struct SpriteSheet sMarkerSheet = {sMarkerTiles, sizeof(sMarkerTiles), TAG_MARKER_TILES};
 
-// The marker's own palette: CLASSIC, then the Beacon styles the Twin Beacon
-// shrine unlocks. Index 13 highlight, 14 fill, 15 outline.
+// Player colours: highlight, fill, outline. The outline is dark in every
+// colour so the marker reads on light and dark ground alike.
 #define RGB_(r, g, b) RGB((r) >> 3, (g) >> 3, (b) >> 3)
-static const u16 sMarkerPals[BEACON_STYLE_COUNT][16] = {
-    { [13] = RGB_(200, 200, 216), [14] = RGB_(255, 255, 255), [15] = RGB_(16, 16, 24) },
-    { [13] = RGB_(255, 246, 180), [14] = RGB_(255, 206, 66), [15] = RGB_(120, 72, 0) },
-    { [13] = RGB_(200, 236, 255), [14] = RGB_(98, 180, 255), [15] = RGB_(16, 48, 128) },
-    { [13] = RGB_(255, 214, 230), [14] = RGB_(255, 128, 180), [15] = RGB_(128, 24, 72) },
+enum { PCOL_BLUE, PCOL_PINK, PCOL_GOLD, PCOL_GREEN, PCOL_COUNT };
+static const u16 sPlayerColours[PCOL_COUNT][3] = {
+    [PCOL_BLUE]  = { RGB_(200, 236, 255), RGB_(72, 160, 255),  RGB_(8, 24, 72) },
+    [PCOL_PINK]  = { RGB_(255, 214, 230), RGB_(255, 104, 168), RGB_(72, 8, 40) },
+    [PCOL_GOLD]  = { RGB_(255, 246, 180), RGB_(255, 200, 40),  RGB_(72, 40, 0) },
+    [PCOL_GREEN] = { RGB_(214, 255, 214), RGB_(72, 208, 104),  RGB_(8, 56, 24) },
 };
+static const u8 sPlayerColourNames[PCOL_COUNT][6] = {
+    [PCOL_BLUE] = _("BLUE"), [PCOL_PINK] = _("PINK"), [PCOL_GOLD] = _("GOLD"), [PCOL_GREEN] = _("GREEN"),
+};
+
+// The partner's BEACON STYLE + 1 from their look block (0: not heard yet).
+static EWRAM_DATA u8 sPartnerStyle = 0;
+static EWRAM_DATA u8 sShownColour = 0;      // colour + 1 last loaded into the marker palette
+
+// A player's colour: a style chosen at the shrine (GOLD, AZURE, ROSE), else
+// (CLASSIC, or no style yet) one of four picked from the trainer ID.
+static u8 ColourFor(u32 otId, u8 style)
+{
+    switch (style)
+    {
+    case 1: return PCOL_GOLD;
+    case 2: return PCOL_BLUE;
+    case 3: return PCOL_PINK;
+    }
+    return ((otId & 0xFFFF) ^ (otId >> 16)) % PCOL_COUNT;
+}
+
+u8 CoopOutfit_LocalStyle(void)
+{
+    u16 style = VarGet(VAR_BEACON_STYLE);
+
+    if (!FlagGet(FLAG_SHRINE_LORE_READ) || style >= BEACON_STYLE_COUNT)
+        return 0;
+    return style;
+}
+
+static u32 LocalOtId(void)
+{
+    const u8 *id = gSaveBlock2Ptr->playerTrainerId;
+
+    return id[0] | (id[1] << 8) | (id[2] << 16) | (id[3] << 24);
+}
+
+static bool8 PartnerOtId(u32 *otId)
+{
+    if (!gReceivedRemoteLinkPlayers || GetMultiplayerId() > 1)
+        return FALSE;
+    *otId = gLinkPlayers[GetMultiplayerId() ^ 1].trainerId;
+    return TRUE;
+}
+
+static u8 PartnerColour(void)
+{
+    u32 otId = 0;
+
+    PartnerOtId(&otId);
+    return ColourFor(otId, sPartnerStyle ? sPartnerStyle - 1 : 0);
+}
+
+void CoopOutfit_OnPartnerStyle(u8 styleCode)
+{
+    // styleCode: the partner's style + 1 (0 from builds that do not send it).
+    sPartnerStyle = styleCode <= BEACON_STYLE_COUNT ? styleCode : 0;
+}
+
+static u8 ShowMode(void)
+{
+    struct CoopSave *save = Coop_GetSave();
+    u8 mode;
+
+    if (save == NULL)
+        return COOP_SHOW_INDICATOR;
+    mode = (save->partnerMarker & COOP_SHOW_MASK) >> COOP_SHOW_SHIFT;
+    return mode > COOP_SHOW_OFF ? COOP_SHOW_INDICATOR : mode;
+}
 
 static const struct OamData sMarkerOam = {
     .shape = SPRITE_SHAPE(8x8),
@@ -276,6 +354,29 @@ static const struct SpriteTemplate sMarkerTemplate = {
     .callback = SpriteCallbackDummy,
 };
 
+// The marker palette (shared by the indicator, the compass and the name):
+// loaded once per colour; a slot already holding it is reused.
+static u8 MarkerPaletteSlot(void)
+{
+    u16 colours[16] = {0};
+    struct SpritePalette pal;
+    u8 colour = PartnerColour(), slot;
+
+    colours[13] = sPlayerColours[colour][0];
+    colours[14] = sPlayerColours[colour][1];
+    colours[15] = sPlayerColours[colour][2];
+    pal.data = colours;
+    pal.tag = TAG_MARKER_PAL;
+    slot = IndexOfSpritePaletteTag(TAG_MARKER_PAL);
+    if (slot == 0xFF)
+        slot = LoadSpritePalette(&pal);
+    else if (sShownColour != colour + 1)
+        LoadSpritePaletteInSlot(&pal, slot);
+    if (slot != 0xFF)
+        sShownColour = colour + 1;
+    return slot;
+}
+
 static bool8 MarkerAlive(void)
 {
     return sMarkerSpriteId < MAX_SPRITES && gSprites[sMarkerSpriteId].inUse
@@ -289,44 +390,12 @@ static void RemoveMarker(void)
     sMarkerSpriteId = MAX_SPRITES;
 }
 
-static u8 MarkerStyle(void)
-{
-    u16 style = VarGet(VAR_BEACON_STYLE);
-
-    if (!FlagGet(FLAG_SHRINE_LORE_READ) || style >= BEACON_STYLE_COUNT)
-        return 0;
-    return style;
-}
-
-static bool8 WantMarker(u8 gender)
-{
-    switch (MarkerMode())
-    {
-    case COOP_MARKER_ALWAYS:
-        return TRUE;
-    case COOP_MARKER_OFF:
-        return FALSE;
-    default:
-        return gender == gSaveBlock2Ptr->playerGender
-            && (sPartnerKnown ? sPartnerOutfit : 0) == CoopOutfit_Local();
-    }
-}
-
 static struct Sprite *EnsureMarker(void)
 {
-    struct SpritePalette pal;
-    u8 slot;
+    u8 slot = MarkerPaletteSlot();
 
-    pal.data = sMarkerPals[MarkerStyle()];
-    pal.tag = TAG_MARKER_PAL;
-    slot = IndexOfSpritePaletteTag(TAG_MARKER_PAL);
-    if (slot == 0xFF)
-        slot = LoadSpritePalette(&pal);
-    else if (sShownStyle != MarkerStyle() + 1)
-        LoadSpritePaletteInSlot(&pal, slot);
     if (slot == 0xFF)
         return NULL;
-    sShownStyle = MarkerStyle() + 1;
     if (!MarkerAlive())
     {
         if (GetSpriteTileStartByTag(TAG_MARKER_TILES) == 0xFFFF)
@@ -346,86 +415,9 @@ static void HideMarker(void)
     gCoopCompassShown = FALSE;
 }
 
-// Over the partner's head: when looks match (AUTO), or ALWAYS. With the
-// shrine's compass, a diamond at the screen edge points to a partner on
-// this map who is out of sight.
-static void UpdateMarker(void)
-{
-    u8 gender;
-    u8 partnerSprite = Coop_PartnerSpriteId(&gender);
-    struct Sprite *partner, *marker;
-    s16 px, py, dx, dy;
-    bool8 offScreen;
-
-    gCoopCompassShown = FALSE;
-    // Out of sight: no sprite, or a sprite beyond the 15x10 tile screen.
-    offScreen = partnerSprite >= MAX_SPRITES;
-    if (Coop_PartnerMapPos(&px, &py))
-    {
-        dx = px - gObjectEvents[gPlayerAvatar.objectEventId].currentCoords.x;
-        dy = py - gObjectEvents[gPlayerAvatar.objectEventId].currentCoords.y;
-        if (dx < -7 || dx > 7 || dy < -5 || dy > 4)
-            offScreen = TRUE;
-    }
-    else
-    {
-        dx = dy = 0;
-    }
-    if (offScreen)
-    {
-        if (!FlagGet(FLAG_SHRINE_LORE_READ) || MarkerMode() == COOP_MARKER_OFF
-         || !Coop_PartnerMapPos(&px, &py) || ArePlayerFieldControlsLocked())
-        {
-            HideMarker();
-            return;
-        }
-        marker = EnsureMarker();
-        if (marker == NULL)
-            return;
-        marker->oam.tileNum = GetSpriteTileStartByTag(TAG_MARKER_TILES) + 1;
-        marker->coordOffsetEnabled = FALSE;
-        marker->x = 120 + dx * 16;
-        marker->y = 80 + dy * 16;
-        if (marker->x < 6) marker->x = 6;
-        if (marker->x > DISPLAY_WIDTH - 6) marker->x = DISPLAY_WIDTH - 6;
-        if (marker->y < 6) marker->y = 6;
-        if (marker->y > DISPLAY_HEIGHT - 6) marker->y = DISPLAY_HEIGHT - 6;
-        marker->invisible = ((++sMarkerTimer >> 4) & 3) == 0;
-        gCoopMarkerShown = FALSE;
-        gCoopCompassShown = TRUE;
-        return;
-    }
-    if (!WantMarker(gender) || sTagShownNow)
-    {
-        HideMarker();
-        return;
-    }
-    marker = EnsureMarker();
-    if (marker == NULL)
-    {
-        gCoopMarkerShown = FALSE;
-        return;
-    }
-    partner = &gSprites[partnerSprite];
-    marker->oam.tileNum = GetSpriteTileStartByTag(TAG_MARKER_TILES);
-    // Map coordinates, like the object sprites (camera offset applied).
-    marker->coordOffsetEnabled = partner->coordOffsetEnabled;
-    marker->x = partner->x + partner->x2;
-    marker->y = partner->y + partner->y2 - 10 + ((++sMarkerTimer >> 5) & 1);
-    marker->invisible = partner->invisible;
-    gCoopMarkerShown = !marker->invisible;
-}
-
-
-// ------------------------------------------------------------ partner name tag
-//
-// The partner's name in small text on a dark pill just above their head, so
-// two players who look alike (or two Brendans in a crowd) are told apart at
-// a glance. One 64x32 sprite; the text uses the top 16 rows. It shares the
-// marker's palette (14 text, 15 pill). Shown only while this player can
-// move: never over a message box, a menu, a scene, or a warp, and never for
-// a partner who isn't drawn here. A map load frees the sprite and its tiles;
-// the template check below notices and the next frame draws it again.
+// The partner's name in small letters with a one-pixel outline and no
+// background: one 64x32 sprite (the text uses the top rows), the marker's
+// palette (14 letters, 15 outline).
 
 #define TAG_W 64
 #define TAG_TILES ((TAG_W / 8) * 4)
@@ -468,9 +460,21 @@ static void RemoveTag(void)
 }
 
 // One 4bpp pixel of the tag's tiles (64x32, 1D mapping).
+static u8 *TagPixelByte(u8 *tiles, u32 x, u32 y)
+{
+    return tiles + ((y / 8) * (TAG_W / 8) + x / 8) * TILE_SIZE_4BPP + (y % 8) * 4 + (x % 8) / 2;
+}
+
+static u8 TagPixelGet(u8 *tiles, u32 x, u32 y)
+{
+    u8 b = *TagPixelByte(tiles, x, y);
+
+    return (x & 1) ? (b >> 4) : (b & 0x0F);
+}
+
 static void TagPixel(u8 *tiles, u32 x, u32 y, u8 color)
 {
-    u8 *b = tiles + ((y / 8) * (TAG_W / 8) + x / 8) * TILE_SIZE_4BPP + (y % 8) * 4 + (x % 8) / 2;
+    u8 *b = TagPixelByte(tiles, x, y);
 
     if (x & 1)
         *b = (*b & 0x0F) | (color << 4);
@@ -478,29 +482,33 @@ static void TagPixel(u8 *tiles, u32 x, u32 y, u8 color)
         *b = (*b & 0xF0) | color;
 }
 
+#define TAG_TEXT_ROWS 14
+
 static void DrawTag(const u8 *name)
 {
-    static const union TextColor sColor = { .background = 15, .foreground = 14, .shadow = 15, .accent = 15 };
+    static const union TextColor sColor = { .background = 0, .foreground = 14, .shadow = 0, .accent = 0 };
     u8 *tiles = (u8 *)(OBJ_VRAM0) + GetSpriteTileStartByTag(TAG_NAMETAG_TILES) * TILE_SIZE_4BPP;
     s32 width = GetStringWidth(FONT_SMALL, name, 0);
-    u32 x, y, left, right;
+    u32 x, y;
 
-    if (width > TAG_W - 6)
-        width = TAG_W - 6;
-    left = (TAG_W - width) / 2 - 2;
-    right = left + width + 4;
+    if (width > TAG_W - 4)
+        width = TAG_W - 4;
     CpuFill32(0, tiles, TAG_TILES * TILE_SIZE_4BPP);
-    // Rows 1-13: the pill, with its corners cut.
-    for (y = 1; y <= 13; y++)
+    AddSpriteTextPrinterParameterized6(sTagSpriteId, FONT_SMALL, (TAG_W - width) / 2, 1, 0, 0, sColor, TEXT_SKIP_DRAW, name);
+    // The outline: every clear pixel next to a letter pixel.
+    for (y = 0; y < TAG_TEXT_ROWS; y++)
     {
-        for (x = left; x < right; x++)
+        for (x = 0; x < TAG_W; x++)
         {
-            if ((y == 1 || y == 13) && (x == left || x == right - 1))
+            if (TagPixelGet(tiles, x, y) != 0)
                 continue;
-            TagPixel(tiles, x, y, 15);
+            if ((x > 0 && TagPixelGet(tiles, x - 1, y) == 14)
+             || (x + 1 < TAG_W && TagPixelGet(tiles, x + 1, y) == 14)
+             || (y > 0 && TagPixelGet(tiles, x, y - 1) == 14)
+             || (y + 1 < TAG_TEXT_ROWS && TagPixelGet(tiles, x, y + 1) == 14))
+                TagPixel(tiles, x, y, 15);
         }
     }
-    AddSpriteTextPrinterParameterized6(sTagSpriteId, FONT_SMALL, left + 2, 1, 0, 0, sColor, TEXT_SKIP_DRAW, name);
 }
 
 static bool8 PartnerName(u8 *dest)
@@ -512,48 +520,17 @@ static bool8 PartnerName(u8 *dest)
     return dest[0] != EOS;
 }
 
-// TRUE when the tag is drawn over the partner this frame.
-static bool8 UpdateTag(void)
+static bool8 DrawName(struct Sprite *partner)
 {
-    u8 gender, slot;
-    u8 partnerSprite = Coop_PartnerSpriteId(&gender);
     u8 name[PLAYER_NAME_LENGTH + 1];
-    struct SpritePalette pal;
-    struct Sprite *partner, *tag;
-    s16 px, py, dx, dy;
+    u8 slot;
+    struct Sprite *tag;
 
-    gCoopNameTagShown = FALSE;
-    if (TagMode() == COOP_TAG_OFF || partnerSprite >= MAX_SPRITES || !PartnerName(name)
-     || !Coop_PartnerMapPos(&px, &py))
-    {
-        RemoveTag();
+    if (!PartnerName(name))
         return FALSE;
-    }
-    dx = px - gObjectEvents[gPlayerAvatar.objectEventId].currentCoords.x;
-    dy = py - gObjectEvents[gPlayerAvatar.objectEventId].currentCoords.y;
-    partner = &gSprites[partnerSprite];
-    // Hidden, not freed, while this player is busy or the partner is out of
-    // view or (NEARBY) more than three steps away.
-    if (dx < -7 || dx > 7 || dy < -5 || dy > 4
-     || (TagMode() == COOP_TAG_NEARBY && (dx < -3 || dx > 3 || dy < -3 || dy > 3))
-     || partner->invisible || ArePlayerFieldControlsLocked() || ScriptContext_IsEnabled())
-    {
-        if (TagAlive())
-            gSprites[sTagSpriteId].invisible = TRUE;
-        return FALSE;
-    }
-
-    pal.data = sMarkerPals[MarkerStyle()];
-    pal.tag = TAG_MARKER_PAL;
-    slot = IndexOfSpritePaletteTag(TAG_MARKER_PAL);
-    if (slot == 0xFF)
-        slot = LoadSpritePalette(&pal);
-    else if (sShownStyle != MarkerStyle() + 1)
-        LoadSpritePaletteInSlot(&pal, slot);
+    slot = MarkerPaletteSlot();
     if (slot == 0xFF)
         return FALSE;
-    sShownStyle = MarkerStyle() + 1;
-
     if (!TagAlive())
     {
         RemoveTag();
@@ -576,14 +553,11 @@ static bool8 UpdateTag(void)
         DrawTag(name);
         StringCopy(sTagName, name);
     }
-    // Map coordinates, like the partner's own sprite. The pill's bottom
-    // row sits just over the head.
+    // Map coordinates, like the partner's own sprite: the letters' bottom
+    // row just over the head.
     tag->coordOffsetEnabled = partner->coordOffsetEnabled;
     tag->x = partner->x + partner->x2;
-    tag->y = partner->y + partner->y2 - 2;
-    // The partner's layer, so a tree top that hides the partner hides the
-    // tag too; in front of the characters on it, so the name stays readable
-    // when this player stands just north of the partner.
+    tag->y = partner->y + partner->y2 - 4;
     tag->oam.priority = partner->oam.priority;
     tag->subpriority = 0;
     tag->invisible = FALSE;
@@ -591,37 +565,142 @@ static bool8 UpdateTag(void)
     return TRUE;
 }
 
-// Special: NAME TAG in the CO-OP menu. ON, NEARBY, OFF in turn; the new
-// setting's line in gStringVar4.
+static bool8 DrawIndicator(struct Sprite *partner)
+{
+    struct Sprite *marker = EnsureMarker();
+
+    if (marker == NULL)
+        return FALSE;
+    marker->oam.tileNum = GetSpriteTileStartByTag(TAG_MARKER_TILES);
+    marker->coordOffsetEnabled = partner->coordOffsetEnabled;
+    // Centred just over the head: an object event's sprite y sits 6 pixels
+    // below the top of its head, and the marker's six drawn rows end 1 above
+    // the 8x8 sprite's centre.
+    marker->x = partner->x + partner->x2;
+    marker->y = partner->y + partner->y2 - 10;
+    marker->oam.priority = partner->oam.priority;
+    marker->subpriority = 0;
+    marker->invisible = FALSE;
+    gCoopMarkerShown = TRUE;
+    return TRUE;
+}
+
+static void DrawCompass(s16 dx, s16 dy)
+{
+    struct Sprite *marker = EnsureMarker();
+
+    if (marker == NULL)
+        return;
+    marker->oam.tileNum = GetSpriteTileStartByTag(TAG_MARKER_TILES) + 1;
+    marker->coordOffsetEnabled = FALSE;
+    marker->oam.priority = 1;
+    marker->x = 120 + dx * 16;
+    marker->y = 80 + dy * 16;
+    if (marker->x < 6) marker->x = 6;
+    if (marker->x > DISPLAY_WIDTH - 6) marker->x = DISPLAY_WIDTH - 6;
+    if (marker->y < 6) marker->y = 6;
+    if (marker->y > DISPLAY_HEIGHT - 6) marker->y = DISPLAY_HEIGHT - 6;
+    marker->invisible = ((++sMarkerTimer >> 4) & 3) == 0;
+    gCoopCompassShown = TRUE;
+}
+
+// Special: PARTNER MARK in the CO-OP menu (and the dresser's line):
+// INDICATOR, NAME, OFF in turn; the new setting's line in gStringVar4.
 u16 CoopOutfit_CycleNameTag(void)
 {
     struct CoopSave *save = Coop_GetSave();
-    u8 mode = (TagMode() + 1) % (COOP_TAG_OFF + 1);
+    u8 mode = (ShowMode() + 1) % (COOP_SHOW_OFF + 1);
+    u8 *str = gStringVar4;
 
     if (save != NULL)
-        save->partnerMarker = (save->partnerMarker & ~COOP_TAG_MASK) | (mode << COOP_TAG_SHIFT);
-    if (mode == COOP_TAG_ON)
-        StringCopy(gStringVar4, COMPOUND_STRING("Name tag: ON. Your partner's\nname shows over their head."));
-    else if (mode == COOP_TAG_NEARBY)
-        StringCopy(gStringVar4, COMPOUND_STRING("Name tag: NEARBY. Shown when\nyour partner is close by."));
+        save->partnerMarker = (save->partnerMarker & ~COOP_SHOW_MASK) | (mode << COOP_SHOW_SHIFT);
+    if (mode == COOP_SHOW_INDICATOR)
+    {
+        str = StringCopy(str, COMPOUND_STRING("Partner mark: INDICATOR. Your\npartner has a "));
+        str = StringCopy(str, sPlayerColourNames[PartnerColour()]);
+        str = StringCopy(str, COMPOUND_STRING(" marker; you\lshow as "));
+        str = StringCopy(str, sPlayerColourNames[ColourFor(LocalOtId(), CoopOutfit_LocalStyle())]);
+        StringCopy(str, COMPOUND_STRING(" on their screen."));
+    }
+    else if (mode == COOP_SHOW_NAME)
+    {
+        StringCopy(str, COMPOUND_STRING("Partner mark: NAME. Your partner's\nname shows over their head."));
+    }
     else
-        StringCopy(gStringVar4, COMPOUND_STRING("Name tag: OFF."));
+    {
+        StringCopy(str, COMPOUND_STRING("Partner mark: OFF."));
+    }
     return mode;
+}
+
+static void HideAll(void)
+{
+    HideMarker();
+    if (TagAlive())
+        gSprites[sTagSpriteId].invisible = TRUE;
+    gCoopNameTagShown = FALSE;
 }
 
 void CoopOutfit_FieldFrame(void)
 {
-    u8 gender;
+    u8 gender, mode = ShowMode();
+    u8 partnerSprite;
     u8 shown;
+    struct Sprite *partner;
+    s16 px, py, dx, dy;
+    bool8 busy, havePos;
 
-    if (Coop_PartnerSpriteId(&gender) < MAX_SPRITES && gender != sPartnerGender)
+    partnerSprite = Coop_PartnerSpriteId(&gender);
+    if (partnerSprite < MAX_SPRITES && gender != sPartnerGender)
         sPartnerGender = gender;
     shown = (sPartnerGender << 4) | (sPartnerKnown ? sPartnerOutfit : 0);
     if (sShownLocal != CoopOutfit_Local() || sShownPartner != shown)
         CoopOutfit_RefreshLoaded();
-    // The head arrow is redundant (and would overlap) while the tag shows.
-    sTagShownNow = UpdateTag();
-    UpdateMarker();
+
+    gCoopMarkerShown = FALSE;
+    gCoopCompassShown = FALSE;
+    gCoopNameTagShown = FALSE;
+    havePos = Coop_PartnerMapPos(&px, &py);
+    if (mode == COOP_SHOW_OFF || !havePos)
+    {
+        HideMarker();
+        RemoveTag();
+        return;
+    }
+    // This player busy: a message, a menu, a scene, a warp or a fade.
+    busy = ArePlayerFieldControlsLocked() || ScriptContext_IsEnabled() || gPaletteFade.active;
+    dx = px - gObjectEvents[gPlayerAvatar.objectEventId].currentCoords.x;
+    dy = py - gObjectEvents[gPlayerAvatar.objectEventId].currentCoords.y;
+    if (partnerSprite >= MAX_SPRITES || dx < -7 || dx > 7 || dy < -5 || dy > 4)
+    {
+        // Out of sight on this map: the compass, if the shrine taught it.
+        if (TagAlive())
+            gSprites[sTagSpriteId].invisible = TRUE;
+        if (busy || !FlagGet(FLAG_SHRINE_LORE_READ))
+            HideMarker();
+        else
+            DrawCompass(dx, dy);
+        return;
+    }
+    partner = &gSprites[partnerSprite];
+    if (busy || partner->invisible)
+    {
+        HideAll();
+        return;
+    }
+    if (mode == COOP_SHOW_NAME)
+    {
+        HideMarker();
+        if (!DrawName(partner))
+            RemoveTag();
+    }
+    else
+    {
+        if (TagAlive())
+            RemoveTag();
+        if (!DrawIndicator(partner))
+            HideMarker();
+    }
 }
 
 // --------------------------------------------------------------- dresser
@@ -638,9 +717,9 @@ void CoopOutfit_FieldFrame(void)
 static EWRAM_DATA struct ListMenuItem *sMenuItems = NULL;
 static EWRAM_DATA u8 *sMarkerText = NULL;
 
-static const u8 sText_MarkerAuto[] = _("MARKER: AUTO");
-static const u8 sText_MarkerAlways[] = _("MARKER: ON");
-static const u8 sText_MarkerOff[] = _("MARKER: OFF");
+static const u8 sText_MarkerIndicator[] = _("MARK: INDICATOR");
+static const u8 sText_MarkerName[] = _("MARK: NAME");
+static const u8 sText_MarkerOff[] = _("MARK: OFF");
 static const u8 sText_Exit[] = _("CANCEL");
 
 static void Task_OutfitMenu(u8 taskId);
@@ -652,11 +731,11 @@ static u16 PlayerPic(void)
 
 static void BufferMarkerText(void)
 {
-    const u8 *text = sText_MarkerAuto;
+    const u8 *text = sText_MarkerIndicator;
 
-    if (MarkerMode() == COOP_MARKER_ALWAYS)
-        text = sText_MarkerAlways;
-    else if (MarkerMode() == COOP_MARKER_OFF)
+    if (ShowMode() == COOP_SHOW_NAME)
+        text = sText_MarkerName;
+    else if (ShowMode() == COOP_SHOW_OFF)
         text = sText_MarkerOff;
     StringCopy(sMarkerText, text);
 }
@@ -749,8 +828,7 @@ static void Task_OutfitMenu(u8 taskId)
     PlaySE(SE_SELECT);
     if (input == ITEM_MARKER)
     {
-        if (save != NULL)
-            save->partnerMarker = (save->partnerMarker & ~COOP_MARKER_MODE_MASK) | ((MarkerMode() + 1) % (COOP_MARKER_OFF + 1));
+        CoopOutfit_CycleNameTag();
         BufferMarkerText();
         RedrawListMenu(gTasks[taskId].tListTaskId);
         return;

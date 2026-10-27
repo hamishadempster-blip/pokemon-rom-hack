@@ -1,0 +1,34 @@
+# Solo Rayquaza: Kai, not linked, catches it alone (stock battle, no
+# resonance scene). Rosa's save gets nothing, before or after linking up
+# with Kai afterwards: being connected never awards a legendary.
+include continue.inc
+b smart_moves 1
+b no_wild 1
+b expect coop.sLinkState 0
+0 fixture_item 1 4 3 0
+0 fixture_warp 24 85 14 7
+0 until_field 3000
+0 wait 60
+0 press UP 2
+0 wait 10
+0 press A 2
+0 until_cb2 BattleMainCB2 12000 A
+0 shot solo-battle
+0 catch 2 30000
+0 mash_field 6000 B
+0 wait 120
+0 expect_legend claimed 1
+0 expect_legend owed 0
+0 expect_flag 0x1C0 1
+0 legend_owned 384 1 1
+1 expect_legend claimed 0
+b sync
+include relink.inc
+b expect coop.sLinkState 2
+b wait 1200
+1 expect_legend claimed 0
+1 expect_legend pending 0
+1 legend_owned 384 0 0
+1 expect_flag 0x1C0 0
+0 expect_legend owed 0
+b shot linked-after

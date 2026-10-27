@@ -1,0 +1,45 @@
+# Knockout, then retry: the shared battle ends with Rayquaza fainted (no
+# balls thrown): nothing granted, it flies off and returns on the next
+# visit (no defeated flag). Retried: Kai's ball catches it.
+include legend_top.inc
+b strong_battlers 400
+0 fixture_item 1 4 3 0
+0 fixture_warp 24 85 14 8
+1 fixture_warp 24 85 13 8
+b until_field 3000
+b sync
+b wait 60
+0 walk 14 7 3000
+0 press UP 2
+0 wait 10
+0 press A 2
+b until_cb2 BattleMainCB2 12000 A
+b catch 0 30000
+b mash_field 6000 B
+b wait 300
+b shot after-ko
+b expect_legend claimed 0
+b expect_legend pending 0
+b expect_legend owed 0
+b expect_flag 0x1C0 0
+b legend_owned 384 0 0
+b strong_battlers 0
+0 fixture_warp 24 85 14 8
+1 fixture_warp 24 85 13 8
+b until_field 3000
+b sync
+b wait 60
+0 walk 14 7 3000
+0 press UP 2
+0 wait 10
+0 press A 2
+b until_cb2 BattleMainCB2 12000 A
+0 catch 2 30000
+1 catch 0 30000
+b mash_field 6000 B
+b wait 900
+b mash_field 6000 B
+b wait 300
+b expect_legend claimed 1
+b expect_legend owed 0
+b legend_owned 384 1 1

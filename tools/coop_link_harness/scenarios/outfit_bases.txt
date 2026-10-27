@@ -72,8 +72,8 @@ b wait 120
 b sync
 b wait 60
 b shot bases-bedroom
-# Different bases: no marker on AUTO.
-b expect gCoopMarkerShown 0
+# The partner INDICATOR (default) marks the partner whatever the looks.
+b expect gCoopMarkerShown 1
 # Downstairs and out of the front door.
 0 walk 7 2 3000
 0 press UP 30

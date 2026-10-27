@@ -33,3 +33,6 @@ b wait 120
 b expect_range gPlayerAvatar:1 2 2 0x1F
 b expect_partner both-biking
 b shot both-biking
+# The Bag opened while linked (each player): still one co-op session task (the
+# copies used to pile up, finding #29).
+b expect_tasks Task_CoopSession 1

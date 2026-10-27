@@ -26,7 +26,7 @@ gcc -O2 -Wall -Wno-stringop-truncation -DM_CORE_GBA -DUSE_PTHREADS -I"$mgba/incl
 # Global symbols, then the RAM statics of a few objects as <file>.<name>,
 # placed through the section bases in the linker map.
 arm-none-eabi-nm -S "$root/pokeemerald.elf" | grep -vE ' [a-zA-Z] [_.$]' > "$out/syms.txt"
-for obj in coop coop_deal coop_outfit link battle_controllers battle_main start_menu menu overworld text; do
+for obj in coop coop_deal coop_outfit coop_legend link battle_controllers battle_main start_menu menu overworld text; do
 	arm-none-eabi-objdump -t "$root/build/emerald/src/$obj.o" | while read -r off scope kind sect size name; do
 		[ "$kind" = O ] || continue
 		case "$sect" in .bss|.sbss|.data) ;; *) continue ;; esac
@@ -41,7 +41,8 @@ values = struct.unpack('<%dI' % (len(data) // 4), data)
 with open(sys.argv[2], 'a') as f:
     for name, value in zip(('saveVarsOffset', 'saveFlagsOffset', 'encryptionKeyOffset', 'storageBoxesOffset', 'boxMonSize', 'moneyOffset', 'dealOffset', 'partnerCaughtOffset', 'dexCaughtOffset', 'partnerDexValidOffset', 'expGetterOffset',
                               'hm0', 'hm1', 'hm2', 'hm3', 'hm4', 'hm5', 'hm6', 'hm7',
-                              'battleMonSize', 'battleMonTypes', 'typeSize', 'numTypes', 'battleMonHp', 'effSize', 'battleMonMaxHp'), values):
+                              'battleMonSize', 'battleMonTypes', 'typeSize', 'numTypes', 'battleMonHp', 'effSize', 'battleMonMaxHp',
+                              'legendClaimedOffset', 'legendPendingOffset', 'legendOwedOffset'), values):
         f.write(f'{value:08x} 00000004 a harness.{name}\n')
 PY_LAYOUT
 echo "$out/coop_link_harness"

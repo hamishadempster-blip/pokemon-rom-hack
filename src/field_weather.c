@@ -862,7 +862,11 @@ void UpdateSpritePaletteWithWeather(u8 spritePaletteIndex, bool8 allowFog)
     case WEATHER_PAL_STATE_SCREEN_FADING_IN:
         if (gWeatherPtr->fadeInFirstFrame)
         {
-            if (gWeatherPtr->currWeather == WEATHER_FOG_HORIZONTAL)
+            // Only palettes meant for fog (field effects), as outside a fade:
+            // an object palette loaded on this frame (the co-op partner,
+            // spawned as the screen fades in) was otherwise lightened for the
+            // whole visit, a pale "ghost" partner in Terra Cave and fog.
+            if (gWeatherPtr->currWeather == WEATHER_FOG_HORIZONTAL && allowFog)
                 MarkFogSpritePalToLighten(paletteIndex);
             paletteIndex = PLTT_ID(paletteIndex);
             for (i = 0; i < 16; i++)

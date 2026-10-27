@@ -1,0 +1,41 @@
+# Continues legend_ray_full's saves (Rosa's reward pending, party and PC
+# full). After a reload, unlinked: still pending, nothing delivered without
+# room. Room made: delivered to the PC, claimed once; then linking up again
+# with Kai changes nothing (no second reward, no debt).
+# Boot (continue.inc, with time for Rosa's "make room" note to show and
+# close: it pops up once she has field control).
+b wait 1100
+b press START 2
+b wait 300
+b press A 2
+b wait 250
+b press A 2
+b mash_field 4000
+b wait 150
+1 shot no-room-after-reload
+b mash_field 3000 B
+b wait 60
+b no_wild 1
+1 expect_legend pending 1
+1 expect_legend claimed 0
+1 wait 900
+1 expect gCoopLegendDelivered 0
+1 fixture_unfill_pc
+1 wait 300
+1 mash_field 4000 B
+1 wait 120
+1 mash_field 2000 B
+1 wait 60
+1 shot delivered
+1 expect_legend pending 0
+1 expect_legend claimed 1
+1 legend_owned 384 1 1
+1 expect_dex_caught 384 1
+b sync
+include relink.inc
+b expect coop.sLinkState 2
+b wait 1200
+1 legend_owned 384 1 1
+1 expect_legend claimed 1
+0 expect_legend owed 0
+0 legend_owned 384 1 1

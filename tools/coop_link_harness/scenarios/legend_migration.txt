@@ -1,0 +1,28 @@
+# Migration of the old one-owner legendary record (layout 2 -> 3), on the
+# running game: Kai's save says the old shared Rayquaza went to his partner
+# (owner PARTNER), Rosa's that she kept it (owner LOCAL). On the next access
+# Kai's becomes a pending reward and is delivered once (to the PC: party
+# full); Rosa's becomes a claim with nothing delivered.
+# FIXTURES: j68 saves, unlinked; the old record written into CoopSave
+# (legendaryOwner[2] = Rayquaza, then layout 2).
+include continue.inc
+b no_wild 1
+0 writep gSaveBlock3Ptr+10:1 2
+1 writep gSaveBlock3Ptr+10:1 1
+b writep gSaveBlock3Ptr+13:1 2
+b wait 200
+b mash_field 4000 B
+b wait 200
+b mash_field 3000 B
+b wait 60
+0 shot migrated
+0 expect_legend claimed 1
+0 expect_legend pending 0
+0 legend_owned 384 1 1
+0 expect_dex_caught 384 1
+0 expect_flag 0x1C0 1
+1 expect_legend claimed 1
+1 expect_legend pending 0
+1 legend_owned 384 0 0
+0 expect gCoopLegendDelivered 1
+1 expect gCoopLegendDelivered 0

@@ -1,0 +1,32 @@
+# Shared Rayquaza, the other way round: Rosa (player 1, the link guest)
+# starts it from Rayquaza's left side, Kai agrees, and Rosa's ball catches
+# it (the wild Pokemon is the link master's). Each ends with one Rayquaza of
+# their own (own OT), the claim recorded once, Rosa's MASTER BALL used up
+# and nothing taken from Kai's bag.
+include legend_top.inc
+1 fixture_item 1 4 3 0
+0 fixture_warp 24 85 14 8
+1 fixture_warp 24 85 13 6
+b until_field 3000
+b sync
+b wait 60
+1 press RIGHT 2
+1 wait 10
+1 press A 2
+b until_cb2 BattleMainCB2 12000 A
+b shot shared-battle
+1 catch 2 30000
+0 catch 0 30000
+b mash_field 6000 B
+b wait 900
+b mash_field 6000 B
+b wait 300
+b shot after-delivery
+b expect_legend claimed 1
+b expect_legend pending 0
+b expect_legend owed 0
+b expect_flag 0x1C0 1
+b legend_owned 384 1 1
+b expect_dex_caught 384 1
+1 expect_item 1 4 2
+b expect_partner after-shared

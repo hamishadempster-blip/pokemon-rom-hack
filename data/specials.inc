@@ -684,7 +684,15 @@ gSpecials::
 	def_special Nurse_NoteHeal
 	def_special Coop_MandatoryGate
 	def_special Coop_StartSoloRescueBattle, 0, 1
-	def_special Coop_MarkDuoLegends
+	def_special CoopLegend_Offer
+	def_special CoopLegend_BufferDeclined
+	def_special CoopLegend_StartSolo, waitstate=1
+	def_special CoopLegend_AfterBattle
+	def_special CoopLegend_TakeSharedNote
+	def_special CoopLegend_DeliverNext
+	def_special CoopLegend_WaitSaved, waitstate=1
+	def_special CoopLegend_TakeAckNote
+	def_special CoopLegend_TakeAwayNote
 	def_special Coop_MenuUseBeacon
 	def_special Coop_ReopenStartMenu
 	def_special Coop_BufferJoinAsk
@@ -740,6 +748,7 @@ gSpecials::
 	def_special Coop_BufferUnlinkedMenu
 	def_special CoopOutfit_OpenMenu
 	def_special CoopOutfit_CycleNameTag
+	def_special CoopOutfit_SendLook
 	def_special Coop_BufferUnlinkName
 	def_special CoopQuest_SetBits
 	def_special CoopQuest_CountBits

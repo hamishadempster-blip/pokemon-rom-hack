@@ -1,0 +1,31 @@
+# Full party and PC: Kai's catch earns Rosa's reward, which waits (pending,
+# recorded and saved; Kai's debt cleared by her ACK). Rosa is told once to
+# make room. The run ends with the reward still pending; legend_ray_resume
+# continues from these saves.
+include legend_top.inc
+1 fixture_fill_pc
+0 fixture_item 1 4 3 0
+0 fixture_warp 24 85 14 8
+1 fixture_warp 24 85 13 8
+b until_field 3000
+b sync
+b wait 60
+0 walk 14 7 3000
+0 press UP 2
+0 wait 10
+0 press A 2
+b until_cb2 BattleMainCB2 12000 A
+0 catch 2 30000
+1 catch 0 30000
+b mash_field 6000 B
+b wait 600
+1 shot no-room
+b mash_field 3000 B
+b wait 600
+0 expect_legend claimed 1
+0 expect_legend owed 0
+1 expect_legend claimed 0
+1 expect_legend pending 1
+1 legend_owned 384 0 0
+1 expect_flag 0x1C0 1
+1 expect gCoopLegendDelivered 0

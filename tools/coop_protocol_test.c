@@ -95,14 +95,13 @@ int main(void)
 
     remote.capOn = 1;
     remote.legend[0] = COOP_OWNER_LOCAL;
-    Expect(CoopProtocol_Merge(&local, &remote, &merged) == 2, "legend conflict");
+    Expect(CoopProtocol_Merge(&local, &remote, &merged) == 0, "both saves owning a legendary is no conflict (own records since 0xC0170136)");
 
     remote.legend[0] = COOP_OWNER_PARTNER;
     remote.legend[1] = COOP_OWNER_LOCAL;
     Expect(CoopProtocol_Merge(&local, &remote, &merged) == 0, "merge");
     Expect(merged.badges == 0x03 && merged.rivalStage == 3, "badges or, rival max");
-    Expect(merged.legend[0] == COOP_OWNER_LOCAL, "agreed owner stays local");
-    Expect(merged.legend[1] == COOP_OWNER_PARTNER, "remote local becomes partner");
+    Expect(merged.legend[0] == COOP_OWNER_LOCAL && merged.legend[1] == COOP_OWNER_NONE, "legend records stay this save's own");
 
     memset(&local, 0, sizeof(local));
     memset(&remote, 0, sizeof(remote));
@@ -115,15 +114,15 @@ int main(void)
     Expect(CoopProtocol_Merge(&local, &remote, &merged) == 0, "older save reconnects");
     Expect(merged.badges == 0x7F, "older save gains every joint badge");
     Expect(merged.rivalStage == 3, "older save gains the higher rival stage");
-    Expect(merged.legend[0] == COOP_OWNER_NONE && merged.legend[1] == COOP_OWNER_PARTNER && merged.legend[2] == COOP_OWNER_NONE,
-           "older save learns the partner owns Kyogre");
+    Expect(merged.legend[0] == COOP_OWNER_NONE && merged.legend[1] == COOP_OWNER_NONE && merged.legend[2] == COOP_OWNER_NONE,
+           "the partner's legend records are not copied");
     Expect(sizeof(struct CoopProgress) == 6, "progress carries only badges, rival, cap, and owners");
     Expect(CoopProtocol_Merge(&remote, &local, &merged) == 0 && merged.badges == 0x7F && merged.rivalStage == 3,
            "newer save keeps its badges and rival stage");
 
     local.legend[1] = COOP_OWNER_LOCAL;
-    Expect(CoopProtocol_Merge(&local, &remote, &merged) == 2, "both saves claiming Kyogre drops the link");
-    Expect(CoopProtocol_Merge(&remote, &local, &merged) == 2, "Kyogre conflict either way round");
+    Expect(CoopProtocol_Merge(&local, &remote, &merged) == 0, "both saves holding Kyogre keep the link");
+    Expect(CoopProtocol_Merge(&remote, &local, &merged) == 0, "either way round");
 
     Expect(CoopProtocol_KeepOwnInvite(0, 1, 1, 1) == 1, "link player 0 keeps its Elite Four invite");
     Expect(CoopProtocol_KeepOwnInvite(1, 1, 1, 1) == 0, "link player 1 joins player 0's invite");

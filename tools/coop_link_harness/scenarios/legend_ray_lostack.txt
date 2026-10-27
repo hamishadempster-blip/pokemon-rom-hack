@@ -1,0 +1,31 @@
+# Lost confirmation: Kai's game stops taking deal messages from the shared
+# battle on (CoopDeal_HandleBlock patched to return), so Kai's EARN reaches
+# Rosa (her reward is recorded, saved and delivered) but her ACK never
+# reaches Kai. Kai keeps the debt and is told it will arrive
+# later. legend_ray_reconnect continues from these saves: the repeat EARN
+# must not give Rosa a second Rayquaza, and must clear Kai's debt.
+include legend_top.inc
+0 fixture_item 1 4 3 0
+0 fixture_warp 24 85 14 8
+1 fixture_warp 24 85 13 8
+b until_field 3000
+b sync
+b wait 60
+0 walk 14 7 3000
+0 press UP 2
+0 wait 10
+0 press A 2
+b until_cb2 BattleMainCB2 12000 A
+0 patch_ret CoopDeal_HandleBlock 0
+0 catch 2 30000
+1 catch 0 30000
+b mash_field 6000 B
+b wait 1500
+0 shot later-note
+b mash_field 3000 B
+b wait 300
+0 expect_legend claimed 1
+0 expect_legend owed 1
+1 expect_legend pending 0
+1 expect_legend claimed 1
+1 legend_owned 384 1 1

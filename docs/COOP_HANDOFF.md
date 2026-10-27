@@ -1,3 +1,74 @@
+# Partner indicator, shared legendaries, stalls and saves: build 0xC0170136
+
+Branch `coop-doorway-scenes-rivals` (continued from 0xC0170135, commit d1ed75d9), not merged. Both players need this build: 0xC0170135 and older refuse to link with it. Older saves load and are converted (below). Test log: [COOP_TESTLOG_C0170136.md](COOP_TESTLOG_C0170136.md). Findings #27-#31 are in [COOP_PLAYTHROUGH_LOG.md](COOP_PLAYTHROUGH_LOG.md).
+
+## 1. Partner indicator (replaces the default name tag)
+
+- **Default: INDICATOR.** A small outlined downward marker (6x5 pixels inside an 8x8 sprite) just above the partner's head, in the partner's player colour. No text, no box. Only the partner is marked, never yourself.
+- **Colours** are stable per player and independent of outfits, day/night and weather: gold, blue or pink from the Twin Beacon style chosen at the shrine (sent to the partner with the look message), otherwise blue, pink, gold or green from the trainer id. The palette tag is blend-immune (no day/night or fog tint) and is rebuilt only when the colour changes; one 8x8 sprite and one palette slot, both freed with the field sprites, so nothing reaches battle graphics.
+- **CO-OP > PARTNER MARK** (and the dresser) cycles INDICATOR, NAME (compact outlined name, no pill), OFF. The message names both colours. Saved in `CoopSave.partnerMarker` bits 4-5; older saves keep their choice (ON becomes INDICATOR, NEARBY becomes NAME, OFF stays OFF).
+- **Positioning and hiding.** The marker follows the partner sprite's own coordinates every frame (walking, running, cycling, surfing, camera scroll, map connections). It hides while a script, message, menu, warp or screen fade is up, in battle, when the partner is on another map, or when the link is down. It is a sprite like the partner: in a dark cave without FLASH, a partner outside your light circle and their marker are both hidden.
+- **Placement fix during testing**: the first version sat 15 pixels above the head (object sprites' y is 6 pixels below the head top); now 2 pixels.
+
+## 2. Shared legendaries
+
+Player-facing rules, exceptions and migration are in [COOP.md, Shared legendaries](COOP.md#shared-legendaries). In short:
+
+| Encounter | Handling |
+| --- | --- |
+| Rayquaza (Sky Pillar), Groudon (Terra Cave), Kyogre (Marine Cave), Regirock, Regice, Registeel | Shared when both agree; otherwise the stock single battle alone |
+| Latias/Latios (roaming) | Not shared: each world's own roamer, met alone as stock |
+| Southern Island, Faraway Island, Birth Island, Navel Rock | Not shared: event-only and reset after every Hall of Fame (would repeat rewards); unchanged |
+| Battle Frontier, rentals, rematches | Never give legendaries |
+
+- **Battle format**: the existing co-op link multi battle against one wild Pokémon (the opposing right battler absent): an engine-supported double where one side has one Pokémon. No stand-in second legendary, no uninitialised battler. The link master's wild Pokémon is used on both games. Either player fights or throws; the first catch ends it; that ball is consumed as normal. The old "Groudon and Kyogre together" duo battle is gone: each cave is its own encounter.
+- **Eligibility** is checked on each save: story reached (Rayquaza awake, i.e. Sky Pillar state 2+; Groudon/Kyogre after the Hall of Fame; Regis' puzzles), legendary still in that world, no claim or pending reward for that encounter. The partner's game answers the invite; a not-eligible save is refused without a prompt and the starter is told why and offered to face it alone.
+- **Records** (`CoopSave` layout 3, one bit per encounter): `legendClaimed`, `legendPending`, `legendOwed` (+ the owed partner's trainer id and ball), `legendPendingBall`, `legendFromOtId`. Never inferred from the party or PC. A save that already claimed an encounter (with anyone) cannot claim it again; a claimed save whose legendary still stands (an older save) just sees it leave ("already yours").
+- **Exactly once**: catcher's game records claim + debt, saves, sends EARN (and again on every new link with that partner until confirmed). The partner's game records pending, saves, then ACKs; then delivers (party or PC, Pokédex seen and caught, nickname offered) and saves. A repeat EARN for a reward already delivered from the same partner is ACKed "recorded"; from anyone else "already". No delivery message is shown before the save that records it has reached the flash.
+- **Reward Pokémon**: the recipient's own OT and trainer id, met at that place and level, the ball that made the catch, level-up moveset, stats recalculated. Nature, IVs and shininess come from a fixed seed (recipient's trainer id + encounter), so reloading or reconnecting cannot reroll it. The catcher's own Pokémon is the caught wild one (stock rules).
+- **No room**: the reward waits ("Your Rayquaza is waiting. Make room in your party or PC…", once per session) and arrives when there is room, linked or not, after reloads.
+- **Fail, KO, loss, retry**: nothing is granted. A knockout no longer removes the legendary for good: it flies off on both screens and is back on the next visit (Groudon's/Kyogre's weather still ends on a KO, as stock; the Weather Institute then reports the next abnormal weather, which leads back to it). A loss whites out as stock.
+- **Migration** (on first load of an older save): a legendary the save caught itself under the old one-owner rule is claimed; one the old shared fight gave to the partner (the save's record says "partner") becomes a pending reward, delivered once; a legendary already gone from that world stays gone.
+- **Rayquaza's resonance scene**: SE_ORB and a white flash, "Your TWIN BEACON resonates with <partner>'s! Your two worlds touch here, and each holds its own RAYQUAZA." then the shared question, which states that no second catch and no extra BALL is needed.
+
+## 3. Outstanding failures
+
+- **New Mauville VOLT + FUSE `pp_coop` hang: fixed by 2004e0f6, not by the party-order repairs.** Cause: battle TV scoring read a missing `PTS_LIGHT_SCREEN` row (a special move through Light Screen) and trapped. Same old-harness inputs (the 0xC0170133 driver): on 0xC0170133 the guest freezes in `Controller_DoMoveAnimation` (2 failures, deterministic); on a build of 2004e0f6 alone (0xC0170133 + that fix) PASS; on 0xC0170136 PASS. The party-order repairs (0f670313) came after 2004e0f6 and are not needed for it. The 0xC0170135 test log called the pass timing; that was wrong.
+- **Found and fixed in this pass** (all gameplay-found):
+  - #29 **move-animation hang in long co-op battles**: every Bag opening while linked (each ball thrown included) added a copy of the co-op session task; nine copies filled the task table and HYPER VOICE's animation could not create its tasks (`CreateTask` returns task 0 when full), so both games waited forever (journey 70, attempts 1-4). Now one session task at most.
+  - #27 **corrupt background saves**: the deal saver (trades, gifts, legend rewards) kept writing from the save blocks' old address after a warp or battle start moved them; a save made that way crashed on CONTINUE. Now restarts into the same slot.
+  - #28 **ghost partner after reload**: a save made while linked stored the partner object; it now is never saved and is dropped on load.
+  - #31 **pale partner in fog maps** (Terra Cave): the weather code lightened any palette loaded on the first fade-in frame; now only palettes meant for fog.
+- **Regression coverage kept**: party corruption after replacements (`coop_host_replacement`, `coop_host_two_replacements`, `coop_host_team_down`, `coop_partner_wiped*`), simultaneous trainer detection (`same_trainer_spot*`, `wild_simultaneous`, `rival_simultaneous`), Beacon ON/OFF agreement (`center_beacon`, `beacon_*`), linking after an unlinked Centre visit (`centre_link`), partner status during solo battles (`partner_busy_trainer`, `spot_after_coop_wild`), single-trainer co-op battles and both foes fainting on one turn (`coop_one_trainer_faints`). Results in §6.
+- **Difficulty, separate from faults**: the shared Rayquaza at full HP took 20+ ULTRA BALLs in three of five journey attempts (no catch); weakening it first (Rosa's three attacks in the passing attempt) helps. Not changed.
+
+## 4. Smoothness review (both screens)
+
+From the recordings and battle logs of journey 70, the legend scenarios, `indicator_tour` and `nametag`:
+- No patterned blocks, stale windows or ghost markers seen; the marker hides for every message, menu, warp and battle and comes back after.
+- Prompts: the resonance text, both YES/NO questions, "Asking <partner>…", the waiting line in battle ("Ready. Waiting for Kai…"), the catch line, the record/delivery notes appear once each; the "later" note once per debt per session.
+- HP, PP, levels and party ownership matched across screens in the battle logs; fainting and replacement worked in the one-foe double (`diag_hv_faint`), no move replacement or evolution happened in these battles.
+- Lighting: night and day Littleroot, interiors, Granite Cave (dark) and Terra Cave (fog; fixed #31) checked.
+- Cosmetic, not changed: the battle opens with the link-multi VS screen whose opponent card is blank (a wild Pokémon has no card); "Kai threw a Ultra Ball!" (stock expansion article).
+
+## 5. Known gaps
+
+- Kyogre (Marine Cave), Regice and Registeel were checked from source only; Rayquaza (journey and fixtures), Groudon and Regirock were played (fixtures for the cave/puzzle access).
+- Not tested in gameplay: a loss (whiteout) in a shared legend battle; fleeing (RUN) from it. Migration was tested by writing the old record into a running game (`legend_migration`); no real older save with a legendary record exists (the playthrough never caught one). Both players throwing in the same turn happened many times in journey 70: the first ball resolves first, a catch ends the battle, and the second throw never happens.
+- `smart_moves` (driver) cannot drive the link master's moves in the one-foe double; legend scenarios fight with the first move.
+- Same as before: mGBA GUI, real hardware and netplay not tested; all gameplay is the two-core harness on libmgba 0.10.3.
+
+## 6. Results on the delivered ROM
+
+ROM `emerald-coop-C0170136.gba`, SHA-1 `2d0903031e252067aaf9b51c4199e015fd4a3ee8`. Details in the test log.
+
+- **Gameplay, main journey (no fixtures)**: journey 70, the shared Rayquaza from checkpoint 68 through the catch, delivery, back to exploring and a save: PASS on this ROM (checkpoint j70 written and loads). Six earlier runs on this ROM ended without a catch (three knockouts, two losses, one driver stop); each granted nothing and left Rayquaza for a retry, and none hung.
+- **Gameplay, full suite** (`run_all.sh`, `LONG=1`, `SEG6`, `J65`, `J68`): 134 scenarios, 131 PASS. The 3 failures: `outfit_same_base` and its reload expected the old AUTO marker (the scenario was updated to INDICATOR/NAME/OFF and then passed), and `wild_simultaneous` failed once with three harness lanes running (the two "simultaneous" encounters were not simultaneous); rerun twice alone: PASS. One visual-check failure (`caravan_coop`, a pairing of two cores 1100 frames apart; both screens showed the same order); rerun: visual ok.
+- **Kept regressions outside the suite**: `coop_host_replacement`, `coop_host_two_replacements`, `coop_host_team_down`, `coop_partner_wiped`, `coop_partner_wiped_wild`, `same_trainer_spot`, `same_trainer_spot_late`, `partner_busy_trainer`: PASS. `spot_after_coop_wild` (the finding #16 diagnostic): not a valid check on these saves any more: Hiker Clark spots the players on the scenario's walk first (twice, different points); no assert screen appeared; inconclusive.
+- **New**: all 19 legend, indicator and task scenarios PASS (`legend_migration` and `coop_bag_battle_tasks` run separately; `coop_bag_battle_tasks` fails on 0xC0170135: 9 session tasks).
+- **Checkpoint saves** j62, j63, j64, j65, j66, j67c, j67d, j68, j70: CONTINUE reaches the field on both games. `journey_69_post_clear_again` (j68): PASS.
+- **Recordings** (both screens, this ROM): `shared_rayquaza_journey70.mp4` (no fixtures; the battle part at 8x), `shared_rayquaza_fixture.mp4` (a MASTER BALL and a warp as fixtures; the whole flow in two minutes), `indicator_night.mp4`, `indicator_day.mp4`, `partner_mark_menu.mp4`.
+
 # Visual correctness and co-op polish: build 0xC0170133
 
 Branch `coop-doorway-scenes-rivals`, not merged. Both games need this build (0xC0170132 refuses to link with it). Save layout unchanged; the new NAME TAG setting uses spare bits of `CoopSave.partnerMarker` (0 = ON on older saves). Test log: [COOP_TESTLOG_C0170133.md](COOP_TESTLOG_C0170133.md).

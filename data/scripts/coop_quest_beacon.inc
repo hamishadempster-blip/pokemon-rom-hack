@@ -259,6 +259,7 @@ TwinBeaconShrine_EventScript_Style::
 	dynmultichoice 18, 1, FALSE, 4, 0, DYN_MULTICHOICE_CB_NONE, TwinBeaconShrine_Text_StyleClassic, TwinBeaconShrine_Text_StyleGold, TwinBeaconShrine_Text_StyleAzure, TwinBeaconShrine_Text_StyleRose
 	goto_if_ge VAR_RESULT, BEACON_STYLE_COUNT, TwinBeaconShrine_EventScript_KeeperAsk
 	copyvar VAR_BEACON_STYLE, VAR_RESULT
+	special CoopOutfit_SendLook
 	msgbox TwinBeaconShrine_Text_StyleSet, MSGBOX_DEFAULT
 	goto TwinBeaconShrine_EventScript_KeeperAsk
 
@@ -442,10 +443,10 @@ TwinBeaconShrine_Text_KeeperLore:
 TwinBeaconShrine_Text_KeeperGift:
 	.string "But it can shine in new colours,\n"
 	.string "and point the way to your partner.\p"
-	.string "Your partner's marker now glows in\n"
+	.string "Your partner sees your marker in\n"
 	.string "the BEACON STYLE you choose, and\l"
-	.string "shows at the screen edge when they\l"
-	.string "are out of sight on the same map.$"
+	.string "theirs shows at the screen edge when\l"
+	.string "they are out of sight on this map.$"
 
 TwinBeaconShrine_Text_KeeperAsk:
 	.string "KEEPER: What do you seek?$"
@@ -462,7 +463,7 @@ TwinBeaconShrine_Text_KeeperBye:
 	.string "other.$"
 
 TwinBeaconShrine_Text_StyleAsk:
-	.string "Which colour for the marker?$"
+	.string "Which colour will your partner see?$"
 
 TwinBeaconShrine_Text_StyleClassic:
 	.string "CLASSIC$"

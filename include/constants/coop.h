@@ -167,17 +167,32 @@
 // Player outfit colours (CoopSave.outfit, src/coop_outfit.c): presets per
 // player base. 0 is the stock look, which older saves read as.
 #define COOP_OUTFIT_COUNT        6
-// CoopSave.partnerMarker: a small arrow over the partner.
-#define COOP_MARKER_AUTO         0   // only when both look the same
-#define COOP_MARKER_ALWAYS       1
-#define COOP_MARKER_OFF          2
-#define COOP_MARKER_MODE_MASK    0x0F
-// Bits 4-5 of CoopSave.partnerMarker: the partner's name tag. Zero (older
-// saves) is ON: shown over the partner whenever they are on screen.
-#define COOP_TAG_SHIFT           4
-#define COOP_TAG_MASK            0x30
-#define COOP_TAG_ON              0
-#define COOP_TAG_NEARBY          1   // only within a few steps
-#define COOP_TAG_OFF             2
+// CoopSave.partnerMarker bits 4-5: how the partner is marked on the field
+// (src/coop_outfit.c). Zero (and every older save) is INDICATOR. Saves from
+// before 0xC0170136 kept the name tag here: its ON (0) now reads as
+// INDICATOR, NEARBY (1) as NAME, OFF (2) as OFF. Bits 0-3 (the old AUTO /
+// ON / OFF arrow, set at the dresser) are no longer read.
+#define COOP_SHOW_SHIFT          4
+#define COOP_SHOW_MASK           0x30
+#define COOP_SHOW_INDICATOR      0   // a small marker in the partner's colour
+#define COOP_SHOW_NAME           1   // the partner's name, outlined, no box
+#define COOP_SHOW_OFF            2
+
+// Shared legendary encounters (src/coop_legend.c). One successful capture
+// in a shared encounter gives each eligible participant their own Pokémon,
+// once per save. Ids start at 1 (0: none); bit (id - 1) in the CoopSave
+// legend masks.
+#define COOP_ENC_NONE            0
+#define COOP_ENC_RAYQUAZA        1
+#define COOP_ENC_GROUDON         2
+#define COOP_ENC_KYOGRE          3
+#define COOP_ENC_REGIROCK        4
+#define COOP_ENC_REGICE          5
+#define COOP_ENC_REGISTEEL       6
+#define COOP_ENC_COUNT           7   // one past the last id
+// CoopLegend_Offer results.
+#define COOP_LEGEND_SOLO         0   // face it alone (no partner here, not linked, ...)
+#define COOP_LEGEND_ASK          1   // the partner is here: offer the shared encounter
+#define COOP_LEGEND_GONE         2   // already this save's (claimed or waiting): no battle
 
 #endif // GUARD_CONSTANTS_COOP_H

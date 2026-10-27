@@ -1,6 +1,6 @@
 # outfit_same_base.txt's saves after a power cycle: both still FOREST,
-# player 0's marker setting (OFF) kept, player 1's (AUTO) shows the marker
-# again once relinked.
+# player 0's PARTNER MARK (OFF) kept, player 1's (INDICATOR) shows the
+# marker again once relinked.
 include continue.inc
 b expect coop_outfit.sShownLocal 1
 b press START 2
@@ -15,6 +15,6 @@ b wait 150
 b expect coop_outfit.sPartnerOutfit 1
 0 expect gCoopMarkerShown 0
 1 expect gCoopMarkerShown 1
-# NAME TAG OFF was saved too.
+# No name tag on either (OFF and INDICATOR).
 b expect gCoopNameTagShown 0
 b shot same-reloaded
