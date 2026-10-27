@@ -10,7 +10,8 @@
 #    each player up to Wallace and starts the fight: Steven and Wallace,
 #    co-op). Then the Champion's scenes on both games, the Hall of Fame, the
 #    credits (they end in the game's own soft reset to the title screen).
-# Test helper: test_heal before each battle.
+# Test helpers: test_heal before each battle; the first three at Lv100
+# (after the first attempt was lost).
 # Driver aids: smart_moves, heal_below, no_wild.
 include continue.inc
 include relink.inc
@@ -23,6 +24,31 @@ b mash_field 2000 B
 b expect coop.sBeacon+1:1 1
 b expect_flag 0x86E 1
 b expect_flag 0x4FB 0
+# TEST HELPER (combat assistance, authorised): the first attempt beat Sidney
+# and Phoebe, then lost to Glacia and Frost at Lv80 (67a_glacia_lost.log);
+# the whiteout reset the Elite Four. Each player's first three to Lv100
+# (moves kept), healed.
+b test_level 0 100 0 5
+b test_level 1 100 0 5
+b test_level 2 100 0 5
+b test_heal
+b party
+# The door guards (9,2)/(10,2): each player shows the badges on their own
+# save (talk from below); the guards step aside.
+0 walk 9 3 6000
+1 walk 10 3 6000
+b sync
+0 press UP 2
+0 wait 10
+0 press A 2
+0 mash_field 4000 B
+1 press UP 2
+1 wait 10
+1 press A 2
+1 mash_field 4000 B
+b sync
+b expect_flag 0x107 1
+b shot guards-aside
 0 walk 9 2 6000
 0 cross UP 16 9 3000
 1 wait 200

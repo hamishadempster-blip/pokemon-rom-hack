@@ -1,0 +1,55 @@
+# JOURNEY 67c (main playthrough, no fixtures): CONTINUE the save journey 67
+# made in Drake's room (checkpoint j67d: the four Elite Four members beaten
+# on both saves; first three at Lv100 from journey 67's helper).
+# Journey 67 then beat the Champions (Steven and Wallace) but its driver
+# step into the Champion's room expected field control on arrival (the
+# room's own scene starts at once), so it stopped mid-scene before any
+# save: rerun from Drake's room.
+#  - Relink, Beacon ON (Kai). Out of Drake's room, up Hall 4.
+#  - The Champion's room: Kai steps onto the door, Rosa right behind; each
+#    game's room scene walks its player up to Wallace and starts the fight
+#    (Steven and Wallace, co-op). Then the Champion's scenes on both games,
+#    the Hall of Fame (which saves), the credits; they end in the game's own
+#    soft reset to the title screen.
+# Test helper: test_heal before the Champions.
+# Driver aids: smart_moves, heal_below, no_wild.
+include continue.inc
+include relink.inc
+b expect coop.sLinkState 2
+b smart_moves 1
+b heal_below 35 2
+b no_wild 1
+include beacon_on.inc
+b mash_field 2000 B
+b expect coop.sBeacon+1:1 1
+b expect_flag 0x4FE 1
+b expect_flag 0x87F 0
+b party
+0 walk 6 3 3000
+0 cross UP 16 8 3000
+1 wait 200
+1 walk 6 3 3000
+1 cross UP 16 8 3000
+b sync
+0 walk 5 3 12000
+1 walk 5 4 12000
+b sync
+b test_heal
+b dump before-champion
+0 press UP 20
+1 wait 20
+1 walk 5 3 600
+1 press UP 20
+b until_cb2 BattleMainCB2 12000 A
+b shot champion-start
+# The battle, the Champion's scenes, the walk to the Hall of Fame.
+b until_cb2 CB2_DoHallOfFameScreen 300000 A
+b dump after-champion
+b expect_flag 0x87F 1
+b shot hof-screen
+b until_cb2 CB2_StartCreditsSequence 60000 A
+b shot credits
+b expect_flag 0x864 1
+b wait 20000
+b shot credits-late
+b until_cb2 CB2_InitCopyrightScreenAfterBootup 150000 A

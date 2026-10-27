@@ -1,7 +1,8 @@
 # JOURNEY 68 (main playthrough, no fixtures): the post-clear reload.
 # Power on each game from the save the Hall of Fame wrote (journey 67's
 # saves, after the credits), CONTINUE, and check both: the game is clear
-# and each is the Champion, eight badges (parties logged); relink and see each other;
+# and each is the Champion, eight badges (parties logged); relink; each
+# walks out of their own house into Littleroot and they see each other;
 # save again. (journey_69 powers on
 # once more from this save.)
 include continue.inc
@@ -14,6 +15,21 @@ b expect_flag 0x867 1
 b party
 include relink.inc
 b expect coop.sLinkState 2
+b wait 120
+# Each in their own bedroom (Kai's house, Rosa's house): downstairs and out
+# to Littleroot (any homecoming scene on the way plays out).
+0 walk 7 2 4000
+0 cross UP 1 0 3000
+0 mash_field 6000 B
+0 walk 8 7 6000
+0 cross DOWN 0 9 3000
+1 walk 1 2 4000
+1 cross UP 1 2 3000
+1 mash_field 6000 B
+1 walk 1 7 6000
+1 cross DOWN 0 9 3000
+b mash_field 3000 B
+b sync
 b wait 120
 b expect_partner relinked-after-clear
 b shot relinked-after-clear

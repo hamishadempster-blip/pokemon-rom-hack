@@ -1,0 +1,7 @@
+# Probe: continue both saves and dump where they are and the late flags.
+include continue.inc
+b dump probe
+b hex gSaveCounter 4
+b expect_flag 0x4FE 1
+b expect_flag 0x87F 0
+b expect_flag 0x864 0
