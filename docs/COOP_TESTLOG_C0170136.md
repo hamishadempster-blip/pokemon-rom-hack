@@ -1,6 +1,6 @@
 # Test log, build 0xC0170136
 
-- Branch `coop-doorway-scenes-rivals` (pushed, not merged). Source commit: see the commit that adds this file.
+- Branch `coop-doorway-scenes-rivals` (pushed, not merged). Source commit `b69fc2e6`.
 - ROM `emerald-coop-C0170136.gba` (32 MB): SHA-1 `2d0903031e252067aaf9b51c4199e015fd4a3ee8`, SHA-256 `5564b99ff36658781f82ccaf87f12c707d75ccf4c0375287f967a3a94dfdf169`.
 - Changes since 0xC0170135: partner INDICATOR / NAME / OFF; shared legendaries (CoopSave layout 3, migration); fixes #27-#31 (handoff §3). Both players need this build.
 
