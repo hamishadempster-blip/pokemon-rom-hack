@@ -749,6 +749,22 @@ static void dump(struct Player* p, const char* tag) {
 	    rd8(p, coopStatic("sPartnerValid")), rd8(p, coopStatic("sIsGuest")), rd8(p, symAddr("gCoopHoldLink")));
 	if ((cb2 & ~1u) == (symFind("CB1_Overworld") & ~1u))
 		printCb2Trace(p);
+	// A script that is not idle: where it is, and the tasks running.
+	if (sScriptStatus && rd8(p, sScriptStatus) != 2) {
+		unsigned sc = symAddr("sGlobalScriptContext");
+		if (!sc) sc = symAddr("script.sGlobalScriptContext");
+		char tasks[400]; int n = 0; unsigned tk = symAddr("gTasks");
+		for (int t = 0; t < 16 && n < 360; t++)
+			if (rd8(p, tk + t * 0x28 + 4)) n += snprintf(tasks + n, sizeof(tasks) - n, " %s", symName(rd32(p, tk + t * 0x28)));
+		tasks[n] = 0;
+		if (sc) {
+			char nat[80], ptr[80];
+			snprintf(nat, sizeof(nat), "%s", symAt(rd32(p, sc + 4)));
+			snprintf(ptr, sizeof(ptr), "%s", symAt(rd32(p, sc + 8)));
+			out("[f%06d p%d %s script] mode=%u depth=%u native=%s ptr=%s (%08x) stack0=%08x tasks:%s\n", p->frame, p->id, tag,
+			    rd8(p, sc + 1), rd8(p, sc), nat, ptr, rd32(p, sc + 8), rd32(p, sc + 12), tasks);
+		}
+	}
 }
 
 static void battleDump(struct Player* p) {
@@ -807,7 +823,14 @@ static bool inField(struct Player* p) {
 	if ((rd32(p, sMain + 4) & ~1u) != overworld) return false;
 	if (rd8(p, sLockCtl)) return false;
 	// 0 is running and 1 is waiting on a message. 2 is shut down, which is idle.
-	if (sScriptStatus && rd8(p, sScriptStatus) != 2) return false;
+	// A script stopped at waitstate whose battle has ended (Rock Smash's
+	// encounter, as in the original game) is also left at 1 with the
+	// controls free and no message box: the player is in the field.
+	if (sScriptStatus && rd8(p, sScriptStatus) != 2) {
+		static unsigned msgMode;
+		if (!msgMode) msgMode = symAddr("sFieldMessageBoxMode");
+		if (!(rd8(p, sScriptStatus) == 1 && msgMode && rd8(p, msgMode) == 0)) return false;
+	}
 	return true;
 }
 
@@ -1319,7 +1342,7 @@ static bool taskActive(struct Player* p, const char* name) {
 static void frameCallback(struct mCoreThread* t) {
 	struct Player* p = t->userData;
 	p->frame++;
-	if (p->frame == 1) installResetTrap(p);
+	if (p->frame == 1 && !getenv("NO_RESET_TRAP")) installResetTrap(p);
 	if (sUsr1[p->id]) {
 		sUsr1[p->id] = 0;
 		out("[f%06d p%d usr1] cmd %d/%d step %d\n", p->frame, p->id, p->pc, p->ncmds, p->step);
@@ -1426,7 +1449,7 @@ static void frameCallback(struct mCoreThread* t) {
 		// co-op blocks the battle code set aside (gCoopStrayBattleBlocks).
 		static unsigned lastSend[2][4], lastStray[2];
 		unsigned sb = symAddr("gBlockSendBuffer"), sa = symAddr("gCoopStrayBattleBlocks");
-		if (sb) {
+		if (sb && getenv("BLOCK_LOG")) {
 			unsigned w[4];
 			for (int k = 0; k < 4; k++) w[k] = rd32(p, sb + k * 4);
 			if (memcmp(w, lastSend[p->id], sizeof(w))) {
@@ -1437,7 +1460,7 @@ static void frameCallback(struct mCoreThread* t) {
 		}
 		static unsigned lastRecv[2][2];
 		unsigned rb = symAddr("gBlockRecvBuffer"), rs = symAddr("gBlockReceivedStatus");
-		for (int k = 0; rb && k < 2; k++) {
+		for (int k = 0; rb && getenv("BLOCK_LOG") && k < 2; k++) {
 			unsigned w0 = rd32(p, rb + k * 256), w3 = rd32(p, rb + k * 256 + 12);
 			unsigned sig = ((w0 & 0xFF00) == 0xC000) ? (w0 ^ w3) | 1 : 0;
 			if (sig != lastRecv[p->id][k]) {

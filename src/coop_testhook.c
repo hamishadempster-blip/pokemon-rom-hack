@@ -18,6 +18,8 @@
 
 EWRAM_DATA struct CoopTestMailbox gCoopTestMailbox = {0};
 
+#define TEST_HOOK_MET_LEVEL 5
+
 static bool8 TestHook_SetMon(void)
 {
     struct Pokemon mon;
@@ -32,6 +34,12 @@ static bool8 TestHook_SetMon(void)
     {
         if (gCoopTestMailbox.arg[3 + i] != MOVE_NONE && gCoopTestMailbox.arg[3 + i] < MOVES_COUNT)
             SetMonMoveSlot(&mon, gCoopTestMailbox.arg[3 + i], i);
+    }
+    // Met at a low level, as a Pokemon the player raised: newer obedience
+    // rules compare the met level with the badges.
+    {
+        u8 metLevel = TEST_HOOK_MET_LEVEL;
+        SetMonData(&mon, MON_DATA_MET_LEVEL, &metLevel);
     }
     CalculateMonStats(&mon);
     gPlayerParty[slot] = mon;
@@ -57,6 +65,13 @@ static bool8 TestHook_SetLevel(void)
     // level-up moves), as for a freshly met Pokemon of that level.
     if (gCoopTestMailbox.arg[2] == 1)
         GiveMonInitialMoveset(mon);
+    // arg 3: a met level to record (a Pokemon made by SET_MON before it
+    // recorded a low one).
+    if (gCoopTestMailbox.arg[3] != 0 && gCoopTestMailbox.arg[3] <= MAX_LEVEL)
+    {
+        u8 metLevel = gCoopTestMailbox.arg[3];
+        SetMonData(mon, MON_DATA_MET_LEVEL, &metLevel);
+    }
     return TRUE;
 }
 

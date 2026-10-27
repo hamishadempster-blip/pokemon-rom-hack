@@ -382,6 +382,30 @@ static void InitBtlControllersInternal(void)
             gBattlerPartyIndexes[1] = 0;
             gBattlerPartyIndexes[2] = BattleSideHasTwoTrainers(B_SIDE_PLAYER) ? 0 : 1;
             gBattlerPartyIndexes[3] = BattleSideHasTwoTrainers(B_SIDE_OPPONENT) ? 0 : 1;
+
+            // Co-op: a fainted lead stays back. Each player sends out the
+            // first of their three that can fight (a fainted lead used to
+            // go out at 0 HP and the turn's move choice hit an assert). Both
+            // games read the same exchanged parties, so they agree.
+            if (gBattleTypeFlags & BATTLE_TYPE_COOP)
+            {
+                for (enum BattlerId b = 0; b < MAX_BATTLERS_COUNT; b++)
+                {
+                    struct Pokemon *party;
+
+                    if (!IsOnPlayerSide(b))
+                        continue;
+                    party = GetBattlerParty(b);
+                    for (u32 j = 0; j < MULTI_PARTY_SIZE; j++)
+                    {
+                        if (IsValidForBattle(&party[j]))
+                        {
+                            gBattlerPartyIndexes[b] = j;
+                            break;
+                        }
+                    }
+                }
+            }
         }
     }
     else

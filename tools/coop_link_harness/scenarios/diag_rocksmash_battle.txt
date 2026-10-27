@@ -1,0 +1,75 @@
+# DIAGNOSTIC: a Rock Smash encounter (solo) while linked, from journey 36 saves (prefix of journey 37).
+# (Mauville Centre; Dynamo Badge on both).
+#  - Relink, Beacon ON (Kai).
+#  - Mauville: each player gets HM06 ROCK SMASH from the Rock Smash Dude
+#    (his own save) and teaches it from the Bag (TM/HM pocket, USE) to the
+#    lead, forgetting MUD SHOT.
+#  - Route 111 north: both smash the two rocks north of Mauville (each on
+#    their own save; the Dynamo Badge allows it); Route 111 north (its trainers), west into Route 112 below the cable
+#    car (Magma grunts still blocking it), up the mountain path into the
+#    Fiery Path, through it to the north part of Route 112.
+#  - East onto Route 111's north end, west along Route 113 (ash, its
+#    trainers) to Fallarbor Town.
+#  - Fallarbor Centre: heal, save.
+# Driver aids: smart_moves, heal_below.
+include continue.inc
+include relink.inc
+b expect coop.sLinkState 2
+b smart_moves 1
+b heal_below 35 2
+include beacon_on.inc
+b mash_field 2000 B
+b expect coop.sBeacon+1:1 1
+b expect_flag 0x869 1
+b expect_flag 0x6B 0
+b walk 7 8 2000
+b cross DOWN 0 2 2000
+# The Rock Smash Dude, house (32,14).
+0 walk 32 15 6000
+0 press UP 2
+0 until_map 10 2 3000
+0 walk 4 5 3000
+0 press UP 2
+0 wait 10
+0 press A 2
+0 mash_field 20000
+0 walk 3 6 3000
+1 wait 300
+1 walk 32 15 6000
+1 press UP 2
+1 until_map 10 2 3000
+1 walk 4 5 3000
+1 press UP 2
+1 wait 10
+1 press A 2
+1 mash_field 20000
+b sync
+b expect_flag 0x6B 1
+b party
+include journey_teach_hm06_p0.inc
+include journey_teach_hm06_p1.inc
+b sync
+b expect_move 249
+b party
+0 walk 3 7 3000
+1 walk 4 7 3000
+b press DOWN 4
+b wait 10
+b press DOWN 4
+b until_map 0 2 3000
+b walk 16 0 6000
+b cross UP 0 26 3000
+b dump route111
+0 walk 20 101 12000
+1 walk 21 104 12000
+b sync
+0 force_encounter 1
+0 press LEFT 2
+0 wait 10
+0 press A 2
+0 until_cb2 BattleMainCB2 3000 A
+0 force_encounter 0
+0 mash_field 20000
+0 dump after-rock
+0 shot after-rock
+1 dump partner

@@ -1,0 +1,71 @@
+# JOURNEY 38 (main playthrough, no fixtures): CONTINUE journey_37's saves
+# (Fallarbor Centre).
+#  - Relink, Beacon ON (Rosa).
+#  - West onto Route 114 (its trainers), down to Meteor Falls.
+#  - Meteor Falls 1F: Kai walks into the scene (Team Magma takes the
+#    meteorite from Prof. Cozmo, Archie arrives), then Rosa on her save.
+#    VAR_METEOR_FALLS_STATE 1, Archie met, the Route 112 grunts hidden on
+#    both saves.
+#  - Back to Fallarbor: heal, save.
+# Driver aids: smart_moves, heal_below.
+include continue.inc
+include relink.inc
+b expect coop.sLinkState 2
+b smart_moves 1
+b heal_below 35 2
+include beacon_on_p1.inc
+b mash_field 2000 B
+b expect coop.sBeacon+1:1 1
+b expect_var 0x40BF 0
+b walk 7 8 2000
+b cross DOWN 0 13 2000
+b walk 0 9 6000
+b cross LEFT 0 29 3000
+b dump route114
+0 walk 8 64 60000
+1 walk 9 65 60000
+b sync
+0 press UP 8
+0 until_map 24 0 3000
+1 walk 8 64 4000
+1 press UP 8
+1 until_map 24 0 3000
+b dump meteor-falls
+# The scene's trigger (14,18), Kai first; Rosa waits by the entrance.
+1 walk 26 17 3000
+0 walk 15 18 3000
+0 walk 14 18 2000
+0 mash_field 20000
+0 dump after-scene-kai
+0 shot scene-kai
+0 expect_var 0x40BF 1
+0 walk 17 17 3000
+1 walk 15 18 3000
+1 walk 14 18 2000
+1 mash_field 20000
+1 dump after-scene-rosa
+1 shot scene-rosa
+b sync
+b expect_var 0x40BF 1
+b expect_flag 0xCF 1
+b expect_flag 0x333 1
+# Out and back to Fallarbor.
+0 walk 27 18 4000
+0 press DOWN 8
+0 until_map 0 29 3000
+1 wait 200
+1 walk 27 18 4000
+1 press DOWN 8
+1 until_map 0 29 3000
+b walk 39 9 60000
+b cross RIGHT 0 13 3000
+0 walk 14 8 6000
+0 press UP 8
+0 until_map 5 4 3000
+1 wait 200
+1 walk 14 8 6000
+1 press UP 8
+1 until_map 5 4 3000
+include journey_heal_center.inc
+include save_again.inc
+b party
