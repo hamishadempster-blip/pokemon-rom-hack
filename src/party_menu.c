@@ -4114,7 +4114,10 @@ static void CursorCb_FieldMove(u8 taskId)
 
     PartyMenuRemoveWindow(&sPartyMenuInternal->windowId[0]);
     PartyMenuRemoveWindow(&sPartyMenuInternal->windowId[1]);
-    if (MenuHelpers_IsLinkActive() == TRUE || InUnionRoom() == TRUE)
+    // A vanilla link room allows no field moves. Co-op is that kind of link
+    // but the players are out in the world: Fly, Dig, Teleport and the rest
+    // work as they do alone.
+    if ((MenuHelpers_IsLinkActive() == TRUE || InUnionRoom() == TRUE) && !Coop_CableUp())
     {
         DisplayPartyMenuStdMessage(PARTY_MSG_CANT_USE_HERE);
         gTasks[taskId].func = Task_CancelAfterAorBPress;

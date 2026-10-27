@@ -1,0 +1,56 @@
+include continue.inc
+# Player 0 teaches HM02 FLY from the Bag to party slot 5 (Zubat),
+# forgetting its first move. In the field, menus closed.
+0 press START 2
+0 wait 40
+0 menu_to BAG
+0 press A 2
+0 shot step1
+0 until_cb2 CB2_BagMenuRun 2500
+0 wait 80
+0 bag_item 683
+0 shot fly-pocket
+# USE; "Booted up an HM." "It contained Fly." "Teach ...?" YES.
+0 press A 2
+0 shot step2
+0 wait 40
+0 press A 2
+0 shot step3
+0 wait 40
+0 press A 2
+0 shot step4
+0 wait 40
+0 press A 2
+0 shot step5
+0 wait 40
+0 press A 2
+0 shot step6
+0 until_cb2 CB2_UpdatePartyMenu 600
+0 wait 60
+0 until_mem gPartyMenu+9:1 5 600 DOWN
+0 wait 20
+0 shot fly-party
+# Slot 5; "wants to learn"; "already knows four moves"; replace? YES;
+# "Which move should be forgotten?"; the summary's move list: the first;
+# "1, 2, and... Poof!"; out of the Bag.
+0 press A 2
+0 shot step7
+0 wait 60
+0 press A 2
+0 shot step8
+0 wait 60
+0 press A 2
+0 shot step9
+0 wait 60
+0 press A 2
+0 shot step10
+0 wait 60
+0 press A 2
+0 shot step11
+0 wait 90
+0 shot fly-forget
+0 press A 2
+0 shot step12
+0 wait 60
+0 mash_field 3000 B
+0 party

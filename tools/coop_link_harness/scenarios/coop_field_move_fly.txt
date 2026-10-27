@@ -1,0 +1,45 @@
+# Field moves from the party menu while linked in co-op (finding #23).
+# Found in the main journey (segment 53): FLY from the party menu said
+# "Can't use that here." on both games. The party menu refuses every field
+# move during a link, as in a vanilla link room; co-op is that kind of link
+# but the players are out in the world.
+# FIXTURES: story_seg6 saves; party slot 1 a Zubat knowing FLY; the Feather
+# Badge flag (FLY's badge). Kai flies to Oldale (visited), then Rosa.
+# Expected: the Fly map opens; each lands in Oldale (0.10).
+# Before the fix (0xC0170133 build): "Can't use that here." (journey
+# evidence 53e_fly_cant_use.log / its fail_p0.png).
+include continue.inc
+include relink.inc
+b expect coop.sLinkState 2
+b no_wild 1
+include beacon_on.inc
+b mash_field 2000 B
+b fixture_flag 0x86C 1
+b test_mon 1 41 30 19
+b mash_field 300 B
+0 press START 2
+0 wait 40
+0 menu_to POKEMON
+0 press A 2
+0 until_cb2 CB2_UpdatePartyMenu 600
+0 wait 30
+0 party_action 1 33
+0 until_cb2 CB2_FlyMap 900
+0 wait 60
+0 fly_map 1
+0 expect_map 0 10
+b sync
+1 press START 2
+1 wait 40
+1 menu_to POKEMON
+1 press A 2
+1 until_cb2 CB2_UpdatePartyMenu 600
+1 wait 30
+1 party_action 1 33
+1 until_cb2 CB2_FlyMap 900
+1 wait 60
+1 fly_map 1
+1 expect_map 0 10
+b sync
+b expect coop.sLinkState 2
+b dump end

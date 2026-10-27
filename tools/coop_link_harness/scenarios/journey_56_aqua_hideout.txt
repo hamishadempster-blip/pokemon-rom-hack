@@ -1,0 +1,69 @@
+# JOURNEY 56 (main playthrough, no fixtures): CONTINUE journey_55's saves
+# (Lilycove Centre; Groudon awakened on both).
+#  - Relink, Beacon ON (Rosa).
+#  - East along Lilycove to the bank (62,16); SURF; north to the hideout's
+#    water entrance (70,5), each player.
+#  - Aqua Hideout (route from the map data, plan.py: its warp pads are
+#    step_to): 1F, B1F, B2F; the grunts on the way (co-op where both are
+#    seen). Matt (23,19): Kai from the east (24,19), Rosa joins (story gate
+#    AQUA, co-op). Team Aqua escapes in the submarine (0x70) on both.
+#  - Save in the hideout.
+# Test helper: test_heal before Matt.
+# Driver aids: smart_moves, heal_below, no_wild (speed, Repel-equivalent).
+include continue.inc
+include relink.inc
+b expect coop.sLinkState 2
+b smart_moves 1
+b heal_below 35 2
+b no_wild 1
+include beacon_on_p1.inc
+b mash_field 2000 B
+b expect coop.sBeacon+1:1 1
+b expect_flag 0x70 0
+b walk 7 8 2000
+b cross DOWN 0 5 2000
+0 walk 62 16 20000
+0 surf RIGHT
+0 walk 70 6 8000
+0 cross UP 24 23 3000
+1 walk 62 16 20000
+1 surf RIGHT
+1 walk 70 6 8000
+1 cross UP 24 23 3000
+b dump hideout-1f
+b walk 13 12 8000
+b walk 22 2 30000
+b cross UP 24 24 3000
+b walk 28 4 30000
+b step_to LEFT 3 15
+b walk 31 19 30000
+b step_to RIGHT 20 4
+b walk 18 2 30000
+b cross UP 24 25 3000
+b walk 30 8 30000
+b step_to RIGHT 5 8
+b walk 3 4 30000
+b cross UP 24 24 3000
+b walk 12 2 30000
+b cross UP 24 25 3000
+b walk 9 8 30000
+b step_to LEFT 31 17
+0 walk 24 19 30000
+1 walk 25 19 30000
+b sync
+# TEST HELPER (healing, authorised): the party healed before Matt.
+b test_heal
+b dump before-matt
+0 press LEFT 2
+0 wait 10
+0 press A 2
+b until_cb2 BattleMainCB2 9000 A
+b shot matt-start
+b mash_field 200000 B
+b dump after-matt
+b party
+b mash_field 3000 B
+b expect_flag 0x70 1
+b shot after-matt
+include save_again.inc
+b party

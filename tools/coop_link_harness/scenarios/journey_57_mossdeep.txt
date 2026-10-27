@@ -1,0 +1,47 @@
+# JOURNEY 57 (main playthrough, no fixtures): CONTINUE journey_56's saves
+# (Aqua Hideout B2F; Matt beaten, the submarine gone, on both).
+#  - Relink, Beacon ON (Kai).
+#  - Out of the hideout (plan.py): B2F, B1F, 1F; SURF from (13,12) down the
+#    channel and out through the water entrance into Lilycove.
+#  - SURF east: Lilycove's east edge, Route 124 (its swimmers), Mossdeep
+#    City; land by the Centre.
+#  - Mossdeep Centre: heal, save.
+# Driver aids: smart_moves, heal_below, no_wild (speed, Repel-equivalent).
+include continue.inc
+include relink.inc
+b expect coop.sLinkState 2
+b smart_moves 1
+b heal_below 35 2
+b no_wild 1
+include beacon_on.inc
+b mash_field 2000 B
+b expect coop.sBeacon+1:1 1
+b expect_flag 0x70 1
+b walk 31 20 30000
+b cross RIGHT 24 24 3000
+b walk 29 2 30000
+b cross UP 24 23 3000
+b dump hideout-1f
+0 walk 13 12 30000
+0 surf DOWN
+0 walk 13 26 8000
+0 cross DOWN 0 5 3000
+1 walk 13 12 30000
+1 surf DOWN
+1 walk 13 26 8000
+1 cross DOWN 0 5 3000
+b dump lilycove-sea
+b walk 79 12 20000
+b cross RIGHT 0 39 3000
+b dump route124
+b walk 79 50 120000
+b cross RIGHT 0 6 3000
+b dump mossdeep
+0 walk 28 17 20000
+0 cross UP 14 3 3000
+1 wait 200
+1 walk 28 17 20000
+1 cross UP 14 3 3000
+include journey_heal_center.inc
+include save_again.inc
+b party

@@ -1,0 +1,222 @@
+# JOURNEY 58 (main playthrough, no fixtures): CONTINUE journey_57's saves
+# (Mossdeep Centre).
+#  - Relink, Beacon ON (Rosa).
+#  - Mossdeep Gym: Rosa waits inside the door; Kai walks the puzzle on his
+#    save (warp pads and the floor switches that move the statues and
+#    trainers round their arrow loops: route from the game's rules in
+#    src/rotating_tile_puzzle.c, route_tools/mossdeep.py), its trainers on
+#    the way (solo: the partner at the door). Tate & Liza (23,7): Kai talks
+#    to them from below, Rosa joins (story invite, co-op).
+#    Mind Badge (0x86D) on both; TM CALM MIND (Rosa's through the partner
+#    catch-up).
+#  - Kai walks back out (the same solver, from the switches as he left
+#    them); Mossdeep Centre: heal, save.
+# Test helper: test_heal before Tate & Liza.
+# Driver aids: smart_moves, heal_below, no_wild.
+include continue.inc
+include relink.inc
+b expect coop.sLinkState 2
+b smart_moves 1
+b heal_below 35 2
+b no_wild 1
+include beacon_on_p1.inc
+b mash_field 2000 B
+b expect coop.sBeacon+1:1 1
+b expect_flag 0x86D 0
+b walk 7 8 2000
+b cross DOWN 0 6 2000
+0 walk 38 10 12000
+0 cross UP 14 0 3000
+1 wait 200
+1 walk 38 10 12000
+1 cross UP 14 0 3000
+b dump gym
+1 walk 7 34 2000
+0 walk 6 34 2000
+b sync
+0 walk 6 33 3000
+0 walk 6 32 3000
+0 walk 6 31 3000
+0 walk 5 31 3000
+0 walk 4 31 3000
+0 walk 3 31 3000
+0 walk 2 31 3000
+0 walk 1 31 3000
+0 walk 1 32 3000
+0 step_to DOWN 20 24
+0 walk 21 24 3000
+0 walk 22 24 3000
+0 walk 23 24 3000
+0 walk 24 24 3000
+0 walk 24 25 3000
+0 walk 24 26 3000
+0 walk 24 27 3000
+0 walk 24 28 3000
+0 walk 24 29 3000
+0 walk 24 30 3000
+0 walk 24 31 3000
+0 walk 23 31 3000
+0 walk 23 32 3000
+0 walk 22 32 3000
+0 walk 22 33 3000
+0 walk 21 33 3000
+0 walk 21 34 3000
+0 walk 20 34 3000
+0 walk 19 34 3000
+0 walk 18 34 3000
+0 walk 17 34 3000
+0 walk 16 34 3000
+0 walk 15 34 3000
+0 walk 16 34 3000
+0 walk 15 34 3000
+0 walk 16 34 3000
+0 walk 17 34 3000
+0 walk 18 34 3000
+0 walk 19 34 3000
+0 walk 20 34 3000
+0 walk 21 34 3000
+0 walk 21 33 3000
+0 walk 22 33 3000
+0 walk 22 32 3000
+0 walk 23 32 3000
+0 walk 23 31 3000
+0 walk 24 31 3000
+0 walk 24 30 3000
+0 walk 24 29 3000
+0 walk 24 28 3000
+0 walk 24 27 3000
+0 walk 24 26 3000
+0 walk 24 25 3000
+0 walk 24 24 3000
+0 walk 23 24 3000
+0 walk 23 23 3000
+0 walk 23 22 3000
+0 walk 23 21 3000
+0 step_to UP 9 18
+0 walk 8 18 3000
+0 step_to LEFT 8 12
+0 walk 8 11 3000
+0 walk 8 10 3000
+0 walk 8 11 3000
+0 walk 8 10 3000
+0 walk 8 11 3000
+0 walk 8 10 3000
+0 walk 8 9 3000
+0 walk 7 9 3000
+0 walk 7 8 3000
+0 walk 7 7 3000
+0 walk 7 6 3000
+0 walk 8 6 3000
+0 walk 8 5 3000
+0 walk 8 6 3000
+0 walk 8 5 3000
+0 walk 8 6 3000
+0 walk 8 5 3000
+0 walk 8 4 3000
+0 walk 7 4 3000
+0 walk 6 4 3000
+0 walk 5 4 3000
+0 walk 5 5 3000
+0 walk 5 6 3000
+0 walk 6 6 3000
+0 walk 6 7 3000
+0 walk 6 8 3000
+0 walk 6 7 3000
+0 walk 6 8 3000
+0 walk 6 7 3000
+0 walk 6 6 3000
+0 walk 6 7 3000
+0 walk 7 7 3000
+0 walk 7 8 3000
+0 walk 7 9 3000
+0 walk 8 9 3000
+0 walk 8 10 3000
+0 walk 8 9 3000
+0 walk 9 9 3000
+0 walk 10 9 3000
+0 walk 11 9 3000
+0 walk 11 8 3000
+0 walk 11 7 3000
+0 walk 11 6 3000
+0 walk 11 5 3000
+0 walk 11 4 3000
+0 step_to UP 11 35
+0 walk 12 35 3000
+0 walk 12 34 3000
+0 walk 13 34 3000
+0 walk 13 33 3000
+0 step_to UP 21 10
+0 walk 21 9 3000
+0 walk 22 9 3000
+0 walk 23 9 3000
+0 walk 23 8 3000
+0 dump before-tate
+b sync
+# TEST HELPER (healing, authorised): the party healed before the leaders.
+b test_heal
+0 press UP 2
+0 wait 10
+0 press A 2
+b until_cb2 BattleMainCB2 9000 A
+b shot tate-start
+b mash_field 200000 B
+b dump after-tate
+b party
+b mash_field 3000 B
+b expect_flag 0x86D 1
+b shot badge7
+# Out: the switches as Kai left them (yellow 0, blue 0, green 2, purple 3,
+# red 3 steps).
+0 walk 23 9 3000
+0 walk 22 9 3000
+0 walk 21 9 3000
+0 step_to DOWN 13 32
+0 walk 13 33 3000
+0 walk 13 34 3000
+0 walk 12 34 3000
+0 walk 12 35 3000
+0 step_to LEFT 11 3
+0 walk 11 4 3000
+0 walk 11 5 3000
+0 walk 11 6 3000
+0 walk 11 7 3000
+0 walk 11 8 3000
+0 walk 11 9 3000
+0 walk 10 9 3000
+0 walk 9 9 3000
+0 walk 8 9 3000
+0 walk 8 10 3000
+0 walk 8 11 3000
+0 step_to DOWN 7 18
+0 walk 8 18 3000
+0 step_to RIGHT 23 20
+0 walk 23 21 3000
+0 walk 23 22 3000
+0 walk 23 23 3000
+0 walk 23 24 3000
+0 walk 22 24 3000
+0 walk 21 24 3000
+0 step_to LEFT 1 33
+0 walk 1 32 3000
+0 walk 1 31 3000
+0 walk 2 31 3000
+0 walk 3 31 3000
+0 walk 3 32 3000
+0 walk 4 32 3000
+0 walk 5 32 3000
+0 walk 6 32 3000
+0 walk 6 33 3000
+0 walk 6 34 3000
+0 dump back-at-door
+b sync
+0 cross DOWN 0 6 3000
+1 cross DOWN 0 6 3000
+b dump mossdeep
+0 walk 28 17 12000
+0 cross UP 14 3 3000
+1 wait 200
+1 walk 28 17 12000
+1 cross UP 14 3 3000
+include journey_heal_center.inc
+include save_again.inc
+b party

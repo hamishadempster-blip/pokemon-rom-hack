@@ -23,7 +23,7 @@
 #define MAX_CMDS 4096
 #define MAX_SYMS 500000
 
-enum { C_PARTNER, C_GOTO, C_HEX, C_PRESS, C_WAIT, C_SHOT, C_DUMP, C_BARRIER, C_UNTIL_CB2, C_UNTIL_FIELD, C_EXPECT, C_UNTIL_MEM, C_BATTLE, C_MENU, C_PARTY, C_FIXTURE, C_WRITE, C_LEAD, C_MOVE, C_SIX, C_VAR, C_FLAG, C_VS, C_EXPECT_FLAG, C_EXPECT_VAR, C_NO_OBJECT, C_MAP, C_OBJECT, C_TEXT_SPEED, C_PACE, C_MUTE, C_PARTNER_AT, C_ITEM, C_EXPECT_ITEM, C_UNTIL_TEXT, C_WARP, C_PC_COUNT, C_MONS, C_NO_COPIES, C_NOTE_MONEY, C_MONEY_GAIN, C_FORCE_ENC, C_EXPECT_RANGE, C_WALK, C_NO_WILD, C_CROSS, C_WALK_BATTLE, C_SMART, C_STRONG, C_UNTIL_TASK, C_MIRROR, C_SPECIES, C_NOTE_PARTY, C_SAME_PARTY, C_PATCH_RET, C_SLOT, C_TXN, C_MONEY_SAME, C_DEX, C_SWAP, C_GENDER, C_FILL, C_UNFILL, C_WRITEP, C_TINT, C_UNTIL_FTEXT, C_NICK, C_GRIND, C_CATCH, C_HUNT, C_SWITCH_LEAD, C_PARTY_SLOT, C_HEAL_BELOW, C_TALK_OBJ, C_BOXES, C_TEST_HOOK, C_WATCH, C_EXPECT_WRITES, C_SURF };
+enum { C_PARTNER, C_GOTO, C_HEX, C_PRESS, C_WAIT, C_SHOT, C_DUMP, C_BARRIER, C_UNTIL_CB2, C_UNTIL_FIELD, C_EXPECT, C_UNTIL_MEM, C_BATTLE, C_MENU, C_PARTY, C_FIXTURE, C_WRITE, C_LEAD, C_MOVE, C_SIX, C_VAR, C_FLAG, C_VS, C_EXPECT_FLAG, C_EXPECT_VAR, C_NO_OBJECT, C_MAP, C_OBJECT, C_TEXT_SPEED, C_PACE, C_MUTE, C_PARTNER_AT, C_ITEM, C_EXPECT_ITEM, C_UNTIL_TEXT, C_WARP, C_PC_COUNT, C_MONS, C_NO_COPIES, C_NOTE_MONEY, C_MONEY_GAIN, C_FORCE_ENC, C_EXPECT_RANGE, C_WALK, C_NO_WILD, C_CROSS, C_WALK_BATTLE, C_SMART, C_STRONG, C_UNTIL_TASK, C_MIRROR, C_SPECIES, C_NOTE_PARTY, C_SAME_PARTY, C_PATCH_RET, C_SLOT, C_TXN, C_MONEY_SAME, C_DEX, C_SWAP, C_GENDER, C_FILL, C_UNFILL, C_WRITEP, C_TINT, C_UNTIL_FTEXT, C_NICK, C_GRIND, C_CATCH, C_HUNT, C_SWITCH_LEAD, C_PARTY_SLOT, C_HEAL_BELOW, C_TALK_OBJ, C_BOXES, C_TEST_HOOK, C_WATCH, C_EXPECT_WRITES, C_SURF, C_BAG_ITEM, C_FLY_MAP, C_STEP_TO, C_PARTY_ACTION };
 
 struct Cmd {
 	unsigned args[8];
@@ -1177,7 +1177,7 @@ static int walkStep(struct Player* p, int tx, int ty) {
 	}
 	#define BLK(x, y) rd16(p, map + 2u * (unsigned)((y) * w + (x)))
 	#define BEH(b) (((b) & 0x3FF) < 512 ? rd16(p, pattr + 2u * ((b) & 0x3FF)) : rd16(p, sattr + 2u * (((b) & 0x3FF) - 512))) & 0xFF
-	#define ISWATER(beh) (((beh) >= 0x10 && (beh) <= 0x16) || (beh) == 0x19 || (beh) == 0x22 || ((beh) >= 0x50 && (beh) <= 0x53))
+	#define ISWATER(beh) (((beh) >= 0x10 && (beh) <= 0x15 && (beh) != 0x13) || (beh) == 0x19 || (beh) == 0x22 || ((beh) >= 0x50 && (beh) <= 0x53))
 	for (int i = 0; i < w * h * 16; i++) prev[i] = -2;
 	int qh = 0, qt = 0, startTile = sy * w + sx;
 	int start = startTile * 16 + ((BLK(sx, sy) >> 12) & 0xF);
@@ -1203,7 +1203,8 @@ static int walkStep(struct Player* p, int tx, int ty) {
 			}
 			// A muddy slope only slides the player down (it needs the Mach
 			// Bike to climb): enter it going south only.
-			if (beh == 0xD0 && d != 0) continue;
+			if ((beh == 0xD0 || beh == 0xD1) && d != 0) continue;   // muddy, bumpy (Acro Bike)
+			if (beh == 0x13) continue;   // a waterfall: WATERFALL, not walked or surfed
 			int ti = ny * w + nx;
 			if (blocked[ti]) continue;
 			// Stay on this map unless the target is off it (a connected map).
@@ -1229,7 +1230,28 @@ static int walkStep(struct Player* p, int tx, int ty) {
 	#undef BLK
 	#undef BEH
 	#undef ISWATER
-	if (found < 0) return -1;
+	if (found < 0) {
+		static int dbg = -1; if (dbg < 0) dbg = getenv("WALK_DEBUG") != NULL;
+		if (dbg && (p->noPath % 600) == 0) {
+			// The search's view around the player: reached tiles (*), blocked
+			// objects (O), warps (W), collision (#), water (~), else elevation.
+			for (int yy = sy - 8; yy <= sy + 12; yy++) {
+				char row[64]; int o = 0;
+				for (int xx = sx - 12; xx <= sx + 12 && o < 60; xx++) {
+					char ch = ' ';
+					if (xx >= 0 && yy >= 0 && xx < w && yy < h) {
+						unsigned b = rd16(p, map + 2u * (unsigned)(yy * w + xx)); unsigned beh = ((b & 0x3FF) < 512 ? rd16(p, pattr + 2u * (b & 0x3FF)) : rd16(p, sattr + 2u * ((b & 0x3FF) - 512))) & 0xFF; int ti = yy * w + xx; bool seen = false;
+						for (int e = 0; e < 16; e++) if (prev[ti * 16 + e] != -2) seen = true;
+						ch = xx == sx && yy == sy ? '@' : seen ? '*' : blocked[ti] == 1 ? 'O' : blocked[ti] == 2 ? 'W' : ((b >> 10) & 3) ? '#' : (((beh) >= 0x10 && (beh) <= 0x15 && (beh) != 0x13) || (beh) == 0x19 || (beh) == 0x22 || ((beh) >= 0x50 && (beh) <= 0x53)) ? '~' : "0123456789abcdef"[(b >> 12) & 15];
+					}
+					row[o++] = ch;
+				}
+				row[o] = 0;
+				out("[p%d walkdbg y%3d] %s\n", p->id, yy - 7, row);
+			}
+		}
+		return -1;
+	}
 	int g = found;
 	for (int guard = 0; prev[g] != start && prev[g] >= 0; guard++) {
 		if (guard > w * h * 16) { out("[p%d] walk: path loop\n", p->id); return -1; }
@@ -2683,6 +2705,120 @@ static void frameCallback(struct mCoreThread* t) {
 			else out("[p%d] ok %d stores in the watched range\n", p->id, sWatchHits[p->id]);
 			advance = true;
 			break;
+		case C_BAG_ITEM: {
+			// bag_item ITEM: in the Bag, open the pocket holding ITEM and put
+			// the cursor on it (the list's top first: the Bag remembers its
+			// place and its saved cursor fields are not live).
+			unsigned pockets = symAddr("gBagPockets");
+			int pocket = -1, index = -1;
+			for (int pk = 0; pk < 5 && pocket < 0; pk++) {
+				unsigned slots = rd32(p, pockets + pk * 8);
+				unsigned cap = rd16(p, pockets + pk * 8 + 4) & 0x3FF;   // capacity:10, id:6
+				if (slots < 0x02000000) continue;
+				for (unsigned i = 0, n = 0; i < cap && i < 400; i++) {
+					unsigned id = rd16(p, slots + i * 4);
+					if (!id) continue;
+					if (id == c->value) { pocket = pk; index = n; break; }
+					n++;
+				}
+			}
+			if (pocket < 0) {
+				out("[p%d] FAIL bag_item %u: not in the bag\n", p->id, c->value);
+				dump(p, "fail"); sFailures++; p->done = 1; break;
+			}
+			unsigned ph = (unsigned)p->step++;
+			unsigned cur = rd8(p, symAddr("gBagPosition") + 5);
+			if (p->stable == 0) {            // the pocket
+				if (cur == (unsigned)pocket) { if (++p->offField > 40) { p->stable = 1; p->step = 0; p->offField = 0; } }
+				else {
+					p->offField = 0; keys = (ph % 30) < 2 ? (1u << 4) : 0;
+					if (ph > 600) { out("[p%d] FAIL bag_item: pocket %u, want %d\n", p->id, cur, pocket); dump(p, "fail"); sFailures++; p->done = 1; }
+				}
+			} else if (p->stable == 1) {     // the top of the list: 40 UPs
+				if (ph < 40 * 8) keys = (ph % 8) < 2 ? (1u << 6) : 0;
+				else { p->stable = 2; p->step = 0; }
+			} else {                         // down to the item
+				if (ph < (unsigned)index * 8) keys = (ph % 8) < 2 ? (1u << 7) : 0;
+				else if (ph > (unsigned)index * 8 + 30) {
+					out("[f%06d p%d bag_item] %u: pocket %d row %d\n", p->frame, p->id, c->value, pocket, index);
+					p->stable = 0; advance = true;
+				}
+			}
+			break;
+		}
+		case C_FLY_MAP: {
+			// fly_map MAPSEC: on the Fly map, move the cursor to MAPSEC and
+			// choose it; done once back in the field.
+			static unsigned flyCb, regionEntries;
+			if (!flyCb) { flyCb = symAddr("CB2_FlyMap") & ~1u; regionEntries = symAddr("gRegionMapEntries"); }
+			unsigned cb = rd32(p, sMain + 4) & ~1u;
+			unsigned ph = (unsigned)p->step++;
+			if (cb != flyCb) {
+				if (p->stable) {             // chosen: wait for the field
+					if (inField(p)) { if (++p->stable > 30) { p->stable = 0; advance = true; } }
+					break;
+				}
+				if (ph > 3000) { out("[p%d] FAIL fly_map: not on the Fly map\n", p->id); dump(p, "fail"); writePng(p, "fail"); sFailures++; p->done = 1; }
+				break;
+			}
+			unsigned fm = rd32(p, symAddr("sFlyMap"));
+			unsigned rm = fm + 8;
+			unsigned sec = rd16(p, rm), cx = rd16(p, rm + 0x54), cy = rd16(p, rm + 0x56);
+			unsigned tx = rd8(p, regionEntries + c->value * 8) + 1, ty = rd8(p, regionEntries + c->value * 8 + 1) + 2;
+			if (sec == c->value) { keys = (ph % 20) < 2 ? 1 : 0; p->stable = 1; }
+			else if (cx != tx) keys = (ph % 12) < 2 ? (cx < tx ? (1u << 4) : (1u << 5)) : 0;
+			else if (cy != ty) keys = (ph % 12) < 2 ? (cy < ty ? (1u << 7) : (1u << 6)) : 0;
+			if (ph > 6000) { out("[p%d] FAIL fly_map %u: cursor at (%u,%u) sec %u\n", p->id, c->value, cx, cy, sec); writePng(p, "fail"); sFailures++; p->done = 1; }
+			break;
+		}
+		case C_PARTY_ACTION: {
+			// party_action SLOT ACTION: in the party menu, the cursor to SLOT,
+			// A, then the submenu's cursor to ACTION (party_menu.c's MENU_*;
+			// field moves are 28 + FIELD_MOVE_*: Strength 31, Surf 32, Fly 33,
+			// Dive 34, Waterfall 35) and A. Done once A is pressed on it.
+			static unsigned pmInt, pmenu, smenu;
+			if (!pmInt) { pmInt = symAddr("sPartyMenuInternal"); pmenu = symAddr("gPartyMenu"); smenu = symAddr("menu.sMenu"); }
+			unsigned ph = (unsigned)p->step++;
+			unsigned in = rd32(p, pmInt);
+			if (ph > 1500 || in < 0x02000000) {
+				if (ph > 1500) { out("[p%d] FAIL party_action %u %u (phase %d)\n", p->id, c->addr, c->value, p->stable); dump(p, "fail"); writePng(p, "fail"); sFailures++; p->done = 1; }
+				break;
+			}
+			if (p->stable == 0) {            // the slot
+				unsigned slot = rd8(p, pmenu + 9);
+				if (slot != c->addr) { keys = (ph % 16) < 2 ? (1u << 7) : 0; p->offField = 0; }
+				else if (++p->offField > 20) { keys = 1; p->stable = 1; p->offField = 0; }
+			} else if (p->stable == 1) {     // the submenu
+				unsigned na = rd8(p, in + 23);
+				int want = -1;
+				for (unsigned i = 0; i < na && i < 8; i++) if (rd8(p, in + 15 + i) == c->value) want = (int)i;
+				if (na == 0 || want < 0) { if (++p->offField > 300) { out("[p%d] FAIL party_action: action %u not in the submenu (%u actions)\n", p->id, c->value, na); dump(p, "fail"); writePng(p, "fail"); sFailures++; p->done = 1; } break; }
+				int cur = (signed char)rd8(p, smenu + 2);
+				if (cur != want) { keys = (ph % 16) < 2 ? (cur < want ? (1u << 7) : (1u << 6)) : 0; p->offField = 0; }
+				else if (++p->offField > 20) { keys = 1; p->stable = 0; p->offField = 0; advance = true; }
+			}
+			break;
+		}
+		case C_STEP_TO: {
+			// step_to DIR X Y [T]: press DIR in the field until the player
+			// stands on X,Y (a warp pad on the same map, where cross cannot
+			// tell the warp happened).
+			unsigned me = sObjEvents + rd8(p, sAvatar + 5) * 0x24;
+			int x = (int16_t)rd16(p, me + 0x10) - 7, y = (int16_t)rd16(p, me + 0x12) - 7;
+			bool fieldNow = inField(p);
+			if (x == (int)c->addr && y == c->value && fieldNow) {
+				if (++p->stable >= 20) { p->stable = 0; advance = true; }
+				break;
+			}
+			p->stable = 0;
+			if (fieldNow) keys = ((unsigned)p->step % 16) < 8 ? c->keys : 0;
+			else if (rd8(p, sMain + 0x439) & 2) { keys = autoKeys(p, p->offField++); break; }
+			if (++p->step >= c->frames) {
+				out("[p%d] FAIL step_to (%u,%u): at (%d,%d)\n", p->id, c->addr, c->value, x, y);
+				dump(p, "fail"); writePng(p, "fail"); sFailures++; p->done = 1;
+			}
+			break;
+		}
 		case C_SURF: {
 			if (rd8(p, sAvatar) & 8) {
 				if (++p->stable >= 30) { p->stable = 0; p->step = 0; advance = true; }
@@ -2986,6 +3122,26 @@ static void loadScript(const char* path, int depth) {
         	c.keys = parseKeys(a);
         	c.frames = n >= 4 ? atoi(b) : 4000;
         	snprintf(c.text, sizeof(c.text), "surf %s", a);
+        } else if (!strcmp(cmd, "party_action")) {
+        	c.kind = C_PARTY_ACTION;
+        	c.addr = strtoul(a, NULL, 0);
+        	c.value = strtoul(b, NULL, 0);
+        	snprintf(c.text, sizeof(c.text), "party_action %s %s", a, b);
+        } else if (!strcmp(cmd, "step_to")) {
+        	c.kind = C_STEP_TO;
+        	c.keys = parseKeys(a);
+        	c.addr = strtoul(b, NULL, 0);
+        	c.value = strtoul(d, NULL, 0);
+        	c.frames = n >= 6 ? atoi(e) : 600;
+        	snprintf(c.text, sizeof(c.text), "step_to %s %s %s", a, b, d);
+        } else if (!strcmp(cmd, "bag_item")) {
+        	c.kind = C_BAG_ITEM;
+        	c.value = strtoul(a, NULL, 0);
+        	snprintf(c.text, sizeof(c.text), "bag_item %s", a);
+        } else if (!strcmp(cmd, "fly_map")) {
+        	c.kind = C_FLY_MAP;
+        	c.value = strtoul(a, NULL, 0);
+        	snprintf(c.text, sizeof(c.text), "fly_map %s", a);
         } else if (!strcmp(cmd, "boxes")) {
         	c.kind = C_BOXES;
         } else if (!strcmp(cmd, "talk_obj")) {

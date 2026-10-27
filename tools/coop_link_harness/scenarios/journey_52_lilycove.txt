@@ -2,7 +2,8 @@
 # (Fortree Centre; Feather Badge on both).
 #  - Relink, Beacon ON (Rosa).
 #  - Route 120 south (its trainers; co-op where both are seen), Route 121
-#    east (its trainers), into Lilycove City.
+#    east (its trainers; the Aqua grunts' scene at x=25 on each save),
+#    into Lilycove City.
 #  - Lilycove Centre: heal, save.
 # Driver aids: smart_moves, heal_below, no_wild (speed, Repel-equivalent).
 include continue.inc
@@ -24,6 +25,11 @@ b dump route120
 b walk 39 88 120000
 b cross RIGHT 0 36 3000
 b dump route121
+# The Aqua grunts blocking the way east leave once a player steps on the
+# line at x=25 (each save has its own).
+b walk 25 6 20000
+b mash_field 6000 B
+b expect_var 0x4074 1
 b walk 79 6 120000
 b cross RIGHT 0 5 3000
 b dump lilycove

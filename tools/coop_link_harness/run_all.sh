@@ -109,6 +109,7 @@ if [ -n "${SEG6:-}" ]; then
 	# Block continuations with no open block (playthrough finding #18).
 	run link_stray_block SAVE0="$SEG6/p0.sav" SAVE1="$SEG6/p1.sav"
 	run battle_stray_block SAVE0="$SEG6/p0.sav" SAVE1="$SEG6/p1.sav"
+	run coop_field_move_fly SAVE0="$SEG6/p0.sav" SAVE1="$SEG6/p1.sav"
 	# One trainer, two of his Pokemon down on one turn, one left in reserve.
 	run coop_one_trainer_faints SAVE0="$SEG6/p0.sav" SAVE1="$SEG6/p1.sav"
 	run coop_admin_flag SAVE0="$SEG6/p0.sav" SAVE1="$SEG6/p1.sav"

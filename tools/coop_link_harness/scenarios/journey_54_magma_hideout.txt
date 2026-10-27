@@ -1,0 +1,138 @@
+# JOURNEY 54 (main playthrough, no fixtures): CONTINUE journey_53's saves
+# (Lavaridge Centre; Magma Emblem on both).
+#  - Relink, Beacon ON (Rosa).
+#  - Each player teaches HM04 STRENGTH from the Bag (Kai: slot 1, Rosa:
+#    slot 4; the first move forgotten).
+#  - Route 112, the cable car up, Mt Chimney, down into Jagged Pass (its
+#    bumpy slopes go up only on the Acro Bike); each player steps on the line by the hidden
+#    entrance (14,15)/(13,15): the Magma Emblem opens the Magma Hideout
+#    (VAR_JAGGED_PASS_STATE 2 on each save).
+#  - Magma Hideout (route over its maps from the map data, plan.py; the
+#    boulders from boulders.py): 1F, each player uses STRENGTH and pushes
+#    two boulders on their own save, then the arrow down to 2F, 3F, 4F;
+#    the grunts and Tabitha on the way (co-op where both are seen).
+#  - 4F: Kai talks to Maxie (16,21) from the west: Maxie, Rosa joins
+#    (story gate MAGMA, co-op). Groudon awakened (0x6F) on both.
+#  - Save in the hideout.
+# Test helper: test_heal before Maxie.
+# Driver aids: smart_moves, heal_below, no_wild (speed, Repel-equivalent).
+include continue.inc
+include relink.inc
+b expect coop.sLinkState 2
+b smart_moves 1
+b heal_below 35 2
+b no_wild 1
+include beacon_on_p1.inc
+b mash_field 2000 B
+b expect coop.sBeacon+1:1 1
+b expect_flag 0xD4 1
+b expect_flag 0x6F 0
+include journey_teach_strength_p0.inc
+include journey_teach_strength_p1.inc
+b sync
+b party
+b walk 7 8 2000
+b cross DOWN 0 12 2000
+b walk 19 9 6000
+b cross RIGHT 0 27 3000
+b dump route112
+# Up by the cable car (Jagged Pass's bumpy slopes go up only on the Acro
+# Bike), then down Mt Chimney's south path into Jagged Pass.
+0 walk 28 28 20000
+1 walk 29 28 20000
+b sync
+0 cross UP 19 0 3000
+1 cross UP 19 0 3000
+0 walk 6 7 3000
+0 press UP 2
+0 wait 10
+0 press A 2
+0 mash_field 20000
+0 until_map 19 1 3000
+0 mash_field 3000
+b sync
+1 walk 6 7 3000
+1 press UP 2
+1 wait 10
+1 press A 2
+1 mash_field 20000
+1 until_map 19 1 3000
+1 mash_field 3000
+b sync
+0 walk 6 10 3000
+1 walk 7 10 3000
+b cross DOWN 24 12 3000
+b dump mt-chimney
+0 walk 20 41 40000
+0 cross DOWN 24 13 3000
+1 walk 21 41 40000
+1 cross DOWN 24 13 3000
+b dump jagged-pass
+0 walk 14 15 30000
+1 walk 13 15 30000
+b mash_field 8000 B
+b expect_var 0x40C8 2
+b sync
+0 walk 16 19 6000
+0 cross UP 24 86 3000
+1 wait 200
+1 walk 16 19 6000
+1 cross UP 24 86 3000
+b dump hideout-1f
+# 1F boulders, Kai: STRENGTH on the boulder at (6,23) (A, YES), push it
+# west; then the one at (5,22) west from (6,22); down the arrow (25,34).
+0 walk 7 23 6000
+0 press LEFT 2
+0 wait 10
+0 press A 2
+0 mash_field 4000
+0 shot strength-kai
+0 press LEFT 24
+0 wait 60
+0 walk 6 22 3000
+0 press LEFT 24
+0 wait 60
+0 shot boulders-kai
+0 walk 25 34 12000
+0 cross DOWN 24 87 3000
+# Rosa, on her save.
+1 walk 7 23 6000
+1 press LEFT 2
+1 wait 10
+1 press A 2
+1 mash_field 4000
+1 shot strength-rosa
+1 press LEFT 24
+1 wait 60
+1 walk 6 22 3000
+1 press LEFT 24
+1 wait 60
+1 shot boulders-rosa
+1 walk 25 34 12000
+1 cross DOWN 24 87 3000
+b dump hideout-2f
+b walk 17 33 30000
+b cross DOWN 24 89 3000
+b dump hideout-3f
+b walk 7 21 30000
+b cross DOWN 24 91 3000
+b dump hideout-4f
+0 walk 15 21 40000
+1 walk 15 22 40000
+b sync
+# TEST HELPER (healing, authorised): the party healed before Maxie.
+b test_heal
+b dump before-maxie
+0 press RIGHT 2
+0 wait 10
+0 press A 2
+b until_cb2 BattleMainCB2 9000 A
+b shot maxie-start
+b mash_field 200000 B
+b dump after-maxie
+b party
+b mash_field 3000 B
+b expect_flag 0x6F 1
+b shot after-maxie
+include save_again.inc
+b party
