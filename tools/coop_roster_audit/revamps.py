@@ -1,10 +1,13 @@
 #!/usr/bin/env python3
-"""Revamps for build 0xC017012F: stats, types, abilities, level-up moves.
+"""Revamps (builds 0xC017012F, 0xC0170131, 0xC0170137): stats, types,
+abilities, level-up moves.
 
 Writes the species_info and gen_9 level-up learnset sources. Idempotent:
 each species block is rewritten to the values below. Stats are HP, Atk,
 Def, SpA, SpD, Spe. Learnset entries are added (or moved) by name; a level
-of None removes the move.
+of None removes the move. 'family' lists pre-evolutions that take the same
+ability slots (stats and types stay theirs); 'learnset' names a shared
+learnset (Cherrim's forms).
 """
 import os, re
 ROOT = os.path.abspath(os.path.join(os.path.dirname(__file__), '..', '..'))
@@ -60,6 +63,33 @@ REVAMPS = {
                     moves={'SKY_ATTACK': None, 'TAKE_DOWN': None, 'UPROAR': None,
                            'LIGHT_SCREEN': 20, 'ROOST': 25, 'HYPNOSIS': 30, 'WHIRLWIND': 33,
                            'PSYSHOCK': 36, 'HURRICANE': 50}),
+    # Build 0xC0170137: first co-op revamp batch (doubles support roles).
+    'BUTTERFREE': dict(stats=(70, 35, 65, 100, 90, 85),
+                       moves={'SLEEP_POWDER': None, 'POLLEN_PUFF': 30}),
+    'BEEDRILL': dict(stats=(70, 110, 65, 35, 80, 105), abilities=('POISON_TOUCH', 'NONE', 'SNIPER'),
+                     moves={'U_TURN': 26, 'LEECH_LIFE': 30, 'KNOCK_OFF': 41}),
+    'ARBOK': dict(stats=(75, 110, 80, 55, 80, 85), types=('POISON', 'DARK'),
+                  moves={'POISON_JAB': 32, 'SUCKER_PUNCH': 36, 'KNOCK_OFF': 44}),
+    'PARASECT': dict(stats=(85, 110, 95, 45, 95, 30), abilities=('DRY_SKIN', 'EFFECT_SPORE', 'DAMP'), family=('PARAS',),
+                     moves={'LEECH_LIFE': 29, 'SEED_BOMB': 33, 'RAGE_POWDER': 40}),
+    'HYPNO': dict(stats=(95, 55, 85, 100, 120, 55), abilities=('INSOMNIA', 'TELEPATHY', 'INNER_FOCUS'), family=('DROWZEE',),
+                  moves={'SWAGGER': None, 'HEAL_PULSE': 37}),
+    'FURRET': dict(stats=(90, 90, 75, 35, 70, 105), abilities=('TECHNICIAN', 'KEEN_EYE', 'FRISK'), family=('SENTRET',),
+                   moves={'SLAM': None, 'AMNESIA': None, 'TAIL_SLAP': 28, 'U_TURN': 39, 'KNOCK_OFF': 42}),
+    'LANTURN': dict(stats=(125, 45, 70, 85, 85, 60), abilities=('VOLT_ABSORB', 'WATER_ABSORB', 'ILLUMINATE'), family=('CHINCHOU',),
+                    moves={'TAKE_DOWN': None, 'VOLT_SWITCH': 27, 'SCALD': 33, 'HEAL_PULSE': 40}),
+    'KRICKETUNE': dict(stats=(80, 105, 65, 40, 65, 85), abilities=('TECHNICIAN', 'NONE', 'SWARM'),
+                       moves={'ABSORB': None, 'BUG_BITE': 14, 'AERIAL_ACE': 24, 'U_TURN': 32, 'ENCORE': 40}),
+    'CHERRIM_OVERCAST': dict(stats=(75, 95, 80, 65, 90, 95), types=('GRASS', 'FAIRY'), learnset='CHERRIM',
+                             moves={'TAKE_DOWN': None, 'SOLAR_BEAM': None, 'SEED_BOMB': 24, 'PLAY_ROUGH': 34,
+                                    'SOLAR_BLADE': 55}),
+    'CHERRIM_SUNSHINE': dict(stats=(75, 95, 80, 65, 90, 95), types=('GRASS', 'FAIRY'), learnset=None),
+    'LUMINEON': dict(stats=(85, 45, 85, 85, 100, 100), abilities=('STORM_DRAIN', 'SWIFT_SWIM', 'WATER_VEIL'), family=('FINNEON',),
+                     moves={'ATTRACT': None, 'ICY_WIND': 26, 'SCALD': 33, 'TAILWIND': 38}),
+    'MARACTUS': dict(stats=(85, 65, 80, 110, 85, 55),
+                     moves={'POLLEN_PUFF': 36, 'ENERGY_BALL': 40}),
+    'SPIDOPS': dict(stats=(80, 100, 105, 35, 100, 30), abilities=('STAKEOUT', 'NONE', 'INSOMNIA'), family=('TAROUNTULA',),
+                    moves={'HEADBUTT': None, 'LUNGE': 28, 'KNOCK_OFF': 37, 'U_TURN': 41}),
 }
 
 STAT_KEYS = ('baseHP', 'baseAttack', 'baseDefense', 'baseSpAttack', 'baseSpDefense', 'baseSpeed')
@@ -70,6 +100,15 @@ def species_file(name):
         path = os.path.join(ROOT, 'src/data/pokemon/species_info', f)
         if '[SPECIES_%s] =' % name in open(path).read():
             return path
+
+
+def set_abilities(name, abilities):
+    path = species_file(name)
+    s = open(path).read()
+    i = s.index('[SPECIES_%s] =' % name)
+    j = s.index('\n    },', i)
+    blk = re.sub(r'\.abilities = \{[^}]*\}', '.abilities = { %s }' % ', '.join('ABILITY_' + a for a in abilities), s[i:j], count=1)
+    open(path, 'w').write(s[:i] + blk + s[j:])
 
 
 def edit_species(name, spec):
@@ -102,6 +141,15 @@ def edit_learnset(name, moves):
     open(path, 'w').write(s[:k] + body + '    ' + s[j:])
 
 
-for name, spec in REVAMPS.items():
-    edit_species(name, spec)
-    edit_learnset(name, spec.get('moves', {}))
+def main():
+    for name, spec in REVAMPS.items():
+        edit_species(name, spec)
+    for pre in spec.get('family', ()):
+        set_abilities(pre, spec['abilities'])
+    learnset = spec.get('learnset', name)
+    if learnset:
+        edit_learnset(learnset, spec.get('moves', {}))
+
+
+if __name__ == '__main__':
+    main()

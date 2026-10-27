@@ -763,6 +763,23 @@ void Coop_RepairUnsetHealLocation(void)
         SetLastHealLocationWarp(HEAL_LOCATION_LITTLEROOT_TOWN_MAYS_HOUSE_2F);
 }
 
+// Revamped species (new base stats) in a save made before the change keep
+// their old stored stats until something recalculates them. Recalculate the
+// party on CONTINUE: the individual (IVs, EVs, nature, moves, ability slot)
+// is untouched, an unchanged species gets the same numbers back, and a
+// fainted Pokemon stays fainted. Boxed Pokemon are recalculated on withdrawal.
+static void Coop_RefreshPartyStats(void)
+{
+    u32 i;
+
+    for (i = 0; i < PARTY_SIZE; i++)
+    {
+        if (GetMonData(&gPlayerParty[i], MON_DATA_SPECIES) != SPECIES_NONE
+         && !GetMonData(&gPlayerParty[i], MON_DATA_IS_EGG))
+            CalculateMonStats(&gPlayerParty[i]);
+    }
+}
+
 static bool32 IsWhiteoutCutscene(void)
 {
     if (OW_WHITEOUT_CUTSCENE < GEN_4)
@@ -2270,6 +2287,7 @@ void CB2_ContinueSavedGame(void)
     LoadSaveblockMapHeader();
     ClearDiveAndHoleWarps();
     Coop_RepairUnsetHealLocation();
+    Coop_RefreshPartyStats();
     trainerHillMapId = GetCurrentTrainerHillMapId();
     if (gMapHeader.mapLayoutId == LAYOUT_BATTLE_FRONTIER_BATTLE_PYRAMID_FLOOR)
         LoadBattlePyramidFloorObjectEventScripts();

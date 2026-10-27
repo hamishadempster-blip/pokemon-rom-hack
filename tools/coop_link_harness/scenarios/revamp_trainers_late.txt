@@ -1,0 +1,48 @@
+# Revamp showcase trainers at realistic levels (j52 saves: Lilycove).
+# Player 0 (Kai): Aroma Lady VIOLET (ROSELIA, CHERRIM 28) and Hex Maniac
+# KINDRA (DUSKULL, LITWICK 34, ARBOK 33) on Route 123. Player 1 (Rosa),
+# after Kai: Psychic JACKI (ALAKAZAM, VELUZA 34, HYPNO 33) on Route 123.
+# TEST HELPER (logged): every party slot set to Lv 35 with the moves it
+# would know at that level (species, IVs, natures and abilities kept), and
+# a full heal before each fight, as after a Centre visit. No battle stat
+# aids. DRIVER: smart_moves (strongest damaging move).
+# FIXTURES: the trainer's defeated flag cleared; a warp beside the trainer.
+# Records each result and the HP left; a loss is a result, not a test
+# failure.
+include continue.inc
+include relink.inc
+b smart_moves 1
+b mash_field 300 B
+b test_level 0 35 1
+b test_level 1 35 1
+b test_level 2 35 1
+b test_level 3 35 1
+b test_level 4 35 1
+b test_level 5 35 1
+b party
+0 test_heal
+0 fixture_flag 1319 0
+0 fixture_warp 0 38 18 10
+0 wait 90
+0 talk_obj 26 3000
+0 mash_field 30000
+0 party
+0 hex gBattleOutcome 1
+0 test_heal
+0 fixture_flag 1386 0
+0 fixture_warp 0 38 87 13
+0 wait 90
+0 talk_obj 31 3000
+0 mash_field 30000
+0 party
+0 hex gBattleOutcome 1
+b sync
+1 test_heal
+1 fixture_flag 1529 0
+1 fixture_warp 0 38 49 17
+1 wait 90
+1 talk_obj 30 3000
+1 mash_field 30000
+1 party
+1 hex gBattleOutcome 1
+b sync

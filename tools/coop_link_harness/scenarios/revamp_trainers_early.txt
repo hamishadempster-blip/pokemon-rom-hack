@@ -1,0 +1,49 @@
+# Revamp showcase trainers at realistic levels (j43 saves: Rustboro, after
+# Route 117 in the journey).
+# Player 0 (Kai): Bug Maniac DEREK on Route 117 (DUSTOX, TAROUNTULA 17,
+# BUTTERFREE 17). Player 1 (Rosa): Triathlete MELINA on Route 117 (DODUO,
+# FURRET 18), then Picnicker BIANCA on Route 111 (SHROOMISH 19, MARACTUS 20).
+# TEST HELPER (logged): every party slot set to Lv 19 with the moves it
+# would know at that level (species, IVs, natures and abilities kept), and
+# a full heal before each fight, as after a Centre visit. No battle stat
+# aids. DRIVER: smart_moves (strongest damaging move).
+# FIXTURES: the trainer's defeated flag cleared; a warp beside the trainer.
+# Records each result and the HP left; a loss is a result, not a test
+# failure.
+include continue.inc
+include relink.inc
+b smart_moves 1
+b mash_field 300 B
+b test_level 0 19 1
+b test_level 1 19 1
+b test_level 2 19 1
+b test_level 3 19 1
+b test_level 4 19 1
+b test_level 5 19 1
+b party
+0 test_heal
+0 fixture_flag 1507 0
+0 fixture_warp 0 32 17 11
+0 wait 90
+0 talk_obj 18 3000
+0 mash_field 30000
+0 party
+0 hex gBattleOutcome 1
+b sync
+1 test_heal
+1 fixture_flag 2035 0
+1 fixture_warp 0 32 16 5
+1 wait 90
+1 talk_obj 24 3000
+1 mash_field 30000
+1 party
+1 hex gBattleOutcome 1
+1 test_heal
+1 fixture_flag 1986 0
+1 fixture_warp 0 26 19 120
+1 wait 90
+1 talk_obj 37 3000
+1 mash_field 30000
+1 party
+1 hex gBattleOutcome 1
+b sync

@@ -5,7 +5,8 @@
 #
 #   tools/coop_link_harness/run_all.sh            # all scenarios
 #   ONLY="rival_join rival_pending" run_all.sh    # a subset (fresh-save ones)
-#   J16=dir J37=dir: finding #16, shared NPCs, scene joins
+#   J16=dir J37=dir: finding #16, shared NPCs, scene joins (J16: co-op revamps)
+#   J43=dir J48=dir: revamps in solo play, showcase trainers at route level
 #   J52=dir J65=dir J68=dir: late-game checkpoints (late wild encounters;
 #   Wally and roster evolutions; shared legendaries)
 #   SEG6=/path/dir run_all.sh                     # also the story_seg6-based
@@ -95,6 +96,21 @@ fi
 
 # J37=dir with p0.sav/p1.sav from checkpoint 37 (Fallarbor, before Meteor
 # Falls): joining a partner's story scene on its trigger tile.
+# J16 also: revamped Pokemon's support moves and abilities in co-op doubles.
+if [ -n "${J16:-}" ]; then
+	run revamp_coop_support SAVE0="$J16/p0.sav" SAVE1="$J16/p1.sav"
+fi
+
+# J43/J48=dir: checkpoints 43 (Rustboro, after Route 117) and 48 (Route
+# 119): revamps in solo battles and the showcase trainers at route level.
+if [ -n "${J43:-}" ]; then
+	run revamp_solo_checks SAVE0="$J43/p0.sav" SAVE1="$J43/p1.sav"
+	run revamp_trainers_early SAVE0="$J43/p0.sav" SAVE1="$J43/p1.sav"
+fi
+if [ -n "${J48:-}" ]; then
+	run revamp_trainers_mid SAVE0="$J48/p0.sav" SAVE1="$J48/p1.sav"
+fi
+
 if [ -n "${J37:-}" ]; then
 	for s in scene_meteor_join scene_meteor_menu; do
 		run "$s" SAVE0="$J37/p0.sav" SAVE1="$J37/p1.sav"
@@ -114,6 +130,7 @@ fi
 # Teleport, a building transition between battles).
 if [ -n "${J52:-}" ]; then
 	run late_wild_tour SAVE0="$J52/p0.sav" SAVE1="$J52/p1.sav"
+	run revamp_trainers_late SAVE0="$J52/p0.sav" SAVE1="$J52/p1.sav"
 fi
 
 # J68=dir with p0.sav/p1.sav from the main journey's checkpoint 68 (after the
@@ -172,6 +189,9 @@ if [ -n "${SEG6:-}" ]; then
 	run roster_b1_play SAVE0="$SEG6/p0.sav" SAVE1="$SEG6/p1.sav"
 	run roster_b1_reload SAVE0="$out/roster_b1_play/p0.sav" SAVE1="$out/roster_b1_play/p1.sav"
 	run roster_b1_gate SAVE0="$SEG6/p0.sav" SAVE1="$SEG6/p1.sav"
+	# Revamps: an owned revamped Pokemon's stats after a reload.
+	run revamp_owned_stats SAVE0="$SEG6/p0.sav" SAVE1="$SEG6/p1.sav"
+	run revamp_owned_stats_reload SAVE0="$out/revamp_owned_stats/p0.sav" SAVE1="$out/revamp_owned_stats/p1.sav"
 	run lighting_link SAVE0="$SEG6/p0.sav" SAVE1="$SEG6/p1.sav" RTC_EPOCH0=1699963200 RTC_EPOCH1=1699923600
 	for s in shoal coast caravan twins beacon; do
 		run "${s}_reload" SAVE0="$out/${s}_solo/p0.sav" SAVE1="$out/${s}_solo/p1.sav"

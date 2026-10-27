@@ -1,0 +1,120 @@
+# Revamped Pokemon in co-op doubles (Route 116, j16 saves, linked, Beacon ON).
+# TEST HELPERS (logged): each player's lead is made with test_mon (Lv 30,
+# the move under test in slot 1, an ability slot where it matters) and set
+# to 20 HP; DRIVER: force_move picks that move (target: the ally).
+# FIXTURES: Route 116 grass all WURMPLE; forced encounter steps; Karen's
+# sight hidden.
+# 1. Kai's BUTTERFREE uses POLLEN PUFF on Rosa's HYPNO (INSOMNIA) while
+#    HYPNO uses HEAL PULSE on BUTTERFREE: both healed, on both saves.
+#    (With TELEPATHY, HYPNO would block the ally's POLLEN PUFF heal too:
+#    the official rule, seen while writing this test.)
+# 2. Kai's LANTURN uses DISCHARGE (hits everything around it); Rosa's
+#    HYPNO's TELEPATHY keeps it out ("It doesn't affect Hypno").
+# 3. Kai's CHERRIM uses SUNNY DAY: FLOWER GIFT turns it into its Sunshine
+#    form in the sun on both games.
+include continue.inc
+include relink.inc
+b expect coop.sLinkState 2
+b smart_moves 1
+include beacon_on.inc
+b mash_field 2000 B
+b expect coop.sBeacon+1:1 1
+b no_wild 1
+b fixture_rom16 gRoute116_LandMons+2 265
+b fixture_rom16 gRoute116_LandMons+6 265
+b fixture_rom16 gRoute116_LandMons+10 265
+b fixture_rom16 gRoute116_LandMons+14 265
+b fixture_rom16 gRoute116_LandMons+18 265
+b fixture_rom16 gRoute116_LandMons+22 265
+b fixture_rom16 gRoute116_LandMons+26 265
+b fixture_rom16 gRoute116_LandMons+30 265
+b fixture_rom16 gRoute116_LandMons+34 265
+b fixture_rom16 gRoute116_LandMons+38 265
+b fixture_rom16 gRoute116_LandMons+42 265
+b fixture_rom16 gRoute116_LandMons+46 265
+0 fixture_warp 0 31 23 17
+1 fixture_warp 0 31 25 17
+b until_field 3000
+b sync
+b wait 0
+b fixture_obj 17 7 0
+# --- 1: Pollen Puff and Heal Pulse on the ally
+0 test_mon 0 12 30 639 0 0 0 0
+1 test_mon 0 97 30 505 0 0 0 1
+b write gParties+86:2 20
+b force_move 0 ally
+b sync
+0 no_wild 0
+0 press LEFT 3
+0 wait 20
+0 force_encounter 1
+0 write sWildEncounterImmunitySteps:1 4
+0 write sPrevMetatileBehavior:2 2
+0 press LEFT 10
+b until_cb2 BattleMainCB2 4000 A
+b until_battle_text HP_was_restored 8000 auto
+b wait 120
+b force_move -1
+b mash_field 20000
+b until_field 3000
+b expect_range gParties+86:2 40 999
+b sync
+# --- 2: Discharge next to a Telepathy ally
+0 fixture_warp 0 31 23 17
+1 fixture_warp 0 31 25 17
+b until_field 3000
+b sync
+b fixture_obj 17 7 0
+0 no_wild 1
+0 test_mon 0 171 30 435 0 0 0 0
+1 test_mon 0 97 30 150 0 0 0 2
+b test_heal
+0 force_move 0
+1 force_move 0
+b sync
+0 no_wild 0
+0 press LEFT 3
+0 wait 20
+0 force_encounter 1
+0 write sWildEncounterImmunitySteps:1 4
+0 write sPrevMetatileBehavior:2 2
+0 press LEFT 10
+b until_cb2 BattleMainCB2 4000 A
+b until_battle_text doesn't_affect_Hypno 8000 auto
+b force_move -1
+b mash_field 20000
+b until_field 3000
+b sync
+# --- 3: Flower Gift in the sun
+0 fixture_warp 0 31 23 17
+1 fixture_warp 0 31 25 17
+b until_field 3000
+b sync
+b fixture_obj 17 7 0
+0 no_wild 1
+0 test_mon 0 421 30 241 583 0 0 0
+1 test_mon 0 457 30 150 0 0 0 1
+b test_heal
+0 force_move 0
+1 force_move 0
+b sync
+0 no_wild 0
+0 press LEFT 3
+0 wait 20
+0 force_encounter 1
+0 write sWildEncounterImmunitySteps:1 4
+0 write sPrevMetatileBehavior:2 2
+0 press LEFT 10
+b until_cb2 BattleMainCB2 4000 A
+0 until_battle_text sunlight 8000 auto
+1 until_battle_text sunlight 8000 auto
+b wait 200
+0 expect gBattleMons:2 1061
+0 shot sunshine
+b force_move -1
+b mash_field 20000
+b until_field 3000
+b no_wild 1
+b sync
+b expect coop.sLinkState 2
+b expect_tasks MAX 2

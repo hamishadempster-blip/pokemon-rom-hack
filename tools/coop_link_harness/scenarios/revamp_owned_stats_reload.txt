@@ -1,0 +1,13 @@
+# Continues revamp_owned_stats: after CONTINUE the party's stats are
+# recalculated from the revamped base stats (Attack and max HP back up,
+# HP raised by the max HP gained), and the Pokemon is the same one.
+include continue.inc
+b no_wild 1
+b party
+0 expect_species 1 24
+1 expect_species 1 47
+b expect_range gParties+190:2 40 999
+b expect_range gParties+188:2 70 999
+b expect_range gParties+186:2 70 999
+b expect_mons_intact
+b expect_no_copies

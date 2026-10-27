@@ -1,0 +1,49 @@
+# Revamp showcase trainers at realistic levels (j48 saves, Route 119). The
+# journey's teams are far above route level by here (Lv 55 leads), so
+# TEST HELPER (logged): every party slot set to Lv 31 with the moves it
+# would know at that level (species, IVs, natures and abilities kept), and
+# a full heal before each fight, as after a Centre visit. No battle stat
+# aids. DRIVER: smart_moves (strongest damaging move).
+# FIXTURES: the trainer's defeated flag cleared; a warp beside the trainer.
+# Player 0 (Kai): Bug Catcher DOUG (NINJASK, BEEDRILL Lv 30), then Pkmn
+# Ranger CATHERINE (GLOOM, APPLIN, PARASECT Lv 27-28). Player 1 (Rosa),
+# after Kai is done: Bug Maniac BRENT (MASQUERAIN 28, KRICKETUNE 27,
+# SPIDOPS 27). Records each result and the HP left; a loss is a result,
+# not a test failure.
+include continue.inc
+include relink.inc
+b smart_moves 1
+b mash_field 300 B
+b test_level 0 31 1
+b test_level 1 31 1
+b test_level 2 31 1
+b test_level 3 31 1
+b test_level 4 31 1
+b test_level 5 31 1
+b party
+0 test_heal
+0 fixture_flag 1898 0
+0 fixture_warp 0 34 34 121
+0 wait 90
+0 talk_obj 10 3000
+0 mash_field 30000
+0 party
+0 hex gBattleOutcome 1
+0 test_heal
+0 fixture_flag 1839 0
+0 fixture_warp 0 34 35 84
+0 wait 90
+0 talk_obj 9 3000
+0 mash_field 30000
+0 party
+0 hex gBattleOutcome 1
+b sync
+1 test_heal
+1 fixture_flag 1503 0
+1 fixture_warp 0 34 28 115
+1 wait 90
+1 talk_obj 8 3000
+1 mash_field 30000
+1 party
+1 hex gBattleOutcome 1
+b sync

@@ -23,7 +23,7 @@
 #define MAX_CMDS 4096
 #define MAX_SYMS 500000
 
-enum { C_PARTNER, C_GOTO, C_HEX, C_PRESS, C_WAIT, C_SHOT, C_DUMP, C_BARRIER, C_UNTIL_CB2, C_UNTIL_FIELD, C_EXPECT, C_UNTIL_MEM, C_BATTLE, C_MENU, C_PARTY, C_FIXTURE, C_WRITE, C_LEAD, C_MOVE, C_SIX, C_VAR, C_FLAG, C_VS, C_EXPECT_FLAG, C_EXPECT_VAR, C_NO_OBJECT, C_MAP, C_OBJECT, C_TEXT_SPEED, C_PACE, C_MUTE, C_PARTNER_AT, C_ITEM, C_EXPECT_ITEM, C_UNTIL_TEXT, C_WARP, C_PC_COUNT, C_MONS, C_NO_COPIES, C_NOTE_MONEY, C_MONEY_GAIN, C_FORCE_ENC, C_EXPECT_RANGE, C_WALK, C_NO_WILD, C_CROSS, C_WALK_BATTLE, C_SMART, C_STRONG, C_UNTIL_TASK, C_MIRROR, C_SPECIES, C_NOTE_PARTY, C_SAME_PARTY, C_PATCH_RET, C_SLOT, C_TXN, C_MONEY_SAME, C_DEX, C_SWAP, C_GENDER, C_FILL, C_UNFILL, C_WRITEP, C_TINT, C_UNTIL_FTEXT, C_NICK, C_GRIND, C_CATCH, C_HUNT, C_SWITCH_LEAD, C_PARTY_SLOT, C_HEAL_BELOW, C_TALK_OBJ, C_BOXES, C_TEST_HOOK, C_WATCH, C_EXPECT_WRITES, C_SURF, C_BAG_ITEM, C_FLY_MAP, C_STEP_TO, C_PARTY_ACTION, C_DIVE, C_RIDE, C_LEGEND, C_OWNED, C_PCFILL, C_TASKS, C_ALLOW_RESET, C_ROMWRITE, C_OBJBYTE, C_NPC_SYNC, C_BATTLE_ITEM, C_FIELD_ITEM, C_FISH };
+enum { C_PARTNER, C_GOTO, C_HEX, C_PRESS, C_WAIT, C_SHOT, C_DUMP, C_BARRIER, C_UNTIL_CB2, C_UNTIL_FIELD, C_EXPECT, C_UNTIL_MEM, C_BATTLE, C_MENU, C_PARTY, C_FIXTURE, C_WRITE, C_LEAD, C_MOVE, C_SIX, C_VAR, C_FLAG, C_VS, C_EXPECT_FLAG, C_EXPECT_VAR, C_NO_OBJECT, C_MAP, C_OBJECT, C_TEXT_SPEED, C_PACE, C_MUTE, C_PARTNER_AT, C_ITEM, C_EXPECT_ITEM, C_UNTIL_TEXT, C_WARP, C_PC_COUNT, C_MONS, C_NO_COPIES, C_NOTE_MONEY, C_MONEY_GAIN, C_FORCE_ENC, C_EXPECT_RANGE, C_WALK, C_NO_WILD, C_CROSS, C_WALK_BATTLE, C_SMART, C_STRONG, C_UNTIL_TASK, C_MIRROR, C_SPECIES, C_NOTE_PARTY, C_SAME_PARTY, C_PATCH_RET, C_SLOT, C_TXN, C_MONEY_SAME, C_DEX, C_SWAP, C_GENDER, C_FILL, C_UNFILL, C_WRITEP, C_TINT, C_UNTIL_FTEXT, C_NICK, C_GRIND, C_CATCH, C_HUNT, C_SWITCH_LEAD, C_PARTY_SLOT, C_HEAL_BELOW, C_TALK_OBJ, C_BOXES, C_TEST_HOOK, C_WATCH, C_EXPECT_WRITES, C_SURF, C_BAG_ITEM, C_FLY_MAP, C_STEP_TO, C_PARTY_ACTION, C_DIVE, C_RIDE, C_LEGEND, C_OWNED, C_PCFILL, C_TASKS, C_ALLOW_RESET, C_ROMWRITE, C_OBJBYTE, C_NPC_SYNC, C_BATTLE_ITEM, C_FIELD_ITEM, C_FISH, C_FORCE_MOVE };
 
 struct Cmd {
 	unsigned args[8];
@@ -69,6 +69,7 @@ struct Player {
     unsigned boxCopy[240];
     int crashSeen;
     unsigned smartMoves;
+    int forceMove, forceTarget; // force_move: -1 off; target 4 = the ally
     int learnPhase, learnTarget; unsigned learnStart, partyBackFrame;
     int lastSent; unsigned lastSentFrame;   // the last replacement chosen (both battlers down)
     unsigned strongBattlers;
@@ -1535,7 +1536,7 @@ static void frameCallback(struct mCoreThread* t) {
 	// Test driver, not game state: in battle, keep the move cursor of this
 	// player's battlers (0 and 2) on the strongest damaging move with PP, so
 	// mashing A attacks instead of looping on a status move or "no PP left".
-	if (p->smartMoves && (rd8(p, sMain + 0x439) & 2)) {
+	if (p->smartMoves && p->forceMove < 0 && (rd8(p, sMain + 0x439) & 2)) {
 		// The move menu's own data (ChooseMoveStruct at bufferA[b] + 4:
 		// moves u16[4], currentPP u8[4] at +8). Unlike gBattleMons it is
 		// filled on the guest too, which runs controllers only.
@@ -1552,6 +1553,14 @@ static void frameCallback(struct mCoreThread* t) {
 				int foeHere = -1;
 				unsigned mv = rd16(p, m + i * 2), pp = rd8(p, m + 8 + i);
 				if (!mv || !pp || mv >= 0x0E9C0u / 0x40) continue;
+				{
+					// Conditional moves (Belch, Dream Eater, ...): the game refuses
+					// or wastes them; never the driver's pick.
+					static const char* cm[] = { "harness.condMove0", "harness.condMove1", "harness.condMove2", "harness.condMove3", "harness.condMove4" };
+					int skip = 0;
+					for (int k = 0; k < 5; k++) if (mv == symValue(cm[k])) skip = 1;
+					if (skip) continue;
+				}
 				unsigned word = rd32(p, info + mv * 0x40 + 8);
 				unsigned pow = word >> 23, mtype = (word >> 16) & 0x1F;
 				if (pow && bmSize && chart) {
@@ -1587,6 +1596,22 @@ static void frameCallback(struct mCoreThread* t) {
 			// target (doubles).
 			if (bestFoe >= 0 && !strcmp(symName(rd32(p, symAddr("gBattlerControllerFuncs") + b * 4)), "HandleInputChooseTarget"))
 				p->core->busWrite8(p->core, symAddr("gMultiUsePlayerCursor"), bestFoe);
+		}
+	}
+	// force_move SLOT [TARGET] (driver choice, not game state): this player's
+	// battlers pick move SLOT; in the target menu, battler TARGET (4: the
+	// ally, so support moves land on the partner's Pokemon).
+	if (p->forceMove >= 0 && (rd8(p, sMain + 0x439) & 2)) {
+		unsigned funcs = symAddr("gBattlerControllerFuncs");
+		for (int b = own; b < 4; b += 2) {
+			const char* fn = symName(rd32(p, funcs + b * 4));
+			if (!strcmp(fn, "HandleInputChooseMove")) {
+				if (getenv("FORCE_DEBUG") && rd8(p, symAddr("gMoveSelectionCursor") + b) != (unsigned)p->forceMove)
+					out("[f%06d p%d force] battler %d cursor %u -> %d\n", p->frame, p->id, b, rd8(p, symAddr("gMoveSelectionCursor") + b), p->forceMove);
+				p->core->busWrite8(p->core, symAddr("gMoveSelectionCursor") + b, p->forceMove);
+			}
+			else if (!strcmp(fn, "HandleInputChooseTarget") && p->forceTarget >= 0)
+				p->core->busWrite8(p->core, symAddr("gMultiUsePlayerCursor"), p->forceTarget == 4 ? (b ^ 2) : p->forceTarget);
 		}
 	}
     // Controlled application-heartbeat outage: serial hardware keeps running.
@@ -1964,6 +1989,11 @@ static void frameCallback(struct mCoreThread* t) {
 			advance = true;
 			break;
 		}
+		case C_FORCE_MOVE:
+			p->forceMove = (int)c->value; p->forceTarget = (int)c->addr;
+			out("[p%d] DRIVER force_move %d target %d\n", p->id, p->forceMove, p->forceTarget);
+			advance = true;
+			break;
 		case C_TALK_OBJ: {
 			// talk_obj LOCALID [T]: wait in place until that (moving) object
 			// is next to the player, face it, press A; done once a script runs.
@@ -3788,6 +3818,11 @@ static void loadScript(const char* path, int depth) {
         	snprintf(c.text, sizeof(c.text), "fly_map %s", a);
         } else if (!strcmp(cmd, "boxes")) {
         	c.kind = C_BOXES;
+        } else if (!strcmp(cmd, "force_move")) {
+        	c.kind = C_FORCE_MOVE;
+        	c.value = (unsigned)atoi(a);
+        	c.addr = n >= 4 ? (!strcmp(b, "ally") ? 4u : strtoul(b, NULL, 0)) : 0xFFFFFFFFu;
+        	snprintf(c.text, sizeof(c.text), "force_move %s", a);
         } else if (!strcmp(cmd, "talk_obj")) {
         	c.kind = C_TALK_OBJ;
         	c.value = strtoul(a, NULL, 0);
@@ -4242,7 +4277,7 @@ int main(int argc, char** argv) {
 	snprintf(cmdline, sizeof(cmdline), "mkdir -p '%s'", sOutDir);
 	if (system(cmdline)) return 1;
 
-	for (int i = 0; i < 2; i++) P[i].id = i;
+	for (int i = 0; i < 2; i++) { P[i].id = i; P[i].forceMove = -1; P[i].forceTarget = -1; }
 	loadScript(argv[5], 0);
 
 	GBASIOLockstepInit(&sLockstep);

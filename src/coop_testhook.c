@@ -41,6 +41,12 @@ static bool8 TestHook_SetMon(void)
         u8 metLevel = TEST_HOOK_MET_LEVEL;
         SetMonData(&mon, MON_DATA_MET_LEVEL, &metLevel);
     }
+    // arg 7: an ability slot + 1 (0 keeps the one the personality gave).
+    if (gCoopTestMailbox.arg[7] >= 1 && gCoopTestMailbox.arg[7] <= NUM_ABILITY_SLOTS)
+    {
+        u8 abilityNum = gCoopTestMailbox.arg[7] - 1;
+        SetMonData(&mon, MON_DATA_ABILITY_NUM, &abilityNum);
+    }
     CalculateMonStats(&mon);
     gPlayerParty[slot] = mon;
     CalculatePlayerPartyCount();

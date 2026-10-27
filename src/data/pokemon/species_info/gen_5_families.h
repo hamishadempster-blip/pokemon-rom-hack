@@ -5443,12 +5443,12 @@ const struct SpeciesInfo gSpeciesInfoGen5[] =
 #if P_FAMILY_MARACTUS
     [SPECIES_MARACTUS] =
     {
-        .baseHP        = 75,
-        .baseAttack    = 86,
-        .baseDefense   = 67,
-        .baseSpeed     = 60,
-        .baseSpAttack  = 106,
-        .baseSpDefense = 67,
+        .baseHP        = 85,
+        .baseAttack    = 65,
+        .baseDefense   = 80,
+        .baseSpeed     = 55,
+        .baseSpAttack  = 110,
+        .baseSpDefense = 85,
         .types = MON_TYPES(TYPE_GRASS),
         .catchRate = 255,
         .expYield = 161,

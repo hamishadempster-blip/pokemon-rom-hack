@@ -1,0 +1,16 @@
+# Owned revamped Pokemon keep their identity and get the new stats (seg6
+# saves). FIXTURES: a Lv 30 ARBOK (Kai) and PARASECT (Rosa) in party slot 2
+# (TEST HELPER test_mon), then their stored stats overwritten with old,
+# too-low numbers (max HP 50, Attack 10, HP 50), as a save from before the
+# revamp would hold them; saved. revamp_owned_stats_reload continues.
+include continue.inc
+include relink.inc
+b no_wild 1
+0 test_mon 1 24 30 0 0 0 0 0
+1 test_mon 1 47 30 0 0 0 0 0
+b write gParties+188:2 50
+b write gParties+190:2 10
+b write gParties+186:2 50
+b party
+include save_again.inc
+b party

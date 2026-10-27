@@ -42,7 +42,8 @@ with open(sys.argv[2], 'a') as f:
     for name, value in zip(('saveVarsOffset', 'saveFlagsOffset', 'encryptionKeyOffset', 'storageBoxesOffset', 'boxMonSize', 'moneyOffset', 'dealOffset', 'partnerCaughtOffset', 'dexCaughtOffset', 'partnerDexValidOffset', 'expGetterOffset',
                               'hm0', 'hm1', 'hm2', 'hm3', 'hm4', 'hm5', 'hm6', 'hm7',
                               'battleMonSize', 'battleMonTypes', 'typeSize', 'numTypes', 'battleMonHp', 'effSize', 'battleMonMaxHp',
-                              'legendClaimedOffset', 'legendPendingOffset', 'legendOwedOffset'), values):
+                              'legendClaimedOffset', 'legendPendingOffset', 'legendOwedOffset',
+                              'condMove0', 'condMove1', 'condMove2', 'condMove3', 'condMove4'), values):
         f.write(f'{value:08x} 00000004 a harness.{name}\n')
 PY_LAYOUT
 echo "$out/coop_link_harness"

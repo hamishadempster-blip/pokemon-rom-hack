@@ -1,0 +1,68 @@
+# Revamped Pokemon in solo battles (j43 saves; Kai on Route 116, Rosa stays
+# in the Rustboro Centre, so the battles are solo).
+# TEST HELPERS (logged): Kai's lead made with test_mon (CHERRIM Lv 30,
+# BEEDRILL Lv 5 so its U-TURN does not end the battle) and healed.
+# DRIVER: force_move picks the move under test.
+# FIXTURES: Route 116 grass all WURMPLE; forced encounter steps; Karen's
+# sight hidden.
+# 1. CHERRIM uses SUNNY DAY: FLOWER GIFT turns it into the Sunshine form.
+# 2. BEEDRILL (POISON TOUCH) uses U-TURN: it comes back and the next
+#    Pokemon goes in, as a pivot should.
+include continue.inc
+include relink.inc
+b smart_moves 1
+b mash_field 300 B
+b no_wild 1
+0 fixture_rom16 gRoute116_LandMons+2 265
+0 fixture_rom16 gRoute116_LandMons+6 265
+0 fixture_rom16 gRoute116_LandMons+10 265
+0 fixture_rom16 gRoute116_LandMons+14 265
+0 fixture_rom16 gRoute116_LandMons+18 265
+0 fixture_rom16 gRoute116_LandMons+22 265
+0 fixture_rom16 gRoute116_LandMons+26 265
+0 fixture_rom16 gRoute116_LandMons+30 265
+0 fixture_rom16 gRoute116_LandMons+34 265
+0 fixture_rom16 gRoute116_LandMons+38 265
+0 fixture_rom16 gRoute116_LandMons+42 265
+0 fixture_rom16 gRoute116_LandMons+46 265
+0 fixture_warp 0 31 23 17
+0 until_field 3000
+0 fixture_obj 17 7 0
+0 test_mon 0 421 30 241 583 0 0 0
+0 test_heal
+0 force_move 0
+0 no_wild 0
+0 press LEFT 3
+0 wait 20
+0 force_encounter 1
+0 write sWildEncounterImmunitySteps:1 4
+0 write sPrevMetatileBehavior:2 2
+0 press LEFT 10
+0 until_cb2 BattleMainCB2 4000 A
+0 until_battle_text sunlight 8000 auto
+0 wait 200
+0 expect gBattleMons:2 1061
+0 force_move -1
+0 mash_field 20000
+0 no_wild 1
+0 fixture_warp 0 31 23 17
+0 until_field 3000
+0 fixture_obj 17 7 0
+0 test_mon 0 15 5 369 0 0 0 0
+0 test_heal
+0 force_move 0
+0 no_wild 0
+0 press LEFT 3
+0 wait 20
+0 force_encounter 1
+0 write sWildEncounterImmunitySteps:1 4
+0 write sPrevMetatileBehavior:2 2
+0 press LEFT 10
+0 until_cb2 BattleMainCB2 4000 A
+0 until_battle_text used_U-turn! 8000 auto
+0 until_battle_text went_back_to 3000 auto
+0 force_move -1
+0 mash_field 20000
+0 no_wild 1
+0 expect_mons_intact
+b sync

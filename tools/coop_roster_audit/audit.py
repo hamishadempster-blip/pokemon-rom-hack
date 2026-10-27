@@ -420,6 +420,42 @@ for row in ret.splitlines()[2:]:
         issues.append(f'retune {cells[0]}: ROM {have} {abil_have}, docs {want} {abil_want}')
     print(f'- {cells[0]}: {"/".join(map(str, have))}, {" / ".join(abil_have)} — {flag}')
 print()
+# Every revamp in revamps.py (stats, types, abilities, level-up moves) against the ROM.
+sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
+from revamps import REVAMPS
+MOVE = enum_values('include/constants/moves.h', 'MOVE_')
+print('Revamps (tools/coop_roster_audit/revamps.py against the ROM):')
+for name, spec in REVAMPS.items():
+    d = info(SPECIES['SPECIES_' + name])
+    st = d['stats']
+    have = (st[0], st[1], st[2], st[4], st[5], st[3])
+    probs = []
+    if have != tuple(spec['stats']):
+        probs.append(f'stats {have}')
+    if 'types' in spec:
+        want_t = [t.title() for t in spec['types']] + ([spec['types'][0].title()] if len(spec['types']) == 1 else [])
+        if [t.title() for t in d['types']] != want_t:
+            probs.append(f'types {d["types"]}')
+    for fam in (name,) + tuple(spec.get('family', ())):
+        if 'abilities' in spec:
+            got = [a.upper().replace(' ', '_') for a in info(SPECIES['SPECIES_' + fam])['abilities']]
+            want = [a for a in spec['abilities']]
+            if got != want:
+                probs.append(f'{fam} abilities {got}')
+    learned = {mv for _, mv in d['learnset']}
+    for mv, lv in spec.get('moves', {}).items():
+        mid = MOVE.get('MOVE_' + mv)
+        if mid is None:
+            probs.append(f'unknown move {mv}')
+        elif (lv is None) == (mid in learned):
+            probs.append(f'{mv} {"still learned" if lv is None else "missing"}')
+        elif lv is not None and (lv, mid) not in d['learnset']:
+            probs.append(f'{mv} not at level {lv}')
+    for p in probs:
+        issues.append(f'revamp {name}: {p}')
+    print(f'- {name.title()}: {"/".join(map(str, have))}, {" / ".join(dict.fromkeys(a for a in d["abilities"] if a != "None"))}, '
+          f'{"/".join(d["types"]) if d["types"][0] != d["types"][1] else d["types"][0]} — {"OK" if not probs else "MISMATCH"}')
+print()
 print(f'{len(rows)} species checked; {len(issues)} issue(s).')
 for i in issues:
     print('ISSUE', i)
