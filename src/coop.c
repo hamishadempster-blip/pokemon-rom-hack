@@ -3417,10 +3417,13 @@ static void Coop_GiveJointWin(void)
     }
     if (sBattleFlag != 0)
         FlagSet(sBattleFlag);
-    if (sBattleKind == COOP_KIND_TRAINER)
+    if (sBattleKind == COOP_KIND_TRAINER || sBattleKind == COOP_KIND_STORY)
     {
         // Ordinary shared trainers have no story flag in the invite. The
         // talker's stock script only marks its own save, so mark both here.
+        // The same for story fights (admins such as Tabitha have no gate
+        // flag): the partner's save used to keep the trainer unbeaten, and
+        // the admin stopped the partner for a second fight.
         u16 trainers[2] = { TRAINER_BATTLE_PARAM.opponentA, TRAINER_BATTLE_PARAM.opponentB };
         for (u32 i = 0; i < ARRAY_COUNT(trainers); i++)
             if (trainers[i] != TRAINER_NONE && trainers[i] < TRAINERS_COUNT && !IsSpecialTrainer(trainers[i]))

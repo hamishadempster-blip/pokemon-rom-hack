@@ -1,0 +1,77 @@
+# JOURNEY 41 (main playthrough, no fixtures): CONTINUE journey_40's saves
+# (Lavaridge Centre).
+#  - Relink, Beacon ON (Kai).
+#  - Lavaridge Gym: both players work through the holes and steam vents
+#    together (1F <-> B1F, eight drops and lifts; route planned from the
+#    map data, avoiding the tiles where trainers hide), fighting the hidden
+#    trainers that pop out on the way (co-op).
+#  - Flannery's room: Kai talks to her: Flannery + Cole against both.
+#    HEAT BADGE (0x86A), gym flag (0x4F3), TM OVERHEAT (0xA8) on both saves.
+#  - Out, Centre, heal, save.
+# Driver aids: smart_moves, heal_below.
+include continue.inc
+include relink.inc
+b expect coop.sLinkState 2
+b smart_moves 1
+b heal_below 35 2
+include beacon_on.inc
+b mash_field 2000 B
+b expect coop.sBeacon+1:1 1
+b expect_flag 0x86A 0
+b walk 7 8 2000
+b cross DOWN 0 12 2000
+b walk 5 16 6000
+b cross UP 4 1 40000
+b dump gym
+# 1F (9,9) -> hole (8,9) -> B1F.
+b walk 9 9 60000
+b cross LEFT 4 2 40000
+# B1F (2,14) -> vent (1,14) -> 1F.
+b walk 2 14 60000
+b cross LEFT 4 1 40000
+# 1F (1,10) -> hole (0,10) -> B1F.
+b walk 1 10 60000
+b cross LEFT 4 2 40000
+# B1F (0,7) -> vent (0,6) -> 1F.
+b walk 0 7 60000
+b cross UP 4 1 40000
+# 1F (1,3) -> hole (2,3) -> B1F.
+b walk 1 3 60000
+b cross RIGHT 4 2 40000
+# B1F (6,2) -> vent (7,2) -> 1F.
+b walk 6 2 60000
+b cross RIGHT 4 1 40000
+# 1F (9,6) -> hole (10,6) -> B1F.
+b walk 9 6 60000
+b cross RIGHT 4 2 40000
+# B1F (11,12) (down the ledge) -> vent (12,12) -> 1F, Flannery's room.
+b walk 11 12 60000
+b cross RIGHT 4 1 40000
+b dump flannery-room
+b shot flannery-room
+0 walk 13 10 4000
+1 walk 14 10 4000
+b sync
+0 press UP 2
+0 wait 10
+0 press A 2
+b until_cb2 BattleMainCB2 9000 A
+b expect coop.sInBattle 1
+b expect gBattlersCount 4
+b shot flannery-start
+b mash_field 200000
+b dump after-flannery
+b party
+b mash_field 3000
+b expect_flag 0x86A 1
+b expect_flag 0x4F3 1
+b expect_flag 0xA8 1
+b shot badge4
+# Out: down the ledge to the entrance.
+b walk 13 17 12000
+b cross DOWN 0 12 3000
+b walk 9 7 6000
+b cross UP 4 5 3000
+include journey_heal_center.inc
+include save_again.inc
+b party

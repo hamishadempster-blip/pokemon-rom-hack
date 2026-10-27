@@ -1,0 +1,36 @@
+# A Magma admin fought together marks the trainer beaten on both saves
+# (found in journey 39: Tabitha on Mt Chimney spotted Kai, the pair beat
+# her, then she stopped Rosa for a second co-op fight).
+# Admins are "mandatory" co-op fights (COOP_KIND_STORY) with no gate flag;
+# the joint win set trainer flags only for ordinary shared trainers.
+# Expected: one fight; Tabitha's trainer flag (0x755) set on both saves.
+# FIXTURES: story_seg6 saves; strong battlers; both warped below Tabitha
+# on Mt Chimney (the Magma team is still there in a save this early).
+include continue.inc
+include relink.inc
+b expect coop.sLinkState 2
+b no_wild 1
+b smart_moves 1
+b strong_battlers 400
+include beacon_on.inc
+b mash_field 2000 B
+b expect_flag 0x755 0
+0 fixture_warp 24 12 10 14
+1 fixture_warp 24 12 9 14
+b until_field 3000
+b sync
+b wait 30
+0 walk_battle 10 11 6000
+b until_cb2 BattleMainCB2 9000 A
+b expect gBattlersCount 4
+b mash_field 40000
+b expect gBattleOutcome 1
+b sync
+b mash_field 2000
+b expect_flag 0x755 1
+# Rosa walks past where Tabitha can see her: no second fight.
+1 walk 10 12 3000
+1 walk 10 11 3000
+b wait 300
+b expect coop.sInBattle 0
+b shot after

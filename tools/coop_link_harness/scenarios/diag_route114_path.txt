@@ -1,0 +1,22 @@
+# DIAGNOSTIC: Route 114 waypoints from Fallarbor (journey 37 saves).
+include continue.inc
+b no_wild 1
+b walk 7 8 2000
+b cross DOWN 0 13 2000
+b walk 0 9 6000
+b cross LEFT 0 29 3000
+0 walk_try 20 25 6000
+0 dump wp1
+0 walk_try 18 36 6000
+0 dump wp2
+0 walk_try 20 46 6000
+0 dump wp3
+0 walk_try 20 58 6000
+0 dump wp4
+0 walk_try 14 65 6000
+0 dump wp5
+0 walk_try 9 69 6000
+0 dump wp6
+0 walk_try 8 64 6000
+0 dump wp7
+0 shot end

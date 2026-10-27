@@ -25,11 +25,9 @@ b dump route114
 0 walk 8 64 60000
 1 walk 9 65 60000
 b sync
-0 press UP 8
-0 until_map 24 0 3000
+0 cross UP 24 0 3000
 1 walk 8 64 4000
-1 press UP 8
-1 until_map 24 0 3000
+1 cross UP 24 0 3000
 b dump meteor-falls
 # The scene's trigger (14,18), Kai first; Rosa waits by the entrance.
 1 walk 26 17 3000
@@ -40,6 +38,7 @@ b dump meteor-falls
 0 shot scene-kai
 0 expect_var 0x40BF 1
 0 walk 17 17 3000
+b sync
 1 walk 15 18 3000
 1 walk 14 18 2000
 1 mash_field 20000
@@ -51,21 +50,17 @@ b expect_flag 0xCF 1
 b expect_flag 0x333 1
 # Out and back to Fallarbor.
 0 walk 27 18 4000
-0 press DOWN 8
-0 until_map 0 29 3000
+0 cross DOWN 0 29 3000
 1 wait 200
 1 walk 27 18 4000
-1 press DOWN 8
-1 until_map 0 29 3000
+1 cross DOWN 0 29 3000
 b walk 39 9 60000
 b cross RIGHT 0 13 3000
 0 walk 14 8 6000
-0 press UP 8
-0 until_map 5 4 3000
+0 cross UP 5 4 3000
 1 wait 200
 1 walk 14 8 6000
-1 press UP 8
-1 until_map 5 4 3000
+1 cross UP 5 4 3000
 include journey_heal_center.inc
 include save_again.inc
 b party

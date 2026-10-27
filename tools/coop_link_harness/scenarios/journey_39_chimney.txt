@@ -1,0 +1,90 @@
+# JOURNEY 39 (main playthrough, no fixtures): CONTINUE journey_38's saves
+# (Fallarbor Centre; Meteor Falls scene on both, the Route 112 grunts gone).
+#  - Relink, Beacon ON (Kai).
+#  - Back east: Route 113, Route 111 north, Route 112 north, down through
+#    the Fiery Path to Route 112 below the cable car.
+#  - Cable car up (each player rides on their own save).
+#  - Mt Chimney: its trainers on the way up (co-op where both are seen);
+#    Kai talks to Maxie at the meteorite machine: Maxie, with Rosa (story
+#    gate, co-op). FLAG_DEFEATED_EVIL_TEAM_MT_CHIMNEY (0x8B) on both saves
+#    (Rosa's through the game's own catch-up for the partner).
+#  - Save on the summit.
+# Driver aids: smart_moves, heal_below.
+include continue.inc
+include relink.inc
+b expect coop.sLinkState 2
+b smart_moves 1
+b heal_below 35 2
+include beacon_on.inc
+b mash_field 2000 B
+b expect coop.sBeacon+1:1 1
+b expect_flag 0x333 1
+b expect_flag 0x8B 0
+b walk 7 8 2000
+b cross DOWN 0 13 2000
+b walk 19 9 6000
+b cross RIGHT 0 28 3000
+b walk 99 9 120000
+b cross RIGHT 0 26 3000
+b walk 0 29 60000
+b cross LEFT 0 27 3000
+b dump route112-north
+0 walk 22 11 12000
+1 walk 23 11 12000
+b sync
+0 cross UP 24 14 3000
+1 walk 22 11 4000
+1 cross UP 24 14 3000
+b dump fiery-path
+0 walk 26 36 12000
+0 cross DOWN 0 27 3000
+1 walk 26 36 12000
+1 cross DOWN 0 27 3000
+b dump route112
+# The cable car station door (28,27).
+0 walk 28 28 20000
+1 walk 29 28 20000
+b sync
+0 cross UP 19 0 3000
+1 cross UP 19 0 3000
+b dump station
+# The attendant (6,6): ride? YES. Kai first.
+0 walk 6 7 3000
+0 press UP 2
+0 wait 10
+0 press A 2
+0 mash_field 20000
+0 until_map 19 1 3000
+0 mash_field 3000
+b sync
+1 walk 6 7 3000
+1 press UP 2
+1 wait 10
+1 press A 2
+1 mash_field 20000
+1 until_map 19 1 3000
+1 mash_field 3000
+b sync
+b dump station-top
+0 walk 6 10 3000
+1 walk 7 10 3000
+b cross DOWN 24 12 3000
+b dump mt-chimney
+# Up to Maxie (13,6); Kai talks to him from below, Rosa beside.
+0 walk 13 7 40000
+1 walk 12 7 40000
+b sync
+b dump before-maxie
+0 press UP 2
+0 wait 10
+0 press A 2
+b until_cb2 BattleMainCB2 9000 A
+b shot maxie-start
+b mash_field 200000
+b dump after-maxie
+b party
+b mash_field 3000
+b expect_flag 0x8B 1
+b shot after-maxie
+include save_again.inc
+b party

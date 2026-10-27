@@ -1207,7 +1207,9 @@ static int walkStep(struct Player* p, int tx, int ty) {
 			if (water != surfing) continue;
 			if (!goal && !(ex == 0 || ex == 15 || ce == 0 || ce == 15 || ex == ce)) continue;
 			prev[ni] = (int16_t)cur;
-			elev[ni] = (ex == 0 || ex == 15) ? (uint8_t)ce : (uint8_t)ex;
+			// As ObjectEventUpdateElevation: a transition tile (0) sets the
+			// player's elevation to 0 (any level next); a bridge (15) keeps it.
+			elev[ni] = ex == 15 ? (uint8_t)ce : (uint8_t)ex;
 			queue[qt++] = ni;
 			if (nx == gx && ny == gy) { found = true; break; }
 		}
