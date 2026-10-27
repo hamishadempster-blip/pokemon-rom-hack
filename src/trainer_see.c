@@ -455,8 +455,10 @@ bool8 CheckForTrainersWantingBattle(void)
         trainerObjects[trainerObjectsCount++] = i;
     }
 
-    // Sorts array by localId
-    for (i = 1; i <= trainerObjectsCount; i++)
+    // Sorts array by localId. (The stock loops ran to <= count: the unused
+    // entry, object slot 0, was sorted in and checked as one more
+    // see-all-directions "trainer". Finding #16 audit.)
+    for (i = 1; i < trainerObjectsCount; i++)
     {
         u8 x = trainerObjects[i];
         u8 j = i;
@@ -468,7 +470,7 @@ bool8 CheckForTrainersWantingBattle(void)
         trainerObjects[j] = x;
     }
 
-    for (i = 0; i <= trainerObjectsCount; i++)
+    for (i = 0; i < trainerObjectsCount; i++)
     {
         u8 numTrainers;
         numTrainers = CheckTrainer(trainerObjects[i]);

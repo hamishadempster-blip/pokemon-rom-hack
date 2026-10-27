@@ -1,3 +1,4 @@
+# KIND: recovery (a fault is induced on purpose; the game must recover)
 # Power cut on both games while player 0's escrow is saved and player 1 has
 # confirmed but not escrowed. deal_cut_before_partner_reload.txt continues.
 include deal_setup.inc

@@ -47,6 +47,7 @@ b until_cb2 CB2_DoHallOfFameScreen 300000 A
 b dump after-champion
 b expect_flag 0x87F 1
 b shot hof-screen
+b allow_reset
 b until_cb2 CB2_StartCreditsSequence 60000 A
 b shot credits
 b expect_flag 0x864 1

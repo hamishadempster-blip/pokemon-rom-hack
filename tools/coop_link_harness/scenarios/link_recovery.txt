@@ -1,3 +1,4 @@
+# KIND: recovery (a fault is induced on purpose; the game must recover)
 include route102_reconnect_start.inc
 # Drop application heartbeats, not the emulated serial cable, for 15 seconds.
 b mute_coop 900

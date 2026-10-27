@@ -114,6 +114,7 @@ enum
 EWRAM_DATA bool8 gCoopBattleLaunching = FALSE;
 EWRAM_DATA bool8 gCoopArmWild = FALSE;
 EWRAM_DATA bool8 gCoopHoldLink = FALSE;
+EWRAM_DATA struct CoopDiag gCoopDiag = {0};
 EWRAM_DATA bool8 gCoopForceSolo = FALSE; // next trainer battle stays solo (coop_quest.c)
 
 static EWRAM_DATA u8 sLinkState = COOP_LINK_IDLE;
@@ -1528,6 +1529,22 @@ static void Coop_JoinSameTrainer(const struct CoopInvite *invite)
     Coop_LaunchBattle(TRUE);
 }
 
+void Coop_NoteBadTrainer(u8 site, u16 trainerA, u16 trainerB)
+{
+    if (gCoopDiag.badTrainer != 0xFFFF)
+        gCoopDiag.badTrainer++;
+    gCoopDiag.lastA = trainerA;
+    gCoopDiag.lastB = trainerB;
+    gCoopDiag.site = site;
+    gCoopDiag.approaching = gNoOfApproachingTrainers;
+    gCoopDiag.kind = sBattleKind;
+    gCoopDiag.flags = (sInBattle ? 1 : 0) | (sWaitingAck ? 2 : 0) | (sGuestPairPending ? 4 : 0)
+                    | (ScriptContext_IsEnabled() ? 8 : 0);
+    gCoopDiag.selectedObj = gSelectedObjectEvent;
+    gCoopDiag.frame = gMain.vblankCounter1;
+    gCoopDiag.script = gApproachingTrainers[0].trainerScriptPtr;
+}
+
 static bool8 Coop_GuestBusy(void)
 {
     return ScriptContext_IsEnabled()
@@ -1653,6 +1670,17 @@ static void Coop_HandleInvite(u32 playerId, const struct CoopInvite *invite)
 
     if (CoopProtocol_KeepOwnInvite(GetMultiplayerId(), sWaitingAck, Coop_IsMandatoryKind(sBattleKind), Coop_IsMandatoryKind(invite->kind)))
         return;
+
+    // A fight against trainers must name trainers this build can build. A
+    // bad id (a damaged frame, another build's table) is refused here, so
+    // neither game launches a battle against nobody (finding #16).
+    if ((Coop_IsMandatoryKind(invite->kind) || invite->kind == COOP_KIND_TRAINER || invite->kind == COOP_KIND_PAIR)
+     && (invite->trainerA == TRAINER_NONE || invite->trainerA >= TRAINERS_COUNT || invite->trainerB >= TRAINERS_COUNT))
+    {
+        Coop_NoteBadTrainer(COOP_BADTR_INVITE, invite->trainerA, invite->trainerB);
+        Coop_SendReplyWhy(COOP_KIND_NACK, invite->seq, COOP_SOLO_KIND);
+        return;
+    }
 
     if (invite->kind == COOP_KIND_RESCUE)
     {

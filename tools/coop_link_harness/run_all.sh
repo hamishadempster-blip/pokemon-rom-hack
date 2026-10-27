@@ -39,7 +39,10 @@ run() {
 		visual="VISUAL FAIL ($(grep -c '^FAIL' "$out/$name.visual.txt"))"
 		visualFailed=$((visualFailed + 1))
 	fi
-	printf '%-28s %s  %s  %s  (%ss)\n' "$name" "$status" "$frames" "$visual" $((SECONDS - start)) | tee -a "$summary"
+	local tag=""
+	grep -q '^# KIND: recovery' "$here/scenarios/$name.txt" 2>/dev/null && tag=" [deliberate fault/recovery test]"
+	[ -f "$out/$name/QUARANTINED" ] && tag="$tag [saves quarantined]"
+	printf '%-28s %s  %s  %s  (%ss)%s\n' "$name" "$status" "$frames" "$visual" $((SECONDS - start)) "$tag" | tee -a "$summary"
 }
 
 fresh="littleroot doors_stagger rescue guest_move guest_evolution target_navigation spread_selection

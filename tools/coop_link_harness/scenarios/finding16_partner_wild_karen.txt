@@ -1,0 +1,55 @@
+# Finding #16 sequence, partner first (from matrix/gen16.sh): j16 saves,
+# Route 116 below School Kid Karen (22,16; sight 3). Beacon ON. FIXTURES:
+# Route 116 grass is all ABRA (Teleport); Karen's sight hidden until Rosa's
+# wild battle starts, warps to the lane, forced encounter step.
+# Checks: Rosa's co-op wild Abra pair (Kai joins, standing in Karen's lane),
+# Teleport, then Karen challenges at once: a real opponent (gCoopDiag 0).
+include continue.inc
+include relink.inc
+b expect coop.sLinkState 2
+b smart_moves 1
+include beacon_on.inc
+b mash_field 2000 B
+b expect coop.sBeacon+1:1 1
+b no_wild 1
+b fixture_rom16 gRoute116_LandMons+2 63
+b fixture_rom16 gRoute116_LandMons+6 63
+b fixture_rom16 gRoute116_LandMons+10 63
+b fixture_rom16 gRoute116_LandMons+14 63
+b fixture_rom16 gRoute116_LandMons+18 63
+b fixture_rom16 gRoute116_LandMons+22 63
+b fixture_rom16 gRoute116_LandMons+26 63
+b fixture_rom16 gRoute116_LandMons+30 63
+b fixture_rom16 gRoute116_LandMons+34 63
+b fixture_rom16 gRoute116_LandMons+38 63
+b fixture_rom16 gRoute116_LandMons+42 63
+b fixture_rom16 gRoute116_LandMons+46 63
+0 fixture_warp 0 31 23 17
+1 fixture_warp 0 31 25 17
+b until_field 3000
+b sync
+b wait 37
+b fixture_obj 17 7 0
+0 walk_try 22 17 400
+1 wait 40
+1 no_wild 0
+1 press LEFT 3
+1 wait 20
+1 force_encounter 1
+1 write sWildEncounterImmunitySteps:1 4
+1 write sPrevMetatileBehavior:2 2
+1 press LEFT 10
+b until_cb2 BattleMainCB2 4000 A
+b force_encounter 0
+b no_wild 1
+b fixture_obj 17 7 1
+b shot first-battle
+b until_cb2 CB2_Overworld 30000 A
+b shot back
+b wait 600
+b mash_field 40000
+b wait 300
+b shot end
+b mash_field 20000
+b expect gCoopDiag 0
+b expect_tasks MAX 2

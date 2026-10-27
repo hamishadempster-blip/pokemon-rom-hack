@@ -1,4 +1,5 @@
 .global Coop_EventScript_NeedPartner
+.global Coop_EventScript_TrainerRefused
 .global Coop_EventScript_RivalWaits
 	.global Coop_EventScript_PartnerDeclined
 	.global Coop_EventScript_NotReady
@@ -24,6 +25,13 @@
 
 @ Coop_TakeRefusal: 1 means this player's first three are down,
 @ 2 means the partner's are. 0 falls through to the usual message.
+@ Finding #16: a trainer battle that named no valid opponent was refused
+@ (src/battle_setup.c). Nothing is shown; the approach ends and the player
+@ is free again.
+Coop_EventScript_TrainerRefused::
+	releaseall
+	end
+
 Coop_EventScript_NeedPartner::
 	lockall
 	specialvar VAR_RESULT, Coop_TakeRefusal

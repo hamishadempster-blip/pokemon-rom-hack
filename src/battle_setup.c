@@ -1461,7 +1461,7 @@ static void SetBattledTrainersFlags(void)
 
 static void UNUSED SetBattledTrainerFlag(void)
 {
-    FlagSet(GetTrainerAFlag());
+    SetTrainerFlag(TRAINER_BATTLE_PARAM.opponentA);
 }
 
 // Trainer ids at or above MAX_TRAINERS_COUNT have no flag: never fought as
@@ -1485,8 +1485,45 @@ void ClearTrainerFlag(u16 trainerId)
         FlagClear(TRAINER_FLAGS_START + trainerId);
 }
 
+// Finding #16: a trainer battle must name an opponent that can be built.
+// Facility battles carry their own ids; everything else needs a real
+// trainer (and a second one when two approached).
+static bool8 TrainerBattleParamsValid(void)
+{
+    u16 a = TRAINER_BATTLE_PARAM.opponentA;
+    u16 b = TRAINER_BATTLE_PARAM.opponentB;
+
+    if (CurrentBattlePyramidLocation() != PYRAMID_LOCATION_NONE || InTrainerHillChallenge())
+        return TRUE;
+    if (a == TRAINER_SECRET_BASE)
+        return TRUE;
+    if (a == TRAINER_NONE || a >= TRAINERS_COUNT || b >= TRAINERS_COUNT)
+        return FALSE;
+    if (gNoOfApproachingTrainers == 2 && b == TRAINER_NONE)
+        return FALSE;
+    return TRUE;
+}
+
+// Refuse rather than start a battle against nobody: record what was seen,
+// drop the approach, and release the player. The trainer is still unbeaten
+// and challenges again from its own script data if the player is in sight.
+static void RefuseInvalidTrainerBattle(u8 site)
+{
+    Coop_NoteBadTrainer(site, TRAINER_BATTLE_PARAM.opponentA, TRAINER_BATTLE_PARAM.opponentB);
+    gNoOfApproachingTrainers = 0;
+    gApproachingTrainerId = 0;
+    gTrainerApproachedPlayer = FALSE;
+    InitTrainerBattleParameter();
+    ScriptContext_SetupScript(Coop_EventScript_TrainerRefused);
+}
+
 void BattleSetup_StartTrainerBattle(void)
 {
+    if (!gCoopBattleLaunching && !TrainerBattleParamsValid())
+    {
+        RefuseInvalidTrainerBattle(COOP_BADTR_START);
+        return;
+    }
     if (!gCoopBattleLaunching)
     {
         if (Coop_InterceptRival(TRAINER_BATTLE_PARAM.opponentA))
@@ -1633,6 +1670,11 @@ void BattleSetup_StartSoloRescueBattle(void)
 // fights this player alone, picking up where the stock trainer path left off.
 void BattleSetup_ResumeSoloTrainerBattle(void)
 {
+    if (!TrainerBattleParamsValid())
+    {
+        RefuseInvalidTrainerBattle(COOP_BADTR_RESUME);
+        return;
+    }
     gBattleTypeFlags = BATTLE_TYPE_TRAINER;
     if (GetTrainerBattleType(TRAINER_BATTLE_PARAM.opponentA) == TRAINER_BATTLE_TYPE_DOUBLES)
         gBattleTypeFlags |= BATTLE_TYPE_DOUBLE;

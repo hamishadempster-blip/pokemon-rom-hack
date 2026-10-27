@@ -1,3 +1,4 @@
+# KIND: recovery (a fault is induced on purpose; the game must recover)
 include route102_reconnect_start.inc
 include wild_steps.inc
 0 until_cb2 BattleMainCB2 12000 A

@@ -23,7 +23,7 @@
 #define MAX_CMDS 4096
 #define MAX_SYMS 500000
 
-enum { C_PARTNER, C_GOTO, C_HEX, C_PRESS, C_WAIT, C_SHOT, C_DUMP, C_BARRIER, C_UNTIL_CB2, C_UNTIL_FIELD, C_EXPECT, C_UNTIL_MEM, C_BATTLE, C_MENU, C_PARTY, C_FIXTURE, C_WRITE, C_LEAD, C_MOVE, C_SIX, C_VAR, C_FLAG, C_VS, C_EXPECT_FLAG, C_EXPECT_VAR, C_NO_OBJECT, C_MAP, C_OBJECT, C_TEXT_SPEED, C_PACE, C_MUTE, C_PARTNER_AT, C_ITEM, C_EXPECT_ITEM, C_UNTIL_TEXT, C_WARP, C_PC_COUNT, C_MONS, C_NO_COPIES, C_NOTE_MONEY, C_MONEY_GAIN, C_FORCE_ENC, C_EXPECT_RANGE, C_WALK, C_NO_WILD, C_CROSS, C_WALK_BATTLE, C_SMART, C_STRONG, C_UNTIL_TASK, C_MIRROR, C_SPECIES, C_NOTE_PARTY, C_SAME_PARTY, C_PATCH_RET, C_SLOT, C_TXN, C_MONEY_SAME, C_DEX, C_SWAP, C_GENDER, C_FILL, C_UNFILL, C_WRITEP, C_TINT, C_UNTIL_FTEXT, C_NICK, C_GRIND, C_CATCH, C_HUNT, C_SWITCH_LEAD, C_PARTY_SLOT, C_HEAL_BELOW, C_TALK_OBJ, C_BOXES, C_TEST_HOOK, C_WATCH, C_EXPECT_WRITES, C_SURF, C_BAG_ITEM, C_FLY_MAP, C_STEP_TO, C_PARTY_ACTION, C_DIVE, C_RIDE, C_LEGEND, C_OWNED, C_PCFILL, C_TASKS };
+enum { C_PARTNER, C_GOTO, C_HEX, C_PRESS, C_WAIT, C_SHOT, C_DUMP, C_BARRIER, C_UNTIL_CB2, C_UNTIL_FIELD, C_EXPECT, C_UNTIL_MEM, C_BATTLE, C_MENU, C_PARTY, C_FIXTURE, C_WRITE, C_LEAD, C_MOVE, C_SIX, C_VAR, C_FLAG, C_VS, C_EXPECT_FLAG, C_EXPECT_VAR, C_NO_OBJECT, C_MAP, C_OBJECT, C_TEXT_SPEED, C_PACE, C_MUTE, C_PARTNER_AT, C_ITEM, C_EXPECT_ITEM, C_UNTIL_TEXT, C_WARP, C_PC_COUNT, C_MONS, C_NO_COPIES, C_NOTE_MONEY, C_MONEY_GAIN, C_FORCE_ENC, C_EXPECT_RANGE, C_WALK, C_NO_WILD, C_CROSS, C_WALK_BATTLE, C_SMART, C_STRONG, C_UNTIL_TASK, C_MIRROR, C_SPECIES, C_NOTE_PARTY, C_SAME_PARTY, C_PATCH_RET, C_SLOT, C_TXN, C_MONEY_SAME, C_DEX, C_SWAP, C_GENDER, C_FILL, C_UNFILL, C_WRITEP, C_TINT, C_UNTIL_FTEXT, C_NICK, C_GRIND, C_CATCH, C_HUNT, C_SWITCH_LEAD, C_PARTY_SLOT, C_HEAL_BELOW, C_TALK_OBJ, C_BOXES, C_TEST_HOOK, C_WATCH, C_EXPECT_WRITES, C_SURF, C_BAG_ITEM, C_FLY_MAP, C_STEP_TO, C_PARTY_ACTION, C_DIVE, C_RIDE, C_LEGEND, C_OWNED, C_PCFILL, C_TASKS, C_ALLOW_RESET, C_ROMWRITE, C_OBJBYTE };
 
 struct Cmd {
 	unsigned args[8];
@@ -41,6 +41,13 @@ struct Sym { unsigned addr; unsigned size; char type; char name[64]; };
 
 struct Player {
 	int id;
+	// gMain.callback2 history from the store hook: every change, even one
+	// that lasts less than a frame (until_cb2 looks back to its command start).
+	unsigned cb2Hist[64];
+	volatile unsigned cb2HistN;
+	unsigned cb2Mark;
+	int resetAllowed;          // allow_reset: this scenario resets the game on purpose
+	volatile int unexpectedReset;
 	struct mCore* core;
 	struct mCoreThread thread;
 	struct GBASIOLockstepNode node;
@@ -85,6 +92,9 @@ static unsigned sWatchLo[2], sWatchHi[2];
 // A second watched range (debug: WATCH2=SYM:LEN), same log.
 static unsigned sWatch2Lo, sWatch2Hi;
 static int sWatchLogs[2];
+static unsigned sCb2Addr, sCopyrightCb2;   // gMain.callback2 and the boot callback
+static volatile int sAbortRun;              // a critical failure: stop the scenario
+static char sAbortWhy[160];
 static int sWatchHits[2];
 static int sWatchQuiet[2];
 static struct ARMMemory sOrigMem[2];
@@ -108,6 +118,12 @@ static void watchHit(struct ARMCore* cpu, int id, uint32_t addr, const char* kin
 }
 static void hookStore32(struct ARMCore* cpu, uint32_t a, int32_t v, int* c) {
 	int id = watchPlayer(cpu);
+	if (id >= 0 && a == sCb2Addr) {
+		struct Player* pl = &P[id];
+		pl->cb2Hist[pl->cb2HistN & 63] = (uint32_t)v & ~1u;
+		pl->cb2HistN++;
+		if (sCopyrightCb2 && ((uint32_t)v & ~1u) == sCopyrightCb2 && pl->frame > 60 && !pl->resetAllowed) pl->unexpectedReset++;
+	}
 	if (id >= 0 && ((a >= sWatchLo[id] && a < sWatchHi[id]) || (a >= sWatch2Lo && a < sWatch2Hi))) watchHit(cpu, id, a, "str32", (uint32_t)v);
 	sOrigMem[id < 0 ? 0 : id].store32(cpu, a, v, c);
 }
@@ -137,6 +153,14 @@ static void installWatch(struct Player* p) {
 	cpu->memory.store8 = hookStore8;
 	cpu->memory.storeMultiple = hookStoreMultiple;
 }
+// Was callback2 set to ADDR at any moment since the current command began?
+static bool cb2Seen(struct Player* p, unsigned addr) {
+	unsigned n = p->cb2HistN, from = p->cb2Mark;
+	if (n - from > 64) from = n - 64;
+	for (unsigned i = from; i < n; i++)
+		if (p->cb2Hist[i & 63] == (addr & ~1u)) return true;
+	return false;
+}
 static struct GBASIOLockstep sLockstep;
 // Reset trap (always on): a branch into the BIOS vectors 0x00-0x0F (reset,
 // undefined, SWI with a real BIOS, abort) or a SoftReset/RegisterRamReset
@@ -150,6 +174,7 @@ static void (*sOrigSwi16[2])(struct ARMCore*, int);
 static void (*sOrigSwi32[2])(struct ARMCore*, int);
 static int sResetLogs[2];
 static void resetTrapLog(struct ARMCore* cpu, int id, const char* why, uint32_t to) {
+	if (sResetLogs[id] == 0 && !P[id].resetAllowed) P[id].unexpectedReset = P[id].unexpectedReset ? P[id].unexpectedReset : 1;
 	if (sResetLogs[id]++ >= 6) return;
 	out("[p%d RESET-TRAP] %s to=%08x lr=%08x(%s) sp=%08x cpsr=%08x\n", id, why, to, cpu->gprs[14], symAt(cpu->gprs[14]), cpu->gprs[13], cpu->cpsr.packed);
 	char line[400]; int n = 0;
@@ -1446,6 +1471,20 @@ static void frameCallback(struct mCoreThread* t) {
 	struct Player* p = t->userData;
 	p->frame++;
 	if (p->frame == 1 && !getenv("NO_RESET_TRAP")) installResetTrap(p);
+	if (p->frame == 1) {
+		if (!sCb2Addr) { sCb2Addr = sMain + 4; sCopyrightCb2 = symFind("CB2_InitCopyrightScreenAfterBootup") & ~1u; }
+		installWatch(p);
+	}
+	// An unexpected reset (the boot screen again, or a reset instruction):
+	// a failure, and the scenario stops after this dump.
+	if (p->unexpectedReset == 1) {
+		p->unexpectedReset = 2;
+		out("[f%06d p%d] UNEXPECTED RESET (boot screen again)\n", p->frame, p->id);
+		dump(p, "reset");
+		sFailures++;
+		snprintf(sAbortWhy, sizeof(sAbortWhy), "p%d unexpected reset", p->id);
+		sAbortRun = 1;
+	}
 	if (sUsr1[p->id]) {
 		sUsr1[p->id] = 0;
 		out("[f%06d p%d usr1] cmd %d/%d step %d\n", p->frame, p->id, p->pc, p->ncmds, p->step);
@@ -1661,6 +1700,10 @@ static void frameCallback(struct mCoreThread* t) {
 			writePng(p, "assert");
 			if (!p->crashSeen) sFailures++;
 			p->crashSeen++;
+			// Critical: the run stops once this screen has been pressed past
+			// and dumped (no save from it is ever used: see quarantine).
+			snprintf(sAbortWhy, sizeof(sAbortWhy), "p%d assert screen", p->id);
+			sAbortRun = 2;
 			p->crashStart = 8;
 		}
 	}
@@ -2063,7 +2106,7 @@ static void frameCallback(struct mCoreThread* t) {
 				for (int t = 0; t < 16 && !ok; t++)
 					ok = rd8(p, tasks + t * 0x28 + 4) && (rd32(p, tasks + t * 0x28) & ~1u) == c->addr;
 			} else
-			ok = c->kind == C_UNTIL_CB2 ? (rd32(p, sMain + 4) & ~1u) == c->addr
+			ok = c->kind == C_UNTIL_CB2 ? ((rd32(p, sMain + 4) & ~1u) == c->addr || cb2Seen(p, c->addr))
 			        : c->kind == C_UNTIL_FIELD ? inField(p)
 			        : c->size < 0 ? got != 0
 			        : got == want;
@@ -2545,6 +2588,31 @@ static void frameCallback(struct mCoreThread* t) {
             advance = true;
             break;
         }
+        case C_ROMWRITE:
+            p->core->rawWrite16(p->core, c->addr, -1, c->value);
+            out("[p%d] fixture rom %s = %u (now %u)\n", p->id, c->text, c->value, rd16(p, c->addr));
+            advance = true;
+            break;
+        case C_OBJBYTE: {
+            // FIXTURE fixture_obj LOCALID OFF VALUE: one byte of the live object
+            // with that local id (e.g. OFF 7 = trainerType: 0 hides its sight).
+            int hit = 0;
+            for (int k = 0; k < 16; k++) {
+                unsigned o = sObjEvents + k * 0x24;
+                if (!(rd8(p, o) & 1) || rd8(p, o + 8) != (c->addr & 0xFF)) continue;
+                p->core->rawWrite8(p->core, o + (c->addr >> 8), -1, c->value);
+                out("[f%06d p%d] fixture obj %u slot %d +%u = %u\n", p->frame, p->id, c->addr & 0xFF, k, c->addr >> 8, c->value);
+                hit = 1;
+            }
+            if (!hit) out("[p%d] fixture obj %u: not present\n", p->id, c->addr & 0xFF);
+            advance = true;
+            break;
+        }
+        case C_ALLOW_RESET:
+            p->resetAllowed = 1;
+            out("[p%d] resets allowed from here (deliberate)\n", p->id);
+            advance = true;
+            break;
         case C_TASKS: {
             // expect_tasks FUNC N: exactly N live tasks run FUNC.
             // expect_tasks MAX N: never more than N co-op session tasks at once
@@ -3242,6 +3310,7 @@ static void frameCallback(struct mCoreThread* t) {
 		p->pc++;
 		p->step = 0;
 		p->offField = 0;
+		p->cb2Mark = p->cb2HistN;
 		{ static int tr = -1; if (tr < 0) tr = getenv("CMD_TRACE") != NULL;
 		  if (tr && p->pc < p->ncmds) out("[f%06d p%d cmd] %d %s\n", p->frame, p->id, p->pc, p->cmds[p->pc].text); }
 		if (c->kind == C_PRESS || c->kind == C_WAIT) break;
@@ -3466,6 +3535,24 @@ static void loadScript(const char* path, int depth) {
         } else if (!strcmp(cmd, "force_encounter")) {
             c.kind = C_FORCE_ENC;
             c.value = strtoul(a, NULL, 0);
+        } else if (!strcmp(cmd, "fixture_obj")) {
+            c.kind = C_OBJBYTE;
+            c.addr = (strtoul(a, NULL, 0) & 0xFF) | (strtoul(b, NULL, 0) << 8);
+            c.value = strtoul(d, NULL, 0);
+            snprintf(c.text, sizeof(c.text), "fixture_obj %s %s %s", a, b, d);
+        } else if (!strcmp(cmd, "fixture_rom16")) {
+            // FIXTURE fixture_rom16 SYM+off VALUE: patch a halfword of ROM data
+            // in this core (for example a route's wild species table).
+            char sym[96]; unsigned off = 0;
+            snprintf(sym, sizeof(sym), "%s", a);
+            char* plus = strchr(sym, '+');
+            if (plus) { off = strtoul(plus + 1, NULL, 0); *plus = 0; }
+            c.kind = C_ROMWRITE; c.addr = symAddr(sym) + off; c.value = strtoul(b, NULL, 0);
+            snprintf(c.text, sizeof(c.text), "%s", a);
+        } else if (!strcmp(cmd, "allow_reset")) {
+            // allow_reset: this scenario resets the game on purpose (the
+            // credits, a soft reset): not a failure from here on.
+            c.kind = C_ALLOW_RESET;
         } else if (!strcmp(cmd, "expect_tasks")) {
             c.kind = C_TASKS;
             snprintf(c.text, sizeof(c.text), "%s", a);
@@ -3930,6 +4017,14 @@ int main(int argc, char** argv) {
 
 	while (!(P[0].done && P[1].done)) {
 		usleep(20000);
+		if (sAbortRun) {
+			// Let the assert screen be pressed past and dumped first.
+			static int grace = 0;
+			if (sAbortRun == 1 || ++grace > 50) {
+				out("ABORTED: %s (critical failure; the rest of the scenario was not run)\n", sAbortWhy);
+				break;
+			}
+		}
 		if (mCoreThreadHasCrashed(&P[0].thread) || mCoreThreadHasCrashed(&P[1].thread)) {
 			fprintf(stderr, "core crashed\n");
 			for (int i = 0; i < 2; i++) {
@@ -3957,6 +4052,20 @@ int main(int argc, char** argv) {
 	if (sRecord) {
 		pclose(sRecord);
 		out("recorded %d side-by-side frames\n", sRecorded);
+	}
+	// A failed run's saves are never a checkpoint: rename them so no later
+	// step (a chained scenario, a journey) can continue from them.
+	if (sFailures) {
+		for (int i = 0; i < 2; i++) {
+			char from[600], to[620];
+			snprintf(from, sizeof(from), "%s/p%d.sav", sOutDir, i);
+			snprintf(to, sizeof(to), "%s/p%d.sav.quarantined", sOutDir, i);
+			rename(from, to);
+		}
+		char qf[600]; snprintf(qf, sizeof(qf), "%s/QUARANTINED", sOutDir);
+		FILE* q = fopen(qf, "w");
+		if (q) { fprintf(q, "failures=%d%s%s\n", sFailures, sAbortRun ? " aborted: " : "", sAbortRun ? sAbortWhy : ""); fclose(q); }
+		out("saves quarantined (p0.sav.quarantined, p1.sav.quarantined)\n");
 	}
 	out("frames p0=%d p1=%d failures=%d\n", P[0].frame, P[1].frame, sFailures);
 	_exit(sFailures ? 1 : 0);

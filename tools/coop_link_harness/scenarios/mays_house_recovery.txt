@@ -1,3 +1,4 @@
+# KIND: recovery (a fault is induced on purpose; the game must recover)
 # Recovery of an affected pair of saves. Make them with the pre-fix build:
 # run mays_house_doorway.txt up to the bedroom and save there. The guest
 # (player 1) saved in May's bedroom with May on the stair warp; the host

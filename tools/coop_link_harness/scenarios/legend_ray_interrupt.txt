@@ -1,3 +1,4 @@
+# KIND: recovery (a fault is induced on purpose; the game must recover)
 # Interrupted reward: Rosa's game stops taking deal messages from the
 # shared battle on (CoopDeal_HandleBlock patched to return), so Kai's EARN
 # never lands. Kai keeps the debt (owed, saved) and is told it will

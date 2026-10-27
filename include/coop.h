@@ -80,6 +80,28 @@ u16 Coop_NextProgression(void);
 void Coop_StartProgressionEvolution(void);
 
 extern bool8 gCoopBattleLaunching;
+
+// Finding #16 capture: a trainer battle that was about to launch with an
+// opponent that cannot be built. Refused (never replaced by a stand-in) and
+// recorded here for the harness and for a field report.
+#define COOP_BADTR_START   1 // BattleSetup_StartTrainerBattle
+#define COOP_BADTR_RESUME  2 // BattleSetup_ResumeSoloTrainerBattle (after an invite)
+#define COOP_BADTR_INVITE  3 // a received invite named no valid trainer
+struct CoopDiag
+{
+    u16 badTrainer;      // refusals so far this power-on
+    u16 lastA;
+    u16 lastB;
+    u8 site;             // COOP_BADTR_*
+    u8 approaching;      // gNoOfApproachingTrainers at the time
+    u8 kind;             // co-op battle kind then
+    u8 flags;            // bit0 inBattle, bit1 waitingAck, bit2 guestPairPending, bit3 script on
+    u16 selectedObj;     // gSelectedObjectEvent
+    u32 frame;           // gMain.vblankCounter1
+    const u8 *script;    // trainer script pointer of the first approaching trainer
+};
+extern struct CoopDiag gCoopDiag;
+void Coop_NoteBadTrainer(u8 site, u16 trainerA, u16 trainerB);
 extern bool8 gCoopArmWild;
 // Set while a co-op session should survive a one-off link glitch, such as a door.
 extern bool8 gCoopHoldLink;
@@ -213,6 +235,7 @@ extern const u8 Coop_EventScript_BuildMismatch[];
 extern const u8 Coop_EventScript_CapMismatch[];
 extern const u8 Coop_EventScript_LegendConflict[];
 extern const u8 Coop_EventScript_BattleAborted[];
+extern const u8 Coop_EventScript_TrainerRefused[];
 extern const u8 Coop_EventScript_TradeDone[];
 extern const u8 Coop_EventScript_PartnerDeclined[];
 extern const u8 Coop_EventScript_LegendAskGuest[];

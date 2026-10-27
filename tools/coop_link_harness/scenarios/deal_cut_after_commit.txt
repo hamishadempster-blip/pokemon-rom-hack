@@ -1,3 +1,4 @@
+# KIND: recovery (a fault is induced on purpose; the game must recover)
 # Player 0 escrows and sends READY, then (FIXTURE) stops reading deal
 # messages, so it never learns that player 1 committed. Power is cut once
 # player 1's commit is on the flash. deal_cut_after_commit_reload.txt

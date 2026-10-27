@@ -1,3 +1,4 @@
+# KIND: recovery (a fault is induced on purpose; the game must recover)
 # Live recovery without a power cut: player 0 escrows, then (FIXTURE) stops
 # reading deal messages for 40 seconds, so its wait for READY ends with
 # "The link was interrupted". Player 1 commits meanwhile. When player 0
