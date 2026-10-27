@@ -221,6 +221,8 @@ for g in enc['wild_encounter_groups']:
                     wild.setdefault(SPECIES_NAME.get(SPECIES.get(m['species'], -1), m['species']), set()).add((e.get('map', e.get('base_label')), kind.replace('_mons', ''), m['min_level'], m['max_level']))
 
 trades = {SPECIES_NAME.get(SPECIES.get(t, -1), t) for t in re.findall(r'\.species\s*=\s*(SPECIES_\w+)', read('src/data/trade.h'))}
+# Gifts from code (the starter guests, src/coop_roster.c) count like trades.
+trades |= {SPECIES_NAME.get(SPECIES.get(t, -1), t) for t in re.findall(r'(SPECIES_\w+)', read('src/coop_roster.c'))}
 
 item_sources = {}
 for mj in glob.glob(os.path.join(ROOT, 'data/maps/*/map.json')):

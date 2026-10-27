@@ -1,0 +1,40 @@
+# GENERATED (finding #16 matrix; not committed). j16 saves, Route 116 below
+# School Kid Karen (22,16; faces down and up, sight 3). Beacon ON. FIXTURES:
+# every Route 116 grass slot is ABRA (Teleport), warps to the lane.
+include continue.inc
+include relink.inc
+b expect coop.sLinkState 2
+b smart_moves 1
+include beacon_on.inc
+b mash_field 2000 B
+b expect coop.sBeacon+1:1 1
+b no_wild 1
+b fixture_rom16 gRoute116_LandMons+2 63
+b fixture_rom16 gRoute116_LandMons+6 63
+b fixture_rom16 gRoute116_LandMons+10 63
+b fixture_rom16 gRoute116_LandMons+14 63
+b fixture_rom16 gRoute116_LandMons+18 63
+b fixture_rom16 gRoute116_LandMons+22 63
+b fixture_rom16 gRoute116_LandMons+26 63
+b fixture_rom16 gRoute116_LandMons+30 63
+b fixture_rom16 gRoute116_LandMons+34 63
+b fixture_rom16 gRoute116_LandMons+38 63
+b fixture_rom16 gRoute116_LandMons+42 63
+b fixture_rom16 gRoute116_LandMons+46 63
+0 fixture_warp 0 31 23 17
+1 fixture_warp 0 31 25 17
+b until_field 3000
+b sync
+0 fixture_warp 0 31 24 18
+1 fixture_warp 0 31 27 17
+b until_field 3000
+b sync
+0 expect_var 0x4021 0
+0 no_wild 0
+0 force_encounter 1
+0 write sWildEncounterImmunitySteps:1 4
+0 walk_try 23 18 300
+0 walk_try 24 18 300
+0 walk_try 23 18 300
+0 walk_try 24 18 300
+0 shot probe

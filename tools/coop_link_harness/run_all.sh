@@ -6,7 +6,8 @@
 #   tools/coop_link_harness/run_all.sh            # all scenarios
 #   ONLY="rival_join rival_pending" run_all.sh    # a subset (fresh-save ones)
 #   J16=dir J37=dir: finding #16, shared NPCs, scene joins
-#   J65=dir J68=dir: late-game checkpoints (Wally; shared legendaries)
+#   J52=dir J65=dir J68=dir: late-game checkpoints (late wild encounters;
+#   Wally and roster evolutions; shared legendaries)
 #   SEG6=/path/dir run_all.sh                     # also the story_seg6-based
 #                                                 # partner menu, QoL, and quest runs
 #   AFFECTED=/path/dir run_all.sh                 # also run mays_house_recovery
@@ -104,6 +105,15 @@ fi
 # Grande, eight badges): late-game co-op regressions.
 if [ -n "${J65:-}" ]; then
 	run coop_wally_vr_partner SAVE0="$J65/p0.sav" SAVE1="$J65/p1.sav"
+	# First roster batch: every distinct evolution method (player 1 at night).
+	run roster_b1_evolutions SAVE0="$J65/p0.sav" SAVE1="$J65/p1.sav" RTC_EPOCH0=1699923600 RTC_EPOCH1=1699963200
+fi
+
+# J52=dir with p0.sav/p1.sav from checkpoint 52 (Lilycove, linked): normal
+# wild encounters after Route 119 (grass, Surf, fishing, catch, run,
+# Teleport, a building transition between battles).
+if [ -n "${J52:-}" ]; then
+	run late_wild_tour SAVE0="$J52/p0.sav" SAVE1="$J52/p1.sav"
 fi
 
 # J68=dir with p0.sav/p1.sav from the main journey's checkpoint 68 (after the
@@ -157,6 +167,11 @@ if [ -n "${SEG6:-}" ]; then
 	# One trainer, two of his Pokemon down on one turn, one left in reserve.
 	run coop_one_trainer_faints SAVE0="$SEG6/p0.sav" SAVE1="$SEG6/p1.sav"
 	run coop_admin_flag SAVE0="$SEG6/p0.sav" SAVE1="$SEG6/p1.sav"
+	# First roster batch: new species caught, traded, gifted (party and PC),
+	# reloaded; the partner-Pokemon badge gate.
+	run roster_b1_play SAVE0="$SEG6/p0.sav" SAVE1="$SEG6/p1.sav"
+	run roster_b1_reload SAVE0="$out/roster_b1_play/p0.sav" SAVE1="$out/roster_b1_play/p1.sav"
+	run roster_b1_gate SAVE0="$SEG6/p0.sav" SAVE1="$SEG6/p1.sav"
 	run lighting_link SAVE0="$SEG6/p0.sav" SAVE1="$SEG6/p1.sav" RTC_EPOCH0=1699963200 RTC_EPOCH1=1699923600
 	for s in shoal coast caravan twins beacon; do
 		run "${s}_reload" SAVE0="$out/${s}_solo/p0.sav" SAVE1="$out/${s}_solo/p1.sav"

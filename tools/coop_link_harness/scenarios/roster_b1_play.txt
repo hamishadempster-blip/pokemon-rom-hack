@@ -1,0 +1,98 @@
+# First roster expansion in play (story_seg6 saves: Rustboro, one Pokemon
+# each, linked; Beacon off, so wild battles are solo).
+# FIXTURES: twenty POKe BALLs each (test_item); fixture_warp to Route 116's
+# grass and into the Rustboro POKeMON CENTER; for the PC delivery, player
+# 1's party is filled to six with POOCHYENA (test_mon) just before the gift.
+# Checks:
+# - catching from the new placements: Kai a MINCCINO, Rosa a VENONAT, on
+#   Route 116 (Pokedex caught flags set);
+# - trading them through the partner menu: each save ends with the other's
+#   catch, nothing copied or lost;
+# - the KANTO starter guest: Kai takes BULBASAUR (party), Rosa CHARMANDER
+#   (party full: sent to the PC); a second visit the same day gets
+#   "That's all for today" and nothing;
+# - the saves are written; roster_b1_reload continues them.
+include continue.inc
+include relink.inc
+b expect coop.sLinkState 2
+b no_wild 1
+b test_item 1 20
+b mash_field 300 B
+0 fixture_warp 0 31 24 18
+1 fixture_warp 0 31 23 18
+b until_field 3000
+b no_wild 0
+0 hunt 6 572 90000
+1 hunt 6 48 200000
+b no_wild 1
+b sync
+0 expect_dex_caught 572 1
+1 expect_dex_caught 48 1
+0 expect_species 1 572
+1 expect_species 1 48
+# Trade them: back to Rustboro, side by side, partner menu TRADE slot 1.
+b fixture_warp 0 3 16 40
+b until_field 3000
+1 walk 17 41 4000
+1 walk 16 41 2000
+0 walk 14 41 4000
+0 walk 15 41 2000
+b sync
+b wait 30
+include deal_trade_offer.inc
+1 until_mem coop_deal.sDeal+13 1 900 A
+0 until_mem coop_deal.sDeal+13 1 900 A
+b mash_field 9000 B
+b expect_txn 0
+b expect_mons_intact
+b expect_no_copies
+0 expect_species 1 48
+1 expect_species 1 572
+# The KANTO starter guest in the Rustboro Centre (1,5).
+0 fixture_warp 11 5 2 5
+1 fixture_warp 11 5 1 4
+b until_field 3000
+1 test_mon 2 261 10
+1 test_mon 3 261 10
+1 test_mon 4 261 10
+1 test_mon 5 261 10
+1 boxes
+0 press LEFT 2
+0 wait 20
+0 press A 2
+0 until_task Task_HandleScrollingMultichoiceInput 1500 A
+0 wait 30
+0 shot guest-menu
+0 press A 2
+0 until_task Task_HandleYesNoInput 1500 A
+0 wait 20
+0 press B 2
+0 mash_field 1500 B
+0 expect_dex_caught 1 1
+0 expect_species 2 1
+0 expect_flag 0x925 1
+b sync
+1 press DOWN 2
+1 wait 20
+1 press A 2
+1 until_task Task_HandleScrollingMultichoiceInput 1500 A
+1 wait 30
+1 press DOWN 2
+1 wait 30
+1 press A 2
+1 until_task Task_HandleYesNoInput 1500 A
+1 wait 20
+1 press B 2
+1 mash_field 2500 B
+1 expect_dex_caught 4 1
+1 expect_flag 0x925 1
+1 boxes
+# Again today: nothing more.
+0 press A 2
+0 wait 120
+0 shot guest-today
+0 mash_field 1200 B
+0 expect_species 3 0
+include save_again.inc
+b expect coop.sLinkState 2
+b party

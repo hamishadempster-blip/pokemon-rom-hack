@@ -1,0 +1,166 @@
+# First roster expansion: each distinct evolution method, in play (j65
+# saves, eight badges, not linked; level cap turned off from the CO-OP list).
+# FIXTURES: each Pokemon is made in the lead slot (TEST HELPER test_mon, at
+# the level shown), the items are added to the bag (test_item); player 1's
+# clock is set to night (23:00), player 0's to midday; player 1 is warped
+# into New Mauville for the location evolution. Every evolution itself runs
+# through the game: the Bag's USE, the party menu, the evolution scene.
+# Player 0: STARLY Lv 13 + RARE CANDY -> STARAVIA (level); GROWLITHE + FIRE
+# STONE -> ARCANINE; PHANTUMP + LINKING CORD -> TREVENANT (no trade needed);
+# STEENEE Lv 27 + RARE CANDY: learns STOMP at 28, then TSAREENA (knows a
+# move); PILOSWINE Lv 32 knowing ANCIENT POWER + RARE CANDY -> MAMOSWINE;
+# SNEASEL + RAZOR CLAW at midday: no effect (night only).
+# Player 1 (night): SNEASEL + RAZOR CLAW -> WEAVILE; CHARJABUG Lv 20 + RARE
+# CANDY in New Mauville -> VIKAVOLT (place); SHELLOS (East Sea) Lv 29 + RARE
+# CANDY -> GASTRODON (East Sea); PUMPKABOO (Super) + LINKING CORD ->
+# GOURGEIST (Super); MINCCINO + SHINY STONE -> CINCCINO.
+include continue.inc
+b no_wild 1
+b press START 2
+b wait 40
+b menu_to COOP
+b press A 2
+b wait 60
+b press DOWN 2
+b wait 10
+b press DOWN 2
+b wait 10
+b press DOWN 2
+b wait 10
+b press A 2
+b wait 120
+b press A 2
+b wait 120
+b mash_field 1500
+b test_item 102 12
+b test_item 796 2
+0 test_item 211 1
+0 test_item 492 1
+1 test_item 492 1
+1 test_item 218 1
+0 test_mon 0 396 13
+0 mash_field 300 B
+0 press START 2
+0 wait 40
+0 menu_to BAG
+0 press A 2
+0 until_cb2 CB2_BagMenuRun 2500
+0 wait 60
+0 field_item 102 0
+0 expect_species 0 397
+0 shot evo-397
+0 test_mon 0 58 20
+0 mash_field 300 B
+0 press START 2
+0 wait 40
+0 menu_to BAG
+0 press A 2
+0 until_cb2 CB2_BagMenuRun 2500
+0 wait 60
+0 field_item 211 0
+0 expect_species 0 59
+0 shot evo-59
+0 test_mon 0 708 20
+0 mash_field 300 B
+0 press START 2
+0 wait 40
+0 menu_to BAG
+0 press A 2
+0 until_cb2 CB2_BagMenuRun 2500
+0 wait 60
+0 field_item 796 0
+0 expect_species 0 709
+0 shot evo-709
+0 test_mon 0 762 27
+0 mash_field 300 B
+0 press START 2
+0 wait 40
+0 menu_to BAG
+0 press A 2
+0 until_cb2 CB2_BagMenuRun 2500
+0 wait 60
+0 field_item 102 0
+0 expect_species 0 763
+0 shot evo-763
+0 test_mon 0 221 32 0 246
+0 mash_field 300 B
+0 press START 2
+0 wait 40
+0 menu_to BAG
+0 press A 2
+0 until_cb2 CB2_BagMenuRun 2500
+0 wait 60
+0 field_item 102 0
+0 expect_species 0 473
+0 shot evo-473
+0 test_mon 0 215 30
+0 mash_field 300 B
+0 press START 2
+0 wait 40
+0 menu_to BAG
+0 press A 2
+0 until_cb2 CB2_BagMenuRun 2500
+0 wait 60
+0 field_item 492 0
+0 expect_species 0 215
+0 shot evo-215
+1 test_mon 0 215 30
+1 mash_field 300 B
+1 press START 2
+1 wait 40
+1 menu_to BAG
+1 press A 2
+1 until_cb2 CB2_BagMenuRun 2500
+1 wait 60
+1 field_item 492 0
+1 expect_species 0 461
+1 shot evo-461
+1 fixture_warp 24 53 33 8
+1 until_field 3000
+1 test_mon 0 737 20
+1 mash_field 300 B
+1 press START 2
+1 wait 40
+1 menu_to BAG
+1 press A 2
+1 until_cb2 CB2_BagMenuRun 2500
+1 wait 60
+1 field_item 102 0
+1 expect_species 0 738
+1 shot evo-738
+1 fixture_warp 0 10 6 7
+1 until_field 3000
+1 test_mon 0 1062 29
+1 mash_field 300 B
+1 press START 2
+1 wait 40
+1 menu_to BAG
+1 press A 2
+1 until_cb2 CB2_BagMenuRun 2500
+1 wait 60
+1 field_item 102 0
+1 expect_species 0 1063
+1 shot evo-1063
+1 test_mon 0 1159 25
+1 mash_field 300 B
+1 press START 2
+1 wait 40
+1 menu_to BAG
+1 press A 2
+1 until_cb2 CB2_BagMenuRun 2500
+1 wait 60
+1 field_item 796 0
+1 expect_species 0 1162
+1 shot evo-1162
+1 test_mon 0 572 20
+1 mash_field 300 B
+1 press START 2
+1 wait 40
+1 menu_to BAG
+1 press A 2
+1 until_cb2 CB2_BagMenuRun 2500
+1 wait 60
+1 field_item 218 0
+1 expect_species 0 573
+1 shot evo-573
+b party

@@ -5,240 +5,489 @@ Coop_EventScript_FieldResearcher::
 	faceplayer
 	msgbox Coop_Text_FieldGuideIntro, MSGBOX_DEFAULT
 Coop_EventScript_FieldGuideMenu::
+	message Coop_Text_FieldGuideGroup
+	waitmessage
+	dynmultipush Coop_Text_FG_Group0, 0
+	dynmultipush Coop_Text_FG_Group1, 1
+	dynmultipush Coop_Text_FG_Group2, 2
+	dynmultipush gText_Cancel, 3
+	dynmultistack 15, 1, FALSE, 6, FALSE, 0, DYN_MULTICHOICE_CB_NONE
+	goto_if_ge VAR_RESULT, 3, Coop_EventScript_FieldGuideBye
+	goto_if_eq VAR_RESULT, 0, Coop_EventScript_FG_List0
+	goto_if_eq VAR_RESULT, 1, Coop_EventScript_FG_List1
+	goto_if_eq VAR_RESULT, 2, Coop_EventScript_FG_List2
+	goto Coop_EventScript_FieldGuideBye
+Coop_EventScript_FG_List0:
 	message Coop_Text_FieldGuideAsk
 	waitmessage
-	dynmultipush Coop_Text_FG_Name0, 0
-	dynmultipush Coop_Text_FG_Name1, 1
-	dynmultipush Coop_Text_FG_Name2, 2
-	dynmultipush Coop_Text_FG_Name3, 3
-	dynmultipush Coop_Text_FG_Name4, 4
-	dynmultipush Coop_Text_FG_Name5, 5
-	dynmultipush Coop_Text_FG_Name6, 6
-	dynmultipush Coop_Text_FG_Name7, 7
-	dynmultipush Coop_Text_FG_Name8, 8
-	dynmultipush Coop_Text_FG_Name9, 9
-	dynmultipush Coop_Text_FG_Name10, 10
-	dynmultipush Coop_Text_FG_Name11, 11
-	dynmultipush Coop_Text_FG_Name12, 12
-	dynmultipush Coop_Text_FG_Name13, 13
-	dynmultipush Coop_Text_FG_Name14, 14
-	dynmultipush Coop_Text_FG_Name15, 15
-	dynmultipush Coop_Text_FG_Name16, 16
-	dynmultipush Coop_Text_FG_Name17, 17
-	dynmultipush Coop_Text_FG_Name18, 18
-	dynmultipush Coop_Text_FG_Name19, 19
-	dynmultipush Coop_Text_FG_Name20, 20
-	dynmultipush Coop_Text_FG_Name21, 21
-	dynmultipush Coop_Text_FG_Name22, 22
-	dynmultipush Coop_Text_FG_Name23, 23
-	dynmultipush Coop_Text_FG_Name24, 24
-	dynmultipush Coop_Text_FG_Name25, 25
-	dynmultipush Coop_Text_FG_Name26, 26
-	dynmultipush Coop_Text_FG_Name27, 27
-	dynmultipush Coop_Text_FG_Name28, 28
-	dynmultipush Coop_Text_FG_Name29, 29
-	dynmultipush Coop_Text_FG_Name30, 30
-	dynmultipush Coop_Text_FG_Name31, 31
-	dynmultipush Coop_Text_FG_Name32, 32
-	dynmultipush Coop_Text_FG_Name33, 33
-	dynmultipush Coop_Text_FG_Name34, 34
-	dynmultipush Coop_Text_FG_Name35, 35
-	dynmultipush Coop_Text_FG_Name36, 36
-	dynmultipush Coop_Text_FG_Name37, 37
+	dynmultipush Coop_Text_FG_Name0_0, 0
+	dynmultipush Coop_Text_FG_Name0_1, 1
+	dynmultipush Coop_Text_FG_Name0_2, 2
+	dynmultipush Coop_Text_FG_Name0_3, 3
+	dynmultipush Coop_Text_FG_Name0_4, 4
+	dynmultipush Coop_Text_FG_Name0_5, 5
+	dynmultipush Coop_Text_FG_Name0_6, 6
+	dynmultipush Coop_Text_FG_Name0_7, 7
+	dynmultipush Coop_Text_FG_Name0_8, 8
+	dynmultipush Coop_Text_FG_Name0_9, 9
+	dynmultipush Coop_Text_FG_Name0_10, 10
+	dynmultipush Coop_Text_FG_Name0_11, 11
+	dynmultipush Coop_Text_FG_Name0_12, 12
+	dynmultipush Coop_Text_FG_Name0_13, 13
+	dynmultipush Coop_Text_FG_Name0_14, 14
+	dynmultipush Coop_Text_FG_Name0_15, 15
+	dynmultipush Coop_Text_FG_Name0_16, 16
+	dynmultipush Coop_Text_FG_Name0_17, 17
+	dynmultipush Coop_Text_FG_Name0_18, 18
+	dynmultipush Coop_Text_FG_Name0_19, 19
+	dynmultipush Coop_Text_FG_Name0_20, 20
+	dynmultipush Coop_Text_FG_Name0_21, 21
+	dynmultipush Coop_Text_FG_Name0_22, 22
+	dynmultipush Coop_Text_FG_Name0_23, 23
+	dynmultipush Coop_Text_FG_Name0_24, 24
+	dynmultipush Coop_Text_FG_Name0_25, 25
+	dynmultipush Coop_Text_FG_Name0_26, 26
+	dynmultipush Coop_Text_FG_Name0_27, 27
+	dynmultipush Coop_Text_FG_Name0_28, 28
+	dynmultipush Coop_Text_FG_Name0_29, 29
+	dynmultipush Coop_Text_FG_Name0_30, 30
+	dynmultipush Coop_Text_FG_Name0_31, 31
+	dynmultipush Coop_Text_FG_Name0_32, 32
+	dynmultipush Coop_Text_FG_Name0_33, 33
+	dynmultipush Coop_Text_FG_Name0_34, 34
+	dynmultipush Coop_Text_FG_Name0_35, 35
+	dynmultipush Coop_Text_FG_Name0_36, 36
+	dynmultipush Coop_Text_FG_Name0_37, 37
 	dynmultipush gText_Cancel, 38
 	dynmultistack 17, 1, FALSE, 6, FALSE, 0, DYN_MULTICHOICE_CB_NONE
-	goto_if_ge VAR_RESULT, 38, Coop_EventScript_FieldGuideBye
-	goto_if_eq VAR_RESULT, 0, Coop_EventScript_FG_0
-	goto_if_eq VAR_RESULT, 1, Coop_EventScript_FG_1
-	goto_if_eq VAR_RESULT, 2, Coop_EventScript_FG_2
-	goto_if_eq VAR_RESULT, 3, Coop_EventScript_FG_3
-	goto_if_eq VAR_RESULT, 4, Coop_EventScript_FG_4
-	goto_if_eq VAR_RESULT, 5, Coop_EventScript_FG_5
-	goto_if_eq VAR_RESULT, 6, Coop_EventScript_FG_6
-	goto_if_eq VAR_RESULT, 7, Coop_EventScript_FG_7
-	goto_if_eq VAR_RESULT, 8, Coop_EventScript_FG_8
-	goto_if_eq VAR_RESULT, 9, Coop_EventScript_FG_9
-	goto_if_eq VAR_RESULT, 10, Coop_EventScript_FG_10
-	goto_if_eq VAR_RESULT, 11, Coop_EventScript_FG_11
-	goto_if_eq VAR_RESULT, 12, Coop_EventScript_FG_12
-	goto_if_eq VAR_RESULT, 13, Coop_EventScript_FG_13
-	goto_if_eq VAR_RESULT, 14, Coop_EventScript_FG_14
-	goto_if_eq VAR_RESULT, 15, Coop_EventScript_FG_15
-	goto_if_eq VAR_RESULT, 16, Coop_EventScript_FG_16
-	goto_if_eq VAR_RESULT, 17, Coop_EventScript_FG_17
-	goto_if_eq VAR_RESULT, 18, Coop_EventScript_FG_18
-	goto_if_eq VAR_RESULT, 19, Coop_EventScript_FG_19
-	goto_if_eq VAR_RESULT, 20, Coop_EventScript_FG_20
-	goto_if_eq VAR_RESULT, 21, Coop_EventScript_FG_21
-	goto_if_eq VAR_RESULT, 22, Coop_EventScript_FG_22
-	goto_if_eq VAR_RESULT, 23, Coop_EventScript_FG_23
-	goto_if_eq VAR_RESULT, 24, Coop_EventScript_FG_24
-	goto_if_eq VAR_RESULT, 25, Coop_EventScript_FG_25
-	goto_if_eq VAR_RESULT, 26, Coop_EventScript_FG_26
-	goto_if_eq VAR_RESULT, 27, Coop_EventScript_FG_27
-	goto_if_eq VAR_RESULT, 28, Coop_EventScript_FG_28
-	goto_if_eq VAR_RESULT, 29, Coop_EventScript_FG_29
-	goto_if_eq VAR_RESULT, 30, Coop_EventScript_FG_30
-	goto_if_eq VAR_RESULT, 31, Coop_EventScript_FG_31
-	goto_if_eq VAR_RESULT, 32, Coop_EventScript_FG_32
-	goto_if_eq VAR_RESULT, 33, Coop_EventScript_FG_33
-	goto_if_eq VAR_RESULT, 34, Coop_EventScript_FG_34
-	goto_if_eq VAR_RESULT, 35, Coop_EventScript_FG_35
-	goto_if_eq VAR_RESULT, 36, Coop_EventScript_FG_36
-	goto_if_eq VAR_RESULT, 37, Coop_EventScript_FG_37
-	goto Coop_EventScript_FieldGuideBye
-Coop_EventScript_FG_0:
-	msgbox Coop_Text_FG_Where0, MSGBOX_DEFAULT
-	msgbox Coop_Text_FG_Evo0, MSGBOX_DEFAULT
+	goto_if_ge VAR_RESULT, 38, Coop_EventScript_FieldGuideMenu
+	goto_if_eq VAR_RESULT, 0, Coop_EventScript_FG_0_0
+	goto_if_eq VAR_RESULT, 1, Coop_EventScript_FG_0_1
+	goto_if_eq VAR_RESULT, 2, Coop_EventScript_FG_0_2
+	goto_if_eq VAR_RESULT, 3, Coop_EventScript_FG_0_3
+	goto_if_eq VAR_RESULT, 4, Coop_EventScript_FG_0_4
+	goto_if_eq VAR_RESULT, 5, Coop_EventScript_FG_0_5
+	goto_if_eq VAR_RESULT, 6, Coop_EventScript_FG_0_6
+	goto_if_eq VAR_RESULT, 7, Coop_EventScript_FG_0_7
+	goto_if_eq VAR_RESULT, 8, Coop_EventScript_FG_0_8
+	goto_if_eq VAR_RESULT, 9, Coop_EventScript_FG_0_9
+	goto_if_eq VAR_RESULT, 10, Coop_EventScript_FG_0_10
+	goto_if_eq VAR_RESULT, 11, Coop_EventScript_FG_0_11
+	goto_if_eq VAR_RESULT, 12, Coop_EventScript_FG_0_12
+	goto_if_eq VAR_RESULT, 13, Coop_EventScript_FG_0_13
+	goto_if_eq VAR_RESULT, 14, Coop_EventScript_FG_0_14
+	goto_if_eq VAR_RESULT, 15, Coop_EventScript_FG_0_15
+	goto_if_eq VAR_RESULT, 16, Coop_EventScript_FG_0_16
+	goto_if_eq VAR_RESULT, 17, Coop_EventScript_FG_0_17
+	goto_if_eq VAR_RESULT, 18, Coop_EventScript_FG_0_18
+	goto_if_eq VAR_RESULT, 19, Coop_EventScript_FG_0_19
+	goto_if_eq VAR_RESULT, 20, Coop_EventScript_FG_0_20
+	goto_if_eq VAR_RESULT, 21, Coop_EventScript_FG_0_21
+	goto_if_eq VAR_RESULT, 22, Coop_EventScript_FG_0_22
+	goto_if_eq VAR_RESULT, 23, Coop_EventScript_FG_0_23
+	goto_if_eq VAR_RESULT, 24, Coop_EventScript_FG_0_24
+	goto_if_eq VAR_RESULT, 25, Coop_EventScript_FG_0_25
+	goto_if_eq VAR_RESULT, 26, Coop_EventScript_FG_0_26
+	goto_if_eq VAR_RESULT, 27, Coop_EventScript_FG_0_27
+	goto_if_eq VAR_RESULT, 28, Coop_EventScript_FG_0_28
+	goto_if_eq VAR_RESULT, 29, Coop_EventScript_FG_0_29
+	goto_if_eq VAR_RESULT, 30, Coop_EventScript_FG_0_30
+	goto_if_eq VAR_RESULT, 31, Coop_EventScript_FG_0_31
+	goto_if_eq VAR_RESULT, 32, Coop_EventScript_FG_0_32
+	goto_if_eq VAR_RESULT, 33, Coop_EventScript_FG_0_33
+	goto_if_eq VAR_RESULT, 34, Coop_EventScript_FG_0_34
+	goto_if_eq VAR_RESULT, 35, Coop_EventScript_FG_0_35
+	goto_if_eq VAR_RESULT, 36, Coop_EventScript_FG_0_36
+	goto_if_eq VAR_RESULT, 37, Coop_EventScript_FG_0_37
 	goto Coop_EventScript_FieldGuideMenu
-Coop_EventScript_FG_1:
-	msgbox Coop_Text_FG_Where1, MSGBOX_DEFAULT
-	msgbox Coop_Text_FG_Evo1, MSGBOX_DEFAULT
+Coop_EventScript_FG_0_0:
+	msgbox Coop_Text_FG_Where0_0, MSGBOX_DEFAULT
+	msgbox Coop_Text_FG_Evo0_0, MSGBOX_DEFAULT
+	goto Coop_EventScript_FG_List0
+Coop_EventScript_FG_0_1:
+	msgbox Coop_Text_FG_Where0_1, MSGBOX_DEFAULT
+	msgbox Coop_Text_FG_Evo0_1, MSGBOX_DEFAULT
+	goto Coop_EventScript_FG_List0
+Coop_EventScript_FG_0_2:
+	msgbox Coop_Text_FG_Where0_2, MSGBOX_DEFAULT
+	msgbox Coop_Text_FG_Evo0_2, MSGBOX_DEFAULT
+	goto Coop_EventScript_FG_List0
+Coop_EventScript_FG_0_3:
+	msgbox Coop_Text_FG_Where0_3, MSGBOX_DEFAULT
+	msgbox Coop_Text_FG_Evo0_3, MSGBOX_DEFAULT
+	goto Coop_EventScript_FG_List0
+Coop_EventScript_FG_0_4:
+	msgbox Coop_Text_FG_Where0_4, MSGBOX_DEFAULT
+	msgbox Coop_Text_FG_Evo0_4, MSGBOX_DEFAULT
+	goto Coop_EventScript_FG_List0
+Coop_EventScript_FG_0_5:
+	msgbox Coop_Text_FG_Where0_5, MSGBOX_DEFAULT
+	msgbox Coop_Text_FG_Evo0_5, MSGBOX_DEFAULT
+	goto Coop_EventScript_FG_List0
+Coop_EventScript_FG_0_6:
+	msgbox Coop_Text_FG_Where0_6, MSGBOX_DEFAULT
+	msgbox Coop_Text_FG_Evo0_6, MSGBOX_DEFAULT
+	goto Coop_EventScript_FG_List0
+Coop_EventScript_FG_0_7:
+	msgbox Coop_Text_FG_Where0_7, MSGBOX_DEFAULT
+	msgbox Coop_Text_FG_Evo0_7, MSGBOX_DEFAULT
+	goto Coop_EventScript_FG_List0
+Coop_EventScript_FG_0_8:
+	msgbox Coop_Text_FG_Where0_8, MSGBOX_DEFAULT
+	msgbox Coop_Text_FG_Evo0_8, MSGBOX_DEFAULT
+	goto Coop_EventScript_FG_List0
+Coop_EventScript_FG_0_9:
+	msgbox Coop_Text_FG_Where0_9, MSGBOX_DEFAULT
+	msgbox Coop_Text_FG_Evo0_9, MSGBOX_DEFAULT
+	goto Coop_EventScript_FG_List0
+Coop_EventScript_FG_0_10:
+	msgbox Coop_Text_FG_Where0_10, MSGBOX_DEFAULT
+	msgbox Coop_Text_FG_Evo0_10, MSGBOX_DEFAULT
+	goto Coop_EventScript_FG_List0
+Coop_EventScript_FG_0_11:
+	msgbox Coop_Text_FG_Where0_11, MSGBOX_DEFAULT
+	msgbox Coop_Text_FG_Evo0_11, MSGBOX_DEFAULT
+	goto Coop_EventScript_FG_List0
+Coop_EventScript_FG_0_12:
+	msgbox Coop_Text_FG_Where0_12, MSGBOX_DEFAULT
+	msgbox Coop_Text_FG_Evo0_12, MSGBOX_DEFAULT
+	goto Coop_EventScript_FG_List0
+Coop_EventScript_FG_0_13:
+	msgbox Coop_Text_FG_Where0_13, MSGBOX_DEFAULT
+	msgbox Coop_Text_FG_Evo0_13, MSGBOX_DEFAULT
+	goto Coop_EventScript_FG_List0
+Coop_EventScript_FG_0_14:
+	msgbox Coop_Text_FG_Where0_14, MSGBOX_DEFAULT
+	msgbox Coop_Text_FG_Evo0_14, MSGBOX_DEFAULT
+	goto Coop_EventScript_FG_List0
+Coop_EventScript_FG_0_15:
+	msgbox Coop_Text_FG_Where0_15, MSGBOX_DEFAULT
+	msgbox Coop_Text_FG_Evo0_15, MSGBOX_DEFAULT
+	goto Coop_EventScript_FG_List0
+Coop_EventScript_FG_0_16:
+	msgbox Coop_Text_FG_Where0_16, MSGBOX_DEFAULT
+	msgbox Coop_Text_FG_Evo0_16, MSGBOX_DEFAULT
+	goto Coop_EventScript_FG_List0
+Coop_EventScript_FG_0_17:
+	msgbox Coop_Text_FG_Where0_17, MSGBOX_DEFAULT
+	msgbox Coop_Text_FG_Evo0_17, MSGBOX_DEFAULT
+	goto Coop_EventScript_FG_List0
+Coop_EventScript_FG_0_18:
+	msgbox Coop_Text_FG_Where0_18, MSGBOX_DEFAULT
+	msgbox Coop_Text_FG_Evo0_18, MSGBOX_DEFAULT
+	goto Coop_EventScript_FG_List0
+Coop_EventScript_FG_0_19:
+	msgbox Coop_Text_FG_Where0_19, MSGBOX_DEFAULT
+	msgbox Coop_Text_FG_Evo0_19, MSGBOX_DEFAULT
+	goto Coop_EventScript_FG_List0
+Coop_EventScript_FG_0_20:
+	msgbox Coop_Text_FG_Where0_20, MSGBOX_DEFAULT
+	msgbox Coop_Text_FG_Evo0_20, MSGBOX_DEFAULT
+	goto Coop_EventScript_FG_List0
+Coop_EventScript_FG_0_21:
+	msgbox Coop_Text_FG_Where0_21, MSGBOX_DEFAULT
+	msgbox Coop_Text_FG_Evo0_21, MSGBOX_DEFAULT
+	goto Coop_EventScript_FG_List0
+Coop_EventScript_FG_0_22:
+	msgbox Coop_Text_FG_Where0_22, MSGBOX_DEFAULT
+	msgbox Coop_Text_FG_Evo0_22, MSGBOX_DEFAULT
+	goto Coop_EventScript_FG_List0
+Coop_EventScript_FG_0_23:
+	msgbox Coop_Text_FG_Where0_23, MSGBOX_DEFAULT
+	msgbox Coop_Text_FG_Evo0_23, MSGBOX_DEFAULT
+	goto Coop_EventScript_FG_List0
+Coop_EventScript_FG_0_24:
+	msgbox Coop_Text_FG_Where0_24, MSGBOX_DEFAULT
+	msgbox Coop_Text_FG_Evo0_24, MSGBOX_DEFAULT
+	goto Coop_EventScript_FG_List0
+Coop_EventScript_FG_0_25:
+	msgbox Coop_Text_FG_Where0_25, MSGBOX_DEFAULT
+	msgbox Coop_Text_FG_Evo0_25, MSGBOX_DEFAULT
+	goto Coop_EventScript_FG_List0
+Coop_EventScript_FG_0_26:
+	msgbox Coop_Text_FG_Where0_26, MSGBOX_DEFAULT
+	msgbox Coop_Text_FG_Evo0_26, MSGBOX_DEFAULT
+	goto Coop_EventScript_FG_List0
+Coop_EventScript_FG_0_27:
+	msgbox Coop_Text_FG_Where0_27, MSGBOX_DEFAULT
+	msgbox Coop_Text_FG_Evo0_27, MSGBOX_DEFAULT
+	goto Coop_EventScript_FG_List0
+Coop_EventScript_FG_0_28:
+	msgbox Coop_Text_FG_Where0_28, MSGBOX_DEFAULT
+	msgbox Coop_Text_FG_Evo0_28, MSGBOX_DEFAULT
+	goto Coop_EventScript_FG_List0
+Coop_EventScript_FG_0_29:
+	msgbox Coop_Text_FG_Where0_29, MSGBOX_DEFAULT
+	msgbox Coop_Text_FG_Evo0_29, MSGBOX_DEFAULT
+	goto Coop_EventScript_FG_List0
+Coop_EventScript_FG_0_30:
+	msgbox Coop_Text_FG_Where0_30, MSGBOX_DEFAULT
+	msgbox Coop_Text_FG_Evo0_30, MSGBOX_DEFAULT
+	goto Coop_EventScript_FG_List0
+Coop_EventScript_FG_0_31:
+	msgbox Coop_Text_FG_Where0_31, MSGBOX_DEFAULT
+	msgbox Coop_Text_FG_Evo0_31, MSGBOX_DEFAULT
+	goto Coop_EventScript_FG_List0
+Coop_EventScript_FG_0_32:
+	msgbox Coop_Text_FG_Where0_32, MSGBOX_DEFAULT
+	msgbox Coop_Text_FG_Evo0_32, MSGBOX_DEFAULT
+	goto Coop_EventScript_FG_List0
+Coop_EventScript_FG_0_33:
+	msgbox Coop_Text_FG_Where0_33, MSGBOX_DEFAULT
+	msgbox Coop_Text_FG_Evo0_33, MSGBOX_DEFAULT
+	goto Coop_EventScript_FG_List0
+Coop_EventScript_FG_0_34:
+	msgbox Coop_Text_FG_Where0_34, MSGBOX_DEFAULT
+	msgbox Coop_Text_FG_Evo0_34, MSGBOX_DEFAULT
+	goto Coop_EventScript_FG_List0
+Coop_EventScript_FG_0_35:
+	msgbox Coop_Text_FG_Where0_35, MSGBOX_DEFAULT
+	msgbox Coop_Text_FG_Evo0_35, MSGBOX_DEFAULT
+	goto Coop_EventScript_FG_List0
+Coop_EventScript_FG_0_36:
+	msgbox Coop_Text_FG_Where0_36, MSGBOX_DEFAULT
+	msgbox Coop_Text_FG_Evo0_36, MSGBOX_DEFAULT
+	goto Coop_EventScript_FG_List0
+Coop_EventScript_FG_0_37:
+	msgbox Coop_Text_FG_Where0_37, MSGBOX_DEFAULT
+	msgbox Coop_Text_FG_Evo0_37, MSGBOX_DEFAULT
+	goto Coop_EventScript_FG_List0
+Coop_EventScript_FG_List1:
+	message Coop_Text_FieldGuideAsk
+	waitmessage
+	dynmultipush Coop_Text_FG_Name1_0, 0
+	dynmultipush Coop_Text_FG_Name1_1, 1
+	dynmultipush Coop_Text_FG_Name1_2, 2
+	dynmultipush Coop_Text_FG_Name1_3, 3
+	dynmultipush Coop_Text_FG_Name1_4, 4
+	dynmultipush Coop_Text_FG_Name1_5, 5
+	dynmultipush Coop_Text_FG_Name1_6, 6
+	dynmultipush Coop_Text_FG_Name1_7, 7
+	dynmultipush Coop_Text_FG_Name1_8, 8
+	dynmultipush Coop_Text_FG_Name1_9, 9
+	dynmultipush Coop_Text_FG_Name1_10, 10
+	dynmultipush Coop_Text_FG_Name1_11, 11
+	dynmultipush Coop_Text_FG_Name1_12, 12
+	dynmultipush Coop_Text_FG_Name1_13, 13
+	dynmultipush Coop_Text_FG_Name1_14, 14
+	dynmultipush Coop_Text_FG_Name1_15, 15
+	dynmultipush Coop_Text_FG_Name1_16, 16
+	dynmultipush Coop_Text_FG_Name1_17, 17
+	dynmultipush Coop_Text_FG_Name1_18, 18
+	dynmultipush Coop_Text_FG_Name1_19, 19
+	dynmultipush Coop_Text_FG_Name1_20, 20
+	dynmultipush Coop_Text_FG_Name1_21, 21
+	dynmultipush Coop_Text_FG_Name1_22, 22
+	dynmultipush Coop_Text_FG_Name1_23, 23
+	dynmultipush Coop_Text_FG_Name1_24, 24
+	dynmultipush Coop_Text_FG_Name1_25, 25
+	dynmultipush Coop_Text_FG_Name1_26, 26
+	dynmultipush Coop_Text_FG_Name1_27, 27
+	dynmultipush Coop_Text_FG_Name1_28, 28
+	dynmultipush Coop_Text_FG_Name1_29, 29
+	dynmultipush Coop_Text_FG_Name1_30, 30
+	dynmultipush Coop_Text_FG_Name1_31, 31
+	dynmultipush Coop_Text_FG_Name1_32, 32
+	dynmultipush gText_Cancel, 33
+	dynmultistack 17, 1, FALSE, 6, FALSE, 0, DYN_MULTICHOICE_CB_NONE
+	goto_if_ge VAR_RESULT, 33, Coop_EventScript_FieldGuideMenu
+	goto_if_eq VAR_RESULT, 0, Coop_EventScript_FG_1_0
+	goto_if_eq VAR_RESULT, 1, Coop_EventScript_FG_1_1
+	goto_if_eq VAR_RESULT, 2, Coop_EventScript_FG_1_2
+	goto_if_eq VAR_RESULT, 3, Coop_EventScript_FG_1_3
+	goto_if_eq VAR_RESULT, 4, Coop_EventScript_FG_1_4
+	goto_if_eq VAR_RESULT, 5, Coop_EventScript_FG_1_5
+	goto_if_eq VAR_RESULT, 6, Coop_EventScript_FG_1_6
+	goto_if_eq VAR_RESULT, 7, Coop_EventScript_FG_1_7
+	goto_if_eq VAR_RESULT, 8, Coop_EventScript_FG_1_8
+	goto_if_eq VAR_RESULT, 9, Coop_EventScript_FG_1_9
+	goto_if_eq VAR_RESULT, 10, Coop_EventScript_FG_1_10
+	goto_if_eq VAR_RESULT, 11, Coop_EventScript_FG_1_11
+	goto_if_eq VAR_RESULT, 12, Coop_EventScript_FG_1_12
+	goto_if_eq VAR_RESULT, 13, Coop_EventScript_FG_1_13
+	goto_if_eq VAR_RESULT, 14, Coop_EventScript_FG_1_14
+	goto_if_eq VAR_RESULT, 15, Coop_EventScript_FG_1_15
+	goto_if_eq VAR_RESULT, 16, Coop_EventScript_FG_1_16
+	goto_if_eq VAR_RESULT, 17, Coop_EventScript_FG_1_17
+	goto_if_eq VAR_RESULT, 18, Coop_EventScript_FG_1_18
+	goto_if_eq VAR_RESULT, 19, Coop_EventScript_FG_1_19
+	goto_if_eq VAR_RESULT, 20, Coop_EventScript_FG_1_20
+	goto_if_eq VAR_RESULT, 21, Coop_EventScript_FG_1_21
+	goto_if_eq VAR_RESULT, 22, Coop_EventScript_FG_1_22
+	goto_if_eq VAR_RESULT, 23, Coop_EventScript_FG_1_23
+	goto_if_eq VAR_RESULT, 24, Coop_EventScript_FG_1_24
+	goto_if_eq VAR_RESULT, 25, Coop_EventScript_FG_1_25
+	goto_if_eq VAR_RESULT, 26, Coop_EventScript_FG_1_26
+	goto_if_eq VAR_RESULT, 27, Coop_EventScript_FG_1_27
+	goto_if_eq VAR_RESULT, 28, Coop_EventScript_FG_1_28
+	goto_if_eq VAR_RESULT, 29, Coop_EventScript_FG_1_29
+	goto_if_eq VAR_RESULT, 30, Coop_EventScript_FG_1_30
+	goto_if_eq VAR_RESULT, 31, Coop_EventScript_FG_1_31
+	goto_if_eq VAR_RESULT, 32, Coop_EventScript_FG_1_32
 	goto Coop_EventScript_FieldGuideMenu
-Coop_EventScript_FG_2:
-	msgbox Coop_Text_FG_Where2, MSGBOX_DEFAULT
-	msgbox Coop_Text_FG_Evo2, MSGBOX_DEFAULT
+Coop_EventScript_FG_1_0:
+	msgbox Coop_Text_FG_Where1_0, MSGBOX_DEFAULT
+	msgbox Coop_Text_FG_Evo1_0, MSGBOX_DEFAULT
+	goto Coop_EventScript_FG_List1
+Coop_EventScript_FG_1_1:
+	msgbox Coop_Text_FG_Where1_1, MSGBOX_DEFAULT
+	msgbox Coop_Text_FG_Evo1_1, MSGBOX_DEFAULT
+	goto Coop_EventScript_FG_List1
+Coop_EventScript_FG_1_2:
+	msgbox Coop_Text_FG_Where1_2, MSGBOX_DEFAULT
+	msgbox Coop_Text_FG_Evo1_2, MSGBOX_DEFAULT
+	goto Coop_EventScript_FG_List1
+Coop_EventScript_FG_1_3:
+	msgbox Coop_Text_FG_Where1_3, MSGBOX_DEFAULT
+	msgbox Coop_Text_FG_Evo1_3, MSGBOX_DEFAULT
+	goto Coop_EventScript_FG_List1
+Coop_EventScript_FG_1_4:
+	msgbox Coop_Text_FG_Where1_4, MSGBOX_DEFAULT
+	msgbox Coop_Text_FG_Evo1_4, MSGBOX_DEFAULT
+	goto Coop_EventScript_FG_List1
+Coop_EventScript_FG_1_5:
+	msgbox Coop_Text_FG_Where1_5, MSGBOX_DEFAULT
+	msgbox Coop_Text_FG_Evo1_5, MSGBOX_DEFAULT
+	goto Coop_EventScript_FG_List1
+Coop_EventScript_FG_1_6:
+	msgbox Coop_Text_FG_Where1_6, MSGBOX_DEFAULT
+	msgbox Coop_Text_FG_Evo1_6, MSGBOX_DEFAULT
+	goto Coop_EventScript_FG_List1
+Coop_EventScript_FG_1_7:
+	msgbox Coop_Text_FG_Where1_7, MSGBOX_DEFAULT
+	msgbox Coop_Text_FG_Evo1_7, MSGBOX_DEFAULT
+	goto Coop_EventScript_FG_List1
+Coop_EventScript_FG_1_8:
+	msgbox Coop_Text_FG_Where1_8, MSGBOX_DEFAULT
+	msgbox Coop_Text_FG_Evo1_8, MSGBOX_DEFAULT
+	goto Coop_EventScript_FG_List1
+Coop_EventScript_FG_1_9:
+	msgbox Coop_Text_FG_Where1_9, MSGBOX_DEFAULT
+	msgbox Coop_Text_FG_Evo1_9, MSGBOX_DEFAULT
+	goto Coop_EventScript_FG_List1
+Coop_EventScript_FG_1_10:
+	msgbox Coop_Text_FG_Where1_10, MSGBOX_DEFAULT
+	msgbox Coop_Text_FG_Evo1_10, MSGBOX_DEFAULT
+	goto Coop_EventScript_FG_List1
+Coop_EventScript_FG_1_11:
+	msgbox Coop_Text_FG_Where1_11, MSGBOX_DEFAULT
+	msgbox Coop_Text_FG_Evo1_11, MSGBOX_DEFAULT
+	goto Coop_EventScript_FG_List1
+Coop_EventScript_FG_1_12:
+	msgbox Coop_Text_FG_Where1_12, MSGBOX_DEFAULT
+	msgbox Coop_Text_FG_Evo1_12, MSGBOX_DEFAULT
+	goto Coop_EventScript_FG_List1
+Coop_EventScript_FG_1_13:
+	msgbox Coop_Text_FG_Where1_13, MSGBOX_DEFAULT
+	msgbox Coop_Text_FG_Evo1_13, MSGBOX_DEFAULT
+	goto Coop_EventScript_FG_List1
+Coop_EventScript_FG_1_14:
+	msgbox Coop_Text_FG_Where1_14, MSGBOX_DEFAULT
+	msgbox Coop_Text_FG_Evo1_14, MSGBOX_DEFAULT
+	goto Coop_EventScript_FG_List1
+Coop_EventScript_FG_1_15:
+	msgbox Coop_Text_FG_Where1_15, MSGBOX_DEFAULT
+	msgbox Coop_Text_FG_Evo1_15, MSGBOX_DEFAULT
+	goto Coop_EventScript_FG_List1
+Coop_EventScript_FG_1_16:
+	msgbox Coop_Text_FG_Where1_16, MSGBOX_DEFAULT
+	msgbox Coop_Text_FG_Evo1_16, MSGBOX_DEFAULT
+	goto Coop_EventScript_FG_List1
+Coop_EventScript_FG_1_17:
+	msgbox Coop_Text_FG_Where1_17, MSGBOX_DEFAULT
+	msgbox Coop_Text_FG_Evo1_17, MSGBOX_DEFAULT
+	goto Coop_EventScript_FG_List1
+Coop_EventScript_FG_1_18:
+	msgbox Coop_Text_FG_Where1_18, MSGBOX_DEFAULT
+	msgbox Coop_Text_FG_Evo1_18, MSGBOX_DEFAULT
+	goto Coop_EventScript_FG_List1
+Coop_EventScript_FG_1_19:
+	msgbox Coop_Text_FG_Where1_19, MSGBOX_DEFAULT
+	msgbox Coop_Text_FG_Evo1_19, MSGBOX_DEFAULT
+	goto Coop_EventScript_FG_List1
+Coop_EventScript_FG_1_20:
+	msgbox Coop_Text_FG_Where1_20, MSGBOX_DEFAULT
+	msgbox Coop_Text_FG_Evo1_20, MSGBOX_DEFAULT
+	goto Coop_EventScript_FG_List1
+Coop_EventScript_FG_1_21:
+	msgbox Coop_Text_FG_Where1_21, MSGBOX_DEFAULT
+	msgbox Coop_Text_FG_Evo1_21, MSGBOX_DEFAULT
+	goto Coop_EventScript_FG_List1
+Coop_EventScript_FG_1_22:
+	msgbox Coop_Text_FG_Where1_22, MSGBOX_DEFAULT
+	msgbox Coop_Text_FG_Evo1_22, MSGBOX_DEFAULT
+	goto Coop_EventScript_FG_List1
+Coop_EventScript_FG_1_23:
+	msgbox Coop_Text_FG_Where1_23, MSGBOX_DEFAULT
+	msgbox Coop_Text_FG_Evo1_23, MSGBOX_DEFAULT
+	goto Coop_EventScript_FG_List1
+Coop_EventScript_FG_1_24:
+	msgbox Coop_Text_FG_Where1_24, MSGBOX_DEFAULT
+	msgbox Coop_Text_FG_Evo1_24, MSGBOX_DEFAULT
+	goto Coop_EventScript_FG_List1
+Coop_EventScript_FG_1_25:
+	msgbox Coop_Text_FG_Where1_25, MSGBOX_DEFAULT
+	msgbox Coop_Text_FG_Evo1_25, MSGBOX_DEFAULT
+	goto Coop_EventScript_FG_List1
+Coop_EventScript_FG_1_26:
+	msgbox Coop_Text_FG_Where1_26, MSGBOX_DEFAULT
+	msgbox Coop_Text_FG_Evo1_26, MSGBOX_DEFAULT
+	goto Coop_EventScript_FG_List1
+Coop_EventScript_FG_1_27:
+	msgbox Coop_Text_FG_Where1_27, MSGBOX_DEFAULT
+	msgbox Coop_Text_FG_Evo1_27, MSGBOX_DEFAULT
+	goto Coop_EventScript_FG_List1
+Coop_EventScript_FG_1_28:
+	msgbox Coop_Text_FG_Where1_28, MSGBOX_DEFAULT
+	msgbox Coop_Text_FG_Evo1_28, MSGBOX_DEFAULT
+	goto Coop_EventScript_FG_List1
+Coop_EventScript_FG_1_29:
+	msgbox Coop_Text_FG_Where1_29, MSGBOX_DEFAULT
+	msgbox Coop_Text_FG_Evo1_29, MSGBOX_DEFAULT
+	goto Coop_EventScript_FG_List1
+Coop_EventScript_FG_1_30:
+	msgbox Coop_Text_FG_Where1_30, MSGBOX_DEFAULT
+	msgbox Coop_Text_FG_Evo1_30, MSGBOX_DEFAULT
+	goto Coop_EventScript_FG_List1
+Coop_EventScript_FG_1_31:
+	msgbox Coop_Text_FG_Where1_31, MSGBOX_DEFAULT
+	msgbox Coop_Text_FG_Evo1_31, MSGBOX_DEFAULT
+	goto Coop_EventScript_FG_List1
+Coop_EventScript_FG_1_32:
+	msgbox Coop_Text_FG_Where1_32, MSGBOX_DEFAULT
+	msgbox Coop_Text_FG_Evo1_32, MSGBOX_DEFAULT
+	goto Coop_EventScript_FG_List1
+Coop_EventScript_FG_List2:
+	message Coop_Text_FieldGuideAsk
+	waitmessage
+	dynmultipush Coop_Text_FG_Name2_0, 0
+	dynmultipush Coop_Text_FG_Name2_1, 1
+	dynmultipush Coop_Text_FG_Name2_2, 2
+	dynmultipush Coop_Text_FG_Name2_3, 3
+	dynmultipush gText_Cancel, 4
+	dynmultistack 17, 1, FALSE, 6, FALSE, 0, DYN_MULTICHOICE_CB_NONE
+	goto_if_ge VAR_RESULT, 4, Coop_EventScript_FieldGuideMenu
+	goto_if_eq VAR_RESULT, 0, Coop_EventScript_FG_2_0
+	goto_if_eq VAR_RESULT, 1, Coop_EventScript_FG_2_1
+	goto_if_eq VAR_RESULT, 2, Coop_EventScript_FG_2_2
+	goto_if_eq VAR_RESULT, 3, Coop_EventScript_FG_2_3
 	goto Coop_EventScript_FieldGuideMenu
-Coop_EventScript_FG_3:
-	msgbox Coop_Text_FG_Where3, MSGBOX_DEFAULT
-	msgbox Coop_Text_FG_Evo3, MSGBOX_DEFAULT
-	goto Coop_EventScript_FieldGuideMenu
-Coop_EventScript_FG_4:
-	msgbox Coop_Text_FG_Where4, MSGBOX_DEFAULT
-	msgbox Coop_Text_FG_Evo4, MSGBOX_DEFAULT
-	goto Coop_EventScript_FieldGuideMenu
-Coop_EventScript_FG_5:
-	msgbox Coop_Text_FG_Where5, MSGBOX_DEFAULT
-	msgbox Coop_Text_FG_Evo5, MSGBOX_DEFAULT
-	goto Coop_EventScript_FieldGuideMenu
-Coop_EventScript_FG_6:
-	msgbox Coop_Text_FG_Where6, MSGBOX_DEFAULT
-	msgbox Coop_Text_FG_Evo6, MSGBOX_DEFAULT
-	goto Coop_EventScript_FieldGuideMenu
-Coop_EventScript_FG_7:
-	msgbox Coop_Text_FG_Where7, MSGBOX_DEFAULT
-	msgbox Coop_Text_FG_Evo7, MSGBOX_DEFAULT
-	goto Coop_EventScript_FieldGuideMenu
-Coop_EventScript_FG_8:
-	msgbox Coop_Text_FG_Where8, MSGBOX_DEFAULT
-	msgbox Coop_Text_FG_Evo8, MSGBOX_DEFAULT
-	goto Coop_EventScript_FieldGuideMenu
-Coop_EventScript_FG_9:
-	msgbox Coop_Text_FG_Where9, MSGBOX_DEFAULT
-	msgbox Coop_Text_FG_Evo9, MSGBOX_DEFAULT
-	goto Coop_EventScript_FieldGuideMenu
-Coop_EventScript_FG_10:
-	msgbox Coop_Text_FG_Where10, MSGBOX_DEFAULT
-	msgbox Coop_Text_FG_Evo10, MSGBOX_DEFAULT
-	goto Coop_EventScript_FieldGuideMenu
-Coop_EventScript_FG_11:
-	msgbox Coop_Text_FG_Where11, MSGBOX_DEFAULT
-	msgbox Coop_Text_FG_Evo11, MSGBOX_DEFAULT
-	goto Coop_EventScript_FieldGuideMenu
-Coop_EventScript_FG_12:
-	msgbox Coop_Text_FG_Where12, MSGBOX_DEFAULT
-	msgbox Coop_Text_FG_Evo12, MSGBOX_DEFAULT
-	goto Coop_EventScript_FieldGuideMenu
-Coop_EventScript_FG_13:
-	msgbox Coop_Text_FG_Where13, MSGBOX_DEFAULT
-	msgbox Coop_Text_FG_Evo13, MSGBOX_DEFAULT
-	goto Coop_EventScript_FieldGuideMenu
-Coop_EventScript_FG_14:
-	msgbox Coop_Text_FG_Where14, MSGBOX_DEFAULT
-	msgbox Coop_Text_FG_Evo14, MSGBOX_DEFAULT
-	goto Coop_EventScript_FieldGuideMenu
-Coop_EventScript_FG_15:
-	msgbox Coop_Text_FG_Where15, MSGBOX_DEFAULT
-	msgbox Coop_Text_FG_Evo15, MSGBOX_DEFAULT
-	goto Coop_EventScript_FieldGuideMenu
-Coop_EventScript_FG_16:
-	msgbox Coop_Text_FG_Where16, MSGBOX_DEFAULT
-	msgbox Coop_Text_FG_Evo16, MSGBOX_DEFAULT
-	goto Coop_EventScript_FieldGuideMenu
-Coop_EventScript_FG_17:
-	msgbox Coop_Text_FG_Where17, MSGBOX_DEFAULT
-	msgbox Coop_Text_FG_Evo17, MSGBOX_DEFAULT
-	goto Coop_EventScript_FieldGuideMenu
-Coop_EventScript_FG_18:
-	msgbox Coop_Text_FG_Where18, MSGBOX_DEFAULT
-	msgbox Coop_Text_FG_Evo18, MSGBOX_DEFAULT
-	goto Coop_EventScript_FieldGuideMenu
-Coop_EventScript_FG_19:
-	msgbox Coop_Text_FG_Where19, MSGBOX_DEFAULT
-	msgbox Coop_Text_FG_Evo19, MSGBOX_DEFAULT
-	goto Coop_EventScript_FieldGuideMenu
-Coop_EventScript_FG_20:
-	msgbox Coop_Text_FG_Where20, MSGBOX_DEFAULT
-	msgbox Coop_Text_FG_Evo20, MSGBOX_DEFAULT
-	goto Coop_EventScript_FieldGuideMenu
-Coop_EventScript_FG_21:
-	msgbox Coop_Text_FG_Where21, MSGBOX_DEFAULT
-	msgbox Coop_Text_FG_Evo21, MSGBOX_DEFAULT
-	goto Coop_EventScript_FieldGuideMenu
-Coop_EventScript_FG_22:
-	msgbox Coop_Text_FG_Where22, MSGBOX_DEFAULT
-	msgbox Coop_Text_FG_Evo22, MSGBOX_DEFAULT
-	goto Coop_EventScript_FieldGuideMenu
-Coop_EventScript_FG_23:
-	msgbox Coop_Text_FG_Where23, MSGBOX_DEFAULT
-	msgbox Coop_Text_FG_Evo23, MSGBOX_DEFAULT
-	goto Coop_EventScript_FieldGuideMenu
-Coop_EventScript_FG_24:
-	msgbox Coop_Text_FG_Where24, MSGBOX_DEFAULT
-	msgbox Coop_Text_FG_Evo24, MSGBOX_DEFAULT
-	goto Coop_EventScript_FieldGuideMenu
-Coop_EventScript_FG_25:
-	msgbox Coop_Text_FG_Where25, MSGBOX_DEFAULT
-	msgbox Coop_Text_FG_Evo25, MSGBOX_DEFAULT
-	goto Coop_EventScript_FieldGuideMenu
-Coop_EventScript_FG_26:
-	msgbox Coop_Text_FG_Where26, MSGBOX_DEFAULT
-	msgbox Coop_Text_FG_Evo26, MSGBOX_DEFAULT
-	goto Coop_EventScript_FieldGuideMenu
-Coop_EventScript_FG_27:
-	msgbox Coop_Text_FG_Where27, MSGBOX_DEFAULT
-	msgbox Coop_Text_FG_Evo27, MSGBOX_DEFAULT
-	goto Coop_EventScript_FieldGuideMenu
-Coop_EventScript_FG_28:
-	msgbox Coop_Text_FG_Where28, MSGBOX_DEFAULT
-	msgbox Coop_Text_FG_Evo28, MSGBOX_DEFAULT
-	goto Coop_EventScript_FieldGuideMenu
-Coop_EventScript_FG_29:
-	msgbox Coop_Text_FG_Where29, MSGBOX_DEFAULT
-	msgbox Coop_Text_FG_Evo29, MSGBOX_DEFAULT
-	goto Coop_EventScript_FieldGuideMenu
-Coop_EventScript_FG_30:
-	msgbox Coop_Text_FG_Where30, MSGBOX_DEFAULT
-	msgbox Coop_Text_FG_Evo30, MSGBOX_DEFAULT
-	goto Coop_EventScript_FieldGuideMenu
-Coop_EventScript_FG_31:
-	msgbox Coop_Text_FG_Where31, MSGBOX_DEFAULT
-	msgbox Coop_Text_FG_Evo31, MSGBOX_DEFAULT
-	goto Coop_EventScript_FieldGuideMenu
-Coop_EventScript_FG_32:
-	msgbox Coop_Text_FG_Where32, MSGBOX_DEFAULT
-	msgbox Coop_Text_FG_Evo32, MSGBOX_DEFAULT
-	goto Coop_EventScript_FieldGuideMenu
-Coop_EventScript_FG_33:
-	msgbox Coop_Text_FG_Where33, MSGBOX_DEFAULT
-	msgbox Coop_Text_FG_Evo33, MSGBOX_DEFAULT
-	goto Coop_EventScript_FieldGuideMenu
-Coop_EventScript_FG_34:
-	msgbox Coop_Text_FG_Where34, MSGBOX_DEFAULT
-	msgbox Coop_Text_FG_Evo34, MSGBOX_DEFAULT
-	goto Coop_EventScript_FieldGuideMenu
-Coop_EventScript_FG_35:
-	msgbox Coop_Text_FG_Where35, MSGBOX_DEFAULT
-	msgbox Coop_Text_FG_Evo35, MSGBOX_DEFAULT
-	goto Coop_EventScript_FieldGuideMenu
-Coop_EventScript_FG_36:
-	msgbox Coop_Text_FG_Where36, MSGBOX_DEFAULT
-	msgbox Coop_Text_FG_Evo36, MSGBOX_DEFAULT
-	goto Coop_EventScript_FieldGuideMenu
-Coop_EventScript_FG_37:
-	msgbox Coop_Text_FG_Where37, MSGBOX_DEFAULT
-	msgbox Coop_Text_FG_Evo37, MSGBOX_DEFAULT
-	goto Coop_EventScript_FieldGuideMenu
+Coop_EventScript_FG_2_0:
+	msgbox Coop_Text_FG_Where2_0, MSGBOX_DEFAULT
+	msgbox Coop_Text_FG_Evo2_0, MSGBOX_DEFAULT
+	goto Coop_EventScript_FG_List2
+Coop_EventScript_FG_2_1:
+	msgbox Coop_Text_FG_Where2_1, MSGBOX_DEFAULT
+	msgbox Coop_Text_FG_Evo2_1, MSGBOX_DEFAULT
+	goto Coop_EventScript_FG_List2
+Coop_EventScript_FG_2_2:
+	msgbox Coop_Text_FG_Where2_2, MSGBOX_DEFAULT
+	msgbox Coop_Text_FG_Evo2_2, MSGBOX_DEFAULT
+	goto Coop_EventScript_FG_List2
+Coop_EventScript_FG_2_3:
+	msgbox Coop_Text_FG_Where2_3, MSGBOX_DEFAULT
+	msgbox Coop_Text_FG_Evo2_3, MSGBOX_DEFAULT
+	goto Coop_EventScript_FG_List2
 Coop_EventScript_FieldGuideBye::
 	msgbox Coop_Text_FieldGuideBye, MSGBOX_DEFAULT
 	release
@@ -248,274 +497,536 @@ Coop_Text_FieldGuideIntro:
 	.string "I study the POKéMON that have\n"
 	.string "settled in HOENN lately.\pDay and night go by your clock.\n"
 	.string "Linked, both of you share the\lhost's time of day.$"
+Coop_Text_FieldGuideGroup:
+	.string "Which POKéMON would you like to\n"
+	.string "hear about?$"
 Coop_Text_FieldGuideAsk:
 	.string "Which one would you like to know\n"
 	.string "about?$"
 Coop_Text_FieldGuideBye:
 	.string "Each trainer catches their own.\n"
 	.string "Good luck out there!$"
-Coop_Text_FG_Name0:
+Coop_Text_FG_Group0:
+	.string "EARLIER ARRIVALS$"
+Coop_Text_FG_Name0_0:
 	.string "BUIZEL$"
-Coop_Text_FG_Where0:
+Coop_Text_FG_Where0_0:
 	.string "ROUTE 104, in the grass and on\n"
 	.string "the water.$"
-Coop_Text_FG_Evo0:
+Coop_Text_FG_Evo0_0:
 	.string "Level 26: FLOATZEL.$"
-Coop_Text_FG_Name1:
+Coop_Text_FG_Name0_1:
 	.string "SEWADDLE$"
-Coop_Text_FG_Where1:
+Coop_Text_FG_Where0_1:
 	.string "PETALBURG WOODS.$"
-Coop_Text_FG_Evo1:
+Coop_Text_FG_Evo0_1:
 	.string "Level 20: SWADLOON. SWADLOON\n"
 	.string "evolves into LEAVANNY when it levels\lup while very friendly.$"
-Coop_Text_FG_Name2:
+Coop_Text_FG_Name0_2:
 	.string "VENIPEDE$"
-Coop_Text_FG_Where2:
+Coop_Text_FG_Where0_2:
 	.string "PETALBURG WOODS and RUSTURF\n"
 	.string "TUNNEL.$"
-Coop_Text_FG_Evo2:
+Coop_Text_FG_Evo0_2:
 	.string "Level 22: WHIRLIPEDE.\n"
 	.string "Level 30: SCOLIPEDE.$"
-Coop_Text_FG_Name3:
+Coop_Text_FG_Name0_3:
 	.string "LEDYBA$"
-Coop_Text_FG_Where3:
+Coop_Text_FG_Where0_3:
 	.string "ROUTE 102 and ROUTE 117.$"
-Coop_Text_FG_Evo3:
+Coop_Text_FG_Evo0_3:
 	.string "Level 18: LEDIAN, a punching fighter\n"
 	.string "with IRON FIST.$"
-Coop_Text_FG_Name4:
+Coop_Text_FG_Name0_4:
 	.string "SPINARAK$"
-Coop_Text_FG_Where4:
+Coop_Text_FG_Where0_4:
 	.string "ROUTE 102 and ROUTE 119.$"
-Coop_Text_FG_Evo4:
+Coop_Text_FG_Evo0_4:
 	.string "Level 22: ARIADOS, a sturdy trapper.$"
-Coop_Text_FG_Name5:
+Coop_Text_FG_Name0_5:
 	.string "HOOTHOOT$"
-Coop_Text_FG_Where5:
+Coop_Text_FG_Where0_5:
 	.string "ROUTE 116 and ROUTE 121.$"
-Coop_Text_FG_Evo5:
+Coop_Text_FG_Evo0_5:
 	.string "Level 20: NOCTOWL, with screens\n"
 	.string "and ROOST.$"
-Coop_Text_FG_Name6:
+Coop_Text_FG_Name0_6:
 	.string "SUNKERN$"
-Coop_Text_FG_Where6:
+Coop_Text_FG_Where0_6:
 	.string "ROUTE 116, ROUTE 123 and the\n"
 	.string "SAFARI ZONE.$"
-Coop_Text_FG_Evo6:
+Coop_Text_FG_Evo0_6:
 	.string "A SUN STONE: SUNFLORA, now\n"
 	.string "GRASS and FIRE. VERDANTURF and\lLILYCOVE sell SUN STONES.$"
-Coop_Text_FG_Name7:
+Coop_Text_FG_Name0_7:
 	.string "ROLYCOLY$"
-Coop_Text_FG_Where7:
+Coop_Text_FG_Where0_7:
 	.string "RUSTURF TUNNEL and NEW MAUVILLE.$"
-Coop_Text_FG_Evo7:
+Coop_Text_FG_Evo0_7:
 	.string "Level 18: CARKOL.\n"
 	.string "Level 34: COALOSSAL.$"
-Coop_Text_FG_Name8:
+Coop_Text_FG_Name0_8:
 	.string "SKIDDO$"
-Coop_Text_FG_Where8:
+Coop_Text_FG_Where0_8:
 	.string "ROUTE 116 and ROUTE 118.$"
-Coop_Text_FG_Evo8:
+Coop_Text_FG_Evo0_8:
 	.string "Level 32: GOGOAT.$"
-Coop_Text_FG_Name9:
+Coop_Text_FG_Name0_9:
 	.string "DRILBUR$"
-Coop_Text_FG_Where9:
+Coop_Text_FG_Where0_9:
 	.string "GRANITE CAVE near DEWFORD.$"
-Coop_Text_FG_Evo9:
+Coop_Text_FG_Evo0_9:
 	.string "Level 31: EXCADRILL.$"
-Coop_Text_FG_Name10:
+Coop_Text_FG_Name0_10:
 	.string "FOMANTIS$"
-Coop_Text_FG_Where10:
+Coop_Text_FG_Where0_10:
 	.string "ROUTE 117 and ROUTE 123.$"
-Coop_Text_FG_Evo10:
+Coop_Text_FG_Evo0_10:
 	.string "Level 34 between 6:00 and 19:59:\n"
 	.string "LURANTIS. Not at night.$"
-Coop_Text_FG_Name11:
+Coop_Text_FG_Name0_11:
 	.string "DARUMAKA$"
-Coop_Text_FG_Where11:
+Coop_Text_FG_Where0_11:
 	.string "FIERY PATH.$"
-Coop_Text_FG_Evo11:
+Coop_Text_FG_Evo0_11:
 	.string "Level 35: DARMANITAN.$"
-Coop_Text_FG_Name12:
+Coop_Text_FG_Name0_12:
 	.string "SIZZLIPEDE$"
-Coop_Text_FG_Where12:
+Coop_Text_FG_Where0_12:
 	.string "FIERY PATH.$"
-Coop_Text_FG_Evo12:
+Coop_Text_FG_Evo0_12:
 	.string "Level 28: CENTISKORCH.$"
-Coop_Text_FG_Name13:
+Coop_Text_FG_Name0_13:
 	.string "SALANDIT$"
-Coop_Text_FG_Where13:
+Coop_Text_FG_Where0_13:
 	.string "FIERY PATH and the MAGMA HIDEOUT.\n"
 	.string "A woman in LAVARIDGE gives a female.$"
-Coop_Text_FG_Evo13:
+Coop_Text_FG_Evo0_13:
 	.string "Only a female evolves: level 33,\n"
 	.string "SALAZZLE. Males never evolve.$"
-Coop_Text_FG_Name14:
+Coop_Text_FG_Name0_14:
 	.string "SCRAGGY$"
-Coop_Text_FG_Where14:
+Coop_Text_FG_Where0_14:
 	.string "The ROUTE 111 desert and the\n"
 	.string "SANDBURIED RUINS.$"
-Coop_Text_FG_Evo14:
+Coop_Text_FG_Evo0_14:
 	.string "Level 39: SCRAFTY.$"
-Coop_Text_FG_Name15:
+Coop_Text_FG_Name0_15:
 	.string "MUDBRAY$"
-Coop_Text_FG_Where15:
+Coop_Text_FG_Where0_15:
 	.string "The ROUTE 111 desert, the SANDBURIED\n"
 	.string "RUINS, ROUTE 112 and JAGGED PASS.$"
-Coop_Text_FG_Evo15:
+Coop_Text_FG_Evo0_15:
 	.string "Level 30: MUDSDALE.$"
-Coop_Text_FG_Name16:
+Coop_Text_FG_Name0_16:
 	.string "RUFFLET$"
-Coop_Text_FG_Where16:
+Coop_Text_FG_Where0_16:
 	.string "ROUTE 112 and JAGGED PASS.$"
-Coop_Text_FG_Evo16:
+Coop_Text_FG_Evo0_16:
 	.string "Level 54: BRAVIARY.$"
-Coop_Text_FG_Name17:
+Coop_Text_FG_Name0_17:
 	.string "VULLABY$"
-Coop_Text_FG_Where17:
+Coop_Text_FG_Where0_17:
 	.string "ROUTE 113 and JAGGED PASS.$"
-Coop_Text_FG_Evo17:
+Coop_Text_FG_Evo0_17:
 	.string "Level 54: MANDIBUZZ.$"
-Coop_Text_FG_Name18:
+Coop_Text_FG_Name0_18:
 	.string "CLOBBOPUS$"
-Coop_Text_FG_Where18:
+Coop_Text_FG_Where0_18:
 	.string "ROUTE 115, on the rocky beach.$"
-Coop_Text_FG_Evo18:
+Coop_Text_FG_Evo0_18:
 	.string "Level up knowing TAUNT: GRAPPLOCT.\n"
 	.string "It learns TAUNT itself at level 35.$"
-Coop_Text_FG_Name19:
+Coop_Text_FG_Name0_19:
 	.string "CLAUNCHER$"
-Coop_Text_FG_Where19:
+Coop_Text_FG_Where0_19:
 	.string "GOOD ROD on ROUTES 106 and 107, and\n"
 	.string "in DEWFORD.$"
-Coop_Text_FG_Evo19:
+Coop_Text_FG_Evo0_19:
 	.string "Level 37: CLAWITZER.$"
-Coop_Text_FG_Name20:
+Coop_Text_FG_Name0_20:
 	.string "SKRELP$"
-Coop_Text_FG_Where20:
+Coop_Text_FG_Where0_20:
 	.string "Surf on ROUTES 105 and 109. Any rod\n"
 	.string "on ROUTE 109 and in DEWFORD once\lROUTE 109 is cleaned up.$"
-Coop_Text_FG_Evo20:
+Coop_Text_FG_Evo0_20:
 	.string "Level 48: DRAGALGE.$"
-Coop_Text_FG_Name21:
+Coop_Text_FG_Name0_21:
 	.string "SEEL$"
-Coop_Text_FG_Where21:
+Coop_Text_FG_Where0_21:
 	.string "Surf on ROUTES 105 and 125, and in\n"
 	.string "SHOAL CAVE.$"
-Coop_Text_FG_Evo21:
+Coop_Text_FG_Evo0_21:
 	.string "Level 34: DEWGONG, a support that\n"
 	.string "heals its partner.$"
-Coop_Text_FG_Name22:
+Coop_Text_FG_Name0_22:
 	.string "GRIMER$"
-Coop_Text_FG_Where22:
+Coop_Text_FG_Where0_22:
 	.string "ALOLAN GRIMER: surf in SLATEPORT\n"
 	.string "harbour and under ROUTE 110. Two\lcrawl on ROUTE 109 until it is clean.$"
-Coop_Text_FG_Evo22:
+Coop_Text_FG_Evo0_22:
 	.string "Level 38: ALOLAN MUK.$"
-Coop_Text_FG_Name23:
+Coop_Text_FG_Name0_23:
 	.string "PANCHAM$"
-Coop_Text_FG_Where23:
+Coop_Text_FG_Where0_23:
 	.string "ROUTE 119.$"
-Coop_Text_FG_Evo23:
+Coop_Text_FG_Evo0_23:
 	.string "Level 32 with a DARK-type POKéMON\n"
 	.string "in the party: PANGORO.$"
-Coop_Text_FG_Name24:
+Coop_Text_FG_Name0_24:
 	.string "SOLOSIS$"
-Coop_Text_FG_Where24:
+Coop_Text_FG_Where0_24:
 	.string "ROUTE 119 and ROUTE 120.$"
-Coop_Text_FG_Evo24:
+Coop_Text_FG_Evo0_24:
 	.string "Level 32: DUOSION.\n"
 	.string "Level 41: REUNICLUS.$"
-Coop_Text_FG_Name25:
+Coop_Text_FG_Name0_25:
 	.string "GOTHITA$"
-Coop_Text_FG_Where25:
+Coop_Text_FG_Where0_25:
 	.string "ROUTE 120.$"
-Coop_Text_FG_Evo25:
+Coop_Text_FG_Evo0_25:
 	.string "Level 32: GOTHORITA.\n"
 	.string "Level 41: GOTHITELLE.$"
-Coop_Text_FG_Name26:
+Coop_Text_FG_Name0_26:
 	.string "VULPIX$"
-Coop_Text_FG_Where26:
+Coop_Text_FG_Where0_26:
 	.string "ALOLAN VULPIX: the SHOAL CAVE ice\n"
 	.string "rooms at low tide, and one by the\lladder once Dr. ISLA is safe.$"
-Coop_Text_FG_Evo26:
+Coop_Text_FG_Evo0_26:
 	.string "An ICE STONE: ALOLAN NINETALES.\n"
 	.string "Dr. ISLA gives one a day at SHOAL\lCAVE. LILYCOVE also sells them.$"
-Coop_Text_FG_Name27:
+Coop_Text_FG_Name0_27:
 	.string "LARVESTA$"
-Coop_Text_FG_Where27:
+Coop_Text_FG_Where0_27:
 	.string "The MAGMA HIDEOUT. It is rare.$"
-Coop_Text_FG_Evo27:
+Coop_Text_FG_Evo0_27:
 	.string "Level 59: VOLCARONA.$"
-Coop_Text_FG_Name28:
+Coop_Text_FG_Name0_28:
 	.string "DEINO$"
-Coop_Text_FG_Where28:
+Coop_Text_FG_Where0_28:
 	.string "METEOR FALLS, in the back room you\n"
 	.string "reach with WATERFALL.$"
-Coop_Text_FG_Evo28:
+Coop_Text_FG_Evo0_28:
 	.string "Level 50: ZWEILOUS.\n"
 	.string "Level 64: HYDREIGON.$"
-Coop_Text_FG_Name29:
+Coop_Text_FG_Name0_29:
 	.string "RIOLU$"
-Coop_Text_FG_Where29:
+Coop_Text_FG_Where0_29:
 	.string "GRANITE CAVE 1F.$"
-Coop_Text_FG_Evo29:
+Coop_Text_FG_Evo0_29:
 	.string "Level up while very friendly between\n"
 	.string "6:00 and 19:59: LUCARIO.$"
-Coop_Text_FG_Name30:
+Coop_Text_FG_Name0_30:
 	.string "SNOM$"
-Coop_Text_FG_Where30:
+Coop_Text_FG_Where0_30:
 	.string "SHOAL CAVE ice rooms at low tide.$"
-Coop_Text_FG_Evo30:
+Coop_Text_FG_Evo0_30:
 	.string "Level up while very friendly at\n"
 	.string "night (20:00 to 5:59): FROSMOTH.$"
-Coop_Text_FG_Name31:
+Coop_Text_FG_Name0_31:
 	.string "ROCKRUFF$"
-Coop_Text_FG_Where31:
+Coop_Text_FG_Where0_31:
 	.string "ROUTE 114.$"
-Coop_Text_FG_Evo31:
+Coop_Text_FG_Evo0_31:
 	.string "Level 25: MIDDAY LYCANROC by day,\n"
 	.string "MIDNIGHT at night. An OWN TEMPO\lROCKRUFF becomes DUSK at any hour.$"
-Coop_Text_FG_Name32:
+Coop_Text_FG_Name0_32:
 	.string "ROTOM$"
-Coop_Text_FG_Where32:
+Coop_Text_FG_Where0_32:
 	.string "NEW MAUVILLE, and in its APPLIANCE\n"
 	.string "ROOM once the power is fixed.$"
-Coop_Text_FG_Evo32:
+Coop_Text_FG_Evo0_32:
 	.string "The scientist at NEW MAUVILLE's door\n"
 	.string "gives a ROTOM CATALOG to change it.$"
-Coop_Text_FG_Name33:
+Coop_Text_FG_Name0_33:
 	.string "JOLTIK$"
-Coop_Text_FG_Where33:
+Coop_Text_FG_Where0_33:
 	.string "NEW MAUVILLE.$"
-Coop_Text_FG_Evo33:
+Coop_Text_FG_Evo0_33:
 	.string "Level 36: GALVANTULA.$"
-Coop_Text_FG_Name34:
+Coop_Text_FG_Name0_34:
 	.string "PORYGON$"
-Coop_Text_FG_Where34:
+Coop_Text_FG_Where0_34:
 	.string "A sealed chamber in NEW MAUVILLE.\n"
 	.string "Old log pages show the way.$"
-Coop_Text_FG_Evo34:
+Coop_Text_FG_Evo0_34:
 	.string "An UP-GRADE: PORYGON2. A DUBIOUS\n"
 	.string "DISC: PORYGON-Z. MAUVILLE sells both.$"
-Coop_Text_FG_Name35:
+Coop_Text_FG_Name0_35:
 	.string "SIGILYPH$"
-Coop_Text_FG_Where35:
+Coop_Text_FG_Where0_35:
 	.string "The sealed chamber of the\n"
 	.string "SANDBURIED RUINS. Its glyphs open it.$"
-Coop_Text_FG_Evo35:
+Coop_Text_FG_Evo0_35:
 	.string "It does not evolve.$"
-Coop_Text_FG_Name36:
+Coop_Text_FG_Name0_36:
 	.string "COTTONEE$"
-Coop_Text_FG_Where36:
+Coop_Text_FG_Where0_36:
 	.string "ROUTE 117. PETILIL: ROUTE 123.$"
-Coop_Text_FG_Evo36:
+Coop_Text_FG_Evo0_36:
 	.string "A SUN STONE: WHIMSICOTT or\n"
 	.string "LILLIGANT. VERDANTURF and LILYCOVE.$"
-Coop_Text_FG_Name37:
+Coop_Text_FG_Name0_37:
 	.string "LITWICK$"
-Coop_Text_FG_Where37:
+Coop_Text_FG_Where0_37:
 	.string "MT. PYRE. HONEDGE: ALTERING CAVE.$"
-Coop_Text_FG_Evo37:
+Coop_Text_FG_Evo0_37:
 	.string "LAMPENT and DOUBLADE need a\n"
 	.string "DUSK STONE from LILYCOVE.$"
+Coop_Text_FG_Group1:
+	.string "NEW ARRIVALS$"
+Coop_Text_FG_Name1_0:
+	.string "FLETCHLING$"
+Coop_Text_FG_Where1_0:
+	.string "ROUTE 102.$"
+Coop_Text_FG_Evo1_0:
+	.string "Level 17: FLETCHINDER.\n"
+	.string "Level 35: TALONFLAME.$"
+Coop_Text_FG_Name1_1:
+	.string "STARLY$"
+Coop_Text_FG_Where1_1:
+	.string "ROUTE 104.$"
+Coop_Text_FG_Evo1_1:
+	.string "Level 14: STARAVIA.\n"
+	.string "Level 34: STARAPTOR.$"
+Coop_Text_FG_Name1_2:
+	.string "HOPPIP$"
+Coop_Text_FG_Where1_2:
+	.string "ROUTE 104, among the flowers.$"
+Coop_Text_FG_Evo1_2:
+	.string "Level 18: SKIPLOOM.\n"
+	.string "Level 27: JUMPLUFF.$"
+Coop_Text_FG_Name1_3:
+	.string "CUTIEFLY$"
+Coop_Text_FG_Where1_3:
+	.string "PETALBURG WOODS.$"
+Coop_Text_FG_Evo1_3:
+	.string "Level 25: RIBOMBEE.$"
+Coop_Text_FG_Name1_4:
+	.string "TIMBURR$"
+Coop_Text_FG_Where1_4:
+	.string "RUSTURF TUNNEL, with the diggers.$"
+Coop_Text_FG_Evo1_4:
+	.string "Level 25: GURDURR. A LINKING CORD\n"
+	.string "or a trade: CONKELDURR. LILYCOVE\land MAUVILLE sell LINKING CORDS.$"
+Coop_Text_FG_Name1_5:
+	.string "PARAS$"
+Coop_Text_FG_Where1_5:
+	.string "RUSTURF TUNNEL.$"
+Coop_Text_FG_Evo1_5:
+	.string "Level 24: PARASECT, now a sturdy\n"
+	.string "DRY SKIN fighter.$"
+Coop_Text_FG_Name1_6:
+	.string "MINCCINO$"
+Coop_Text_FG_Where1_6:
+	.string "ROUTE 116.$"
+Coop_Text_FG_Evo1_6:
+	.string "A SHINY STONE: CINCCINO. FORTREE\n"
+	.string "and LILYCOVE sell SHINY STONES.$"
+Coop_Text_FG_Name1_7:
+	.string "VENONAT$"
+Coop_Text_FG_Where1_7:
+	.string "ROUTE 116.$"
+Coop_Text_FG_Evo1_7:
+	.string "Level 31: VENOMOTH.$"
+Coop_Text_FG_Name1_8:
+	.string "FERROSEED$"
+Coop_Text_FG_Where1_8:
+	.string "GRANITE CAVE B1F.$"
+Coop_Text_FG_Evo1_8:
+	.string "Level 40: FERROTHORN.$"
+Coop_Text_FG_Name1_9:
+	.string "LARVITAR$"
+Coop_Text_FG_Where1_9:
+	.string "GRANITE CAVE B2F. It is rare.$"
+Coop_Text_FG_Evo1_9:
+	.string "Level 30: PUPITAR.\n"
+	.string "Level 55: TYRANITAR.$"
+Coop_Text_FG_Name1_10:
+	.string "GRUBBIN$"
+Coop_Text_FG_Where1_10:
+	.string "ROUTE 110.$"
+Coop_Text_FG_Evo1_10:
+	.string "Level 20: CHARJABUG. Level it up in\n"
+	.string "NEW MAUVILLE, or use a THUNDER\lSTONE: VIKAVOLT.$"
+Coop_Text_FG_Name1_11:
+	.string "BOUNSWEET$"
+Coop_Text_FG_Where1_11:
+	.string "ROUTE 117.$"
+Coop_Text_FG_Evo1_11:
+	.string "Level 18: STEENEE. STEENEE learns\n"
+	.string "STOMP at 28; then a level up:\lTSAREENA.$"
+Coop_Text_FG_Name1_12:
+	.string "DROWZEE$"
+Coop_Text_FG_Where1_12:
+	.string "ROUTE 117.$"
+Coop_Text_FG_Evo1_12:
+	.string "Level 26: HYPNO, a bulky support\n"
+	.string "with TELEPATHY.$"
+Coop_Text_FG_Name1_13:
+	.string "DEWPIDER$"
+Coop_Text_FG_Where1_13:
+	.string "Surf on ROUTES 117 and 120.$"
+Coop_Text_FG_Evo1_13:
+	.string "Level 22: ARAQUANID.$"
+Coop_Text_FG_Name1_14:
+	.string "TYNAMO$"
+Coop_Text_FG_Where1_14:
+	.string "NEW MAUVILLE.$"
+Coop_Text_FG_Evo1_14:
+	.string "Level 39: EELEKTRIK. A THUNDER\n"
+	.string "STONE: EELEKTROSS.$"
+Coop_Text_FG_Name1_15:
+	.string "GROWLITHE$"
+Coop_Text_FG_Where1_15:
+	.string "ROUTE 112 and FIERY PATH.$"
+Coop_Text_FG_Evo1_15:
+	.string "A FIRE STONE: ARCANINE. LAVARIDGE\n"
+	.string "and LILYCOVE sell FIRE STONES.$"
+Coop_Text_FG_Name1_16:
+	.string "PONYTA$"
+Coop_Text_FG_Where1_16:
+	.string "ROUTE 112.$"
+Coop_Text_FG_Evo1_16:
+	.string "Level 40: RAPIDASH.$"
+Coop_Text_FG_Name1_17:
+	.string "SKORUPI$"
+Coop_Text_FG_Where1_17:
+	.string "The ROUTE 111 desert.$"
+Coop_Text_FG_Evo1_17:
+	.string "Level 40: DRAPION.$"
+Coop_Text_FG_Name1_18:
+	.string "GIBLE$"
+Coop_Text_FG_Where1_18:
+	.string "The ROUTE 111 desert. It hides in\n"
+	.string "the sand and is rare.$"
+Coop_Text_FG_Evo1_18:
+	.string "Level 24: GABITE.\n"
+	.string "Level 48: GARCHOMP.$"
+Coop_Text_FG_Name1_19:
+	.string "SANDYGAST$"
+Coop_Text_FG_Where1_19:
+	.string "The ROUTE 111 desert.$"
+Coop_Text_FG_Evo1_19:
+	.string "Level 42: PALOSSAND.$"
+Coop_Text_FG_Name1_20:
+	.string "AXEW$"
+Coop_Text_FG_Where1_20:
+	.string "METEOR FALLS, first room.$"
+Coop_Text_FG_Evo1_20:
+	.string "Level 38: FRAXURE.\n"
+	.string "Level 48: HAXORUS.$"
+Coop_Text_FG_Name1_21:
+	.string "PHANTUMP$"
+Coop_Text_FG_Where1_21:
+	.string "ROUTE 119.$"
+Coop_Text_FG_Evo1_21:
+	.string "A LINKING CORD or a trade:\n"
+	.string "TREVENANT.$"
+Coop_Text_FG_Name1_22:
+	.string "DRATINI$"
+Coop_Text_FG_Where1_22:
+	.string "SUPER ROD on ROUTE 119. It is rare.$"
+Coop_Text_FG_Evo1_22:
+	.string "Level 30: DRAGONAIR.\n"
+	.string "Level 55: DRAGONITE.$"
+Coop_Text_FG_Name1_23:
+	.string "CROAGUNK$"
+Coop_Text_FG_Where1_23:
+	.string "ROUTE 120.$"
+Coop_Text_FG_Evo1_23:
+	.string "Level 37: TOXICROAK.$"
+Coop_Text_FG_Name1_24:
+	.string "ZORUA$"
+Coop_Text_FG_Where1_24:
+	.string "ROUTE 120.$"
+Coop_Text_FG_Evo1_24:
+	.string "Level 30: ZOROARK.$"
+Coop_Text_FG_Name1_25:
+	.string "DRIFLOON$"
+Coop_Text_FG_Where1_25:
+	.string "ROUTE 121, on the wind.$"
+Coop_Text_FG_Evo1_25:
+	.string "Level 28: DRIFBLIM.$"
+Coop_Text_FG_Name1_26:
+	.string "PUMPKABOO$"
+Coop_Text_FG_Where1_26:
+	.string "MT. PYRE, outside. A huge one is\n"
+	.string "very rare.$"
+Coop_Text_FG_Evo1_26:
+	.string "A LINKING CORD or a trade:\n"
+	.string "GOURGEIST, the same size.$"
+Coop_Text_FG_Name1_27:
+	.string "MURKROW$"
+Coop_Text_FG_Where1_27:
+	.string "MT. PYRE, outside.$"
+Coop_Text_FG_Evo1_27:
+	.string "A DUSK STONE: HONCHKROW. LILYCOVE\n"
+	.string "and MAUVILLE sell DUSK STONES.$"
+Coop_Text_FG_Name1_28:
+	.string "SWINUB$"
+Coop_Text_FG_Where1_28:
+	.string "SHOAL CAVE at low tide.$"
+Coop_Text_FG_Evo1_28:
+	.string "Level 33: PILOSWINE. It needs ANCIENT\n"
+	.string "POWER (the MOVE REMINDER) to level\lup into MAMOSWINE.$"
+Coop_Text_FG_Name1_29:
+	.string "SNEASEL$"
+Coop_Text_FG_Where1_29:
+	.string "SHOAL CAVE ice rooms at low tide.$"
+Coop_Text_FG_Evo1_29:
+	.string "At night, a RAZOR CLAW used on it\n"
+	.string "or held while it levels: WEAVILE.\lMAUVILLE sells RAZOR CLAWS.$"
+Coop_Text_FG_Name1_30:
+	.string "SHELLOS$"
+Coop_Text_FG_Where1_30:
+	.string "Surf on ROUTE 104 (pink, WEST\n"
+	.string "SEA) and ROUTE 124 (blue, EAST SEA).$"
+Coop_Text_FG_Evo1_30:
+	.string "Level 30: GASTRODON of the same sea.$"
+Coop_Text_FG_Name1_31:
+	.string "MAREANIE$"
+Coop_Text_FG_Where1_31:
+	.string "Surf on ROUTES 125 and 126.$"
+Coop_Text_FG_Evo1_31:
+	.string "Level 38: TOXAPEX.$"
+Coop_Text_FG_Name1_32:
+	.string "FRILLISH$"
+Coop_Text_FG_Where1_32:
+	.string "SUPER ROD on ROUTES 124 and 126.$"
+Coop_Text_FG_Evo1_32:
+	.string "Level 40: JELLICENT.$"
+Coop_Text_FG_Group2:
+	.string "PARTNER POKéMON$"
+Coop_Text_FG_Name2_0:
+	.string "KANTO$"
+Coop_Text_FG_Where2_0:
+	.string "A visitor in the RUSTBORO POKéMON\n"
+	.string "CENTER, after 1 BADGE: BULBASAUR,\lCHARMANDER or SQUIRTLE, Lv 10.$"
+Coop_Text_FG_Evo2_0:
+	.string "One a day. They evolve at level\n"
+	.string "16, then 32 or 36.$"
+Coop_Text_FG_Name2_1:
+	.string "SINNOH$"
+Coop_Text_FG_Where2_1:
+	.string "A visitor in the LAVARIDGE POKéMON\n"
+	.string "CENTER, after 4 BADGES: TURTWIG,\lCHIMCHAR or PIPLUP, Lv 18.$"
+Coop_Text_FG_Evo2_1:
+	.string "One a day. They evolve at level\n"
+	.string "14 to 18, then 32 or 36.$"
+Coop_Text_FG_Name2_2:
+	.string "UNOVA$"
+Coop_Text_FG_Where2_2:
+	.string "A visitor in the FORTREE POKéMON\n"
+	.string "CENTER, after 6 BADGES: SNIVY,\lTEPIG or OSHAWOTT, Lv 25.$"
+Coop_Text_FG_Evo2_2:
+	.string "One a day. They evolve at level\n"
+	.string "17, then 36.$"
+Coop_Text_FG_Name2_3:
+	.string "KALOS$"
+Coop_Text_FG_Where2_3:
+	.string "A visitor in the MOSSDEEP POKéMON\n"
+	.string "CENTER, after 7 BADGES: CHESPIN,\lFENNEKIN or FROAKIE, Lv 30.$"
+Coop_Text_FG_Evo2_3:
+	.string "One a day. They evolve at level\n"
+	.string "16, then 36.$"

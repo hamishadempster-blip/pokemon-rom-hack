@@ -1,0 +1,15 @@
+# Continues roster_b1_play's saves: after a reload the traded catches, the
+# gift in the party and the gift in the PC are all there and intact.
+include continue.inc
+b no_wild 1
+0 expect_species 1 48
+1 expect_species 1 572
+0 expect_species 2 1
+0 expect_dex_caught 572 1
+1 expect_dex_caught 48 1
+1 expect_dex_caught 4 1
+b expect_mons_intact
+b expect_no_copies
+b boxes
+b party
+1 expect_pc_count 1

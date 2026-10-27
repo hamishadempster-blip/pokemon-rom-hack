@@ -1500,7 +1500,121 @@ enum NationalDexOrder
     F(SUNKERN) \
     F(SUNFLORA) \
     F(SEEL) \
-    F(DEWGONG)
+    F(DEWGONG) \
+    F(BULBASAUR) \
+    F(IVYSAUR) \
+    F(VENUSAUR) \
+    F(CHARMANDER) \
+    F(CHARMELEON) \
+    F(CHARIZARD) \
+    F(SQUIRTLE) \
+    F(WARTORTLE) \
+    F(BLASTOISE) \
+    F(TURTWIG) \
+    F(GROTLE) \
+    F(TORTERRA) \
+    F(CHIMCHAR) \
+    F(MONFERNO) \
+    F(INFERNAPE) \
+    F(PIPLUP) \
+    F(PRINPLUP) \
+    F(EMPOLEON) \
+    F(SNIVY) \
+    F(SERVINE) \
+    F(SERPERIOR) \
+    F(TEPIG) \
+    F(PIGNITE) \
+    F(EMBOAR) \
+    F(OSHAWOTT) \
+    F(DEWOTT) \
+    F(SAMUROTT) \
+    F(CHESPIN) \
+    F(QUILLADIN) \
+    F(CHESNAUGHT) \
+    F(FENNEKIN) \
+    F(BRAIXEN) \
+    F(DELPHOX) \
+    F(FROAKIE) \
+    F(FROGADIER) \
+    F(GRENINJA) \
+    F(FLETCHLING) \
+    F(FLETCHINDER) \
+    F(TALONFLAME) \
+    F(STARLY) \
+    F(STARAVIA) \
+    F(STARAPTOR) \
+    F(HOPPIP) \
+    F(SKIPLOOM) \
+    F(JUMPLUFF) \
+    F(CUTIEFLY) \
+    F(RIBOMBEE) \
+    F(TIMBURR) \
+    F(GURDURR) \
+    F(CONKELDURR) \
+    F(PARAS) \
+    F(PARASECT) \
+    F(MINCCINO) \
+    F(CINCCINO) \
+    F(VENONAT) \
+    F(VENOMOTH) \
+    F(FERROSEED) \
+    F(FERROTHORN) \
+    F(LARVITAR) \
+    F(PUPITAR) \
+    F(TYRANITAR) \
+    F(GRUBBIN) \
+    F(CHARJABUG) \
+    F(VIKAVOLT) \
+    F(BOUNSWEET) \
+    F(STEENEE) \
+    F(TSAREENA) \
+    F(DROWZEE) \
+    F(HYPNO) \
+    F(DEWPIDER) \
+    F(ARAQUANID) \
+    F(TYNAMO) \
+    F(EELEKTRIK) \
+    F(EELEKTROSS) \
+    F(GROWLITHE) \
+    F(ARCANINE) \
+    F(PONYTA) \
+    F(RAPIDASH) \
+    F(SKORUPI) \
+    F(DRAPION) \
+    F(GIBLE) \
+    F(GABITE) \
+    F(GARCHOMP) \
+    F(SANDYGAST) \
+    F(PALOSSAND) \
+    F(AXEW) \
+    F(FRAXURE) \
+    F(HAXORUS) \
+    F(PHANTUMP) \
+    F(TREVENANT) \
+    F(DRATINI) \
+    F(DRAGONAIR) \
+    F(DRAGONITE) \
+    F(CROAGUNK) \
+    F(TOXICROAK) \
+    F(ZORUA) \
+    F(ZOROARK) \
+    F(DRIFLOON) \
+    F(DRIFBLIM) \
+    F(PUMPKABOO) \
+    F(GOURGEIST) \
+    F(MURKROW) \
+    F(HONCHKROW) \
+    F(SWINUB) \
+    F(PILOSWINE) \
+    F(MAMOSWINE) \
+    F(SNEASEL) \
+    F(WEAVILE) \
+    F(SHELLOS) \
+    F(GASTRODON) \
+    F(MAREANIE) \
+    F(TOXAPEX) \
+    F(FRILLISH) \
+    F(JELLICENT)
 
 // Hoenn Pokédex order
 enum HoennDexOrder
@@ -1721,7 +1835,7 @@ enum KantoDexOrder
 };
 
 #define KANTO_DEX_COUNT (KANTO_DEX_MEW + 1)
-#define HOENN_DEX_COUNT (HOENN_DEX_DEWGONG + 1)
+#define HOENN_DEX_COUNT (HOENN_DEX_JELLICENT + 1)
 
 #define REGIONAL_DEX_COUNT (IS_FRLG ? KANTO_DEX_COUNT : HOENN_DEX_COUNT)
 

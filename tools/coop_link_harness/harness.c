@@ -23,7 +23,7 @@
 #define MAX_CMDS 4096
 #define MAX_SYMS 500000
 
-enum { C_PARTNER, C_GOTO, C_HEX, C_PRESS, C_WAIT, C_SHOT, C_DUMP, C_BARRIER, C_UNTIL_CB2, C_UNTIL_FIELD, C_EXPECT, C_UNTIL_MEM, C_BATTLE, C_MENU, C_PARTY, C_FIXTURE, C_WRITE, C_LEAD, C_MOVE, C_SIX, C_VAR, C_FLAG, C_VS, C_EXPECT_FLAG, C_EXPECT_VAR, C_NO_OBJECT, C_MAP, C_OBJECT, C_TEXT_SPEED, C_PACE, C_MUTE, C_PARTNER_AT, C_ITEM, C_EXPECT_ITEM, C_UNTIL_TEXT, C_WARP, C_PC_COUNT, C_MONS, C_NO_COPIES, C_NOTE_MONEY, C_MONEY_GAIN, C_FORCE_ENC, C_EXPECT_RANGE, C_WALK, C_NO_WILD, C_CROSS, C_WALK_BATTLE, C_SMART, C_STRONG, C_UNTIL_TASK, C_MIRROR, C_SPECIES, C_NOTE_PARTY, C_SAME_PARTY, C_PATCH_RET, C_SLOT, C_TXN, C_MONEY_SAME, C_DEX, C_SWAP, C_GENDER, C_FILL, C_UNFILL, C_WRITEP, C_TINT, C_UNTIL_FTEXT, C_NICK, C_GRIND, C_CATCH, C_HUNT, C_SWITCH_LEAD, C_PARTY_SLOT, C_HEAL_BELOW, C_TALK_OBJ, C_BOXES, C_TEST_HOOK, C_WATCH, C_EXPECT_WRITES, C_SURF, C_BAG_ITEM, C_FLY_MAP, C_STEP_TO, C_PARTY_ACTION, C_DIVE, C_RIDE, C_LEGEND, C_OWNED, C_PCFILL, C_TASKS, C_ALLOW_RESET, C_ROMWRITE, C_OBJBYTE, C_NPC_SYNC, C_BATTLE_ITEM };
+enum { C_PARTNER, C_GOTO, C_HEX, C_PRESS, C_WAIT, C_SHOT, C_DUMP, C_BARRIER, C_UNTIL_CB2, C_UNTIL_FIELD, C_EXPECT, C_UNTIL_MEM, C_BATTLE, C_MENU, C_PARTY, C_FIXTURE, C_WRITE, C_LEAD, C_MOVE, C_SIX, C_VAR, C_FLAG, C_VS, C_EXPECT_FLAG, C_EXPECT_VAR, C_NO_OBJECT, C_MAP, C_OBJECT, C_TEXT_SPEED, C_PACE, C_MUTE, C_PARTNER_AT, C_ITEM, C_EXPECT_ITEM, C_UNTIL_TEXT, C_WARP, C_PC_COUNT, C_MONS, C_NO_COPIES, C_NOTE_MONEY, C_MONEY_GAIN, C_FORCE_ENC, C_EXPECT_RANGE, C_WALK, C_NO_WILD, C_CROSS, C_WALK_BATTLE, C_SMART, C_STRONG, C_UNTIL_TASK, C_MIRROR, C_SPECIES, C_NOTE_PARTY, C_SAME_PARTY, C_PATCH_RET, C_SLOT, C_TXN, C_MONEY_SAME, C_DEX, C_SWAP, C_GENDER, C_FILL, C_UNFILL, C_WRITEP, C_TINT, C_UNTIL_FTEXT, C_NICK, C_GRIND, C_CATCH, C_HUNT, C_SWITCH_LEAD, C_PARTY_SLOT, C_HEAL_BELOW, C_TALK_OBJ, C_BOXES, C_TEST_HOOK, C_WATCH, C_EXPECT_WRITES, C_SURF, C_BAG_ITEM, C_FLY_MAP, C_STEP_TO, C_PARTY_ACTION, C_DIVE, C_RIDE, C_LEGEND, C_OWNED, C_PCFILL, C_TASKS, C_ALLOW_RESET, C_ROMWRITE, C_OBJBYTE, C_NPC_SYNC, C_BATTLE_ITEM, C_FIELD_ITEM, C_FISH };
 
 struct Cmd {
 	unsigned args[8];
@@ -2434,15 +2434,20 @@ static void frameCallback(struct mCoreThread* t) {
             break;
         }
         case C_PACE: {
-            if ((rd32(p, sMain + 4) & ~1u) == (symAddr("BattleMainCB2") & ~1u)) { advance = true; break; }
+            if ((rd32(p, sMain + 4) & ~1u) == (symAddr("BattleMainCB2") & ~1u)) { p->grindCount = 0; advance = true; break; }
             // pace_until_mem: stop when the value matches instead.
-            if (c->addr && ((c->size == 1 ? rd8(p, c->addr) : c->size == 2 ? rd16(p, c->addr) : rd32(p, c->addr)) == c->value)) { advance = true; break; }
+            if (c->addr && ((c->size == 1 ? rd8(p, c->addr) : c->size == 2 ? rd16(p, c->addr) : rd32(p, c->addr)) == c->value)) { p->grindCount = 0; advance = true; break; }
             keys = ((p->step / 24) & 1) ? (1u << 7) : (1u << 6);
+            // A PokeNav Match Call holds the field until its text is read.
+            if (taskActive(p, "ExecuteMatchCall")) {
+                if (!p->grindCount++) out("[f%06d p%d] pace: answering a Match Call\n", p->frame, p->id);
+                keys = (p->step % 8) < 2 ? 1 : 0;
+            } else p->grindCount = 0;
             if (++p->step >= c->frames) {
                 out("[p%d] FAIL no battle while pacing\n", p->id);
                 dump(p, "fail");
                 sFailures++;
-                p->done = 1;
+                p->done = 1; p->grindCount = 0;
             }
             break;
         }
@@ -2697,6 +2702,112 @@ static void frameCallback(struct mCoreThread* t) {
             }
             break;
         }
+        case C_FIELD_ITEM: {
+            // field_item ITEM SLOT [MOVE]: from the open Bag (field), the item,
+            // USE, the party slot (and move); then through the result (an
+            // evolution, messages) with A, leaving bag and menus with B.
+            // Done back in the field.
+            static unsigned fBag, fParty, fOverworld;
+            if (!fBag) { fBag = symAddr("CB2_BagMenuRun") & ~1u; fParty = symFind("CB2_UpdatePartyMenu") & ~1u; fOverworld = symAddr("CB2_Overworld") & ~1u; }
+            unsigned cb2 = rd32(p, sMain + 4) & ~1u, ph = (unsigned)p->step++;
+            int item = c->value & 0xFFFF, slot = (c->value >> 16) & 0xFF, mv = (c->value >> 24) & 0xFF;
+            if (ph >= (unsigned)c->frames) {
+                out("[p%d] FAIL field_item %d: timeout in phase %d.%d\n", p->id, item, p->stable, p->itemPhase);
+                dump(p, "fail"); writePng(p, "fail"); sFailures++; p->stable = 0; p->itemPhase = 0; advance = true; break;
+            }
+            unsigned q = p->offField++;
+            if (p->stable == 0) {   // the bag: pocket, top, row, A, A (USE)
+                if (cb2 != fBag) { if (p->itemPhase >= 3) { p->stable = 1; p->offField = 0; p->itemPhase = 0; } break; }
+                unsigned pockets = symAddr("gBagPockets");
+                int pocket = -1, index = -1;
+                for (int pk = 0; pk < 5 && pocket < 0; pk++) {
+                    unsigned slots = rd32(p, pockets + pk * 8), cap = rd16(p, pockets + pk * 8 + 4) & 0x3FF;
+                    if (slots < 0x02000000) continue;
+                    for (unsigned i = 0, n = 0; i < cap && i < 400; i++) {
+                        unsigned id = rd16(p, slots + i * 4);
+                        if (!id) continue;
+                        if ((int)id == item) { pocket = pk; index = n; break; }
+                        n++;
+                    }
+                }
+                if (pocket < 0) { out("[p%d] FAIL field_item %d: not in the bag\n", p->id, item); sFailures++; p->stable = 0; advance = true; break; }
+                unsigned curPocket = rd8(p, symAddr("gBagPosition") + 5);
+                if (p->itemPhase == 0) { if (curPocket != (unsigned)pocket) { keys = (q % 30) < 2 ? (1u << 4) : 0; break; } if (q > 60) { p->itemPhase = 1; p->offField = 0; } break; }
+                if (p->itemPhase == 1) { if (q < 40 * 8) keys = (q % 8) < 2 ? (1u << 6) : 0; else { p->itemPhase = 2; p->offField = 0; } break; }
+                if (p->itemPhase == 2) { if (q < (unsigned)index * 8) keys = (q % 8) < 2 ? (1u << 7) : 0; else if (q > (unsigned)index * 8 + 20) { p->itemPhase = 3; p->offField = 0; } break; }
+                // A (the item's menu), then A again (USE, its first entry).
+                keys = (q % 40) < 2 ? 1 : 0;
+                break;
+            }
+            if (p->stable == 1) {   // the party menu: steer to SLOT, A (MOVE for a one-move item)
+                if (cb2 != fParty) { if (q > 300) { p->stable = 2; p->offField = 0; } break; }
+                int cur = (int8_t)rd8(p, symAddr("gPartyMenu") + 9);
+                if (q < 40) break;
+                if (p->itemPhase == 0) {
+                    if (cur != slot) { keys = (q % 12) < 2 ? (1u << 7) : 0; break; }
+                    p->itemPhase = 1; p->offField = 0; break;
+                }
+                if (p->itemPhase == 1) { keys = q < 2 ? 1 : 0; if (q > 30) { p->itemPhase = mv ? 2 : 3; p->offField = 0; } break; }
+                if (p->itemPhase == 2) {
+                    if (q < 40 + (unsigned)(mv - 1) * 12) { keys = (q >= 40 && ((q - 40) % 12) < 2) ? (1u << 7) : 0; break; }
+                    keys = q < 40 + (unsigned)(mv - 1) * 12 + 2 ? 1 : 0;
+                    if (q > 40 + (unsigned)(mv - 1) * 12 + 30) { p->itemPhase = 3; p->offField = 0; }
+                    break;
+                }
+                p->stable = 2; p->offField = 0; break;
+            }
+            // Through the result: A for text and scenes; B out of the bag,
+            // the party menu and the start menu. Done in the field.
+            // (After USE the party menu only shows the result: messages,
+            // stat boxes, a move to learn; A is safe there, while B would
+            // cancel an evolution.)
+            if (getenv("FIELD_ITEM_SHOTS") && q % 300 == 100) {
+                char nm[48]; snprintf(nm, sizeof(nm), "fi%d-%u-%s", item, q, symName(cb2)); writePng(p, nm);
+            }
+            if (cb2 == fOverworld) {
+                if (inField(p) && q > 60) { out("[f%06d p%d] field_item %d done\n", p->frame, p->id, item); p->stable = 0; p->itemPhase = 0; advance = true; }
+                else keys = (q % 30) < 2 ? 2 : 0;   // the START menu
+                break;
+            }
+            if (cb2 == fBag) { keys = (q % 30) < 2 ? 2 : 0; break; }
+            // Back at "Use on which POKéMON?" (a Rare Candy stays for more):
+            // B, not another use.
+            if (cb2 == fParty) {
+                static unsigned chooseMon;
+                if (!chooseMon) chooseMon = symFind("Task_HandleChooseMonInput") & ~1u;
+                int choosing = 0;
+                for (int t = 0; t < 16 && chooseMon; t++) {
+                    unsigned tb = symAddr("gTasks") + t * 40;
+                    if (rd8(p, tb + 4) && (rd32(p, tb) & ~1u) == chooseMon) choosing = 1;
+                }
+                // Until the item's effect starts the menu still waits for a
+                // choice; then it is back there once the effect is over.
+                if (!choosing && p->itemPhase < 10) p->itemPhase = 10;
+                if (choosing && (p->itemPhase >= 10 || q > 400)) { keys = (q % 30) < 2 ? 2 : 0; break; }
+                if (choosing) { keys = (q % 40) == 20 ? 1 : 0; break; }   // the choice did not register yet
+            }
+            if (cb2 != fParty && p->itemPhase < 10) p->itemPhase = 10;
+            keys = (q % 20) < 2 ? 1 : 0;
+            break;
+        }
+        case C_FISH: {
+            // fish [T]: the registered rod (SELECT) while facing water, again
+            // after "Not even a nibble"; A for the bite and the messages.
+            // Done when a battle starts.
+            if (rd8(p, sMain + 0x439) & 2) { out("[f%06d p%d] fish: a bite (%d casts)\n", p->frame, p->id, p->grindCount); p->grindCount = 0; p->step = 0; advance = true; break; }
+            if (++p->step >= c->frames) { out("[p%d] FAIL fish: no battle after %d casts\n", p->id, p->grindCount); sFailures++; p->grindCount = 0; p->step = 0; advance = true; break; }
+            if (taskActive(p, "ExecuteMatchCall")) keys = (p->step % 8) < 2 ? 1 : 0;
+            else if (taskActive(p, "Task_Fishing")) {
+                // A only from the bite on (FISHING_WAIT_FOR_A = 8 and later):
+                // an A during the dots reels in nothing.
+                unsigned tasks = symAddr("gTasks"), fn = symAddr("Task_Fishing") & ~1u; int st = -1;
+                for (int t = 0; t < 16; t++)
+                    if (rd8(p, tasks + t * 0x28 + 4) && (rd32(p, tasks + t * 0x28) & ~1u) == fn) st = (int16_t)rd16(p, tasks + t * 0x28 + 8);
+                if (st >= 8) keys = (p->step & 1) ? 1 : 0;
+            } else if (inField(p)) { if ((p->step % 120) == 60) { keys = 1u << 2; p->grindCount++; } }
+            else keys = (p->step % 8) < 2 ? 1 : 0;
+            break;
+        }
         case C_NPC_SYNC: {
             // npc_sync T [MAXLAG]: for T frames, compare every shared-NPC object
             // (random walkers and turners, not trainers) on both games by local
@@ -2896,7 +3007,10 @@ static void frameCallback(struct mCoreThread* t) {
             if (strstr(text, c->text + 16)) {
                 out("[p%d] ok battle text \"%s\"\n", p->id, text);
                 advance = true;
-            } else if (++p->step >= c->frames) {
+            } else if (c->value && (rd8(p, sMain + 0x439) & 2)) {
+                keys = autoKeys(p, p->step);
+            }
+            if (!advance && ++p->step >= c->frames) {
                 out("[p%d] FAIL battle text never had \"%s\" (last \"%s\")\n", p->id, c->text + 16, text);
                 dump(p, "fail");
                 sFailures++;
@@ -3692,6 +3806,15 @@ static void loadScript(const char* path, int depth) {
         } else if (!strcmp(cmd, "force_encounter")) {
             c.kind = C_FORCE_ENC;
             c.value = strtoul(a, NULL, 0);
+        } else if (!strcmp(cmd, "fish")) {
+            c.kind = C_FISH;
+            c.frames = n >= 3 ? atoi(a) : 6000;
+            snprintf(c.text, sizeof(c.text), "fish");
+        } else if (!strcmp(cmd, "field_item")) {
+            c.kind = C_FIELD_ITEM;
+            c.value = (strtoul(a, NULL, 0) & 0xFFFF) | ((n >= 4 ? strtoul(b, NULL, 0) : 0) << 16) | ((n >= 5 ? strtoul(d, NULL, 0) + 1 : 0) << 24);
+            c.frames = 6000;
+            snprintf(c.text, sizeof(c.text), "field_item %s", a);
         } else if (!strcmp(cmd, "battle_item")) {
             c.kind = C_BATTLE_ITEM;
             c.value = (strtoul(a, NULL, 0) & 0xFFFF) | ((n >= 4 ? strtoul(b, NULL, 0) : 0) << 16) | ((n >= 5 ? strtoul(d, NULL, 0) + 1 : 0) << 24);
@@ -3858,6 +3981,7 @@ static void loadScript(const char* path, int depth) {
             c.kind = C_UNTIL_TEXT;
             c.frames = n >= 4 ? atoi(b) : 3000;
             snprintf(c.text, sizeof(c.text), "until_battle_text%s", "");
+            c.value = n >= 5 && !strcmp(d, "auto"); // battle autopilot meanwhile
             snprintf(c.text + 16, sizeof(c.text) - 16, "%s", a);
             for (char* q = c.text + 16; *q; q++) if (*q == '_') *q = ' ';
         } else if (!strcmp(cmd, "fixture_item") || !strcmp(cmd, "expect_item")) {

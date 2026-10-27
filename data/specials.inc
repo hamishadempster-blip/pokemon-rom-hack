@@ -660,6 +660,10 @@ gSpecials::
 	def_special Coop_BufferPartnerLocation
 	def_special CoopNpc_BufferBusy
 	def_special Coop_WarpToCoordScene
+	def_special CoopRoster_StarterGuestOffer
+	def_special CoopRoster_BufferStarterNames
+	def_special CoopRoster_StarterChoice
+	def_special CoopRoster_StarterTaken
 	def_special Coop_PartnerChatOk
 	def_special Coop_BufferCapText
 	def_special Coop_BufferBeaconStatus

@@ -195,4 +195,11 @@
 #define COOP_LEGEND_ASK          1   // the partner is here: offer the shared encounter
 #define COOP_LEGEND_GONE         2   // already this save's (claimed or waiting): no battle
 
+// Starter guests (src/coop_roster.c): one visitor per region.
+#define COOP_STARTER_GUEST_KANTO  0
+#define COOP_STARTER_GUEST_SINNOH 1
+#define COOP_STARTER_GUEST_UNOVA  2
+#define COOP_STARTER_GUEST_KALOS  3
+#define COOP_STARTER_GUEST_COUNT  4
+
 #endif // GUARD_CONSTANTS_COOP_H

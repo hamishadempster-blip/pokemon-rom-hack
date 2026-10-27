@@ -1,0 +1,75 @@
+# Normal wild encounters after Route 119 (j52 saves: Lilycove, linked;
+# random encounters on, unlike the main journey's runs).
+# FIXTURES: warps to the spots; a SUPER ROD registered for player 1; for the
+# Teleport check, player 0's lead becomes an ABRA knowing only TELEPORT
+# (Gen 8+ rule on this engine: a player's TELEPORT in a wild battle
+# switches the user out; the next Pokemon then wins).
+# Player 0: Route 121 grass, two battles in a row (fought); a DRIFLOON (new
+# here) caught; a run away; ABRA's TELEPORT switch-out in a wild battle; into the
+# Lilycove Centre (fixture-warped inside) and out the door, then another grass battle; Meteor Falls (a
+# cave) battle.
+# Player 1: from Route 121's bank, SURF onto Route 122: a surfing battle,
+# then fishing with the SUPER ROD from the water.
+include continue.inc
+include relink.inc
+b expect coop.sLinkState 2
+b smart_moves 1
+b test_item 1 20
+1 fixture_item 4 711 1
+1 writep gSaveBlock1Ptr+0x496:2 711
+b mash_field 300 B
+0 fixture_warp 0 36 57 6
+1 fixture_warp 0 36 30 18
+b until_field 3000
+b no_wild 0
+0 pace_until_battle 12000
+0 mash_field 25000
+0 expect gBattleOutcome 1
+0 pace_until_battle 12000
+0 mash_field 25000
+0 expect gBattleOutcome 1
+0 hunt 6 425 120000
+0 expect_dex_caught 425 1
+0 pace_until_battle 12000
+0 until_mem gBattlerControllerFuncs:4 HandleInputChooseAction 3000 A
+0 wait 60
+0 press RIGHT 2
+0 wait 6
+0 press DOWN 2
+0 wait 6
+0 press A 2
+0 mash_field 6000 B
+0 expect gBattleOutcome 4
+0 smart_moves 0
+0 test_mon 0 63 30 100
+0 mash_field 300 B
+0 pace_until_battle 12000
+0 until_battle_text Abra_used_Teleport! 12000 auto
+0 until_battle_text Go! 3000 auto
+0 mash_field 25000
+0 expect gBattleOutcome 1
+0 expect_mons_intact
+0 fixture_warp 13 6 7 7
+0 until_field 3000
+0 walk 7 8 2000
+0 cross DOWN 0 5 3000
+0 expect_map 0 5
+0 fixture_warp 0 36 57 6
+0 until_field 3000
+0 pace_until_battle 12000
+0 mash_field 25000
+0 fixture_warp 24 0 16 18
+0 until_field 3000
+0 pace_until_battle 12000
+0 mash_field 25000
+1 surf DOWN
+1 cross DOWN 0 37 3000
+1 walk 10 3 2000
+1 pace_until_battle 12000
+1 mash_field 25000
+1 fish 6000
+1 mash_field 25000
+b no_wild 1
+b sync
+b expect coop.sLinkState 2
+b expect_tasks MAX 2

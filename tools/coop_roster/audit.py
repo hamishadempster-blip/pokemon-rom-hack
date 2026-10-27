@@ -94,6 +94,12 @@ def scripted_sources():
         txt = read(p)
         for m in GIFT_RE.finditer(txt):
             found.setdefault(m.group(2), set()).add('%s (%s)' % (os.path.relpath(p, ROOT), m.group(1)))
+    # Co-op partner Pokemon (renewable starter guests, src/coop_roster.c)
+    roster = os.path.join(ROOT, 'src/coop_roster.c')
+    if os.path.exists(roster):
+        for m in re.finditer(r'\[COOP_STARTER_GUEST_(\w+)\]\s*=\s*\{\s*COMPOUND_STRING[^{]*\{([^}]*)\}', read(roster)):
+            for sp in re.findall(r'SPECIES_([A-Z0-9_]+)', m.group(2)):
+                found.setdefault(sp, set()).add('partner Pokemon (%s guest)' % m.group(1))
     # In-game trades
     trade = os.path.join(ROOT, 'src/data/trade.h')
     if os.path.exists(trade):
@@ -122,13 +128,43 @@ def evolutions():
                         break
                 j += 1
             args = body[k + len('EVOLUTION('):j]
-            for t in re.finditer(r'\{(EVO_[A-Z_]+),\s*([^,]*),\s*SPECIES_([A-Z0-9_]+)(.*?)\}(?=\s*[,)]|\s*$)', args, re.S):
-                evo.setdefault(sp, []).append((t.group(1), t.group(2).strip(), t.group(3), t.group(4).strip(' ,')))
+            # Top-level {...} groups (conditions nest their own braces).
+            depth, start = 0, None
+            for i, ch in enumerate(args):
+                if ch == '{':
+                    if depth == 0:
+                        start = i + 1
+                    depth += 1
+                elif ch == '}':
+                    depth -= 1
+                    if depth == 0 and start is not None:
+                        t = re.match(r'\s*(EVO_[A-Z_]+),\s*([^,]*),\s*SPECIES_([A-Z0-9_]+)(.*)', args[start:i], re.S)
+                        if t:
+                            evo.setdefault(sp, []).append((t.group(1), t.group(2).strip(), t.group(3), t.group(4).strip(' ,\n')))
     return evo
+
+# Batch names that stand for a species' ordinary forms (no regional forms).
+FORMS = {'SHELLOS': ('SHELLOS_WEST', 'SHELLOS_EAST'), 'GASTRODON': ('GASTRODON_WEST', 'GASTRODON_EAST'),
+         'PUMPKABOO': ('PUMPKABOO_AVERAGE', 'PUMPKABOO_SMALL', 'PUMPKABOO_LARGE', 'PUMPKABOO_SUPER'),
+         'GOURGEIST': ('GOURGEIST_AVERAGE', 'GOURGEIST_SMALL', 'GOURGEIST_LARGE', 'GOURGEIST_SUPER')}
+
+def fold_forms(table):
+    for base, forms in FORMS.items():
+        for f in forms:
+            if f in table:
+                table.setdefault(base, set()).update('%s: %s' % (f, x) for x in table[f])
+    return table
 
 def main():
     batch = BATCH1
-    wild, scripted, evo = wild_sources(), scripted_sources(), evolutions()
+    wild, scripted, evo = fold_forms(wild_sources()), fold_forms(scripted_sources()), evolutions()
+    for base, forms in FORMS.items():
+        for f in forms:
+            for e in evo.get(f, []):
+                b = e[2]
+                for b2, fs in FORMS.items():
+                    if b in fs: b = b2
+                evo.setdefault(base, []).append((e[0], e[1], b, e[3]))
     pre = {}
     for a, lst in evo.items():
         for (kind, param, b, extra) in lst:
@@ -141,7 +177,7 @@ def main():
     for s in batch:
         how = sorted(wild.get(s, set()))[:4] + sorted(scripted.get(s, set()))[:3]
         if not how and reach(s):
-            how = ['evolves from ' + ', '.join('%s (%s %s %s)' % (a, k, p, x) for (a, k, p, x) in pre.get(s, []))]
+            how = ['evolves from ' + ', '.join(sorted(set('%s (%s %s %s)' % (a, k, p, x) for (a, k, p, x) in pre.get(s, []))))]
         print('%-12s %s' % (s, '; '.join(how) if how else 'NOT OBTAINABLE'))
     obt = [s for s in batch if reach(s)]
     print('\n%d of %d obtainable (%d with a direct source)' % (len(obt), len(batch), len(direct)))

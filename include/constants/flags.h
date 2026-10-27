@@ -1576,10 +1576,10 @@
 #define FLAG_DAILY_SECRET_BASE                      (DAILY_FLAGS_START + 0x2)
 #define FLAG_DAILY_SHOAL_ICE_STONE                  (DAILY_FLAGS_START + 0x3)  // Shoal Cave researcher: one Ice Stone a day
 #define FLAG_DAILY_SHRINE_TOURNEY                   (DAILY_FLAGS_START + 0x4)  // Twin Beacon: repeat tournament prize, once a day
-#define FLAG_UNUSED_0x925                           (DAILY_FLAGS_START + 0x5)  // Unused Flag
-#define FLAG_UNUSED_0x926                           (DAILY_FLAGS_START + 0x6)  // Unused Flag
-#define FLAG_UNUSED_0x927                           (DAILY_FLAGS_START + 0x7)  // Unused Flag
-#define FLAG_UNUSED_0x928                           (DAILY_FLAGS_START + 0x8)  // Unused Flag
+#define FLAG_DAILY_STARTER_KANTO                    (DAILY_FLAGS_START + 0x5)  // Starter guest (Rustboro): one a day
+#define FLAG_DAILY_STARTER_SINNOH                   (DAILY_FLAGS_START + 0x6)  // Starter guest (Lavaridge): one a day
+#define FLAG_DAILY_STARTER_UNOVA                    (DAILY_FLAGS_START + 0x7)  // Starter guest (Fortree): one a day
+#define FLAG_DAILY_STARTER_KALOS                    (DAILY_FLAGS_START + 0x8)  // Starter guest (Mossdeep): one a day
 #define FLAG_UNUSED_0x929                           (DAILY_FLAGS_START + 0x9)  // Unused Flag
 #define FLAG_DAILY_PICKED_LOTO_TICKET               (DAILY_FLAGS_START + 0xA)
 #define FLAG_DAILY_ROUTE_114_RECEIVED_BERRY         (DAILY_FLAGS_START + 0xB)
