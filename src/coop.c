@@ -3438,6 +3438,18 @@ static void Coop_GiveJointWin(void)
             if (trainers[i] != TRAINER_NONE && trainers[i] < TRAINERS_COUNT && !IsSpecialTrainer(trainers[i]))
                 SetTrainerFlag(trainers[i]);
     }
+    // Wally at the Victory Road entrance: his line (a coord event) checks
+    // VAR_VICTORY_ROAD_1F_STATE, which only the stepping player's script
+    // sets. The partner's save kept it at 0, so Wally stopped the partner
+    // again on the same line (journey 66), and with the other player gone
+    // that fight waits for a partner who has moved on. Both saves record
+    // the win (the talker's script then sets its own side).
+    if (TRAINER_BATTLE_PARAM.opponentA == TRAINER_WALLY_VR_1 && VarGet(VAR_VICTORY_ROAD_1F_STATE) == 0)
+    {
+        FlagSet(FLAG_DEFEATED_WALLY_VICTORY_ROAD);
+        FlagClear(FLAG_HIDE_VICTORY_ROAD_ENTRANCE_WALLY);
+        VarSet(VAR_VICTORY_ROAD_1F_STATE, 1);
+    }
     if (sBattleKind == COOP_KIND_CHAMPION)
         FlagSet(FLAG_IS_CHAMPION);
     if (sBattleKind == COOP_KIND_RIVAL && save != NULL && sRivalFightStage != 0xFF && save->rivalStage <= sRivalFightStage)

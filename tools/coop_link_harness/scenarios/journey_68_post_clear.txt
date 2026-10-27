@@ -1,0 +1,21 @@
+# JOURNEY 68 (main playthrough, no fixtures): the post-clear reload.
+# Power on each game from the save the Hall of Fame wrote (journey 67's
+# saves, after the credits), CONTINUE, and check both: the game is clear
+# and each is the Champion, eight badges (parties logged); relink and see each other;
+# save again. (journey_69 powers on
+# once more from this save.)
+include continue.inc
+b dump continued
+b shot continued
+b expect_flag 0x864 1
+b expect_flag 0x87F 1
+b expect_flag 0x86E 1
+b expect_flag 0x867 1
+b party
+include relink.inc
+b expect coop.sLinkState 2
+b wait 120
+b expect_partner relinked-after-clear
+b shot relinked-after-clear
+include save_again.inc
+b party

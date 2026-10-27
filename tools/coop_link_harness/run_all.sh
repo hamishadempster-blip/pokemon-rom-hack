@@ -79,6 +79,12 @@ fi
 
 run bedroom_reload SAVE0="$out/mays_house_doorway/p0.sav" SAVE1="$out/mays_house_doorway/p1.sav"
 
+# J65=dir with p0.sav/p1.sav from the main journey's checkpoint 65 (Ever
+# Grande, eight badges): late-game co-op regressions.
+if [ -n "${J65:-}" ]; then
+	run coop_wally_vr_partner SAVE0="$J65/p0.sav" SAVE1="$J65/p1.sav"
+fi
+
 # SEG6=dir with p0.sav/p1.sav from story_seg6 (Rustboro, linked play): the
 # partner menu, QoL, and Power Problems scenarios, then their reloads.
 if [ -n "${SEG6:-}" ]; then

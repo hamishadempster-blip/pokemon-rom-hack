@@ -1,5 +1,6 @@
 # expand.py P < actions: cave.py's action lines as harness lines for player P.
 #   walk X Y | step_to DIR X Y | surf DIR | smash DIR | strength DIR | push DIR
+#   waterfall DIR
 #   cross DIR G N (passed through)
 import sys
 p = sys.argv[1]
@@ -15,6 +16,8 @@ for line in sys.stdin:
         print('%s press %s 2\n%s wait 10\n%s press A 2\n%s mash_field 4000' % (p, t[1], p, p, p))
     elif k == 'strength':
         print('%s press %s 2\n%s wait 10\n%s press A 2\n%s mash_field 4000\n%s press %s 24\n%s wait 60' % (p, t[1], p, p, p, p, t[1], p))
+    elif k == 'waterfall':
+        print('%s press %s 2\n%s wait 10\n%s press A 2\n%s mash_field 8000 A' % (p, t[1], p, p, p))
     elif k == 'push':
         print('%s press %s 24\n%s wait 60' % (p, t[1], p))
     else: print('%s %s' % (p, line.strip()))

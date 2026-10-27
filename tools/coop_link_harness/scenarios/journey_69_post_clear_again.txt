@@ -1,0 +1,15 @@
+# JOURNEY 69 (main playthrough, no fixtures): power on again from the save
+# journey 68 made after the clear, CONTINUE, and check the clear, the
+# Champion flag and the badges on both games; relink; see each other.
+include continue.inc
+b dump continued-again
+b shot continued-again
+b expect_flag 0x864 1
+b expect_flag 0x87F 1
+b expect_flag 0x86E 1
+b party
+include relink.inc
+b expect coop.sLinkState 2
+b wait 120
+b expect_partner relinked-again
+b shot relinked-again

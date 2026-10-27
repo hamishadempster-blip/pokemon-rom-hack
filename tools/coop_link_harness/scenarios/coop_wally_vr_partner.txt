@@ -1,0 +1,44 @@
+# Wally's Victory Road line and the partner's save (finding #25).
+# Found in the main journey (segment 66): Kai stepped onto Wally's line at
+# the Victory Road entrance with Rosa on the map; both fought Wally
+# together and won. Wally's line is a coord event that checks
+# VAR_VICTORY_ROAD_1F_STATE, which only the stepping player's script sets:
+# Rosa's save kept it at 0, so Wally stopped her again on the same line
+# (another fight; with Kai gone, a rival fight that waits for a partner).
+# FIXTURES: the main journey's checkpoint 65 saves (Ever Grande Centre,
+# eight badges, Lv80 first three; run_all: J65=dir), warped to Victory
+# Road 1F below the line; healed.
+# Expected: after the joint win the var is set on both saves and Rosa
+# crosses the line with no second fight (money unchanged).
+# Before the fix (0xC0170134): Rosa's var stays 0 and she fights Wally again.
+include continue.inc
+include relink.inc
+b expect coop.sLinkState 2
+b smart_moves 1
+b test_heal
+b no_wild 1
+include beacon_on.inc
+b mash_field 2000 B
+0 fixture_warp 24 43 2 26
+1 fixture_warp 24 43 3 26
+b until_field 3000
+b sync
+b expect_var 0x40C3 0
+0 walk 2 24 3000
+1 walk 3 25 3000
+b sync
+0 press UP 2
+b until_cb2 BattleMainCB2 9000 A
+b shot wally-start
+b mash_field 200000 B
+b mash_field 6000 B
+0 expect_var 0x40C3 1
+1 expect_var 0x40C3 1
+1 expect_flag 0x7E 1
+# Rosa crosses the same line.
+1 note_money
+1 walk 3 22 3000
+1 wait 120
+1 expect_money_same
+1 expect_var 0x40C3 1
+1 shot rosa-past-the-line

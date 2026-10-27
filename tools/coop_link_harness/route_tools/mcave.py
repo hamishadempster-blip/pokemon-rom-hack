@@ -1,12 +1,12 @@
 # mcave.py MAPS StartMap sx,sy[,surf] GoalMap gx,gy: a route over several
 # cave maps joined by warps (cave.py's rules on each map: Strength boulders,
-# Rock Smash rocks, Surf from a bank, ledges, elevation; plus the one-way
+# Rock Smash rocks, Surf from a bank, ledges, elevation, WATERFALL up; plus the one-way
 # MB_IMPASSABLE_* edges). Boulders and rocks are temporary-flag objects:
 # leaving a map puts them back, so each map's are reset on arrival.
 # BFS over (map, tile, surfing, elevation, boulders, rocks broken).
 # Prints harness lines:
 #   walk X Y | surf DIR | step_to DIR X Y | strength DIR | push DIR |
-#   smash DIR | cross DIR GROUP NUM (a step onto a warp)
+#   smash DIR | waterfall UP | cross DIR GROUP NUM (a step onto a warp)
 # FREE="Map:x,y ..." drops objects (people who have moved).
 import json, re, struct, sys, os
 from collections import deque
@@ -52,6 +52,7 @@ SIDE = {'S': ('MB_IMPASSABLE_SOUTH', 'MB_IMPASSABLE_SOUTHEAST', 'MB_IMPASSABLE_S
         'W': ('MB_IMPASSABLE_WEST', 'MB_IMPASSABLE_NORTHWEST', 'MB_IMPASSABLE_SOUTHWEST', 'MB_IMPASSABLE_WEST_AND_EAST'),
         'E': ('MB_IMPASSABLE_EAST', 'MB_IMPASSABLE_NORTHEAST', 'MB_IMPASSABLE_SOUTHEAST', 'MB_IMPASSABLE_WEST_AND_EAST')}
 DIRS = {'DOWN': (0, 1, 'S', 'N'), 'UP': (0, -1, 'N', 'S'), 'LEFT': (-1, 0, 'W', 'E'), 'RIGHT': (1, 0, 'E', 'W')}
+ARROW = {'MB_SOUTH_ARROW_WARP': 'DOWN', 'MB_NORTH_ARROW_WARP': 'UP', 'MB_WEST_ARROW_WARP': 'LEFT', 'MB_EAST_ARROW_WARP': 'RIGHT'}
 JUMP = {'DOWN': 'MB_JUMP_SOUTH', 'UP': 'MB_JUMP_NORTH', 'LEFT': 'MB_JUMP_WEST', 'RIGHT': 'MB_JUMP_EAST'}
 def elev_ok(e0, e1): return e0 in (0, 15) or e1 in (0, 15) or e0 == e1
 a = sys.argv[3].split(','); S = (sys.argv[2], int(a[0]), int(a[1])); surf0 = len(a) > 2 and a[2] == 'surf'
@@ -62,11 +63,37 @@ while q:
     if p == G: goal = c; break
     cb = tile(*p)[2]
     for dn, (dx, dy, side, opp) in DIRS.items():
+        # An arrow warp: standing on it, a move its way takes the warp.
+        if p in warps and ARROW.get(cb) == dn:
+            t = warps[p]
+            st = (t, False, tile(*t)[0], M[t[0]]['B0'], M[t[0]]['R0']); act = ('warp', dn, p)
+            if st not in prev: prev[st] = (c, act); q.append(st)
+            continue
         n = (m, p[1] + dx, p[2] + dy)
         if not inside(*n): continue
         if cb in SIDE[side]: continue
         e, col, bh = tile(*n)
         if bh in SIDE[opp]: continue
+        if bh == 'MB_WATERFALL' and sf and dn != 'UP':
+            # Surfing onto a waterfall from above or the side: the current
+            # carries the player down it (field_player_avatar.c forced
+            # movement) to the first tile below that is not waterfall.
+            t = n
+            while inside(*t) and tile(*t)[2] == 'MB_WATERFALL': t = (m, t[1], t[2] + 1)
+            if not inside(*t) or not water(tile(*t)[2]): continue
+            st = (t, True, tile(*t)[0], bs, rs); act = ('slide', dn, t)
+            if st not in prev: prev[st] = (c, act); q.append(st)
+            continue
+        if bh == 'MB_WATERFALL':
+            # WATERFALL: from the water below, facing up; climbs to the
+            # first tile above that is not waterfall.
+            if not sf or dn != 'UP': continue
+            t = n
+            while inside(*t) and tile(*t)[2] == 'MB_WATERFALL': t = (m, t[1], t[2] - 1)
+            if not inside(*t) or not water(tile(*t)[2]): continue
+            st = (t, True, tile(*t)[0], bs, rs); act = ('waterfall', dn, None)
+            if st not in prev: prev[st] = (c, act); q.append(st)
+            continue
         if n[1:] in rs:
             if sf: continue
             st = (p, sf, ce, bs, rs - {n[1:]}); act = ('smash', dn, None)
@@ -85,7 +112,7 @@ while q:
                 if not inside(*n): continue
                 e, col, bh = tile(*n); ne = e
             if n[1:] in M[m]['others'] or n[1:] in bs or n[1:] in rs: continue
-            if n in warps and n != G:
+            if n in warps and n != G and bh not in ARROW:
                 if not elev_ok(e, ne) and not sf: continue
                 t = warps[n]
                 st = (t, False, tile(*t)[0], M[t[0]]['B0'], M[t[0]]['R0']); act = ('warp', dn, n)
@@ -110,6 +137,8 @@ for (kind, dn, w), pos in acts:
     if kind == 'walk': pending = pos; continue
     if pending: print('walk %d %d' % pending[1:]); pending = None
     if kind == 'surf': print('surf %s' % dn)
+    elif kind == 'waterfall': print('waterfall %s' % dn)
+    elif kind == 'slide': print('step_to %s %d %d' % (dn, w[1], w[2]))
     elif kind == 'smash': print('smash %s' % dn)
     elif kind == 'push':
         print(('push %s' if cur in pushed else 'strength %s') % dn); pushed.add(cur)
