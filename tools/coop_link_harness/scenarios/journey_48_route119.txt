@@ -40,6 +40,9 @@ b sync
 1 dump after-steven-rosa
 b sync
 b expect_var 0x4071 1
+# Driver aid from here (speed, Repel-equivalent): no wild encounters on the
+# long Route 119 grass; wild co-op battles were covered up to here.
+b no_wild 1
 b walk 58 0 30000
 b cross UP 0 34 3000
 b dump route119
@@ -48,10 +51,10 @@ b dump route119
 # to the Weather Institute.
 0 walk 22 110 60000
 0 surf UP
-0 walk 26 107 4000
+0 walk 27 107 4000
 1 walk 22 110 60000
 1 surf UP
-1 walk 27 107 4000
+1 walk 26 108 4000
 b sync
 b walk 6 33 120000
 b dump near-institute

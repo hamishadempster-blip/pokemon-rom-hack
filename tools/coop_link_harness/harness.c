@@ -1201,6 +1201,9 @@ static int walkStep(struct Player* p, int tx, int ty) {
 				if (nx < 0 || ny < 0 || nx >= w || ny >= h) continue;
 				b = BLK(nx, ny); beh = BEH(b); ex = (b >> 12) & 0xF; ce = ex;
 			}
+			// A muddy slope only slides the player down (it needs the Mach
+			// Bike to climb): enter it going south only.
+			if (beh == 0xD0 && d != 0) continue;
 			int ti = ny * w + nx;
 			if (blocked[ti]) continue;
 			// Stay on this map unless the target is off it (a connected map).
@@ -1596,7 +1599,7 @@ static void frameCallback(struct mCoreThread* t) {
             }
             p->stable = 0;
             if (inField(p)) keys = c->keys;
-            else keys = autoKeys(p, p->step);
+            else keys = autoKeys(p, (rd8(p, sMain + 0x439) & 2) ? p->offField : p->step);
             // A battle on the way (a hidden trainer, a wild encounter) does
             // not use up the map-change budget; it has its own cap.
             if ((rd8(p, sMain + 0x439) & 2) && p->offField < 60000u) { p->offField++; break; }
@@ -1975,10 +1978,14 @@ static void frameCallback(struct mCoreThread* t) {
 			// mash_field in a battle's party menu (a forced switch after a
 			// faint): step the cursor down before each A, so a fainted
 			// first slot does not hold the masher on "no energy left".
-			if ((c->kind == C_UNTIL_FIELD || c->kind == C_UNTIL_CB2) && c->keys == 1) keys = autoKeys(p, p->step);
+			bool inBattleNow = (rd8(p, sMain + 0x439) & 2) != 0;
+			// mash_field with another key (B: NO to a nickname question
+			// after the fight) still plays a battle on the way with the
+			// battle keys; B alone backs out of every battle menu.
+			if ((c->kind == C_UNTIL_FIELD || c->kind == C_UNTIL_CB2) && (c->keys == 1 || (c->kind == C_UNTIL_FIELD && c->keys && inBattleNow))) keys = autoKeys(p, c->kind == C_UNTIL_FIELD && inBattleNow ? p->offField : p->step);
+			// (in a battle the budget's step stands still: its own count paces the keys)
 			// mash_field: a battle on the way (wild, trainer) does not use up
 			// the budget; it has its own generous cap.
-			bool inBattleNow = (rd8(p, sMain + 0x439) & 2) != 0;
 			if (c->kind == C_UNTIL_FIELD && inBattleNow && p->offField < 60000u) { p->offField++; break; }
 			if (!inBattleNow) p->offField = 0;
 			if (++p->step >= c->frames) {

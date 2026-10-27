@@ -1,0 +1,76 @@
+# JOURNEY 50 (main playthrough, no fixtures): CONTINUE journey_49's saves
+# (Fortree Centre; Shelly beaten, FLY on both).
+#  - Relink, Beacon ON (Rosa).
+#  - East onto Route 120; Steven on the bridge (13,15), reached from its east
+#    end: each player talks to him on their own save (YES): the hidden Kecleon's battle, then the
+#    DEVON SCOPE. Kai first, then Rosa (each game has its own Steven).
+#  - Back to Fortree: the unseen Kecleon (25,8) above the gym, each player
+#    on their own save (Devon Scope: YES); it flees.
+#  - Fortree Centre: heal, save.
+# Driver aids: smart_moves, heal_below, no_wild (speed, Repel-equivalent).
+include continue.inc
+include relink.inc
+b expect coop.sLinkState 2
+b smart_moves 1
+b heal_below 35 2
+b no_wild 1
+include beacon_on_p1.inc
+b mash_field 2000 B
+b expect coop.sBeacon+1:1 1
+b expect_flag 0x6E 1
+b walk 7 8 2000
+b cross DOWN 0 4 2000
+b walk 39 9 12000
+b cross RIGHT 0 35 3000
+b dump route120
+# Steven: east along the top, down the east side, west over the bridge;
+# Kai talks to him from the east (14,15), Rosa waits behind (18,16).
+0 walk 14 15 20000
+1 walk 18 16 20000
+b sync
+0 press LEFT 2
+0 wait 10
+0 press A 2
+0 mash_field 60000
+0 dump after-steven-kai
+0 shot steven-kai
+0 walk 9 16 3000
+b sync
+1 walk 14 15 3000
+1 press LEFT 2
+1 wait 10
+1 press A 2
+1 mash_field 60000
+1 dump after-steven-rosa
+1 shot steven-rosa
+b sync
+b expect_flag 0x11D 1
+b party
+# Back west into Fortree; the Kecleon above the gym, from (25,7).
+b walk 0 9 12000
+b cross LEFT 0 4 3000
+0 walk 25 7 12000
+0 press DOWN 2
+0 wait 10
+0 press A 2
+0 mash_field 20000
+0 shot kecleon-kai
+0 walk 25 10 3000
+1 wait 300
+1 walk 25 7 12000
+1 press DOWN 2
+1 wait 10
+1 press A 2
+1 mash_field 20000
+1 shot kecleon-rosa
+b sync
+b expect_flag 0x127 1
+b dump after-kecleon
+0 walk 5 7 12000
+0 cross UP 12 2 3000
+1 wait 200
+1 walk 5 7 12000
+1 cross UP 12 2 3000
+include journey_heal_center.inc
+include save_again.inc
+b party

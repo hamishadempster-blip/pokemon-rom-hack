@@ -1,0 +1,97 @@
+# JOURNEY 49 (main playthrough, no fixtures): CONTINUE journey_48's saves
+# (Route 119 outside the Weather Institute; Steven's Route 118 scene on both).
+#  - Relink, Beacon ON (Kai).
+#  - Weather Institute 1F and 2F: the Aqua grunts on the way (co-op where
+#    both are seen); Kai talks to Shelly (story gate WEATHER: co-op, Rosa
+#    joins). After it the scientist gives Kai CASTFORM (nickname: NO);
+#    Rosa talks to the scientist on her own save for hers (optional gift).
+#  - Out, north over the bridge; the rival line (25-26,31): Kai steps on
+#    it, the rival battle (co-op), HM02 FLY (Rosa's through the shared item).
+#  - North and east to Fortree City; Centre: heal, save.
+# Test helper: test_heal before the boss fights.
+# Driver aids: smart_moves, heal_below, no_wild (speed, Repel-equivalent).
+include continue.inc
+include relink.inc
+b expect coop.sLinkState 2
+b smart_moves 1
+b heal_below 35 2
+b no_wild 1
+include beacon_on.inc
+b mash_field 2000 B
+b expect coop.sBeacon+1:1 1
+b expect_var 0x40B3 0
+b expect_var 0x4072 0
+b expect_flag 0x6E 0
+# Into the institute (door (6,32)).
+0 walk 6 33 2000
+0 cross UP 32 0 3000
+1 wait 200
+1 walk 6 33 2000
+1 cross UP 32 0 3000
+b dump institute-1f
+0 walk 17 2 20000
+1 walk 16 2 20000
+b sync
+0 cross UP 32 1 3000
+1 walk 17 2 3000
+1 cross UP 32 1 3000
+b dump institute-2f
+# Shelly (4,6): Kai from the right, Rosa above him.
+0 walk 5 6 30000
+1 walk 5 5 30000
+b sync
+# TEST HELPER (healing, authorised): the party healed before the boss.
+b test_heal
+b dump before-shelly
+0 press LEFT 2
+0 wait 10
+0 press A 2
+b until_cb2 BattleMainCB2 9000 A
+b shot shelly-start
+# B in the field after the battle: the scientist's nickname question is NO.
+b mash_field 200000 B
+b dump after-shelly
+b party
+b expect_var 0x40B3 1
+0 expect_flag 0x97 1
+b shot after-shelly
+# Rosa: the scientist (1,6) on her save.
+1 walk 2 6 4000
+1 press LEFT 2
+1 wait 10
+1 press A 2
+1 mash_field 20000 B
+1 expect_flag 0x97 1
+b sync
+# Out of the institute.
+b walk 17 2 20000
+b cross UP 32 0 3000
+b walk 9 11 20000
+b cross DOWN 0 34 3000
+b dump route119-north
+# The rival line: Kai below (25,31), Rosa beside him.
+0 walk 25 32 30000
+1 walk 26 33 30000
+# TEST HELPER (healing, authorised): the party healed before the boss.
+b test_heal
+b sync
+0 press UP 24
+b until_cb2 BattleMainCB2 9000 A
+b shot rival-119
+b mash_field 200000 B
+b dump after-rival
+b expect_var 0x4072 1
+b expect_flag 0x6E 1
+b party
+# North and east to Fortree.
+b walk 39 8 120000
+b cross RIGHT 0 4 3000
+b dump fortree
+0 walk 5 7 6000
+0 cross UP 12 2 3000
+1 wait 200
+1 walk 5 7 6000
+1 cross UP 12 2 3000
+include journey_heal_center.inc
+include save_again.inc
+b party

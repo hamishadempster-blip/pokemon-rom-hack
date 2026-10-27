@@ -1,0 +1,120 @@
+# JOURNEY 51 (main playthrough, no fixtures): CONTINUE journey_50's saves
+# (Fortree Centre; Devon Scope on both, the Fortree Kecleon gone).
+#  - Relink, Beacon ON (Kai).
+#  - Fortree Gym: Rosa waits inside the door; Kai walks the rotating-gate
+#    puzzle on his save (route from the game's gate rules, src/rotating_gate.c,
+#    by a solver in the scratchpad: gates.py), its trainers on the way;
+#    Winona (15,2): Kai talks to her from below, Rosa joins (story invite,
+#    co-op). Feather Badge (0x86C) on both; TM AERIAL ACE (Rosa's through
+#    the partner catch-up).
+#  - Out; Fortree Centre: heal, save.
+# Test helper: test_heal before the boss fights.
+# TEST HELPER (combat, authorised; after an ordinary loss to Winona and
+# Gale at Lv55, evidence 51b_winona_lost.log): the first three of each
+# party raised to Lv65 (met level 5: obeys); moves unchanged.
+# Driver aids: smart_moves, heal_below, no_wild.
+include continue.inc
+include relink.inc
+b expect coop.sLinkState 2
+b smart_moves 1
+b heal_below 35 2
+b no_wild 1
+include beacon_on.inc
+b mash_field 2000 B
+b expect coop.sBeacon+1:1 1
+b test_level 0 65 0 5
+b test_level 1 65 0 5
+b test_level 2 65 0 5
+b expect_flag 0x86C 0
+b walk 7 8 2000
+b cross DOWN 0 4 2000
+0 walk 22 12 12000
+0 cross UP 12 1 3000
+1 wait 200
+1 walk 22 12 12000
+1 cross UP 12 1 3000
+b dump gym
+1 walk 16 23 2000
+0 walk 15 23 2000
+b sync
+0 walk 15 22 3000
+0 walk 4 22 3000
+0 walk 4 20 3000
+0 walk 2 20 3000
+0 walk 2 17 3000
+0 walk 4 17 3000
+0 walk 4 18 3000
+0 walk 7 18 3000
+0 walk 7 14 3000
+0 walk 9 14 3000
+0 walk 9 12 3000
+0 walk 7 12 3000
+0 walk 7 15 3000
+0 walk 7 14 3000
+0 walk 9 14 3000
+0 walk 9 10 3000
+0 walk 8 10 3000
+0 walk 8 9 3000
+0 walk 7 9 3000
+0 walk 7 8 3000
+0 walk 2 8 3000
+0 walk 2 7 3000
+0 walk 1 7 3000
+0 walk 1 6 3000
+0 walk 2 6 3000
+0 walk 2 8 3000
+0 walk 5 8 3000
+0 walk 5 2 3000
+0 walk 2 2 3000
+0 walk 2 8 3000
+0 walk 6 8 3000
+0 walk 5 8 3000
+0 walk 5 4 3000
+0 walk 14 4 3000
+0 walk 14 3 3000
+0 walk 15 3 3000
+# TEST HELPER (healing, authorised): the party healed before the boss.
+b test_heal
+0 dump before-winona
+0 shot before-winona
+b sync
+0 press UP 2
+0 wait 10
+0 press A 2
+b until_cb2 BattleMainCB2 9000 A
+b shot winona-start
+b mash_field 200000 B
+b dump after-winona
+b party
+b mash_field 3000 B
+b expect_flag 0x86C 1
+b shot badge6
+# Out: Kai walks back through the gates (the solver's return route from
+# the gates as he left them; the trainers where they walked up to him).
+0 walk 15 4 3000
+0 walk 5 4 3000
+0 walk 5 9 3000
+0 walk 6 9 3000
+0 walk 6 10 3000
+0 walk 9 10 3000
+0 walk 9 14 3000
+0 walk 7 14 3000
+0 walk 7 18 3000
+0 walk 4 18 3000
+0 walk 4 22 3000
+0 walk 13 22 3000
+0 walk 13 23 3000
+0 walk 15 23 3000
+0 dump back-at-door
+b sync
+0 cross DOWN 0 4 3000
+1 cross DOWN 0 4 3000
+b dump fortree
+0 walk 5 7 12000
+0 cross UP 12 2 3000
+1 wait 200
+1 walk 5 7 12000
+1 cross UP 12 2 3000
+include journey_heal_center.inc
+include save_again.inc
+b party
