@@ -1,0 +1,5 @@
+include continue.inc
+b expect_flag 0x7A 1
+b expect_var 0x4085 7
+b expect_var 0x4057 4
+b party

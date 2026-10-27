@@ -1,0 +1,3 @@
+include continue.inc
+b expect_var 0x4085 6
+b party

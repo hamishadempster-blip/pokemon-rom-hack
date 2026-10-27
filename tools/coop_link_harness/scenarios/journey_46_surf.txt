@@ -1,0 +1,50 @@
+# JOURNEY 46 (main playthrough, no fixtures): CONTINUE journey_45's saves
+# (Kai in Wally's house with HM03 SURF; Rosa in the gym after Norman).
+#  - Relink, Beacon ON (Rosa).
+#  - Rosa steps out of the gym: Wally's father walks her home (the scene
+#    the fix for finding #22 now gives the partner's save) and gives her
+#    HM03 SURF. Kai steps out of Wally's house.
+#  - Both checked for SURF; Petalburg Centre: heal, save.
+# Driver aids: smart_moves, heal_below.
+include continue.inc
+include relink.inc
+b expect coop.sLinkState 2
+b smart_moves 1
+b heal_below 35 2
+include beacon_on_p1.inc
+b mash_field 2000 B
+b expect coop.sBeacon+1:1 1
+0 expect_flag 0x7A 1
+1 expect_flag 0x7A 0
+# Back down through the rooms by their entrance mats (south arrows).
+1 walk 7 7 4000
+1 press DOWN 8
+1 wait 60
+1 walk 7 33 4000
+1 press DOWN 8
+1 wait 60
+1 walk 1 72 4000
+1 press DOWN 8
+1 wait 60
+1 walk 1 98 4000
+1 press DOWN 8
+1 wait 60
+1 walk 4 110 4000
+# Out of the gym; the town's frame script walks her to Wally's house.
+1 cross DOWN 8 0 20000
+1 mash_field 20000
+1 dump rosa-wallys-house
+1 shot rosa-surf
+b sync
+b expect_flag 0x7A 1
+b expect_var 0x4057 5
+0 walk 3 7 3000
+0 cross DOWN 0 0 3000
+1 wait 120
+1 walk 4 7 3000
+1 cross DOWN 0 0 3000
+b walk 20 17 8000
+b cross UP 8 4 3000
+include journey_heal_center.inc
+include save_again.inc
+b party

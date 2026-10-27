@@ -765,6 +765,13 @@ Coop_EventScript_GuestPetalburg::
 	call_if_unset FLAG_RECEIVED_TM_FACADE, Coop_EventScript_GuestGiveFacade
 	goto_if_ge VAR_PETALBURG_GYM_STATE, 7, Coop_EventScript_GuestPetalburgStory
 	setvar VAR_PETALBURG_GYM_STATE, 7
+	@ Wally's father: on the talker's save he walks in after the fight and
+	@ takes the player home for HM03 SURF. The partner's save gets the same
+	@ walk when they next step out of the gym (Petalburg's frame script for
+	@ state 4); without it SURF never came on that save.
+	goto_if_ne VAR_PETALBURG_CITY_STATE, 3, Coop_EventScript_GuestPetalburgStory
+	setvar VAR_PETALBURG_CITY_STATE, 4
+	clearflag FLAG_HIDE_PETALBURG_CITY_WALLYS_DAD
 Coop_EventScript_GuestPetalburgStory::
 	special ResetHealLocationFromDewford
 	call EventScript_HideMrBriney

@@ -1,0 +1,57 @@
+# JOURNEY 42 (main playthrough, no fixtures): CONTINUE journey_41's saves
+# (Lavaridge Centre; Heat Badge on both).
+#  - Relink, Beacon ON (Rosa).
+#  - East along Route 112's lower path onto Route 111, south; the two rocks
+#    north of Mauville are back (they return on every map load): both
+#    smash them again from the north (each on their own save).
+#  - Mauville Centre: heal, save.
+# Driver aids: smart_moves, heal_below.
+include continue.inc
+include relink.inc
+b expect coop.sLinkState 2
+b smart_moves 1
+b heal_below 35 2
+include beacon_on_p1.inc
+b mash_field 2000 B
+b expect coop.sBeacon+1:1 1
+b walk 7 8 2000
+b cross DOWN 0 12 2000
+b walk 19 9 6000
+b cross RIGHT 0 27 3000
+b walk 39 49 30000
+b cross RIGHT 0 26 3000
+b dump route111
+0 walk 19 99 60000
+1 walk 17 98 60000
+b sync
+0 press DOWN 2
+0 wait 10
+0 press A 2
+0 mash_field 20000
+0 walk 19 100 2000
+0 press DOWN 2
+0 wait 10
+0 press A 2
+0 mash_field 20000
+0 walk 21 104 3000
+0 shot rocks-kai
+1 walk 19 99 3000
+1 press DOWN 2
+1 wait 10
+1 press A 2
+1 mash_field 20000
+1 walk 19 100 2000
+1 press DOWN 2
+1 wait 10
+1 press A 2
+1 mash_field 20000
+1 walk 21 105 3000
+1 shot rocks-rosa
+b sync
+b walk 16 139 60000
+b cross DOWN 0 2 3000
+b walk 22 6 6000
+b cross UP 10 5 3000
+include journey_heal_center.inc
+include save_again.inc
+b party

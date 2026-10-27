@@ -1,0 +1,20 @@
+# DIAGNOSTIC: Petalburg Gym entrance doors (journey 44 saves).
+include continue.inc
+b walk 7 8 2000
+b cross DOWN 0 0 2000
+b walk 15 9 8000
+b cross UP 8 1 3000
+b wait 120
+0 shot entered
+0 walk 7 106 6000
+0 dump at-door
+0 press UP 8
+0 wait 30
+0 shot pressed1
+0 press UP 16
+0 wait 60
+0 dump after-press
+0 shot pressed2
+0 hex gBackupMapLayout 12
+0 hex sBackupMapData 2 5356
+0 hex sBackupMapData 2 5404

@@ -1,0 +1,35 @@
+# JOURNEY 44 (main playthrough, no fixtures): CONTINUE journey_43's saves
+# (Rustboro Centre; Strength on both).
+#  - Relink, Beacon ON (Rosa).
+#  - Route 104 north, Petalburg Woods, Route 104 south, east into
+#    Petalburg City.
+#  - Petalburg Centre: heal, save (Norman next).
+# Driver aids: smart_moves, heal_below.
+include continue.inc
+include relink.inc
+b expect coop.sLinkState 2
+b smart_moves 1
+b heal_below 35 2
+include beacon_on_p1.inc
+b mash_field 2000 B
+b expect coop.sBeacon+1:1 1
+b walk 7 8 2000
+b cross DOWN 0 3 2000
+b walk 16 59 8000
+b cross DOWN 0 19 3000
+b dump route104
+0 walk 10 30 20000
+0 until_map 24 11 3000
+1 walk 11 30 20000
+1 until_map 24 11 3000
+b dump woods
+b walk 16 38 30000
+b cross DOWN 0 19 3000
+b walk 39 62 30000
+b cross RIGHT 0 0 3000
+b dump petalburg
+b walk 20 17 8000
+b cross UP 8 4 3000
+include journey_heal_center.inc
+include save_again.inc
+b party
