@@ -63,6 +63,7 @@ struct Player {
     int crashSeen;
     unsigned smartMoves;
     int learnPhase, learnTarget; unsigned learnStart, partyBackFrame;
+    int lastSent; unsigned lastSentFrame;   // the last replacement chosen (both battlers down)
     unsigned strongBattlers;
     unsigned offField;
     unsigned noPath;      // walk: consecutive field frames with no path
@@ -1072,7 +1073,14 @@ static unsigned autoKeys(struct Player* p, unsigned step) {
 		if (rd8(p, symAddr("gPartyMenu") + 11) != 1) return (step % 30) < 2 ? 2 : 0;
 		int first = (dbl && !multi) ? 2 : 1;
 		bool usable = slot >= first && slot < (multi ? 3 : 6) && rd16(p, partyMon(0, slot) + 86) > 0;
+		// Both battlers down in a double: the menu opens twice, and the
+		// first choice still shows as a healthy slot the second time (the
+		// game refuses it). Skip the slot sent a moment ago.
+		if (usable && p->lastSentFrame && p->frame - p->lastSentFrame < 900 && slot == p->lastSent) usable = false;
+		if (getenv("PARTY_DEBUG") && t == 0)
+			out("[p%d party-menu] slot %d first %d multi %d hp %u action %u\n", p->id, slot, first, multi, rd16(p, partyMon(0, slot) + 86), rd8(p, symAddr("gPartyMenu") + 11));
 		if (!usable) return t < 2 ? 0x80 : 0;
+		if (t >= 90 && t < 92) { p->lastSent = slot; p->lastSentFrame = p->frame ? p->frame : 1; }
 		return ((t >= 40 && t < 42) || (t >= 90 && t < 92)) ? 1 : 0;
 	}
 	// The summary screen's MainCB2 is static, and the symbol "MainCB2" may
