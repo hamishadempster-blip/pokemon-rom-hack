@@ -732,6 +732,7 @@ static void Coop_UpdateSprite(void)
     u8 objectId;
     u8 ready;
     s16 dx, dy, adx, ady;
+    u8 action;
     s16 tx, ty;
     enum Direction dir;
     struct ObjectEvent *obj;
@@ -868,9 +869,17 @@ static void Coop_UpdateSprite(void)
         return;
     obj->singleMovementActive = FALSE;
     ObjectEventClearHeldMovementIfActive(obj);
-    ObjectEventSetHeldMovement(obj, (sPartner.bike || adx + ady > 1)
-        ? GetPlayerRunMovementAction(dir)
-        : GetWalkNormalMovementAction(dir));
+    // Running frames exist only in the on-foot sprite's animation table; a
+    // bike or surfing sprite given a run action reads past its own table
+    // (the Mach Bike's: a jump to address 0 and a reset). Bikes and Surf
+    // keep up at their own fast speeds instead.
+    if (sPartner.bike)
+        action = GetWalkFasterMovementAction(dir);
+    else if (sPartner.surf)
+        action = adx + ady > 1 ? GetWalkFastMovementAction(dir) : GetWalkNormalMovementAction(dir);
+    else
+        action = adx + ady > 1 ? GetPlayerRunMovementAction(dir) : GetWalkNormalMovementAction(dir);
+    ObjectEventSetHeldMovement(obj, action);
 }
 
 static void Coop_ReleaseTalkNpc(void)

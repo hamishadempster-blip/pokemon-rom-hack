@@ -4,7 +4,7 @@
 import json, re, struct, sys
 from collections import deque
 root = '/home/claude/pokemon-rom-hack/'
-names = [l.strip().rstrip(',') for l in open(root + 'include/constants/metatile_behaviors.h') if l.strip().startswith('MB_')]
+names = [l.strip().split(',')[0].split()[0] for l in open(root + 'include/constants/metatile_behaviors.h') if l.strip().startswith('MB_')]
 def folder(n): return re.sub(r'(?<!^)(?=[A-Z])', '_', n.replace('gTileset_', '')).lower()
 def attrs(p):
     b = open(p, 'rb').read(); return list(struct.unpack('<%dH' % (len(b) // 2), b))

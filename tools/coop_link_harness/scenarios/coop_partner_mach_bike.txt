@@ -1,0 +1,35 @@
+# The partner on a bike, seen while linked in co-op (finding #24).
+# Found in the main journey (segment 63, Sky Pillar 1F): Kai rode the MACH
+# BIKE beside Rosa; on Rosa's game the partner sprite (bike graphics) was
+# moved with the on-foot RUN action, whose animation numbers lie past the
+# bike sprite's animation table: ContinueAnim jumped to address 0 and
+# Rosa's game reset (evidence 63a_bike_reset.log, RESET-TRAP).
+# FIXTURES: story_seg6 saves; a MACH BIKE in each Key Items pocket.
+# Kai gets on the bike and rides up and down beside Rosa (the partner on a
+# bike, moving, on her screen); then Rosa gets on hers while Kai's partner
+# sprite is on a bike, and both ride.
+# Expected: no reset on either game; both on the Mach Bike at the end;
+# the partner sprite drawn on both games.
+# Before the fix (0xC0170133 build): Rosa's game resets.
+include continue.inc
+include relink.inc
+b expect coop.sLinkState 2
+b no_wild 1
+b fixture_item 4 707 1
+b mash_field 300 B
+0 walk 20 48 4000
+1 walk 17 48 4000
+b sync
+include bike_on_p0.inc
+0 ride RRRRRULLLLLLLDRRRR
+0 shot kai-on-bike
+1 shot rosa-sees-bike
+b sync
+include bike_on_p1.inc
+1 ride LLLLUR
+0 ride RU
+b sync
+b wait 120
+b expect_range gPlayerAvatar:1 2 2 0x1F
+b expect_partner both-biking
+b shot both-biking

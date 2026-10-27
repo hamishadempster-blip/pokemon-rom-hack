@@ -23,7 +23,7 @@
 #define MAX_CMDS 4096
 #define MAX_SYMS 500000
 
-enum { C_PARTNER, C_GOTO, C_HEX, C_PRESS, C_WAIT, C_SHOT, C_DUMP, C_BARRIER, C_UNTIL_CB2, C_UNTIL_FIELD, C_EXPECT, C_UNTIL_MEM, C_BATTLE, C_MENU, C_PARTY, C_FIXTURE, C_WRITE, C_LEAD, C_MOVE, C_SIX, C_VAR, C_FLAG, C_VS, C_EXPECT_FLAG, C_EXPECT_VAR, C_NO_OBJECT, C_MAP, C_OBJECT, C_TEXT_SPEED, C_PACE, C_MUTE, C_PARTNER_AT, C_ITEM, C_EXPECT_ITEM, C_UNTIL_TEXT, C_WARP, C_PC_COUNT, C_MONS, C_NO_COPIES, C_NOTE_MONEY, C_MONEY_GAIN, C_FORCE_ENC, C_EXPECT_RANGE, C_WALK, C_NO_WILD, C_CROSS, C_WALK_BATTLE, C_SMART, C_STRONG, C_UNTIL_TASK, C_MIRROR, C_SPECIES, C_NOTE_PARTY, C_SAME_PARTY, C_PATCH_RET, C_SLOT, C_TXN, C_MONEY_SAME, C_DEX, C_SWAP, C_GENDER, C_FILL, C_UNFILL, C_WRITEP, C_TINT, C_UNTIL_FTEXT, C_NICK, C_GRIND, C_CATCH, C_HUNT, C_SWITCH_LEAD, C_PARTY_SLOT, C_HEAL_BELOW, C_TALK_OBJ, C_BOXES, C_TEST_HOOK, C_WATCH, C_EXPECT_WRITES, C_SURF, C_BAG_ITEM, C_FLY_MAP, C_STEP_TO, C_PARTY_ACTION };
+enum { C_PARTNER, C_GOTO, C_HEX, C_PRESS, C_WAIT, C_SHOT, C_DUMP, C_BARRIER, C_UNTIL_CB2, C_UNTIL_FIELD, C_EXPECT, C_UNTIL_MEM, C_BATTLE, C_MENU, C_PARTY, C_FIXTURE, C_WRITE, C_LEAD, C_MOVE, C_SIX, C_VAR, C_FLAG, C_VS, C_EXPECT_FLAG, C_EXPECT_VAR, C_NO_OBJECT, C_MAP, C_OBJECT, C_TEXT_SPEED, C_PACE, C_MUTE, C_PARTNER_AT, C_ITEM, C_EXPECT_ITEM, C_UNTIL_TEXT, C_WARP, C_PC_COUNT, C_MONS, C_NO_COPIES, C_NOTE_MONEY, C_MONEY_GAIN, C_FORCE_ENC, C_EXPECT_RANGE, C_WALK, C_NO_WILD, C_CROSS, C_WALK_BATTLE, C_SMART, C_STRONG, C_UNTIL_TASK, C_MIRROR, C_SPECIES, C_NOTE_PARTY, C_SAME_PARTY, C_PATCH_RET, C_SLOT, C_TXN, C_MONEY_SAME, C_DEX, C_SWAP, C_GENDER, C_FILL, C_UNFILL, C_WRITEP, C_TINT, C_UNTIL_FTEXT, C_NICK, C_GRIND, C_CATCH, C_HUNT, C_SWITCH_LEAD, C_PARTY_SLOT, C_HEAL_BELOW, C_TALK_OBJ, C_BOXES, C_TEST_HOOK, C_WATCH, C_EXPECT_WRITES, C_SURF, C_BAG_ITEM, C_FLY_MAP, C_STEP_TO, C_PARTY_ACTION, C_DIVE, C_RIDE };
 
 struct Cmd {
 	unsigned args[8];
@@ -1141,6 +1141,17 @@ static unsigned autoKeys(struct Player* p, unsigned step) {
 // objects (the co-op partner and twin are passable), and warps (only the
 // target may be a warp). Returns the key for the first step, 0 if already
 // there, or -1 when no path exists right now.
+// MetatileBehavior_Is{South,North,West,East}Blocked: side 0 S, 1 N, 2 W, 3 E.
+static bool sideBlocked(unsigned beh, int side)
+{
+	switch (side) {
+	case 0: return beh == 0x33 || beh == 0x36 || beh == 0x37 || beh == 0xC0;
+	case 1: return beh == 0x32 || beh == 0x34 || beh == 0x35 || beh == 0xC0;
+	case 2: return beh == 0x31 || beh == 0x35 || beh == 0x37 || beh == 0xC1;
+	default: return beh == 0x30 || beh == 0x34 || beh == 0x36 || beh == 0xC1;
+	}
+}
+
 static int walkStep(struct Player* p, int tx, int ty) {
 	static unsigned layoutSym, headerSym;
 	if (!layoutSym) { layoutSym = symAddr("gBackupMapLayout"); headerSym = symAddr("gMapHeader"); }
@@ -1155,7 +1166,7 @@ static int walkStep(struct Player* p, int tx, int ty) {
 	int lw = (int)rd32(p, lay), lh = (int)rd32(p, lay + 4);
 	bool goalInside = tx >= 0 && ty >= 0 && tx < lw && ty < lh;
 	if (sx == gx && sy == gy) return 0;
-	bool surfing = rd8(p, sAvatar) & 8;
+	bool surfing = rd8(p, sAvatar) & 0x18;   // surfing or underwater (Dive)
 	static __thread uint8_t blocked[10240];
 	// Search nodes are (tile, carried elevation): a bridge tile (15) can be
 	// reached at two levels, and only one of them may lead on.
@@ -1205,6 +1216,14 @@ static int walkStep(struct Player* p, int tx, int ty) {
 			// Bike to climb): enter it going south only.
 			if ((beh == 0xD0 || beh == 0xD1) && d != 0) continue;   // muddy, bumpy (Acro Bike)
 			if (beh == 0x13) continue;   // a waterfall: WATERFALL, not walked or surfed
+			// One-way edges (MB_IMPASSABLE_*: cave ledges and walls): moving
+			// in direction d is refused when this tile is blocked on its d
+			// side or the next on the opposite side (event_object_movement.c,
+			// IsMetatileDirectionallyImpassable).
+			{
+				static const int OPP[4] = {1, 0, 3, 2};   // S<->N, W<->E
+				if (sideBlocked(BEH(BLK(cx, cy)), d) || sideBlocked(beh, OPP[d])) continue;
+			}
 			int ti = ny * w + nx;
 			if (blocked[ti]) continue;
 			// Stay on this map unless the target is off it (a connected map).
@@ -2771,6 +2790,70 @@ static void frameCallback(struct mCoreThread* t) {
 			if (ph > 6000) { out("[p%d] FAIL fly_map %u: cursor at (%u,%u) sec %u\n", p->id, c->value, cx, cy, sec); writePng(p, "fail"); sFailures++; p->done = 1; }
 			break;
 		}
+		case C_RIDE: {
+			// ride DIRS (U/D/L/R letters): on the Mach Bike, hold each direction
+			// until the player's tile has advanced one step that way, then the
+			// next, without letting go (speed carries through turns; cracked
+			// floors need full speed). Done when the moves are used up (the
+			// last may enter a door: a map change also ends it).
+			unsigned me = sObjEvents + rd8(p, sAvatar + 5) * 0x24;
+			int x = (int16_t)rd16(p, me + 0x10), y = (int16_t)rd16(p, me + 0x12);
+			unsigned sv = rd32(p, sSave1);
+			unsigned mg = rd8(p, sv + 4) | (rd8(p, sv + 5) << 8) | 0x10000;
+			const char* dirs = c->text + 5;   // "ride " prefix
+			int n = (int)strlen(dirs);
+			if (p->step == 0) { p->stable = 0; p->noPath = (unsigned)(x & 0xFFFF) | ((unsigned)(y & 0xFFFF) << 16); p->offField = mg; }
+			int sx = (int16_t)(p->noPath & 0xFFFF), sy = (int16_t)(p->noPath >> 16);
+			if (mg != p->offField) { out("[p%d] ok ride: map changed after %d moves\n", p->id, p->stable); p->stable = 0; p->noPath = 0; p->offField = 0; advance = true; break; }
+			// The moves done so far: the expected tile after k moves.
+			int ex = sx, ey = sy;
+			for (int k = 0; k < p->stable; k++) { char d = dirs[k]; ex += d == 'R' ? 1 : d == 'L' ? -1 : 0; ey += d == 'D' ? 1 : d == 'U' ? -1 : 0; }
+			// A lower-case letter is a bump: that direction held into a wall
+			// for 24 frames, which stops the bike where it is.
+			if (p->stable < n && dirs[p->stable] >= 'a') {
+				char d = dirs[p->stable];
+				keys = d == 'u' ? (1u << 6) : d == 'd' ? (1u << 7) : d == 'l' ? (1u << 5) : (1u << 4);
+				if (++p->learnStart >= 24) { p->learnStart = 0; p->stable++; }
+				p->step++;
+				break;
+			}
+			if (p->stable < n) {
+				char d = dirs[p->stable];
+				int nx = ex + (d == 'R' ? 1 : d == 'L' ? -1 : 0), ny = ey + (d == 'D' ? 1 : d == 'U' ? -1 : 0);
+				if (x == nx && y == ny) { p->stable++; d = p->stable < n ? dirs[p->stable] : 0; }
+				else if (!(x == ex && y == ey)) {
+					out("[p%d] FAIL ride: at (%d,%d) after %d moves, expected (%d,%d)\n", p->id, x - 7, y - 7, p->stable, ex - 7, ey - 7);
+					dump(p, "fail"); writePng(p, "fail"); sFailures++; p->done = 1; break;
+				}
+				keys = d == 'U' ? (1u << 6) : d == 'D' ? (1u << 7) : d == 'L' ? (1u << 5) : d == 'R' ? (1u << 4) : 0;
+			} else {
+				if (++p->step > 120) { out("[p%d] ok ride: %d moves\n", p->id, n); p->stable = 0; p->noPath = 0; p->offField = 0; advance = true; }
+				break;
+			}
+			if (++p->step > 6000) { out("[p%d] FAIL ride: timeout after %d moves\n", p->id, p->stable); dump(p, "fail"); sFailures++; p->done = 1; }
+			break;
+		}
+		case C_DIVE: {
+			// dive / emerge [T]: A (dive) or B (emerge) in the field, A to the
+			// "use Dive?" question, until the player is underwater (flag 0x10)
+			// or back on the surface, in the field.
+			bool under = (rd8(p, sAvatar) & 0x10) != 0;
+			bool fieldNow = inField(p);
+			if (under == (c->value == 1) && fieldNow) {
+				if (++p->stable >= 30) { p->stable = 0; advance = true; }
+				break;
+			}
+			p->stable = 0;
+			unsigned ph = (unsigned)p->step % 40;
+			if (fieldNow) keys = ph < 2 ? (c->value == 1 ? 1u : 2u) : 0;
+			else if (rd8(p, sMain + 0x439) & 2) { keys = autoKeys(p, p->offField++); break; }
+			else keys = (ph % 20) < 2 ? 1 : 0;
+			if (++p->step >= c->frames) {
+				out("[p%d] FAIL %s: still %s\n", p->id, c->text, under ? "underwater" : "on the surface");
+				dump(p, "fail"); writePng(p, "fail"); sFailures++; p->done = 1;
+			}
+			break;
+		}
 		case C_PARTY_ACTION: {
 			// party_action SLOT ACTION: in the party menu, the cursor to SLOT,
 			// A, then the submenu's cursor to ACTION (party_menu.c's MENU_*;
@@ -2904,7 +2987,7 @@ static void frameCallback(struct mCoreThread* t) {
 			break;
 		}
 		case C_EXPECT_RANGE: {
-			unsigned v = rdN(p, c->addr, c->size);
+			unsigned v = rdN(p, c->addr, c->size) & c->args[0];
 			if (v < c->value || v > (unsigned)c->frames) {
 				out("[p%d] FAIL expect %s: got %u\n", p->id, c->text, v);
 				dump(p, "fail");
@@ -3122,6 +3205,14 @@ static void loadScript(const char* path, int depth) {
         	c.keys = parseKeys(a);
         	c.frames = n >= 4 ? atoi(b) : 4000;
         	snprintf(c.text, sizeof(c.text), "surf %s", a);
+        } else if (!strcmp(cmd, "ride")) {
+        	c.kind = C_RIDE;
+        	snprintf(c.text, sizeof(c.text), "ride %s", a);
+        } else if (!strcmp(cmd, "dive") || !strcmp(cmd, "emerge")) {
+        	c.kind = C_DIVE;
+        	c.value = !strcmp(cmd, "dive");
+        	c.frames = n >= 3 ? atoi(a) : 4000;
+        	snprintf(c.text, sizeof(c.text), "%s", cmd);
         } else if (!strcmp(cmd, "party_action")) {
         	c.kind = C_PARTY_ACTION;
         	c.addr = strtoul(a, NULL, 0);
@@ -3361,7 +3452,8 @@ static void loadScript(const char* path, int depth) {
 			c.value = n >= 3 && !strcmp(a, "moves") ? 1 : n >= 3 && !strcmp(a, "hp") ? 2 : 0;
 			snprintf(c.text, sizeof(c.text), "battle %s", c.value ? "moves" : "roster");
 		} else if (!strcmp(cmd, "expect_range")) {
-			// expect_range SYM[+off]:size LOW HIGH (inclusive)
+			// expect_range SYM[+off]:size LOW HIGH [MASK] (inclusive; the
+			// value ANDed with MASK first when one is given)
 			char sym[96]; unsigned off = 0; int size = 1;
 			strncpy(sym, a, sizeof(sym) - 1);
 			char* colon = strchr(sym, ':');
@@ -3373,7 +3465,8 @@ static void loadScript(const char* path, int depth) {
 			c.size = size;
 			c.value = symValue(b);
 			c.frames = (int)symValue(d);
-			snprintf(c.text, sizeof(c.text), "%s in %s..%s", a, b, d);
+			c.args[0] = n >= 6 ? (unsigned)strtoul(e, NULL, 0) : 0xFFFFFFFFu;
+			snprintf(c.text, sizeof(c.text), "%s in %s..%s%s%s", a, b, d, n >= 6 ? " mask " : "", n >= 6 ? e : "");
 		} else if (!strcmp(cmd, "expect_mirror")) {
 			// expect_mirror SYM[+off]:size SYM[+off]
 			char s1[96], s2[96]; unsigned o1 = 0, o2 = 0; int size = 1;

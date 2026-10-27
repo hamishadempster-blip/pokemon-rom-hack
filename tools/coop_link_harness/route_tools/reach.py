@@ -11,7 +11,7 @@ def attrs(p):
     b=open(p,'rb').read(); return list(struct.unpack('<%dH'%(len(b)//2),b))
 pa=attrs(root+'data/tilesets/primary/%s/metatile_attributes.bin'%folder(L['primary_tileset']))
 sa=attrs(root+'data/tilesets/secondary/%s/metatile_attributes.bin'%folder(L['secondary_tileset']))
-names=[l.strip().rstrip(',') for l in open(root+'include/constants/metatile_behaviors.h') if l.strip().startswith('MB_')]
+names=[l.strip().split(',')[0].split()[0] for l in open(root+'include/constants/metatile_behaviors.h') if l.strip().startswith('MB_')]
 b=open(root+L['blockdata_filepath'],'rb').read(); v=struct.unpack('<%dH'%(len(b)//2),b)
 W=L['width'];H=L['height']
 objs={(o["x"],o["y"]):o["graphics_id"] for o in d["object_events"] if (o["x"],o["y"]) not in {tuple(map(int,a.split(","))) for a in __import__("os").environ.get("FREE","").split()}}

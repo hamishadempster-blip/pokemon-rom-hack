@@ -9,7 +9,7 @@
 import json, re, struct, sys, os
 from collections import deque
 root = '/home/claude/pokemon-rom-hack/'
-names = [l.strip().rstrip(',') for l in open(root + 'include/constants/metatile_behaviors.h') if l.strip().startswith('MB_')]
+names = [l.strip().split(',')[0].split()[0] for l in open(root + 'include/constants/metatile_behaviors.h') if l.strip().startswith('MB_')]
 def folder(n): return re.sub(r'(?<!^)(?=[A-Z])', '_', n.replace('gTileset_', '')).lower()
 def attrs(p):
     b = open(p, 'rb').read(); return list(struct.unpack('<%dH' % (len(b) // 2), b))
@@ -20,7 +20,7 @@ for gi, g in enumerate(mg['group_order']):
 M = {}
 for m in sys.argv[1].split(','):
     d = json.load(open(root + 'data/maps/%s/map.json' % m))
-    L = [l for l in json.load(open(root + 'data/layouts/layouts.json'))['layouts'] if l.get('id') == d['layout']][0]
+    L = [l for l in json.load(open(root + 'data/layouts/layouts.json'))['layouts'] if l.get('id') == __import__('os').environ.get('LAYOUT', d['layout'])][0]
     pa = attrs(root + 'data/tilesets/primary/%s/metatile_attributes.bin' % folder(L['primary_tileset']))
     sa = attrs(root + 'data/tilesets/secondary/%s/metatile_attributes.bin' % folder(L['secondary_tileset']))
     b = open(root + L['blockdata_filepath'], 'rb').read(); v = struct.unpack('<%dH' % (len(b) // 2), b)

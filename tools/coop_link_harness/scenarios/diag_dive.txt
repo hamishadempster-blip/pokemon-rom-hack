@@ -1,0 +1,25 @@
+include continue.inc
+b no_wild 1
+0 walk 7 8 2000
+0 cross DOWN 0 6 2000
+0 walk 26 30 30000
+0 surf DOWN
+0 walk 30 39 30000
+0 cross DOWN 0 42 3000
+0 walk 33 79 30000
+0 cross DOWN 0 43 3000
+0 walk 33 21 30000
+0 surf DOWN
+0 walk 40 28 30000
+# DIVE: A on the deep water, YES.
+0 walk 40 28 30000
+0 expect_flag 0x86D 1
+0 expect_flag 0x86C 1
+0 wait 60
+0 press A 4
+0 wait 40
+0 shot afterA
+0 dump afterA
+0 press A 4
+0 wait 60
+0 shot afterA2

@@ -1,0 +1,237 @@
+# JOURNEY 64 (main playthrough, no fixtures): CONTINUE journey_63's saves
+# (Sootopolis Centre; HM07 on both; the gym door open).
+#  - Relink, Beacon ON (Rosa).
+#  - Each Surfs to the gym island and goes in (Kai first).
+#  - Juan's gym, 1F: each section's thin ice must all be stepped on once
+#    (route_tools/ice.py, from the gym's scripts: VAR_ICE_STEP_COUNT 8, 28,
+#    67 open the three stairs; a cracked tile breaks under a second step).
+#    Kai solves it on his save while Rosa waits by the door, then Rosa on
+#    hers while Kai waits at the top.
+#  - Kai talks to Juan (8,2) from below, Rosa beside: Juan (gym leader,
+#    co-op): RAIN BADGE (badge 8) on both.
+#  - Out: each steps on the cracked ice and falls to B1F (the way out the
+#    game leaves), then the B1F stairs up to the entrance (any gym trainer
+#    who sees the player on the way battles); out; Centre; save.
+# Test helpers: test_heal before Juan; the first three to Lv80 (after the
+# first attempt was lost).
+# Driver aids: smart_moves, heal_below, no_wild.
+include continue.inc
+include relink.inc
+b expect coop.sLinkState 2
+b smart_moves 1
+b heal_below 35 2
+b no_wild 1
+include beacon_on_p1.inc
+b mash_field 2000 B
+b expect coop.sBeacon+1:1 1
+b expect_flag 0x138 1
+b expect_flag 0x86E 0
+b walk 7 8 2000
+b cross DOWN 0 7 2000
+0 walk 40 37 12000
+0 surf LEFT
+0 walk 31 33 12000
+0 cross UP 15 0 3000
+0 walk 10 23 3000
+1 wait 200
+1 walk 40 37 12000
+1 surf LEFT
+1 walk 31 33 12000
+1 cross UP 15 0 3000
+1 walk 6 23 3000
+b sync
+b dump gym-1f
+# Kai on the ice.
+0 walk 8 19 600
+0 walk 7 19 600
+0 walk 7 18 600
+0 walk 8 18 600
+0 walk 9 18 600
+0 walk 9 17 600
+0 walk 8 17 600
+0 wait 120
+0 walk 8 14 600
+0 walk 9 14 600
+0 walk 10 14 600
+0 walk 11 14 600
+0 walk 11 13 600
+0 walk 11 12 600
+0 walk 10 12 600
+0 walk 9 12 600
+0 walk 9 13 600
+0 walk 8 13 600
+0 walk 7 13 600
+0 walk 7 14 600
+0 walk 6 14 600
+0 walk 5 14 600
+0 walk 5 13 600
+0 walk 5 12 600
+0 walk 6 12 600
+0 walk 7 12 600
+0 walk 8 12 600
+0 wait 120
+0 walk 8 9 600
+0 walk 7 9 600
+0 walk 6 9 600
+0 walk 5 9 600
+0 walk 4 9 600
+0 walk 3 9 600
+0 walk 3 8 600
+0 walk 3 7 600
+0 walk 3 6 600
+0 walk 4 6 600
+0 walk 4 7 600
+0 walk 5 7 600
+0 walk 5 8 600
+0 walk 6 8 600
+0 walk 6 7 600
+0 walk 6 6 600
+0 walk 7 6 600
+0 walk 7 7 600
+0 walk 8 7 600
+0 walk 8 8 600
+0 walk 9 8 600
+0 walk 9 9 600
+0 walk 10 9 600
+0 walk 10 8 600
+0 walk 11 8 600
+0 walk 12 8 600
+0 walk 12 9 600
+0 walk 13 9 600
+0 walk 13 8 600
+0 walk 13 7 600
+0 walk 13 6 600
+0 walk 12 6 600
+0 walk 11 6 600
+0 walk 11 7 600
+0 walk 10 7 600
+0 walk 10 6 600
+0 walk 9 6 600
+0 walk 8 6 600
+0 wait 120
+0 walk 8 3 3000
+0 walk 5 3 3000
+0 dump kai-top
+# Rosa on the ice.
+1 walk 8 19 600
+1 walk 7 19 600
+1 walk 7 18 600
+1 walk 8 18 600
+1 walk 9 18 600
+1 walk 9 17 600
+1 walk 8 17 600
+1 wait 120
+1 walk 8 14 600
+1 walk 9 14 600
+1 walk 10 14 600
+1 walk 11 14 600
+1 walk 11 13 600
+1 walk 11 12 600
+1 walk 10 12 600
+1 walk 9 12 600
+1 walk 9 13 600
+1 walk 8 13 600
+1 walk 7 13 600
+1 walk 7 14 600
+1 walk 6 14 600
+1 walk 5 14 600
+1 walk 5 13 600
+1 walk 5 12 600
+1 walk 6 12 600
+1 walk 7 12 600
+1 walk 8 12 600
+1 wait 120
+1 walk 8 9 600
+1 walk 7 9 600
+1 walk 6 9 600
+1 walk 5 9 600
+1 walk 4 9 600
+1 walk 3 9 600
+1 walk 3 8 600
+1 walk 3 7 600
+1 walk 3 6 600
+1 walk 4 6 600
+1 walk 4 7 600
+1 walk 5 7 600
+1 walk 5 8 600
+1 walk 6 8 600
+1 walk 6 7 600
+1 walk 6 6 600
+1 walk 7 6 600
+1 walk 7 7 600
+1 walk 8 7 600
+1 walk 8 8 600
+1 walk 9 8 600
+1 walk 9 9 600
+1 walk 10 9 600
+1 walk 10 8 600
+1 walk 11 8 600
+1 walk 12 8 600
+1 walk 12 9 600
+1 walk 13 9 600
+1 walk 13 8 600
+1 walk 13 7 600
+1 walk 13 6 600
+1 walk 12 6 600
+1 walk 11 6 600
+1 walk 11 7 600
+1 walk 10 7 600
+1 walk 10 6 600
+1 walk 9 6 600
+1 walk 8 6 600
+1 wait 120
+1 walk 8 3 3000
+1 walk 10 3 3000
+1 dump rosa-top
+b sync
+0 walk 8 3 3000
+b expect_var 0x4022 68
+b sync
+# TEST HELPER (combat assistance, authorised): after an ordinary loss to
+# Juan and Wallace (64a_juan_lost.log: Lv65 first three, unevolved
+# Combusken/Shroomish, against Lv56-58 perfect-IV smart-AI teams in rain),
+# each player's first three are raised to Lv80 (moves kept), then healed.
+b test_level 0 80 0 5
+b test_level 1 80 0 5
+b test_level 2 80 0 5
+b test_heal
+0 press UP 2
+0 wait 10
+0 press A 2
+b until_cb2 BattleMainCB2 9000 A
+b shot juan-start
+b mash_field 200000 B
+b dump after-juan
+b party
+b mash_field 6000 B
+b expect_flag 0x86E 1
+b shot badge8
+# Out: Kai falls through the cracked ice, then Rosa.
+0 walk 8 6 3000
+0 until_map 15 1 3000
+0 until_field 3000
+0 walk 10 22 40000
+0 cross RIGHT 15 0 3000
+0 walk 9 24 6000
+0 cross DOWN 0 7 3000
+0 walk 30 34 3000
+1 walk 8 6 3000
+1 until_map 15 1 3000
+1 until_field 3000
+1 walk 10 22 40000
+1 cross RIGHT 15 0 3000
+1 walk 9 24 6000
+1 cross DOWN 0 7 3000
+b dump out
+0 walk 34 36 12000
+0 surf RIGHT
+0 walk 43 32 12000
+0 cross UP 15 2 3000
+1 wait 300
+1 walk 34 35 12000
+1 surf RIGHT
+1 walk 43 32 12000
+1 cross UP 15 2 3000
+include journey_heal_center.inc
+include save_again.inc
+b party

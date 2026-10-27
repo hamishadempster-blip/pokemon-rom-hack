@@ -1,0 +1,18 @@
+include continue.inc
+0 walk 7 8 2000
+0 cross DOWN 0 5 2000
+# Player 0 flies: party slot 5 knows FLY (party_action picks it from the
+# submenu by its action id, 33); the destination is the including
+# scenario's fly_map line. Field control first.
+0 mash_field 3000 B
+0 press START 2
+0 wait 40
+0 menu_to POKEMON
+0 press A 2
+0 until_cb2 CB2_UpdatePartyMenu 600
+0 wait 30
+0 party_action 5 33
+0 until_cb2 CB2_FlyMap 900
+0 wait 60
+0 fly_map 8
+0 walk 28 13 4000

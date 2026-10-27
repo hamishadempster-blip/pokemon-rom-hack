@@ -1,0 +1,163 @@
+# JOURNEY 61 (main playthrough, no fixtures): CONTINUE journey_60's saves
+# (Mossdeep Centre; Kyogre awakened, on both).
+#  - Relink, Beacon ON (Kai).
+#  - SURF south and west: Mossdeep, Route 127, Route 126; DIVE at (45,67),
+#    along the sea floor to Sootopolis's water door (45,65); surface inside
+#    Sootopolis (B, YES): Kyogre and Groudon fight (each save's own scene,
+#    VAR_SOOTOPOLIS_CITY_STATE 2).
+#  - Steven on the shore (20,36): talked to from the east, he walks the
+#    player to the Cave of Origin (each save). Cave of Origin entrance, 1F,
+#    B1F: Wallace (9,13): "Where is Rayquaza?" SKY PILLAR (third choice)
+#    (state 3, FLAG_WALLACE_GOES_TO_SKY_PILLAR), each save.
+#  - Back out; each FLIES to Mauville; Rydel's: each gets the MACH BIKE (for
+#    the Sky Pillar's cracked floors). Mauville Centre: heal, save.
+# Driver aids: smart_moves, heal_below, no_wild.
+include continue.inc
+include relink.inc
+b expect coop.sLinkState 2
+b smart_moves 1
+b heal_below 35 2
+b no_wild 1
+include beacon_on.inc
+b mash_field 2000 B
+b expect coop.sBeacon+1:1 1
+b expect_var 0x405E 1
+b walk 7 8 2000
+b cross DOWN 0 6 2000
+0 walk 26 30 30000
+0 surf DOWN
+0 walk 30 39 30000
+0 cross DOWN 0 42 3000
+0 walk 0 40 30000
+0 cross LEFT 0 41 3000
+0 walk 45 67 30000
+0 dive
+0 walk 45 66 20000
+0 cross UP 24 5 3000
+0 walk 9 7 3000
+0 emerge
+0 expect_map 0 7
+0 mash_field 30000 B
+0 dump sootopolis-0
+# Steven (20,36): from the east, facing west.
+0 walk 21 36 30000
+0 press LEFT 2
+0 wait 10
+0 press A 2
+0 mash_field 30000 B
+0 expect_map 24 37
+0 expect_flag 0x133 1
+0 walk 9 6 20000
+0 cross UP 24 38 3000
+0 walk 13 5 20000
+0 cross RIGHT 24 42 3000
+0 walk 9 14 20000
+0 press UP 2
+0 wait 10
+0 press A 2
+0 until_task Task_HandleMultichoiceInput 3000 A
+0 wait 30
+0 press DOWN 2
+0 wait 20
+0 press DOWN 2
+0 wait 20
+0 shot wallace-choice-0
+0 press A 2
+0 mash_field 20000 B
+0 expect_flag 0x137 1
+0 expect_var 0x405E 3
+0 walk 8 3 20000
+0 cross RIGHT 24 38 3000
+0 walk 11 17 20000
+0 cross DOWN 24 37 3000
+0 walk 9 19 20000
+0 cross DOWN 0 7 3000
+0 dump out-of-cave-0
+1 walk 26 30 30000
+1 surf DOWN
+1 walk 30 39 30000
+1 cross DOWN 0 42 3000
+1 walk 0 40 30000
+1 cross LEFT 0 41 3000
+1 walk 45 67 30000
+1 dive
+1 walk 45 66 20000
+1 cross UP 24 5 3000
+1 walk 9 7 3000
+1 emerge
+1 expect_map 0 7
+1 mash_field 30000 B
+1 dump sootopolis-1
+# Steven (20,36): from the east, facing west.
+1 walk 21 36 30000
+1 press LEFT 2
+1 wait 10
+1 press A 2
+1 mash_field 30000 B
+1 expect_map 24 37
+1 expect_flag 0x133 1
+1 walk 9 6 20000
+1 cross UP 24 38 3000
+1 walk 13 5 20000
+1 cross RIGHT 24 42 3000
+1 walk 9 14 20000
+1 press UP 2
+1 wait 10
+1 press A 2
+1 until_task Task_HandleMultichoiceInput 3000 A
+1 wait 30
+1 press DOWN 2
+1 wait 20
+1 press DOWN 2
+1 wait 20
+1 shot wallace-choice-1
+1 press A 2
+1 mash_field 20000 B
+1 expect_flag 0x137 1
+1 expect_var 0x405E 3
+1 walk 8 3 20000
+1 cross RIGHT 24 38 3000
+1 walk 11 17 20000
+1 cross DOWN 24 37 3000
+1 walk 9 19 20000
+1 cross DOWN 0 7 3000
+1 dump out-of-cave-1
+b sync
+include fly_open_p0.inc
+0 fly_map 9
+include fly_open_p1.inc
+1 fly_map 9
+b sync
+b expect_map 0 2
+# Rydel's (35,5): talk to him (2,5) from below; "far away?" YES; MACH BIKE
+# (the first choice).
+0 walk 35 6 20000
+0 cross UP 10 1 3000
+0 walk 2 6 3000
+0 press UP 2
+0 wait 10
+0 press A 2
+0 mash_field 20000
+0 expect_flag 0x5A 1
+0 walk 3 7 3000
+0 cross DOWN 0 2 3000
+1 wait 300
+1 walk 35 6 20000
+1 cross UP 10 1 3000
+1 walk 2 6 3000
+1 press UP 2
+1 wait 10
+1 press A 2
+1 mash_field 20000
+1 expect_flag 0x5A 1
+1 walk 3 7 3000
+1 cross DOWN 0 2 3000
+b sync
+0 walk 22 5 12000
+0 until_map 10 5 3000
+1 wait 200
+1 walk 22 5 12000
+1 until_map 10 5 3000
+include journey_heal_center.inc
+include save_again.inc
+b party

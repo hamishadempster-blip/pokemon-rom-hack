@@ -1,0 +1,106 @@
+# JOURNEY 59 (main playthrough, no fixtures): CONTINUE journey_58's saves
+# (Mossdeep Centre; Mind Badge on both).
+#  - Relink, Beacon ON (Kai).
+#  - Mossdeep: Maxie and the grunts walk into the Space Center (the line at
+#    x=40, each save).
+#  - Space Center 1F (Team Magma): its grunts on the way; the grunt on the
+#    stairs (13,2), each player on their own save (he steps aside).
+#  - 2F: on arrival the three grunts ("take us on?" YES), each player on
+#    their own save. Steven (1,8): Kai talks to him (he moves), then again:
+#    "ready?" YES: Maxie & Tabitha, Rosa joins (story gate SPACE, co-op; in
+#    place of Steven). FLAG_DEFEATED_MAGMA_SPACE_CENTER (0x75) on both.
+#  - Out; Steven's house: Steven gives HM08 DIVE on entering (Rosa's through
+#    the partner catch-up: her house state is raised).
+#  - Mossdeep Centre: heal, save.
+# Test helper: test_heal before Maxie & Tabitha.
+# Driver aids: smart_moves, heal_below, no_wild.
+include continue.inc
+include relink.inc
+b expect coop.sLinkState 2
+b smart_moves 1
+b heal_below 35 2
+b no_wild 1
+include beacon_on.inc
+b mash_field 2000 B
+b expect coop.sBeacon+1:1 1
+b expect_flag 0x75 0
+b walk 7 8 2000
+b cross DOWN 0 6 2000
+# Maxie and his grunts line the way east; the line in front of them (x=40)
+# plays their walk into the Space Center (each save).
+0 walk 40 26 20000
+1 walk 40 25 20000
+b mash_field 20000 B
+b sync
+0 walk 64 16 20000
+0 cross UP 14 9 3000
+1 wait 200
+1 walk 64 16 20000
+1 cross UP 14 9 3000
+b dump space-1f
+0 walk 13 3 20000
+0 press UP 2
+0 wait 10
+0 press A 2
+0 mash_field 30000
+0 walk 13 2 3000
+0 cross UP 14 10 3000
+0 mash_field 60000
+0 dump space-2f-kai
+1 walk 13 3 20000
+1 press UP 2
+1 wait 10
+1 press A 2
+1 mash_field 30000
+1 walk 13 2 3000
+1 cross UP 14 10 3000
+1 mash_field 60000
+1 dump space-2f-rosa
+b sync
+0 walk 2 8 20000
+1 walk 3 8 20000
+b sync
+b test_heal
+0 press LEFT 2
+0 wait 10
+0 press A 2
+0 mash_field 6000 B
+0 press LEFT 2
+0 wait 10
+0 press A 2
+0 wait 60
+0 press A 2
+b until_cb2 BattleMainCB2 9000 A
+b shot maxie-tabitha-start
+b mash_field 200000 B
+b dump after-space
+b party
+b mash_field 3000 B
+b expect_flag 0x75 1
+b shot after-space
+b walk 13 2 20000
+b cross UP 14 9 3000
+b walk 7 8 20000
+b cross DOWN 0 6 3000
+0 walk 19 11 20000
+0 cross UP 14 7 3000
+0 mash_field 20000
+0 expect_flag 0x7B 1
+0 walk 3 6 3000
+0 cross DOWN 0 6 3000
+1 wait 200
+1 walk 19 11 20000
+1 cross UP 14 7 3000
+1 mash_field 20000
+1 expect_flag 0x7B 1
+1 walk 3 6 3000
+1 cross DOWN 0 6 3000
+b sync
+0 walk 28 17 12000
+0 cross UP 14 3 3000
+1 wait 200
+1 walk 28 17 12000
+1 cross UP 14 3 3000
+include journey_heal_center.inc
+include save_again.inc
+b party

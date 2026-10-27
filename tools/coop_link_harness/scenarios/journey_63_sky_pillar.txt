@@ -1,0 +1,180 @@
+# JOURNEY 63 (main playthrough, no fixtures): CONTINUE journey_62's saves
+# (outside the Sky Pillar; Wallace has opened it).
+#  - Relink, Beacon ON (Kai).
+#  - The Sky Pillar, Kai first, then Rosa (each on their own save; the
+#    other is elsewhere so the partner sprite is never in the way): the
+#    MACH BIKE from 1F; each floor one continuous ride (route_tools/mach.py,
+#    from the game's bike and cracked-floor code: a cracked floor holds
+#    only at full speed and breaks behind the bike). 4F: the bike stops at
+#    (5,4) (into the wall) and rolls slowly onto the crack at (6,4): the
+#    floor gives way, down into the closed-off corner of 3F, up through its
+#    door to the other side of 4F, then 5F, the top. (Each stairs door
+#    walks the player one tile out on arrival: the rides start there.)
+#  - The top: stepping in front of Rayquaza (14,9) wakes it (scene; no
+#    battle in the story): VAR_SOOTOPOLIS_CITY_STATE 5.
+#  - Each FLIES to Sootopolis: Rayquaza calms the weather there (scene on
+#    arrival; VAR_SKY_PILLAR_STATE 3).
+#  - Sootopolis, each on their own save: Surf to the gym island, talk to
+#    Maxie and Archie (they leave), then Wallace: HM07 WATERFALL; the gym
+#    door opens.
+#  - Centre: heal, save.
+# Driver aids: smart_moves, heal_below, no_wild.
+include continue.inc
+include relink.inc
+b expect coop.sLinkState 2
+b smart_moves 1
+b heal_below 35 2
+b no_wild 1
+include beacon_on.inc
+b mash_field 2000 B
+b expect coop.sBeacon+1:1 1
+b expect_var 0x405E 4
+b expect_var 0x40CA 0
+# Kai climbs.
+0 walk 14 6 20000
+0 cross UP 24 79 3000
+0 walk 6 12 3000
+include bike_on_p0.inc
+0 walk 6 13 3000
+0 ride ULLLLLUUUURURUUULUURRDRDRRRRRUUU
+0 until_map 24 80 3000
+0 until_field 3000
+0 ride DRDDDDDDDDDDLLLLLLLLLLUUUUUURUUUUURU
+0 until_map 24 81 3000
+0 until_field 3000
+0 ride DDDLDLDDDDDRDRRRRRRRRURRUUUUUUUUULU
+0 until_map 24 82 3000
+0 until_field 3000
+0 ride DDDDDDDDDDLLLLLLLULUUUUUUURRu
+0 shot fall-start-0
+0 ride R
+0 until_map 24 81 3000
+0 until_field 3000
+0 dump fell-0
+0 ride UURU
+0 until_map 24 82 3000
+0 until_field 3000
+0 ride LLLLU
+0 until_map 24 84 3000
+0 until_field 3000
+0 ride LLDDDRDDDLDDDDRRRRRDRRRRURURURUUULUUUUULLU
+0 until_map 24 85 3000
+0 mash_field 3000 B
+0 dump top-0
+0 walk 14 9 20000
+0 mash_field 30000 B
+0 shot rayquaza-flew-0
+0 expect_var 0x405E 5
+include fly_open_p0.inc
+0 fly_map 14
+0 until_map 0 7 3000
+0 mash_field 40000 B
+0 until_field 3000
+0 mash_field 3000 B
+0 shot sootopolis-calm-0
+0 expect_var 0x40CA 3
+0 walk 44 33 3000
+b sync
+# Rosa climbs.
+1 walk 14 6 20000
+1 cross UP 24 79 3000
+1 walk 6 12 3000
+include bike_on_p1.inc
+1 walk 6 13 3000
+1 ride ULLLLLUUUURURUUULUURRDRDRRRRRUUU
+1 until_map 24 80 3000
+1 until_field 3000
+1 ride DRDDDDDDDDDDLLLLLLLLLLUUUUUURUUUUURU
+1 until_map 24 81 3000
+1 until_field 3000
+1 ride DDDLDLDDDDDRDRRRRRRRRURRUUUUUUUUULU
+1 until_map 24 82 3000
+1 until_field 3000
+1 ride DDDDDDDDDDLLLLLLLULUUUUUUURRu
+1 shot fall-start-1
+1 ride R
+1 until_map 24 81 3000
+1 until_field 3000
+1 dump fell-1
+1 ride UURU
+1 until_map 24 82 3000
+1 until_field 3000
+1 ride LLLLU
+1 until_map 24 84 3000
+1 until_field 3000
+1 ride LLDDDRDDDLDDDDRRRRRDRRRRURURURUUULUUUUULLU
+1 until_map 24 85 3000
+1 mash_field 3000 B
+1 dump top-1
+1 walk 14 9 20000
+1 mash_field 30000 B
+1 shot rayquaza-flew-1
+1 expect_var 0x405E 5
+include fly_open_p1.inc
+1 fly_map 14
+1 until_map 0 7 3000
+1 mash_field 40000 B
+1 until_field 3000
+1 mash_field 3000 B
+1 shot sootopolis-calm-1
+1 expect_var 0x40CA 3
+b sync
+# Sootopolis: Maxie (33,35) and Archie (34,35), then Wallace (31,33), each
+# talked to from below; Kai first while Rosa waits by the Centre.
+0 walk 40 37 12000
+0 surf LEFT
+0 walk 33 36 12000
+0 press UP 2
+0 wait 10
+0 press A 2
+0 mash_field 6000 B
+0 walk 34 36 3000
+0 press UP 2
+0 wait 10
+0 press A 2
+0 mash_field 8000 B
+0 until_field 3000
+0 expect_flag 0x9E 1
+0 walk 31 34 3000
+0 press UP 2
+0 wait 10
+0 press A 2
+0 mash_field 12000 B
+0 expect_flag 0x138 1
+0 shot waterfall-hm-0
+0 walk 28 35 3000
+1 walk 40 37 12000
+1 surf LEFT
+1 walk 33 36 12000
+1 press UP 2
+1 wait 10
+1 press A 2
+1 mash_field 6000 B
+1 walk 34 36 3000
+1 press UP 2
+1 wait 10
+1 press A 2
+1 mash_field 8000 B
+1 until_field 3000
+1 expect_flag 0x9E 1
+1 walk 31 34 3000
+1 press UP 2
+1 wait 10
+1 press A 2
+1 mash_field 12000 B
+1 expect_flag 0x138 1
+1 shot waterfall-hm-1
+1 walk 29 35 3000
+b sync
+0 walk 34 36 12000
+0 surf RIGHT
+0 walk 43 32 12000
+0 cross UP 15 2 3000
+1 wait 300
+1 walk 34 35 12000
+1 surf RIGHT
+1 walk 43 32 12000
+1 cross UP 15 2 3000
+include journey_heal_center.inc
+include save_again.inc
+b party

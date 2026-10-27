@@ -1,0 +1,178 @@
+# JOURNEY 67 (main playthrough, no fixtures): CONTINUE journey_66's saves
+# (the Pokemon League building, healed).
+#  - Relink, Beacon ON (Kai).
+#  - Past the door guards into the Elite Four. Each room: Kai walks in (the
+#    room's walk-in scene closes the door behind him), then Rosa; Kai talks
+#    to the member from below: a co-op battle (Elite Four: a fight for
+#    both). The far door opens; each walks on through the hall. A save
+#    after each member (resumable).
+#  - The Champion's room: both walk in together (the room's own scene walks
+#    each player up to Wallace and starts the fight: Steven and Wallace,
+#    co-op). Then the Champion's scenes on both games, the Hall of Fame, the
+#    credits (they end in the game's own soft reset to the title screen).
+# Test helper: test_heal before each battle.
+# Driver aids: smart_moves, heal_below, no_wild.
+include continue.inc
+include relink.inc
+b expect coop.sLinkState 2
+b smart_moves 1
+b heal_below 35 2
+b no_wild 1
+include beacon_on.inc
+b mash_field 2000 B
+b expect coop.sBeacon+1:1 1
+b expect_flag 0x86E 1
+b expect_flag 0x4FB 0
+0 walk 9 2 6000
+0 cross UP 16 9 3000
+1 wait 200
+1 walk 9 2 6000
+1 cross UP 16 9 3000
+b sync
+# Sidney.
+0 walk 5 3 6000
+0 cross UP 16 0 3000
+0 mash_field 3000 B
+0 walk 5 7 3000
+1 wait 300
+1 walk 5 3 6000
+1 cross UP 16 0 3000
+1 mash_field 3000 B
+1 walk 7 7 3000
+b sync
+b dump sidney-room
+b test_heal
+0 walk 6 6 3000
+0 press UP 2
+0 wait 10
+0 press A 2
+b until_cb2 BattleMainCB2 9000 A
+b shot sidney-start
+b mash_field 200000 B
+b dump after-sidney
+b mash_field 6000 B
+b expect_flag 0x4FB 1
+b shot after-sidney
+include save_again.inc
+0 walk 6 3 3000
+0 cross UP 16 5 3000
+1 wait 200
+1 walk 6 3 3000
+1 cross UP 16 5 3000
+b sync
+# Phoebe.
+0 walk 5 3 6000
+0 cross UP 16 1 3000
+0 mash_field 3000 B
+0 walk 5 7 3000
+1 wait 300
+1 walk 5 3 6000
+1 cross UP 16 1 3000
+1 mash_field 3000 B
+1 walk 7 7 3000
+b sync
+b dump phoebe-room
+b test_heal
+0 walk 6 6 3000
+0 press UP 2
+0 wait 10
+0 press A 2
+b until_cb2 BattleMainCB2 9000 A
+b shot phoebe-start
+b mash_field 200000 B
+b dump after-phoebe
+b mash_field 6000 B
+b expect_flag 0x4FC 1
+b shot after-phoebe
+include save_again.inc
+0 walk 6 3 3000
+0 cross UP 16 6 3000
+1 wait 200
+1 walk 6 3 3000
+1 cross UP 16 6 3000
+b sync
+# Glacia.
+0 walk 5 3 6000
+0 cross UP 16 2 3000
+0 mash_field 3000 B
+0 walk 5 7 3000
+1 wait 300
+1 walk 5 3 6000
+1 cross UP 16 2 3000
+1 mash_field 3000 B
+1 walk 7 7 3000
+b sync
+b dump glacia-room
+b test_heal
+0 walk 6 6 3000
+0 press UP 2
+0 wait 10
+0 press A 2
+b until_cb2 BattleMainCB2 9000 A
+b shot glacia-start
+b mash_field 200000 B
+b dump after-glacia
+b mash_field 6000 B
+b expect_flag 0x4FD 1
+b shot after-glacia
+include save_again.inc
+0 walk 6 3 3000
+0 cross UP 16 7 3000
+1 wait 200
+1 walk 6 3 3000
+1 cross UP 16 7 3000
+b sync
+# Drake.
+0 walk 5 3 6000
+0 cross UP 16 3 3000
+0 mash_field 3000 B
+0 walk 5 7 3000
+1 wait 300
+1 walk 5 3 6000
+1 cross UP 16 3 3000
+1 mash_field 3000 B
+1 walk 7 7 3000
+b sync
+b dump drake-room
+b test_heal
+0 walk 6 6 3000
+0 press UP 2
+0 wait 10
+0 press A 2
+b until_cb2 BattleMainCB2 9000 A
+b shot drake-start
+b mash_field 200000 B
+b dump after-drake
+b mash_field 6000 B
+b expect_flag 0x4FE 1
+b shot after-drake
+include save_again.inc
+0 walk 6 3 3000
+0 cross UP 16 8 3000
+1 wait 200
+1 walk 6 3 3000
+1 cross UP 16 8 3000
+b sync
+# The Champion: both walk in close together.
+0 walk 5 3 12000
+1 walk 5 4 12000
+b sync
+b test_heal
+b expect_flag 0x87F 0
+0 cross UP 16 4 3000
+1 wait 20
+1 walk 5 3 600
+1 cross UP 16 4 3000
+b until_cb2 BattleMainCB2 12000 A
+b shot champion-start
+# The battle, the Champion's scenes, the walk to the Hall of Fame.
+b until_cb2 CB2_DoHallOfFameScreen 300000 A
+b dump after-champion
+b expect_flag 0x87F 1
+b shot hof-screen
+b until_cb2 CB2_StartCreditsSequence 60000 A
+b shot credits
+b expect_flag 0x864 1
+b wait 20000
+b shot credits-late
+b until_cb2 CB2_InitCopyrightScreenAfterBootup 150000 A
