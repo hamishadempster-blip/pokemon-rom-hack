@@ -77,6 +77,8 @@ static struct Player P[2];
 // WATCH_BOX=1: a write watch on the first 12 slots of PC box 1 (set from the
 // box watch below). Every store into it is logged with the code doing it.
 static unsigned sWatchLo[2], sWatchHi[2];
+// A second watched range (debug: WATCH2=SYM:LEN), same log.
+static unsigned sWatch2Lo, sWatch2Hi;
 static int sWatchLogs[2];
 static int sWatchHits[2];
 static int sWatchQuiet[2];
@@ -88,37 +90,37 @@ static int watchPlayer(struct ARMCore* cpu) {
 }
 static const char* symAt(unsigned addr);
 static void out(const char* fmt, ...);
-static void watchHit(struct ARMCore* cpu, int id, uint32_t addr, const char* kind) {
+static void watchHit(struct ARMCore* cpu, int id, uint32_t addr, const char* kind, uint32_t val) {
 	sWatchHits[id]++;
 	if (sWatchLogs[id] >= 400) return;
-	if (sWatchQuiet[id] && sWatchLogs[id] >= 20) return;
+	if (sWatchQuiet[id] && sWatchLogs[id] >= 20 && !getenv("WATCH_ALL")) return;
 	// The save-block shuffle at each battle start copies the boxes legitimately.
 	if (!strncmp(symAt(cpu->gprs[14]), "MoveSaveBlocks", 14)) return;
 	sWatchLogs[id]++;
 	char pc[120];
 	snprintf(pc, sizeof(pc), "%s", symAt(cpu->gprs[15] - ((cpu->cpsr.t) ? 4 : 8)));
-	out("[p%d WRITE] %s at %08x (slot %u) pc=%s lr=%s\n", id, kind, addr, (addr - sWatchLo[id]) / 80, pc, symAt(cpu->gprs[14]));
+	out("[f%06d p%d WRITE] %s at %08x (slot %u) v=%08x pc=%s lr=%s\n", P[id].frame, id, kind, addr, (addr - sWatchLo[id]) / 80, val, pc, symAt(cpu->gprs[14]));
 }
 static void hookStore32(struct ARMCore* cpu, uint32_t a, int32_t v, int* c) {
 	int id = watchPlayer(cpu);
-	if (id >= 0 && a >= sWatchLo[id] && a < sWatchHi[id]) watchHit(cpu, id, a, "str32");
+	if (id >= 0 && ((a >= sWatchLo[id] && a < sWatchHi[id]) || (a >= sWatch2Lo && a < sWatch2Hi))) watchHit(cpu, id, a, "str32", (uint32_t)v);
 	sOrigMem[id < 0 ? 0 : id].store32(cpu, a, v, c);
 }
 static void hookStore16(struct ARMCore* cpu, uint32_t a, int16_t v, int* c) {
 	int id = watchPlayer(cpu);
-	if (id >= 0 && a >= sWatchLo[id] && a < sWatchHi[id]) watchHit(cpu, id, a, "str16");
+	if (id >= 0 && ((a >= sWatchLo[id] && a < sWatchHi[id]) || (a >= sWatch2Lo && a < sWatch2Hi))) watchHit(cpu, id, a, "str16", (uint16_t)v);
 	sOrigMem[id < 0 ? 0 : id].store16(cpu, a, v, c);
 }
 static void hookStore8(struct ARMCore* cpu, uint32_t a, int8_t v, int* c) {
 	int id = watchPlayer(cpu);
-	if (id >= 0 && a >= sWatchLo[id] && a < sWatchHi[id]) watchHit(cpu, id, a, "str8");
+	if (id >= 0 && ((a >= sWatchLo[id] && a < sWatchHi[id]) || (a >= sWatch2Lo && a < sWatch2Hi))) watchHit(cpu, id, a, "str8", (uint8_t)v);
 	sOrigMem[id < 0 ? 0 : id].store8(cpu, a, v, c);
 }
 static uint32_t hookStoreMultiple(struct ARMCore* cpu, uint32_t base, int mask, enum LSMDirection dir, int* c) {
 	int id = watchPlayer(cpu);
 	int n = __builtin_popcount(mask & 0xFFFF);
 	uint32_t lo = (dir & LSM_D) ? base - n * 4 : base, hi = (dir & LSM_D) ? base : base + n * 4;
-	if (id >= 0 && hi > sWatchLo[id] && lo < sWatchHi[id]) watchHit(cpu, id, lo, "stm");
+	if (id >= 0 && hi > sWatchLo[id] && lo < sWatchHi[id]) watchHit(cpu, id, lo, "stm", 0);
 	return sOrigMem[id < 0 ? 0 : id].storeMultiple(cpu, base, mask, dir, c);
 }
 static void installWatch(struct Player* p) {
@@ -131,6 +133,69 @@ static void installWatch(struct Player* p) {
 	cpu->memory.storeMultiple = hookStoreMultiple;
 }
 static struct GBASIOLockstep sLockstep;
+// Reset trap (always on): a branch into the BIOS vectors 0x00-0x0F (reset,
+// undefined, SWI with a real BIOS, abort) or a SoftReset/RegisterRamReset
+// SWI. Logs the registers, the stack and the last region changes, so an
+// unexplained reboot can be traced to its caller.
+struct RegionHop { uint32_t to, lr, sp; };
+static struct RegionHop sHops[2][32];
+static unsigned sHopPos[2];
+static void (*sOrigSetRegion[2])(struct ARMCore*, uint32_t);
+static void (*sOrigSwi16[2])(struct ARMCore*, int);
+static void (*sOrigSwi32[2])(struct ARMCore*, int);
+static int sResetLogs[2];
+static void resetTrapLog(struct ARMCore* cpu, int id, const char* why, uint32_t to) {
+	if (sResetLogs[id]++ >= 6) return;
+	out("[p%d RESET-TRAP] %s to=%08x lr=%08x(%s) sp=%08x cpsr=%08x\n", id, why, to, cpu->gprs[14], symAt(cpu->gprs[14]), cpu->gprs[13], cpu->cpsr.packed);
+	char line[400]; int n = 0;
+	for (int r = 0; r < 13; r++) n += snprintf(line + n, sizeof(line) - n, "r%d=%08x ", r, cpu->gprs[r]);
+	out("[p%d RESET-TRAP] %s\n", id, line);
+	for (int k = 0; k < 24; k++) {
+		uint32_t a = cpu->gprs[13] + k * 4;
+		if (a < 0x03000000 || a >= 0x03008000) break;
+		int cyc = 0; uint32_t v = cpu->memory.load32(cpu, a, &cyc);
+		if (v >= 0x08000000 && v < 0x0A000000) out("[p%d RESET-TRAP] stack+%02x %08x %s\n", id, k * 4, v, symAt(v & ~1u));
+	}
+	for (unsigned k = 0; k < 32; k++) {
+		struct RegionHop* h = &sHops[id][(sHopPos[id] + k) % 32];
+		if (!h->to && !h->lr) continue;
+		char a[80]; snprintf(a, sizeof(a), "%s", symAt(h->to));
+		out("[p%d RESET-TRAP] hop to=%08x %s lr=%s\n", id, h->to, a, symAt(h->lr));
+	}
+}
+static void hookSetRegion(struct ARMCore* cpu, uint32_t address) {
+	int id = watchPlayer(cpu); if (id < 0) id = 0;
+	if (address < 0x10 && address != 0x8) resetTrapLog(cpu, id, "branch-to-vector", address);
+	if (address >= 0x10 && address < 0x4000) {
+		// IRQs land in the BIOS often; don't fill the ring with them.
+	} else {
+		struct RegionHop* h = &sHops[id][sHopPos[id]++ % 32];
+		h->to = address; h->lr = cpu->gprs[14]; h->sp = cpu->gprs[13];
+	}
+	sOrigSetRegion[id](cpu, address);
+}
+static void hookSwi16(struct ARMCore* cpu, int imm) {
+	int id = watchPlayer(cpu); if (id < 0) id = 0;
+	if (imm == 0 || imm == 0x26) resetTrapLog(cpu, id, imm ? "swi-HardReset" : "swi-SoftReset", cpu->gprs[15]);
+	sOrigSwi16[id](cpu, imm);
+}
+static void hookSwi32(struct ARMCore* cpu, int imm) {
+	int id = watchPlayer(cpu); if (id < 0) id = 0;
+	int n = imm >> 16;
+	if (n == 0 || n == 0x26) resetTrapLog(cpu, id, n ? "swi32-HardReset" : "swi32-SoftReset", cpu->gprs[15]);
+	sOrigSwi32[id](cpu, imm);
+}
+static void installResetTrap(struct Player* p) {
+	struct ARMCore* cpu = ((struct GBA*)p->core->board)->cpu;
+	if (cpu->memory.setActiveRegion == hookSetRegion) return;
+	sOrigSetRegion[p->id] = cpu->memory.setActiveRegion;
+	sOrigSwi16[p->id] = cpu->irqh.swi16;
+	sOrigSwi32[p->id] = cpu->irqh.swi32;
+	cpu->memory.setActiveRegion = hookSetRegion;
+	cpu->irqh.swi16 = hookSwi16;
+	cpu->irqh.swi32 = hookSwi32;
+}
+
 static pthread_mutex_t sLock = PTHREAD_MUTEX_INITIALIZER;
 static pthread_mutex_t sOut = PTHREAD_MUTEX_INITIALIZER;
 static struct Sym* sSyms;
@@ -1254,6 +1319,7 @@ static bool taskActive(struct Player* p, const char* name) {
 static void frameCallback(struct mCoreThread* t) {
 	struct Player* p = t->userData;
 	p->frame++;
+	if (p->frame == 1) installResetTrap(p);
 	if (sUsr1[p->id]) {
 		sUsr1[p->id] = 0;
 		out("[f%06d p%d usr1] cmd %d/%d step %d\n", p->frame, p->id, p->pc, p->ncmds, p->step);
@@ -1355,6 +1421,35 @@ static void frameCallback(struct mCoreThread* t) {
         p->core->rawWrite16(p->core, p->patchAddr, -1, p->patchOpcode);
         p->patchAddr = 0;
     }
+	{
+		// Co-op block traffic: each new co-op block in the send buffer, and
+		// co-op blocks the battle code set aside (gCoopStrayBattleBlocks).
+		static unsigned lastSend[2][4], lastStray[2];
+		unsigned sb = symAddr("gBlockSendBuffer"), sa = symAddr("gCoopStrayBattleBlocks");
+		if (sb) {
+			unsigned w[4];
+			for (int k = 0; k < 4; k++) w[k] = rd32(p, sb + k * 4);
+			if (memcmp(w, lastSend[p->id], sizeof(w))) {
+				memcpy(lastSend[p->id], w, sizeof(w));
+				if ((w[0] & 0xFF00) == 0xC000)
+					out("[f%06d p%d SEND] %08x %08x %08x %08x inBattle=%u\n", p->frame, p->id, w[0], w[1], w[2], w[3], rd8(p, sMain ? sMain + 0x439 : 0) & 2);
+			}
+		}
+		static unsigned lastRecv[2][2];
+		unsigned rb = symAddr("gBlockRecvBuffer"), rs = symAddr("gBlockReceivedStatus");
+		for (int k = 0; rb && k < 2; k++) {
+			unsigned w0 = rd32(p, rb + k * 256), w3 = rd32(p, rb + k * 256 + 12);
+			unsigned sig = ((w0 & 0xFF00) == 0xC000) ? (w0 ^ w3) | 1 : 0;
+			if (sig != lastRecv[p->id][k]) {
+				lastRecv[p->id][k] = sig;
+				if (sig) out("[f%06d p%d RECV] slot %d %08x .. %08x flag=%u\n", p->frame, p->id, k, w0, w3, rd8(p, rs + k));
+			}
+		}
+		if (sa && rd16(p, sa) != lastStray[p->id]) {
+			lastStray[p->id] = rd16(p, sa);
+			out("[f%06d p%d STRAY-BLOCK] co-op blocks set aside by battle reads: %u\n", p->frame, p->id, lastStray[p->id]);
+		}
+	}
 	if (sMain) {
 		unsigned cb2 = rd32(p, sMain + 4);
 		if (cb2 != sLastCb2[p->id]) {
@@ -1739,6 +1834,11 @@ static void frameCallback(struct mCoreThread* t) {
 			// way have a separate, generous cap.
 			if ((field ? ++p->step : 0) >= c->frames || p->offField >= 60000u) {
 				p->offField = 0;
+				if (c->size == 1) {
+					// walk_try: exploration, not a failure.
+					out("[f%06d p%d] walk_try (%d,%d) not reached, at (%d,%d)\n", p->frame, p->id, (int)c->addr, c->value, x, y);
+					p->stable = 0; advance = true; break;
+				}
 				out("[p%d] FAIL walk (%d,%d) stuck at (%d,%d)\n", p->id, (int)c->addr, c->value, x, y);
 				dump(p, "fail");
 				writePng(p, "fail");
@@ -2497,7 +2597,7 @@ static void frameCallback(struct mCoreThread* t) {
 				p->core->busWrite16(p->core, mb + 4, c->value);
 				p->core->busWrite16(p->core, mb + 22, 0);
 				p->core->busWrite32(p->core, mb, 0x7E57C0DEu);
-				out("[f%06d p%d TEST HELPER] %s %u %u %u %u %u %u %u\n", p->frame, p->id, c->text,
+				out(c->value == 5 ? "[f%06d p%d FIXTURE] %s %u %u %u %u %u %u %u\n" : "[f%06d p%d TEST HELPER] %s %u %u %u %u %u %u %u\n", p->frame, p->id, c->text,
 				    c->args[0], c->args[1], c->args[2], c->args[3], c->args[4], c->args[5], c->args[6]);
 			}
 			if (rd32(p, mb) == 0) {
@@ -2513,6 +2613,12 @@ static void frameCallback(struct mCoreThread* t) {
 			// box watch is replaced); expect_writes N checks the count.
 			installWatch(p);
 			sWatchLo[p->id] = c->addr; sWatchHi[p->id] = c->addr + c->value;
+			if (getenv("WATCH2")) {
+				char w2[96]; snprintf(w2, sizeof(w2), "%s", getenv("WATCH2"));
+				char* colon = strchr(w2, ':'); unsigned len = 4;
+				if (colon) { len = strtoul(colon + 1, NULL, 0); *colon = 0; }
+				sWatch2Lo = symAddr(w2); sWatch2Hi = sWatch2Lo + len;
+			}
 			sWatchHits[p->id] = 0; sWatchLogs[p->id] = 0; sWatchQuiet[p->id] = 1;
 			out("[p%d] watch %08x..%08x\n", p->id, sWatchLo[p->id], sWatchHi[p->id]);
 			advance = true;
@@ -2772,11 +2878,11 @@ static void loadScript(const char* path, int depth) {
         } else if (!strcmp(cmd, "smart_moves")) {
         	c.kind = C_SMART;
         	c.value = strtoul(a, NULL, 0);
-        } else if (!strcmp(cmd, "test_mon") || !strcmp(cmd, "test_level") || !strcmp(cmd, "test_heal") || !strcmp(cmd, "test_item")) {
+        } else if (!strcmp(cmd, "test_mon") || !strcmp(cmd, "test_level") || !strcmp(cmd, "test_heal") || !strcmp(cmd, "test_item") || !strcmp(cmd, "test_send_reply")) {
         	// TEST HELPER (combat assistance, recorded in the log): the ROM's
         	// harness-only mailbox, gCoopTestMailbox (src/coop_testhook.c).
         	c.kind = C_TEST_HOOK;
-        	c.value = !strcmp(cmd, "test_mon") ? 1 : !strcmp(cmd, "test_level") ? 2 : !strcmp(cmd, "test_heal") ? 3 : 4;
+        	c.value = !strcmp(cmd, "test_mon") ? 1 : !strcmp(cmd, "test_level") ? 2 : !strcmp(cmd, "test_heal") ? 3 : !strcmp(cmd, "test_item") ? 4 : 5;
         	memset(c.args, 0, sizeof(c.args));
         	sscanf(line, "%*s %*s %u %u %u %u %u %u %u %u", &c.args[0], &c.args[1], &c.args[2], &c.args[3], &c.args[4], &c.args[5], &c.args[6], &c.args[7]);
         	snprintf(c.text, sizeof(c.text), "%s", cmd);
@@ -2798,8 +2904,9 @@ static void loadScript(const char* path, int depth) {
         } else if (!strcmp(cmd, "no_wild")) {
         	c.kind = C_NO_WILD;
         	c.value = strtoul(a, NULL, 0);
-        } else if (!strcmp(cmd, "walk") || !strcmp(cmd, "walk_battle")) {
-        	c.kind = !strcmp(cmd, "walk") ? C_WALK : C_WALK_BATTLE;
+        } else if (!strcmp(cmd, "walk") || !strcmp(cmd, "walk_battle") || !strcmp(cmd, "walk_try")) {
+        	c.kind = !strcmp(cmd, "walk_battle") ? C_WALK_BATTLE : C_WALK;
+        	c.size = !strcmp(cmd, "walk_try");
         	c.addr = strtoul(a, NULL, 0);
         	c.value = strtoul(b, NULL, 0);
         	c.frames = n >= 5 ? atoi(d) : 4000;

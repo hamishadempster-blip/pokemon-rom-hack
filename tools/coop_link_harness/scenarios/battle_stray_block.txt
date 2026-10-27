@@ -1,0 +1,73 @@
+# A co-op block (a NACK reply) still marked unread when a co-op trainer
+# battle starts, and another one arriving mid-battle (finding #10).
+# Found in the main journey (segments 11 and 36, both a co-op trainer fight
+# started right after another): the VS screen showed one player's team as
+# "one OK, one fainted, one empty" (the bits of a NACK's kind byte, 9, read
+# as the battle header), then both games reset. The battle start read the
+# co-op block as the header; every later party block was off by one; and
+# in the fight a co-op block read as battle data copied a size taken from
+# its trainer field.
+# story_seg6 saves (as coop_one_trainer_faints).
+# FIXTURES: Lyle's trainer flag cleared, both warped next to him; strong
+# battlers. At the start, the stray block is written straight into each
+# game's receive buffer for the other player (flag set), the state a late
+# reply leaves behind. Mid-battle, each game sends a real NACK through the
+# test mailbox (gCoopTestMailbox, SendBlock as the co-op layer does).
+# Expected: the VS screen shows both teams whole, the battle runs to a win
+# with both teams intact, no reset; the set-aside counter is 3 on each game.
+# Before the fix (0xC0170133 build, start part only): VS indicators 2/1 on
+# one game (the NACK's kind byte as Kai's team), then both games stuck
+# before the first action.
+include continue.inc
+include relink.inc
+b expect coop.sLinkState 2
+b no_wild 1
+b smart_moves 1
+b strong_battlers 400
+include beacon_on.inc
+b mash_field 2000 B
+b fixture_flag 0x768 0
+0 fixture_warp 24 11 10 35
+1 fixture_warp 24 11 11 35
+b until_field 3000
+b sync
+b wait 30
+0 walk_battle 7 35 6000
+0 until_cb2 CB2_InitBattle 9000 A
+1 until_cb2 CB2_InitBattle 9000 A
+# FIXTURE: a NACK (kind 9, seq 0x1234) from the other player, unread, as the
+# battle code takes over the link (no battle blocks are in flight yet).
+0 write gBlockRecvBuffer+256:4 0x0009C0A1
+0 write gBlockRecvBuffer+260:4 0
+0 write gBlockRecvBuffer+264:4 0x12340000
+0 write gBlockRecvBuffer+268:4 0x0000123D
+0 write gBlockReceivedStatus+1:1 1
+1 write gBlockRecvBuffer+0:4 0x0009C0A1
+1 write gBlockRecvBuffer+4:4 0
+1 write gBlockRecvBuffer+8:4 0x12340000
+1 write gBlockRecvBuffer+12:4 0x0000123D
+1 write gBlockReceivedStatus+0:1 1
+b wait 90
+b shot vs-screen
+b until_cb2 BattleMainCB2 9000
+b expect_vs_party 1 1
+b expect gBattlersCount 4
+b party
+# FIXTURE: a NACK sent for real by each game, mid-battle, while the battle
+# waits for the first action (test mailbox: SendBlock as the co-op layer).
+0 until_mem gBattlerControllerFuncs:4 HandleInputChooseAction 6000 A
+1 until_mem gBattlerControllerFuncs+8:4 HandleInputChooseAction 6000 A
+b test_send_reply 9 4660
+b mash_field 30000
+b expect gBattleOutcome 1
+b sync
+b wait 60
+b shot after-lyle
+b expect coop.sInBattle 0
+# 3: the fixture at the start, then the other game's NACK and this game's
+# own copy (the link hands every game its own blocks too). Only 1 when the
+# battle's next block overwrote the end of each NACK on the cable (fixed in
+# InitBlockSend): those blocks never arrived at all.
+b expect gCoopStrayBattleBlocks:2 3
+b party
+b dump end

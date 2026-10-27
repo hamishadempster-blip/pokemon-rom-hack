@@ -779,7 +779,7 @@ void TryReceiveLinkBattleData(void)
         DestroyTask_RfuIdle();
         for (i = 0; i < GetLinkPlayerCount(); i++)
         {
-            if (GetBlockReceivedStatus() & (1 << (i)))
+            if (Coop_BattleBlockStatus() & (1 << (i)))
             {
                 ResetBlockReceivedFlag(i);
                 recvBuffer = (u8 *)gBlockRecvBuffer[i];
@@ -787,6 +787,10 @@ void TryReceiveLinkBattleData(void)
                     u8 *dest, *src;
                     u16 dataSize = gBlockRecvBuffer[i][2];
 
+                    // A block can't hold more than its buffer; anything
+                    // claiming so isn't battle data.
+                    if (dataSize + 8 > BLOCK_BUFFER_SIZE)
+                        continue;
                     if (gTasks[sLinkReceiveTaskId].tCurrentBlock_End + 9 + dataSize > 0x1000)
                     {
                         gTasks[sLinkReceiveTaskId].tCurrentBlock_WrapFrom = gTasks[sLinkReceiveTaskId].tCurrentBlock_End;

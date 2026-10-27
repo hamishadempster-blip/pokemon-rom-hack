@@ -932,7 +932,7 @@ static void CB2_HandleStartBattle(void)
         }
         break;
     case 2:
-        if ((GetBlockReceivedStatus() & 3) == 3)
+        if ((Coop_BattleBlockStatus() & 3) == 3)
         {
             u8 taskId;
 
@@ -960,7 +960,7 @@ static void CB2_HandleStartBattle(void)
         }
         break;
     case 4:
-        if ((GetBlockReceivedStatus() & 3) == 3)
+        if ((Coop_BattleBlockStatus() & 3) == 3)
         {
             // Recv Pokémon 1-2
             ResetBlockReceivedFlags();
@@ -977,7 +977,7 @@ static void CB2_HandleStartBattle(void)
         }
         break;
     case 8:
-        if ((GetBlockReceivedStatus() & 3) == 3)
+        if ((Coop_BattleBlockStatus() & 3) == 3)
         {
             // Recv Pokémon 3-4
             ResetBlockReceivedFlags();
@@ -994,7 +994,7 @@ static void CB2_HandleStartBattle(void)
         }
         break;
     case 12:
-        if ((GetBlockReceivedStatus() & 3) == 3)
+        if ((Coop_BattleBlockStatus() & 3) == 3)
         {
             // Recv Pokémon 5-6
             ResetBlockReceivedFlags();
@@ -1036,7 +1036,7 @@ static void CB2_HandleStartBattle(void)
         break;
     case 17:
         // Receive rng seed for recorded battle (only read it if partner is the link master)
-        if ((GetBlockReceivedStatus() & 3) == 3)
+        if ((Coop_BattleBlockStatus() & 3) == 3)
         {
             ResetBlockReceivedFlags();
             if (!(gBattleTypeFlags & BATTLE_TYPE_IS_MASTER))
@@ -1150,7 +1150,7 @@ static void CB2_HandleStartMultiPartnerBattle(void)
         }
         break;
     case 2:
-        if ((GetBlockReceivedStatus() & 3) == 3)
+        if ((Coop_BattleBlockStatus() & 3) == 3)
         {
             u8 taskId;
 
@@ -1200,7 +1200,7 @@ static void CB2_HandleStartMultiPartnerBattle(void)
         }
         break;
     case 4:
-        if ((GetBlockReceivedStatus() & 3) == 3)
+        if ((Coop_BattleBlockStatus() & 3) == 3)
         {
             // Recv partner's Pokémon 1-2, put each player's mons in their own party
             ResetBlockReceivedFlags();
@@ -1217,7 +1217,7 @@ static void CB2_HandleStartMultiPartnerBattle(void)
         }
         break;
     case 6:
-        if ((GetBlockReceivedStatus() & 3) == 3)
+        if ((Coop_BattleBlockStatus() & 3) == 3)
         {
             ResetBlockReceivedFlags();
             memcpy(&gParties[B_TRAINER_PLAYER][2], gBlockRecvBuffer[playerMultiplayerId], sizeof(struct Pokemon));
@@ -1242,7 +1242,7 @@ static void CB2_HandleStartMultiPartnerBattle(void)
         }
         break;
     case 8:
-        if ((GetBlockReceivedStatus() & 3) == 3)
+        if ((Coop_BattleBlockStatus() & 3) == 3)
         {
             // Recv opponent A Pokémon 1-2 (if not master)
             ResetBlockReceivedFlags();
@@ -1260,7 +1260,7 @@ static void CB2_HandleStartMultiPartnerBattle(void)
         }
         break;
     case 10:
-        if ((GetBlockReceivedStatus() & 3) == 3)
+        if ((Coop_BattleBlockStatus() & 3) == 3)
         {
             // Recv opponent A Pokémon 3-4 (if not master)
             ResetBlockReceivedFlags();
@@ -1278,7 +1278,7 @@ static void CB2_HandleStartMultiPartnerBattle(void)
         }
         break;
     case 12:
-        if ((GetBlockReceivedStatus() & 3) == 3)
+        if ((Coop_BattleBlockStatus() & 3) == 3)
         {
             // Recv opponent A Pokémon 5-6 (if not master)
             ResetBlockReceivedFlags();
@@ -1297,7 +1297,7 @@ static void CB2_HandleStartMultiPartnerBattle(void)
         }
         break;
     case 14:
-        if ((GetBlockReceivedStatus() & 3) == 3)
+        if ((Coop_BattleBlockStatus() & 3) == 3)
         {
             // Recv opponent B Pokémon 1-2 (if not master)
             ResetBlockReceivedFlags();
@@ -1315,7 +1315,7 @@ static void CB2_HandleStartMultiPartnerBattle(void)
         }
         break;
     case 16:
-        if ((GetBlockReceivedStatus() & 3) == 3)
+        if ((Coop_BattleBlockStatus() & 3) == 3)
         {
             // Recv opponent B Pokémon 3-4 (if not master)
             ResetBlockReceivedFlags();
@@ -1333,7 +1333,7 @@ static void CB2_HandleStartMultiPartnerBattle(void)
         }
         break;
     case 18:
-        if ((GetBlockReceivedStatus() & 3) == 3)
+        if ((Coop_BattleBlockStatus() & 3) == 3)
         {
             // Recv opponent B Pokémon 5-6 (if not master)
             ResetBlockReceivedFlags();
@@ -1370,7 +1370,7 @@ static void CB2_HandleStartMultiPartnerBattle(void)
         break;
     case 21:
         // Receive rng seed for recorded battle (only read it if partner is the link master)
-        if ((GetBlockReceivedStatus() & 3) == 3)
+        if ((Coop_BattleBlockStatus() & 3) == 3)
         {
             ResetBlockReceivedFlags();
             if (!(gBattleTypeFlags & BATTLE_TYPE_IS_MASTER))
@@ -1450,7 +1450,7 @@ static void CB2_PreInitMultiBattle(void)
         }
         break;
     case 1:
-        if ((GetBlockReceivedStatus() & blockMask) == blockMask)
+        if ((Coop_BattleBlockStatus() & blockMask) == blockMask)
         {
             ResetBlockReceivedFlags();
             for (i = 0; i < numPlayers; i++)
@@ -1607,7 +1607,7 @@ static void CB2_HandleStartMultiBattle(void)
         }
         break;
     case 2:
-        if ((GetBlockReceivedStatus() & 0xF) == 0xF)
+        if ((Coop_BattleBlockStatus() & 0xF) == 0xF)
         {
             ResetBlockReceivedFlags();
             FindLinkBattleMaster(4, playerMultiplayerId);
@@ -1654,7 +1654,7 @@ static void CB2_HandleStartMultiBattle(void)
         }
         break;
     case 4:
-        if ((GetBlockReceivedStatus() & 0xF) == 0xF)
+        if ((Coop_BattleBlockStatus() & 0xF) == 0xF)
         {
             ResetBlockReceivedFlags();
             for (id = 0; id < MAX_LINK_PLAYERS; id++)
@@ -1684,7 +1684,7 @@ static void CB2_HandleStartMultiBattle(void)
         }
         break;
     case 6:
-        if ((GetBlockReceivedStatus() & 0xF) == 0xF)
+        if ((Coop_BattleBlockStatus() & 0xF) == 0xF)
         {
             ResetBlockReceivedFlags();
             for (id = 0; id < MAX_LINK_PLAYERS; id++)
@@ -1746,7 +1746,7 @@ static void CB2_HandleStartMultiBattle(void)
         }
         break;
     case 9:
-        if ((GetBlockReceivedStatus() & 0xF) == 0xF)
+        if ((Coop_BattleBlockStatus() & 0xF) == 0xF)
         {
             ResetBlockReceivedFlags();
             for (var = 0; var < 4; var++)

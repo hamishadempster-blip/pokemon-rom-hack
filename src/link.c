@@ -950,7 +950,12 @@ static void ResetBlockSend(void)
 
 static bool32 InitBlockSend(const void *src, size_t size)
 {
-    if (sBlockSend.active)
+    // The last piece of the previous block is still waiting in gSendCmd
+    // this frame (LinkCB_BlockSend just built it). Starting now overwrote it
+    // with this block's header: the receiver never finished the earlier
+    // block, which was lost. A battle's send task retries every frame and hit
+    // this right after a co-op reply; any two back-to-back sends could.
+    if (sBlockSend.active || gLinkCallback == LinkCB_BlockSendEnd)
     {
         return FALSE;
     }

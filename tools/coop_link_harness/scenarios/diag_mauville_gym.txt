@@ -1,0 +1,28 @@
+# DIAGNOSTIC (exploration, not saved): which floor switches open the way to
+# Wattson in the Mauville Gym. Kai only; Rosa waits in the Centre.
+include continue.inc
+include relink.inc
+b smart_moves 1
+b walk 7 8 2000
+b cross DOWN 0 2 2000
+0 walk 8 5 6000
+0 until_map 10 0 3000
+0 dump in-gym
+0 walk_try 5 3 1500
+0 dump try0
+0 walk_try 0 15 3000
+0 dump sw1
+0 walk_try 5 3 1500
+0 dump try1
+0 walk_try 4 12 3000
+0 dump sw2
+0 walk_try 5 3 1500
+0 dump try2
+0 walk_try 3 9 3000
+0 dump sw3
+0 walk_try 5 3 1500
+0 dump try3
+0 walk_try 8 9 3000
+0 dump sw4
+0 walk_try 5 3 1500
+0 dump try4

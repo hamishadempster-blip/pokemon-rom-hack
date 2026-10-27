@@ -26,6 +26,7 @@ bool8 CoopDeal_ItemGiftable(u16 item);
 void CoopDeal_AbortFriendlyBattle(void);
 void CoopDeal_FieldFrame(void);
 void CoopDex_HandleBlock(u32 playerId, const u16 *words);
+bool8 CoopDeal_IsLinkBlock(const u16 *words);
 bool8 CoopDex_PartnerCaught(u16 nationalNum);
 u16 CoopDex_BufferSummary(void);
 u8 Coop_LocalBattleSpeed(void);

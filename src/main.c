@@ -147,8 +147,6 @@ void AgbMainLoop(void)
             DoSoftReset();
         }
 
-        CoopTest_Poll();
-
         if (Overworld_SendKeysToLinkIsRunning() == TRUE)
         {
             gLinkTransferringData = TRUE;
@@ -169,6 +167,10 @@ void AgbMainLoop(void)
                 gLinkTransferringData = FALSE;
             }
         }
+
+        // After the callbacks, where game code sends link blocks: a block
+        // started before the link update would lose its first command.
+        CoopTest_Poll();
 
         PlayTimeCounter_Update();
         MapMusicMain();

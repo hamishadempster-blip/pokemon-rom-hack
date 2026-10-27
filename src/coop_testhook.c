@@ -8,6 +8,7 @@
 // flags, badges, trainers or key items.
 #include "global.h"
 #include "coop_testhook.h"
+#include "coop.h"
 #include "item.h"
 #include "main.h"
 #include "random.h"
@@ -63,7 +64,19 @@ void CoopTest_Poll(void)
 {
     bool8 ok = FALSE;
 
-    if (gCoopTestMailbox.magic != COOP_TEST_MAGIC || gMain.inBattle)
+    if (gCoopTestMailbox.magic != COOP_TEST_MAGIC)
+        return;
+    // Link fixture, served in battles too: a co-op reply block sent as the
+    // game sends one (waits while another block is in flight).
+    if (gCoopTestMailbox.cmd == COOP_TEST_SEND_REPLY)
+    {
+        if (!Coop_TestSendReply(gCoopTestMailbox.arg[0], gCoopTestMailbox.arg[1]))
+            return;
+        gCoopTestMailbox.result = 1;
+        gCoopTestMailbox.magic = 0;
+        return;
+    }
+    if (gMain.inBattle)
         return;
     switch (gCoopTestMailbox.cmd)
     {

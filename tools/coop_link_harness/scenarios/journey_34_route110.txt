@@ -1,0 +1,70 @@
+# JOURNEY 34 (main playthrough, no fixtures): CONTINUE journey_33's saves
+# (Dewford Centre, Knuckle Badge on both).
+#  - Relink, Beacon ON (Kai).
+#  - Briney at the Dewford dock sails each to Slateport (Kai first).
+#  - North on Route 110 (its trainers; the east path is the only land way
+#    north): the rival line at y=56 (co-op twins, stage 2).
+#  - Mauville: heal at the Centre, save.
+# Driver aids: smart_moves.
+include continue.inc
+include relink.inc
+b expect coop.sLinkState 2
+b smart_moves 1
+include beacon_on.inc
+b mash_field 2000 B
+b expect coop.sBeacon+1:1 1
+b expect_flag 0x868 1
+b walk 7 8 2000
+b cross DOWN 0 11 2000
+# Briney (12,9) from the west: PETALBURG / SLATEPORT / CANCEL.
+0 walk 11 9 4000
+0 press RIGHT 2
+0 wait 10
+0 press A 2
+0 until_task Task_HandleMultichoiceInput 3000 A
+0 wait 20
+0 press UP 2
+0 wait 20
+0 press A 2
+0 cross B 0 24 12000
+1 wait 600
+1 walk 11 9 4000
+1 press RIGHT 2
+1 wait 10
+1 press A 2
+1 until_task Task_HandleMultichoiceInput 3000 A
+1 wait 20
+1 press UP 2
+1 wait 20
+1 press A 2
+1 cross B 0 24 12000
+b sync
+b walk 20 0 8000
+b cross UP 0 1 3000
+b walk 17 0 8000
+b cross UP 0 25 3000
+b dump route110
+# North; the east path crosses the rival line.
+0 walk 34 60 12000
+1 walk 35 61 12000
+b sync
+0 walk 34 57 6000
+0 press UP 24
+b until_cb2 BattleMainCB2 9000 A
+b expect coop.sInBattle 1
+b expect gBattlersCount 4
+b shot rival2
+b mash_field 200000
+b dump after-rival
+b expect_var 0x4069 1
+b party
+b walk 15 0 12000
+b cross UP 0 2 3000
+0 walk 22 5 6000
+0 until_map 10 5 3000
+1 wait 200
+1 walk 22 5 6000
+1 until_map 10 5 3000
+include journey_heal_center.inc
+include save_again.inc
+b party

@@ -1708,10 +1708,101 @@ static void Coop_HandleInvite(u32 playerId, const struct CoopInvite *invite)
     Coop_LaunchBattle(TRUE);
 }
 
-static void Coop_PollBlocks(void)
+// Co-op blocks that reached a link battle's block reads (a reply flushed
+// just before the fight, a story message in flight). Invites, replies and
+// story messages are kept for after the fight; deal and dex messages are
+// resent by their senders and are dropped.
+#define COOP_STASH_COUNT 4
+#define COOP_STASH_WORDS 8
+STATIC_ASSERT(sizeof(struct CoopInvite) <= COOP_STASH_WORDS * 2, CoopInviteFitsStash);
+STATIC_ASSERT(sizeof(struct CoopStoryMsg) <= COOP_STASH_WORDS * 2, CoopStoryFitsStash);
+static EWRAM_DATA u16 sStash[COOP_STASH_COUNT][COOP_STASH_WORDS] = {0};
+static EWRAM_DATA u8 sStashFrom[COOP_STASH_COUNT] = {0};
+static EWRAM_DATA u8 sStashCount = 0;
+// Test visibility: co-op blocks taken out of battle reads (kept or dropped).
+EWRAM_DATA u16 gCoopStrayBattleBlocks = 0;
+
+static bool8 Coop_IsCoopBlock(const u16 *words)
+{
+    switch (words[0])
+    {
+    case COOP_INVITE_MAGIC:
+        return ((const struct CoopInvite *)words)->checksum == Coop_InviteChecksum((const struct CoopInvite *)words);
+    case COOP_STORY_MAGIC:
+        return ((const struct CoopStoryMsg *)words)->checksum == CoopProtocol_StoryChecksum((const struct CoopStoryMsg *)words);
+    case COOP_DEAL_MAGIC:
+    case COOP_DEX_MAGIC:
+        return CoopDeal_IsLinkBlock(words);
+    }
+    return FALSE;
+}
+
+u8 Coop_BattleBlockStatus(void)
 {
     u8 status = GetBlockReceivedStatus();
     u32 i;
+
+    for (i = 0; i < MAX_LINK_PLAYERS; i++)
+    {
+        if (!(status & (1 << i)) || !Coop_IsCoopBlock(gBlockRecvBuffer[i]))
+            continue;
+        if ((gBlockRecvBuffer[i][0] == COOP_INVITE_MAGIC || gBlockRecvBuffer[i][0] == COOP_STORY_MAGIC)
+         && sStashCount < COOP_STASH_COUNT)
+        {
+            memcpy(sStash[sStashCount], gBlockRecvBuffer[i], sizeof(sStash[0]));
+            sStashFrom[sStashCount] = i;
+            sStashCount++;
+        }
+        if (gCoopStrayBattleBlocks < 0xFFFF)
+            gCoopStrayBattleBlocks++;
+        ResetBlockReceivedFlag(i);
+        status &= ~(1 << i);
+    }
+    return status;
+}
+
+bool8 Coop_TestSendReply(u8 kind, u16 seq)
+{
+    struct CoopInvite reply;
+
+    if (sLinkState != COOP_LINK_UP || !IsLinkTaskFinished())
+        return FALSE;
+    memset(&reply, 0, sizeof(reply));
+    reply.magic = COOP_INVITE_MAGIC;
+    reply.kind = kind;
+    reply.seq = seq;
+    reply.checksum = Coop_InviteChecksum(&reply);
+    return SendBlock(BitmaskAllOtherLinkPlayers(), &reply, sizeof(reply));
+}
+
+static void Coop_HandleBlock(u32 playerId, const u16 *words)
+{
+    if (words[0] == COOP_INVITE_MAGIC)
+        Coop_HandleInvite(playerId, (const struct CoopInvite *)words);
+    else if (words[0] == COOP_STORY_MAGIC)
+        Coop_HandleStoryMsg(playerId, (const struct CoopStoryMsg *)words);
+}
+
+static void Coop_PollBlocks(void)
+{
+    u8 status;
+    u32 i;
+
+    if (sStashCount != 0)
+    {
+        u16 words[COOP_STASH_WORDS];
+        u8 from = sStashFrom[0];
+
+        memcpy(words, sStash[0], sizeof(words));
+        sStashCount--;
+        for (i = 0; i < sStashCount; i++)
+        {
+            memcpy(sStash[i], sStash[i + 1], sizeof(sStash[0]));
+            sStashFrom[i] = sStashFrom[i + 1];
+        }
+        Coop_HandleBlock(from, words);
+    }
+    status = GetBlockReceivedStatus();
 
     for (i = 0; i < MAX_LINK_PLAYERS; i++)
     {

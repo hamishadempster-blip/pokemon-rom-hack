@@ -10,6 +10,7 @@ enum {
     COOP_TEST_SET_LEVEL,  // slot, level, 1 = also its level-up moves for that level
     COOP_TEST_HEAL,
     COOP_TEST_GIVE_ITEM,  // item, count
+    COOP_TEST_SEND_REPLY, // kind, seq: a co-op reply block on the link (also in battle)
 };
 
 struct CoopTestMailbox

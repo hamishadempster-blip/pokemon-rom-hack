@@ -118,6 +118,12 @@ u16 Coop_BufferPartnerLocation(void);
 u16 Coop_PartnerChatOk(void);
 const u8 *Coop_TakeSoloNote(void);
 void Coop_NoteSoloOnlyEncounter(void);
+// GetBlockReceivedStatus for link battle code: co-op blocks (invites,
+// replies, story, deal and dex messages) that arrive during a fight are
+// taken out of the way first, so they are never read as battle data.
+u8 Coop_BattleBlockStatus(void);
+// Test mailbox only: sends a reply block now; FALSE while the link is busy.
+bool8 Coop_TestSendReply(u8 kind, u16 seq);
 u16 Coop_BufferMenuExplain(void);
 u16 Coop_TwinLineStage(void);
 u16 Coop_ResetRivalScene(void);

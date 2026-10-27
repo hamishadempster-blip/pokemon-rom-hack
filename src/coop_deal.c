@@ -2245,3 +2245,14 @@ u16 CoopDeal_BattleOutcome(void)
         return 0;
     }
 }
+
+// A deal or dex block, checked the way its handler checks it. Used to keep
+// these out of a link battle's block reads (both are resent if lost).
+bool8 CoopDeal_IsLinkBlock(const u16 *words)
+{
+    if (words[0] == COOP_DEAL_MAGIC)
+        return ((const struct CoopDealMsg *)words)->checksum == Deal_Checksum((const struct CoopDealMsg *)words);
+    if (words[0] == COOP_DEX_MAGIC)
+        return ((const struct CoopDexMsg *)words)->checksum == Dex_Checksum((const struct CoopDexMsg *)words);
+    return FALSE;
+}
