@@ -143,6 +143,10 @@ b shot offset-across
 # Visible is not eligible: player 0 meets a wild Pokemon in the grass with
 # the partner in sight across the boundary. The Beacon is on; the fight is
 # solo, no invitation is sent, and the link stays up.
+# TEST HELPER (logged): battle stats raised for this fight only, so a
+# critical hit on the Lv 5 starter cannot white the player out (it did once,
+# 0xC0170137 final suite) and send the walk off course.
+0 strong_battlers 400
 0 write sWildEncountersDisabled 0
 0 pace_until_battle 9000
 0 write sWildEncountersDisabled 1
@@ -153,6 +157,7 @@ b shot offset-across
 0 wait 100
 0 shot solo-across-boundary
 0 mash_field 25000
+0 strong_battlers 0
 0 expect coop.sLinkState 2
 0 expect coop.sBeacon+1:1 1
 b sync
