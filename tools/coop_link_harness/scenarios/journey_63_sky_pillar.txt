@@ -143,6 +143,9 @@ b sync
 0 expect_flag 0x138 1
 0 shot waterfall-hm-0
 0 walk 28 35 3000
+# Rosa starts once Kai is done (without this wait she reached Maxie while
+# Kai was talking to him and Kai got the "busy" note instead).
+b sync
 1 walk 40 37 12000
 1 surf LEFT
 1 walk 33 36 12000

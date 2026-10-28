@@ -1,0 +1,63 @@
+# Held items between the two players' Pokemon in a co-op wild double (j16
+# saves, linked, Beacon ON; Route 116). Before 0xC017013C Kai's TRICK on
+# his ally swapped the items and both saves kept the other's item after
+# the battle. Now item moves between the two players' Pokemon fail.
+# TEST HELPERS: Kai's ZIGZAGOON (TRICK, PSYCHIC) holds CHARCOAL; Rosa's
+# PIKACHU (THIEF, SPLASH) holds LEFTOVERS. Turn 1: Kai TRICKs his ally:
+# "But it failed!"; turn 2: Rosa's THIEF on Kai's Pokemon fails too; then
+# Kai's PSYCHIC ends the battle. Each save keeps its own item.
+include continue.inc
+include relink.inc
+b expect coop.sLinkState 2
+include beacon_on.inc
+b mash_field 2000 B
+b expect coop.sBeacon+1:1 1
+b no_wild 1
+b fixture_rom16 gRoute116_LandMons+2 270
+b fixture_rom16 gRoute116_LandMons+6 270
+b fixture_rom16 gRoute116_LandMons+10 270
+b fixture_rom16 gRoute116_LandMons+14 270
+b fixture_rom16 gRoute116_LandMons+18 270
+b fixture_rom16 gRoute116_LandMons+22 270
+b fixture_rom16 gRoute116_LandMons+26 270
+b fixture_rom16 gRoute116_LandMons+30 270
+b fixture_rom16 gRoute116_LandMons+34 270
+b fixture_rom16 gRoute116_LandMons+38 270
+b fixture_rom16 gRoute116_LandMons+42 270
+b fixture_rom16 gRoute116_LandMons+46 270
+0 fixture_warp 0 31 23 17
+1 fixture_warp 0 31 25 17
+b until_field 3000
+b sync
+b fixture_obj 17 7 0
+0 test_mon 0 263 30 271 94 0 0 0
+0 test_held 0 426
+1 test_mon 0 25 30 168 150 0 0 0
+1 test_held 0 472
+b test_heal
+0 force_move 0 ally
+1 force_move 1
+b sync
+0 no_wild 0
+0 press LEFT 3
+0 wait 20
+0 force_encounter 1
+0 write sWildEncounterImmunitySteps:1 4
+0 write sPrevMetatileBehavior:2 2
+0 press LEFT 10
+b until_cb2 BattleMainCB2 4000 A
+0 force_encounter 0
+0 no_wild 1
+b until_battle_text But_it_failed 8000 auto
+b shot trick-failed
+0 force_move 1
+1 force_move 0 ally
+b until_battle_text What_will 8000 auto
+b wait 30
+b mash_field 30000
+b until_field 3000
+b sync
+0 expect_mon 0 held 426
+1 expect_mon 0 held 472
+0 expect_item 0 472 0
+1 expect_item 0 426 0

@@ -1,0 +1,54 @@
+# A gym leader's shared fight while the partner is in a menu screen
+# (checkpoint 44: four badges each, Petalburg, linked).
+# FIXTURE: both warped into the Petalburg Gym, Norman's room.
+# 1. Rosa opens her BAG; Kai talks to Norman. Rosa's game answers "busy"
+#    while the bag is open (it is not closed under her); Kai's game asks
+#    again; Rosa closes the bag (back to her start menu) and the shared
+#    fight starts for both.
+#    Then the battle is left unplayed: both saves are discarded.
+include continue.inc
+include relink.inc
+b expect coop.sLinkState 2
+b no_wild 1
+b fixture_warp 8 1 4 4
+b until_field 3000
+1 walk 6 5 2000
+0 walk 4 3 2000
+0 press UP 2
+b sync
+1 press START 2
+1 wait 40
+1 menu_to BAG
+1 press A 2
+1 until_cb2 CB2_BagMenuRun 2500
+1 wait 60
+b sync
+0 press A 2
+0 wait 60
+0 press A 2
+0 wait 60
+0 press A 2
+0 wait 60
+0 press A 2
+0 wait 60
+0 press A 2
+0 wait 60
+0 press A 2
+0 wait 60
+0 press A 2
+0 wait 60
+0 press A 2
+0 wait 60
+0 press A 2
+0 wait 300
+0 shot kai-waiting
+1 wait 400
+1 shot rosa-still-in-bag
+1 expect_cb2 CB2_BagMenuRun
+b expect coop.sInBattle 0
+0 expect_range gCoopBusyRetries:2 1 1000
+1 press B 2
+b until_cb2 BattleMainCB2 3000
+b expect coop.sInBattle 1
+b wait 120
+b shot both-in-battle

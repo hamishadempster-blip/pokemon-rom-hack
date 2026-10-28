@@ -1,0 +1,40 @@
+# A gym leader's shared fight while the partner stays in a menu screen
+# past the invite's time (checkpoint 44, Petalburg Gym, linked).
+# FIXTURE: both warped into Norman's room.
+# Rosa keeps her party screen open; Kai talks to Norman: no battle; after
+# the wait Kai is told Rosa is still in a menu and nothing started; Rosa's
+# screen was never closed; Kai can ask again once she is back.
+include continue.inc
+include relink.inc
+b expect coop.sLinkState 2
+b no_wild 1
+b fixture_warp 8 1 4 4
+b until_field 3000
+1 walk 6 5 2000
+0 walk 4 3 2000
+0 press UP 2
+b sync
+1 press START 2
+1 wait 40
+1 menu_to POKEMON
+1 press A 2
+1 until_cb2 CB2_UpdatePartyMenu 2500
+1 wait 60
+b sync
+0 note_text stayed_busy
+0 press A 2
+0 until_mem gCoopBusyRetries:2 2 6000 A
+1 wait 2000
+1 expect_cb2 CB2_UpdatePartyMenu
+0 mash_field 4000 B
+0 expect_noted
+b expect coop.sInBattle 0
+0 expect_flag 0x86B 0
+1 shot rosa-party-still-open
+1 press B 2
+1 mash_field 600 B
+b sync
+0 press A 2
+0 until_cb2 BattleMainCB2 6000 A
+1 until_cb2 BattleMainCB2 3000
+b expect coop.sInBattle 1

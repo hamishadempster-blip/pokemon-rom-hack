@@ -8,6 +8,7 @@
 #   J16=dir J37=dir: finding #16, shared NPCs, scene joins (J16: co-op revamps)
 #   J43=dir J48=dir: revamps in solo play, showcase trainers at route level
 #   J06=dir: checkpoint 6 (before Roxanne): Trainer Exchange stock
+#   J13=dir J44=dir J59=dir: gym invites to a busy partner; Strength boulders
 #   J52=dir J65=dir J68=dir: late-game checkpoints (late wild encounters;
 #   Wally and roster evolutions; shared legendaries)
 #   SEG6=/path/dir run_all.sh                     # also the story_seg6-based
@@ -111,6 +112,10 @@ if [ -n "${J16:-}" ]; then
 	run roster_b3_battle SAVE0="$J16/p0.sav" SAVE1="$J16/p1.sav"
 	# Target prompts; changing a chosen action while the turn is open.
 	run battle_cancel SAVE0="$J16/p0.sav" SAVE1="$J16/p1.sav"
+	# Items never move between the two players' Pokemon; both lose a wild
+	# double.
+	run coop_held_items SAVE0="$J16/p0.sav" SAVE1="$J16/p1.sav"
+	run coop_wild_loss SAVE0="$J16/p0.sav" SAVE1="$J16/p1.sav"
 fi
 
 # J43/J48=dir: checkpoints 43 (Rustboro, after Route 117) and 48 (Route
@@ -125,6 +130,20 @@ fi
 # stock with no BADGE.
 if [ -n "${J06:-}" ]; then
 	run exchange_stock_t0 SAVE0="$J06/p0.sav" SAVE1="$J06/p1.sav"
+fi
+# J13/J44/J59=dir: checkpoints 13 (Rustboro Gym ahead), 44 (Petalburg, four
+# badges) and 59 (Mossdeep, Seafloor Cavern ahead): a gym's shared fight
+# while the partner is in a menu, a message or stays busy; Strength
+# boulders are each save's own.
+if [ -n "${J13:-}" ]; then
+	run mandatory_busy_talk SAVE0="$J13/p0.sav" SAVE1="$J13/p1.sav"
+fi
+if [ -n "${J44:-}" ]; then
+	run mandatory_busy_menu SAVE0="$J44/p0.sav" SAVE1="$J44/p1.sav"
+	run mandatory_busy_timeout SAVE0="$J44/p0.sav" SAVE1="$J44/p1.sav"
+fi
+if [ -n "${J59:-}" ]; then
+	run coop_boulder_personal SAVE0="$J59/p0.sav" SAVE1="$J59/p1.sav"
 fi
 if [ -n "${J48:-}" ]; then
 	run revamp_trainers_mid SAVE0="$J48/p0.sav" SAVE1="$J48/p1.sav"
@@ -207,7 +226,7 @@ fi
 if [ -n "${SEG6:-}" ]; then
 	for s in deal_trade deal_cut_before_partner deal_cut_after_commit deal_lost_ready deal_gifts deal_edge \
 	         deal_battle deal_battle_doubles deal_battle_rules deal_dex deal_fast practice save_identity \
-	         pp_solo pp_coop pp_reconnect roster_g exchange_counters exchange_moves exchange_old_spot; do
+	         pp_solo pp_coop pp_reconnect roster_g exchange_counters exchange_moves exchange_old_spot coop_secret_base_room; do
 		run "$s" SAVE0="$SEG6/p0.sav" SAVE1="$SEG6/p1.sav"
 	done
 	for s in deal_trade deal_cut_before_partner deal_cut_after_commit deal_gifts exchange_old_spot; do

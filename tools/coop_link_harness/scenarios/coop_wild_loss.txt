@@ -1,0 +1,60 @@
+# Both players lose a co-op wild double (j16 saves, linked, Route 116).
+# TEST HELPERS: the first three of each party SPLASH only (test_mon) at 1 HP,
+# so the wild Pokemon win. Checked: both games end the battle, each wakes up
+# at its own heal place, healed, still linked; a co-op loss costs no money
+# (as the stock link battles): each sum is the same after.
+include continue.inc
+include relink.inc
+b expect coop.sLinkState 2
+include beacon_on.inc
+b mash_field 2000 B
+b expect coop.sBeacon+1:1 1
+b no_wild 1
+b fixture_rom16 gRoute116_LandMons+2 270
+b fixture_rom16 gRoute116_LandMons+6 270
+b fixture_rom16 gRoute116_LandMons+10 270
+b fixture_rom16 gRoute116_LandMons+14 270
+b fixture_rom16 gRoute116_LandMons+18 270
+b fixture_rom16 gRoute116_LandMons+22 270
+b fixture_rom16 gRoute116_LandMons+26 270
+b fixture_rom16 gRoute116_LandMons+30 270
+b fixture_rom16 gRoute116_LandMons+34 270
+b fixture_rom16 gRoute116_LandMons+38 270
+b fixture_rom16 gRoute116_LandMons+42 270
+b fixture_rom16 gRoute116_LandMons+46 270
+0 fixture_warp 0 31 23 17
+1 fixture_warp 0 31 25 17
+b until_field 3000
+b sync
+b fixture_obj 17 7 0
+0 test_mon 0 263 20 150 0 0 0 0
+0 test_mon 1 263 20 150 0 0 0 0
+0 test_mon 2 263 20 150 0 0 0 0
+1 test_mon 0 25 20 150 0 0 0 0
+1 test_mon 1 25 20 150 0 0 0 0
+1 test_mon 2 25 20 150 0 0 0 0
+b test_data 0 hp 1
+b test_data 1 hp 1
+b test_data 2 hp 1
+b note_money
+b sync
+0 no_wild 0
+0 press LEFT 3
+0 wait 20
+0 force_encounter 1
+0 write sWildEncounterImmunitySteps:1 4
+0 write sPrevMetatileBehavior:2 2
+0 press LEFT 10
+b until_cb2 BattleMainCB2 4000 A
+0 force_encounter 0
+0 no_wild 1
+b mash_field 40000
+b until_field 6000
+b wait 120
+b shot after-loss
+b party
+b hex gSaveBlock1Ptr 8 0
+b expect coop.sLinkState 2
+b expect_money_change 0
+0 expect gParties+86:2 51
+1 expect gParties+86:2 50

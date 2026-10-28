@@ -1,0 +1,36 @@
+# Strength boulders are each save's own (checkpoint 59, both linked, both
+# leads know STRENGTH). FIXTURE: both warped into Seafloor Cavern room 8.
+# Kai pushes the first boulder (local id 1) from (4,7) to (4,6); Rosa stands
+# by the door. Before 0xC017013C the push moved Rosa's boulder too (the
+# boulders were synced like wandering people) and her own route through
+# the room was blocked (journey_60). Now her boulder stays at (4,7), and
+# she pushes her own.
+include continue.inc
+include relink.inc
+b expect coop.sLinkState 2
+b no_wild 1
+0 fixture_warp 24 35 4 9
+1 fixture_warp 24 35 6 11
+b until_field 3000
+b sync
+0 walk 4 8 3000
+0 press UP 2
+0 wait 10
+0 press A 2
+0 mash_field 4000
+0 press UP 24
+0 wait 90
+0 expect_object 1 4 6
+b sync
+b wait 120
+1 expect_object 1 4 7
+1 shot rosa-room
+1 walk 4 8 3000
+1 press UP 2
+1 wait 10
+1 press A 2
+1 mash_field 4000
+1 press UP 24
+1 wait 90
+1 expect_object 1 4 6
+0 expect_object 1 4 6
