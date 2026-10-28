@@ -658,8 +658,12 @@ const u8 *CoopTalk_OnInteract(u8 objectEventId, const u8 *script)
     sHost.npcLocalId = obj->localId;
     sHost.class = Talk_Classify(script);
     sHost.joinable = (sHost.class == CLASS_OK);
-    // Tell the partner why this one can't be shared, for their note.
-    if (!sHost.joinable)
+    // Tell the partner why this one can't be shared, for their note: only
+    // for a reason the note names (a shop, a gift, a battle, a warp; scenes
+    // and special code get the plain note anyway) and only when they are
+    // here to press A. Every message waits for an answer, so needless ones
+    // would delay others (a quest's progress) on a busy link.
+    if (!sHost.joinable && sHost.class != CLASS_SCENE && Coop_PartnerOnSameMap())
         CoopDeal_SendTalk(TALK_OP_CLASS, sHost.class, obj->localId, 0, 0, NULL, 0);
     if (gCoopTalkStats.hosted < 0xFF)
         gCoopTalkStats.hosted++;
