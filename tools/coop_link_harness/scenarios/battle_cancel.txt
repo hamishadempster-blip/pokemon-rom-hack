@@ -192,10 +192,9 @@ b wait 90
 1 wait 90
 1 press A 2
 1 until_battle_text Waiting_for 900
-0 press A 2
-0 wait 90
-0 press A 2
-0 wait 90
+1 wait 40
+0 until_mem gBattlerControllerFuncs:4 HandleInputShowTargets 900 A
+0 wait 30
 b sync
 0 press A 2
 1 press B 2
@@ -216,16 +215,17 @@ b wait 30
 1 hex gCoopTurn 40
 # Both choose RUN on the same turn (bottom right of the action menu; both
 # players have to). If Kai's choice stood (the change was accepted), Kai
-# first takes it back with B, as a player would; if his menu is open
-# already, B there does nothing. The wild battle ends for both.
-0 wait 60
-0 press B 2
-0 wait 150
+# first takes it back with B, as a player would (B until his action menu
+# is open; B does nothing there). The wild battle ends for both.
+0 until_mem gBattlerControllerFuncs:4 HandleInputChooseAction 900 B
+0 wait 30
 0 press DOWN 2
 0 wait 20
 0 press RIGHT 2
 0 wait 20
 0 press A 2
+1 until_mem gBattlerControllerFuncs+8:4 HandleInputChooseAction 900 B
+1 wait 30
 1 press DOWN 2
 1 wait 20
 1 press RIGHT 2
