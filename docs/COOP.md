@@ -530,7 +530,7 @@ Two people only talk. A girl in Oldale explains the Pokédex map. A scientist in
 
 Fairy is part of the battle rules. The type chart, the summary icons, and the Pokédex search all include it. Clefairy, Jigglypuff, Marill, Ralts, Mawile, and Impidimp are Fairy. Charm and Baby-Doll Eyes are Fairy moves, so an Eevee that knows one can become Sylveon by friendship.
 
-Fire, Water, Thunder, Leaf, Moon, and Sun Stones were already placed in Hoenn. These later evolution items were not. Each one below is a single Poké Ball. Metal Coat, Dragon Scale, Prism Scale, and Reaper Cloth can be used from the bag. The same stones, apples, and held items are also sold by the evolution clerk on the third floor of the Lilycove Department Store.
+Fire, Water, Thunder, Leaf, Moon, and Sun Stones were already placed in Hoenn. These later evolution items were not. Each one below is a single Poké Ball. Metal Coat, Dragon Scale, Prism Scale, and Reaper Cloth can be used from the bag. The same stones, apples, and held items are also sold by the evolution clerk on the third floor of the Lilycove Department Store, and every evolution item is at the Trainer Exchange in Rustboro (see below).
 
 Poké Marts sell more balls as you go east. Oldale adds Great Balls once the Pokédex is running. Petalburg and Rustboro add Nest Balls, and Rustboro also adds Net Balls. Mauville adds Ultra, Repeat, and Timer Balls, plus a Thunder Stone and a Moon Stone. Verdanturf sells a Leaf Stone and a Sun Stone. Fallarbor sells a Moon Stone. Lavaridge sells a Fire Stone. Fortree adds Dusk Balls and a Shiny Stone. Lilycove's second floor sells the full ball case, including Dive, Quick, Heal, Luxury, and Premier Balls. Mossdeep adds a Dawn Stone and an Ice Stone. Dewford and Pacifidlog have no mart, so a clerk in each Pokémon Center sells a small stock. Pacifidlog's clerk also sells Dive Balls, a Water Stone, and a Prism Scale.
 
@@ -550,9 +550,61 @@ Poké Marts sell more balls as you go east. Oldale adds Great Balls once the Pok
 
 Crabrawler and Eevee can also become Crabominable and Glaceon by leveling in the Shoal Cave ice room. Eevee can become Leafeon by leveling in Petalburg Woods.
 
+## Trainer Exchange (Rustboro)
+
+A new building in the south of Rustboro, down the road from the Pokémon Center and the Poké Mart toward Route 104: from the Mart's door go seven steps east and seven south (door at (23,52), a sign on each side). It is open from the start, before Roxanne. Inside, a guide by the entrance and a directory on the back wall; five counters:
+
+| Counter | Where | What |
+| --- | --- | --- |
+| Moves & TMs | Left wall | BUY TMs; TEACH A MOVE (91 tutor moves, chosen by type); RELEARN A MOVE (level-up and evolution moves, ₽1,000); EGG MOVE (any egg move of the family, ₽5,000, from 3 BADGES) |
+| Battle items | Front, left | Berries, type boosters, incenses, then Leftovers, Choice items, Life Orb, Focus Sash, Assault Vest, Eviolite and more |
+| Evolution | Front, middle | Every evolution item the roster uses: stones, sweets, apples, trade substitutes (Linking Cord, Metal Coat, King's Rock, …), held items |
+| Training & Nature | Front, right | EXP candies, feathers, vitamins, EV-lowering berries, mints, PP Up/Max, Ability Capsule and Patch; RESET EVs (₽2,000, from 1 BADGE); HYPER TRAINING (one stat ₽15,000 from 7 BADGES, all six ₽60,000 as CHAMPION, Lv. 50+); HOW IT WORKS |
+| Breeding | Right wall | Everstone, Power items, Destiny Knot, Mirror Herb; the BREEDING GUIDE |
+
+What you can buy depends on **your own** BADGES (0, 1, 3, 5, 7, CHAMPION) and, for the Ability Capsule, the Twin Trial. A partner's badges never unlock anything for you. A partner can still give you what they bought (partner menu, GIVE ITEM), with no badge rule on receiving. COMING SOON at each counter names what the next step opens (a few names, then "and N more"). The full stock, prices and unlocks are in [COOP_EXCHANGE_STOCK.md](COOP_EXCHANGE_STOCK.md).
+
+- **Prices are one table**: an item costs the same in every shop that sells it (Lilycove, Slateport, Mauville's Power Shop, city marts), and sells for a quarter.
+- **TMs are single-use** in this ROM, so they are cheaper than reusable TMs would be (₽2,000–12,000). The TM numbers and old saves are unchanged; extra moves are taught by the tutor instead.
+- **Tutor moves** cover all 18 types with the TMs; no signature moves. A move is offered to a Pokémon only if its species can learn it (the same rule as TMs). You choose the Pokémon from the party or a box; you pay once it has learned the move, and nothing if you cancel.
+- **Co-op**: both players can use the same counter at the same time, each in their own shop with their own money and bag. To the partner, the shopper shows the menu icon; the partner menu says they're busy instead of sending a request.
+
+### Nature, EVs, IVs and levels
+
+- **Mints** change which stats the nature raises and lowers. The Pokémon's own nature (shown with the mint's) is unchanged, and that is what an Everstone passes to an egg.
+- **Vitamins** (HP Up, Protein, Iron, Calcium, Zinc, Carbos) add 10 EVs; **feathers** 1. 252 a stat, 510 in all. They are EV items, not IV items. **Pomeg, Kelpsy, Qualot, Hondew, Grepa and Tamato Berries** take EVs away; **RESET EVs** clears all six at once.
+- **Hyper Training** makes a stat count as if its IV were 31. The IV itself is kept, so it is not passed on by breeding. There is no Bottle Cap item; Hyper Training is the counter's service.
+- **EXP candies** stop at the level cap (Rare Candy too). An EXP candy that reaches the cap says how far it went and that the rest of its EXP was lost; at the cap, candies can't be used and are kept. Obedience is unchanged: your own Pokémon follow the met-level rule; one from a trade may disobey above your badge level, as with battle EXP.
+
+### Budget check
+
+Using the money the main journey's players actually had:
+
+| When | Money | A sensible basket |
+| --- | --- | --- |
+| Before Roxanne | ₽7,100–7,300 | TM Bullet Seed ₽2,500 + Low Kick tutor ₽2,000 + 2 Oran Berries ₽400 + 5 EXP Candy XS ₽1,000 = ₽5,900, ₽1,300 left for balls and Potions |
+| 4 badges | ₽72,000–74,000 | Leftovers ₽12,000 + two TMs ₽11,000 + two tutor moves ₽13,000 + three vitamins ₽9,000 + a Power item ₽7,000 + an egg move ₽5,000 + an EV reset ₽2,000 = ₽59,000 |
+| Before the League (8 badges) | ₽221,000–232,000 | Choice Scarf and Life Orb ₽40,000 + Focus Sash and Assault Vest ₽30,000 + four mints ₽32,000 + four single-stat Hyper Trainings ₽60,000 + Close Combat and Moonblast ₽33,000 = ₽195,000 |
+
+Full optimisation of a team (six Hyper Trainings of all six stats, ₽360,000) is a post-League goal. Selling gives a quarter of the price, so nothing bought can be sold at a profit; berries from your own trees sell for a little more than before (a quarter of the new berry prices), which is small next to trainer payouts.
+
+## Breeding and the Day Care
+
+The Day Care on Route 117 works as in the main series, on each player's own save: your deposits, your steps, your eggs, your fees. Two players can use the Day Care lady and man at the same time; each gets their own conversation. Only your own steps count toward eggs and hatching. A guide in the Day Care (and at the Exchange's breeding counter) explains the rules:
+
+- The egg is the mother's first stage, or the other parent's with Ditto. Babies hatch without incense (Azurill from Marill, and so on). Undiscovered-group Pokémon don't breed.
+- Ability: usually the mother's (or the non-Ditto parent's).
+- Nature: an Everstone passes the holder's own nature, not a mint's.
+- IVs: three from the parents, five with a Destiny Knot; a Power item passes its stat's IV. Hyper Training isn't passed on (the parents' own IVs are used).
+- Egg moves known by either parent pass down. A parent holding a Mirror Herb, with a free move slot, learns the other's egg moves when the two are left together.
+- Regional forms: the mother's form passes on when she holds an Everstone; otherwise the egg hatches in its usual (Hoenn) form.
+- Day Care Pokémon gain EXP up to the level cap and may learn level-up moves, replacing old ones as in the main series (RELEARN A MOVE at the Exchange gets them back).
+- Eggs can't battle, and can't be traded or given (the partner menu says so).
+- Ditto lives in the Desert Underpass after the Hall of Fame.
+
 ## Level cap
 
-Default on. The steps are 16, 22, 28, 34, 40, 46, 52, 58, then 66 for the Elite Four, then 75 after the champion. EXP, Rare Candy, the day care, and EXP Share stop at the cap. A Pokémon already above the cap is not lowered. The party screen shows the cap next to the level. Both saves have to agree before a link comes up. Gym levels do not scale.
+Default on. The steps are 16, 22, 28, 34, 40, 46, 52, 58, then 66 for the Elite Four, then 75 after the champion. EXP, Rare Candy, EXP candies, the day care, and EXP Share stop at the cap. A Pokémon already above the cap is not lowered. The party screen shows the cap next to the level. Both saves have to agree before a link comes up. Gym levels do not scale.
 
 ## Patch
 
@@ -632,6 +684,8 @@ While linked with your partner somewhere else, these fights wait and say so: com
 - Joining conversations is conservative: a script is joinable only if every branch it can take shows text, asks yes/no or moves people; shops, gifts, battles, warps, special code and scene scripts are not, even where sharing would have been harmless.
 - FOLLOW is on foot only and stops at grass, caves and other wild terrain (so you never walk into an encounter you didn't choose). Events on a connected map's tiles are checked only once you are on that map.
 - In battle, only moves, switches and RUN can be changed after choosing; items cannot.
+- A BADGE both players won together in a co-op gym battle is recorded on both saves; on LINK UP a save that lacks it gets it back. That is the only way a partner can add to your badges, and so to your Exchange stock.
+- A partner busy at an Exchange counter or the Day Care is reported as "shopping".
 
 ## Fixes in build 0xC0170136
 

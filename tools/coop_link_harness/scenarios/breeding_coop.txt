@@ -29,8 +29,9 @@ b party
 0 test_held 5 486
 1 test_mon 4 961 30 0 0 0 0 32
 1 test_mon 5 37 30 95 0 0 0 16
-b expect_mon 4 personality -
-b expect_mon 5 personality -
+b expect_mon 4 personality @0
+b expect_mon 5 personality @1
+0 expect_mon 4 hasmove 1 573
 b fixture_warp 22 0 2 3
 b until_field 3000
 b sync
@@ -151,9 +152,13 @@ b sync
 0 expect_mon 1 species 132 daycare
 1 expect_mon 0 species 961 daycare
 1 expect_mon 1 species 37 daycare
-b expect_mon 0 personality - daycare
-b expect_mon 1 personality - daycare
+b expect_mon 0 personality @0 daycare
+b expect_mon 1 personality @1 daycare
+0 expect_mon 0 held 245 daycare
+0 expect_mon 1 held 486 daycare
 b expect_mon 0 otid - daycare
+1 expect_mon 0 dcsteps @2 daycare
+1 expect_mon 1 dcsteps @3 daycare
 b expect_flag 0x86 0
 # 2. Kai walks outside until his egg is waiting; Rosa stays inside.
 1 expect_mon 2 dcsteps - daycare
@@ -164,8 +169,9 @@ b sync
 0 expect_flag 0x86 1
 1 expect_flag 0x86 0
 1 expect_mon 2 dcsteps - daycare
-1 expect_mon 3 dcsteps 0 daycare
-0 expect_mon 3 dcsteps 1 daycare
+1 expect_mon 0 dcsteps @2 daycare
+1 expect_mon 1 dcsteps @3 daycare
+0 expect_mon 0 dcsteps - daycare
 # 3. Kai takes his egg.
 0 fixture_warp 0 32 47 7
 0 until_field 3000
@@ -272,12 +278,13 @@ b sync
 0 test_friendship 4 0
 0 test_data 0 dcsteps 127
 1 press LEFT 2
-0 press DOWN 2
-0 until_cb2 CB2_EggHatch 600
+0 press DOWN 20
+0 until_cb2 CB2_EggHatch 900 A
 1 wait 30
 1 press A 2
 1 wait 120
 1 shot rosa-asks-during-hatch
+1 expect coop_deal.sDeal 0
 0 wait 300
 0 shot kai-hatching
 0 expect_cb2 CB2_EggHatch
@@ -289,3 +296,57 @@ b sync
 0 expect_dex_caught 37 1
 b sync
 # 8. Both take their Day Care Pokemon back (Kai first).
+# Kai: room for one (party of five); Rosa's party is full until a slot is
+# emptied. Each gets their own back, identity and held item kept.
+0 fixture_warp 22 0 2 3
+0 until_field 3000
+0 press UP 2
+0 wait 20
+0 press A 2
+0 until_task Task_HandleYesNoInput 1500 A
+0 wait 20
+0 shot kai-back-ask
+0 press A 2
+0 wait 120
+0 shot kai-back-list
+0 press A 2
+0 until_task Task_HandleYesNoInput 1500 A
+0 wait 20
+0 shot kai-back-fee
+0 press A 2
+0 mash_field 3000 B
+0 expect_mon 5 personality @0
+0 expect_mon 5 species 961
+0 expect_mon 5 held 245
+0 expect_mon 0 personality @1 daycare
+0 party
+1 fixture_warp 22 0 2 3
+1 until_field 3000
+1 note_text full
+1 press UP 2
+1 wait 20
+1 press A 2
+1 until_task Task_HandleYesNoInput 1500 A
+1 wait 20
+1 press A 2
+1 wait 120
+1 shot rosa-full
+1 mash_field 3000 B
+1 expect_noted
+1 expect_mon 0 personality @0 daycare
+1 test_data 4 clear 0
+1 press A 2
+1 until_task Task_HandleYesNoInput 1500 A
+1 wait 20
+1 press A 2
+1 wait 120
+1 shot rosa-back-list
+1 press A 2
+1 until_task Task_HandleYesNoInput 1500 A
+1 wait 20
+1 press A 2
+1 mash_field 3000 B
+1 expect_mon 5 personality @0
+1 expect_mon 5 species 961
+1 expect_mon 0 personality @1 daycare
+1 party

@@ -1,4 +1,44 @@
-# Co-op polish: build 0xC017013A
+# Trainer Exchange and breeding: build 0xC017013B
+
+Branch `coop-doorway-scenes-rivals` (continued from 0xC017013A), pushed, not merged. Both players need this build; 0xC017013A and older refuse to link with it. Older saves load (no save layout change; a save standing where the new building is continues in front of its door). Test log: [COOP_TESTLOG_C017013B.md](COOP_TESTLOG_C017013B.md). Checklist: [COOP_CHECKLIST_C017013B.md](COOP_CHECKLIST_C017013B.md). Stock, prices and unlocks: [COOP_EXCHANGE_STOCK.md](COOP_EXCHANGE_STOCK.md). Player-facing: [COOP.md](COOP.md) (Trainer Exchange, Breeding and the Day Care, Level cap, Known limits).
+
+- ROM `emerald-coop-C017013B.gba` from source `f6e902ee`: SHA-1 `4833248dfa632bbb09f04ab289f9fea70cdecfef`, SHA-256 `db68ff86c3ba5207e1acd2bd429b6f8d7d2ceeb879ebac312794e3ea1aaa7c0a`. A clean build in a fresh worktree gives the same SHA-1.
+- Commits: Exchange, breeding guide, Day Care side by side, old-save repair `e0eef008`; EXP candy cap message `536b98ec`; build id `0f4e0d0c`; harness and scenarios `f6e902ee` (includes the ROM's inert test hook additions); docs after it.
+- Final suite on this ROM: 209 scenarios, 206 pass. The 3 failures: one scenario file overwritten by its generator (fixed, passes), one early battle lost by the A-only driver (passes on rerun), the surf hunt in `roster_b3_catch` (driver; passes on rerun).
+
+## What changed
+
+- **Trainer Exchange** in the south of Rustboro (door (23,52), seven steps east and seven south of the Mart's door), open before Roxanne: MOVES & TMs (TMs, 91 tutor moves by type with species compatibility, relearning ₽1,000, egg moves ₽5,000 from 3 badges), BATTLE ITEMS, EVOLUTION (every roster evolution item), TRAINING & NATURE (candies, feathers, vitamins, EV berries, mints, PP, Ability Capsule/Patch; EV reset ₽2,000; Hyper Training ₽15,000 a stat from 7 badges, ₽60,000 all six as Champion), BREEDING (Everstone, Power items, Destiny Knot, Mirror Herb, guide). Stock by the buyer's own badges (0/1/3/5/7/Champion), COMING SOON per counter. Data in `tools/coop_exchange/stock.py` → `src/data/coop_exchange_stock.h`, `docs/COOP_EXCHANGE_STOCK.md`, the `extraTutors` list.
+- **One price per item** in every shop (`GetItemPrice` → `CoopExchange_PriceOverride`).
+- **Co-op**: both players can use one counter (and the Day Care lady and man) at the same time, each on their own save; a shopper shows the menu icon and the partner menu says they're busy.
+- **EXP candies** that reach the level cap say so; at the cap they are refused and kept.
+- **Breeding guide** at the Exchange and in the Day Care.
+
+## Move access
+
+TMs stay single-use (as before) and are renumbered nowhere. The tutor adds 91 moves (9 from the start, 28 with 1 badge, 48 with 3, 72 with 5, 88 with 7, 91 as Champion) across all 18 types with the TMs; signature moves excluded (checked against `signatureTeachables`); each is offered only to species whose teachable learnset has it (at least 30 species each, median 162). RELEARN covers level-up and evolution moves (`MOVE_RELEARNER_LEVEL_UP_MOVES`); EGG MOVE teaches any egg move of the family (`MOVE_RELEARNER_EGG_MOVES`).
+
+## Breeding, mints, Hyper Training (this engine)
+
+Egg = mother's first stage (Ditto: the other parent's); babies without incense; Undiscovered can't breed. Everstone passes the holder's personality nature, not a mint's. Three IVs inherited, five with Destiny Knot; Power items pass their stat; Hyper Training is a separate bit and is not inherited (played: hyper-trained parents with IVs 0 gave an egg with IVs 0 and no hyper bits). Egg moves from either parent; Mirror Herb holder with a free slot learns the other's at deposit. Regional form: the mother's with an Everstone, otherwise the Hoenn form. Eggs can't battle, be traded or be given. Ditto: Desert Underpass after the Hall of Fame.
+
+## Known gaps
+
+- Breeding was played with representative families (Vulpix/Alolan Vulpix, Marill/Azurill, Pichu, Ditto) and checked from the source; not every species.
+- A partner at an Exchange counter or the Day Care is reported as "shopping".
+- A badge won together in a co-op gym battle is restored to a save that lacks it on LINK UP (the joint-badge record); that is the only way a partner can add to your badges and so to your stock.
+- Not played: the Day Care across a reconnect (nothing of it crosses the link; source), buying with both players' bags full, gifts of every item kind.
+- Harness weak points, not game faults: hunts for rare slots and A-only early battles. mGBA GUI, real hardware and netplay not tested.
+
+## Where things are (work environment, not committed)
+
+- Checkpoints `/home/claude/journey/jNN` (p0 Kai, p1 Rosa; j06 before Roxanne), story_seg6 `/tmp/claude-0/seg6`.
+- Final suite output `/home/claude/journey/final13B/suite`; clips `/home/claude/journey/clips13B`.
+- Full suite: `OUT=dir HARNESS_OUT=dir LONG=1 SEG6=… J06=… J16=… J37=… J43=… J48=… J52=… J65=… J68=… tools/coop_link_harness/run_all.sh`.
+
+# Previous build: 0xC017013A
+
+## Co-op polish: build 0xC017013A
 
 Branch `coop-doorway-scenes-rivals` (continued from 0xC0170139), pushed, not merged. Both players need this build; 0xC0170139 and older refuse to link with it. Older saves load (no save layout change). Test log: [COOP_TESTLOG_C017013A.md](COOP_TESTLOG_C017013A.md). Checklist: [COOP_CHECKLIST_C017013A.md](COOP_CHECKLIST_C017013A.md). Player-facing description: [COOP.md](COOP.md) (How a session works, Party in co-op battles, With your partner, Quality of life, Known limits).
 
