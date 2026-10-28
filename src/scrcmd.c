@@ -1277,6 +1277,9 @@ struct ObjectEvent *ScriptHideFollower(void)
 
 bool8 ScrCmd_applymovement(struct ScriptContext *ctx)
 {
+    // A joined conversation waits here for both players (src/coop_talk.c).
+    if (CoopTalk_HostCheckpoint(ctx, FALSE))
+        return TRUE;
     u16 localId = VarGet(ScriptReadHalfword(ctx));
     const u8 *movementScript = (const u8 *)ScriptReadWord(ctx);
     struct ObjectEvent *objEvent;
@@ -1771,6 +1774,8 @@ bool8 ScrCmd_waitbuttonpress(struct ScriptContext *ctx)
 
 bool8 ScrCmd_yesnobox(struct ScriptContext *ctx)
 {
+    if (CoopTalk_HostCheckpoint(ctx, TRUE))
+        return TRUE;
     u8 left = ScriptReadByte(ctx);
     u8 top = ScriptReadByte(ctx);
 

@@ -419,7 +419,11 @@ static const u8 *GetInteractedObjectEventScript(struct MapPosition *position, u8
     script = GetRamScript(gSpecialVar_LastTalked, script);
     // Shared NPCs (src/coop_npc.c): busy while the partner talks to them.
     script = CoopNpc_InteractionScript(objectEventId, script);
-    if (script != NULL && script != Coop_EventScript_NpcBusy)
+    // Joined conversations (src/coop_talk.c): the partner's NPC offers to
+    // join or says it's busy; anything else this player hosts.
+    script = CoopTalk_OnInteract(objectEventId, script);
+    if (script != NULL && script != Coop_EventScript_NpcBusy
+     && script != CoopTalk_EventScript_JoinAsk && script != CoopTalk_EventScript_BusyNote)
         CoopNpc_NoteTalkStart(objectEventId);
     return script;
 }

@@ -878,6 +878,9 @@ static void Task_HandleCopyReceivedLinkBuffersData(u8 taskId)
             playerId = BYTE_TO_RECEIVE(LINK_BUFF_DATA);
             MarkBattleControllerIdleForPlayer(battler, playerId);
             break;
+        case B_COMM_COOP_TURN:
+            CoopTurn_HandleMsg(battler, &BYTE_TO_RECEIVE(LINK_BUFF_DATA));
+            break;
         }
 
         gTasks[taskId].tCurrentBlock_Start = gTasks[taskId].tCurrentBlock_Start + blockSize + LINK_BUFF_DATA;

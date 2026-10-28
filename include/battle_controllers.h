@@ -173,7 +173,11 @@ enum {
    // a reply. During multiplayer, it must NOT directly mark itself
    // as inactive, but instead send one of these, with the player's
    // multiplayer ID as data.
-   B_COMM_CONTROLLER_IS_DONE
+   B_COMM_CONTROLLER_IS_DONE,
+
+   // Co-op: a change to an action already chosen this turn
+   // (src/coop_battle_turn.c). Not tied to a controller command.
+   B_COMM_COOP_TURN
 };
 
 enum {

@@ -21,4 +21,6 @@ void InitFieldMessageBox(void);
 
 extern u8 gWalkAwayFromSignpostTimer;
 
+bool8 IsFieldDialogOnScreen(void);
+
 #endif // GUARD_FIELD_MESSAGE_BOX_H

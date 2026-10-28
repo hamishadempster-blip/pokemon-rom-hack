@@ -44,6 +44,8 @@ u16 CoopTeam_HaveSnapshot(void);
 u16 CoopTeam_BufferNote(void);
 void CoopTeam_Show(void);
 extern bool8 gCoopViewingPartnerTeam;
+u8 CoopDeal_TalkRoom(void);
+bool8 CoopDeal_SendTalk(u8 op, u8 arg, u8 arg2, u16 serial, u16 total, const u8 *data, u8 len);
 
 // Practice battles (src/coop_practice.c).
 u16 CoopPractice_AskPartnerTeam(void);

@@ -1,4 +1,6 @@
 #include "global.h"
+#include "script.h"
+#include "field_message_box.h"
 #include "battle_pyramid.h"
 #include "bg.h"
 #include "event_data.h"
@@ -368,12 +370,16 @@ enum {
 EWRAM_DATA u8 gCoopPopupText[MAP_POPUP_STRING_BUFFER_LENGTH + 8] = {0};
 static EWRAM_DATA bool8 sCoopPopupPending = FALSE;
 
-void ShowCoopPopup(void)
+// FALSE when it can't show now (a popup is up, or a dialog box is open).
+bool8 ShowCoopPopup(void)
 {
-    if (FuncIsActiveTask(Task_MapNamePopUpWindow) || FlagGet(FLAG_HIDE_MAP_NAME_POPUP))
-        return;
+    // The popup scrolls the background the dialog window is on.
+    if (FuncIsActiveTask(Task_MapNamePopUpWindow) || FlagGet(FLAG_HIDE_MAP_NAME_POPUP)
+     || (IsFieldDialogOnScreen() && (ScriptContext_IsEnabled() || ArePlayerFieldControlsLocked())))
+        return FALSE;
     sCoopPopupPending = TRUE;
     ShowMapNamePopup();
+    return TRUE;
 }
 
 void ShowMapNamePopup(void)
@@ -592,6 +598,7 @@ static void ShowMapNamePopUpWindow(void)
     u8 x;
     const u8 *mapDisplayHeaderSource;
     u8 mapNamePopUpWindowId, secondaryPopUpWindowId;
+    bool32 coopText = sCoopPopupPending;
 
     if (sCoopPopupPending)
     {
@@ -649,7 +656,9 @@ static void ShowMapNamePopUpWindow(void)
     }
     else
     {
-        u32 fontId = GetFontIdToFit(withoutPrefixPtr, FONT_NORMAL, -1, 80);
+        // Co-op notes are longer than map names: fit them inside the
+        // frame's inner edge, which clips the last few of the 80 pixels.
+        u32 fontId = GetFontIdToFit(withoutPrefixPtr, FONT_NORMAL, -1, coopText ? 74 : 80);
         x = GetStringCenterAlignXOffset(fontId, withoutPrefixPtr, 80);
         AddTextPrinterParameterized(GetMapNamePopUpWindowId(), fontId, mapDisplayHeader, x, 3, TEXT_SKIP_DRAW, NULL);
         CopyWindowToVram(GetMapNamePopUpWindowId(), COPYWIN_FULL);

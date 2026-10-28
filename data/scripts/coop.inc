@@ -154,11 +154,17 @@ Coop_EventScript_TradeDone::
 	end
 
 Coop_EventScript_TalkPartner::
+	@ Talking with an NPC: join the conversation if it can be shared
+	@ (data/scripts/coop_talk.inc), else a short note; nothing blocks.
+	specialvar VAR_RESULT, CoopTalk_PartnerJoinable
+	goto_if_eq VAR_RESULT, 1, CoopTalk_EventScript_JoinAsk
+	goto_if_eq VAR_RESULT, 2, CoopTalk_EventScript_BusyNote
 	@ A join question or a battle start is in flight: A presses near the
 	@ partner must not open a chat that holds the field and stalls it.
 	specialvar VAR_RESULT, Coop_PartnerChatOk
 	goto_if_eq VAR_RESULT, FALSE, Coop_EventScript_TalkPartnerSkip
-	@ BATTLE, TRADE, GIVE ITEM, GIVE POKéMON (data/scripts/coop_deal.inc).
+	@ BATTLE, TRADE, GIVE ITEM, GIVE POKéMON, VIEW TEAM, PING, FOLLOW
+	@ (data/scripts/coop_deal.inc).
 	goto CoopDeal_EventScript_PartnerMenu
 
 Coop_EventScript_TalkPartnerSkip::

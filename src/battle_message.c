@@ -3962,7 +3962,8 @@ void BattlePutTextOnWindow(const u8 *text, u8 windowId)
         // We cannot check the actual width of the window because
         // B_WIN_MOVE_NAME_1 and B_WIN_MOVE_NAME_3 are 16 wide for
         // Z-move details.
-        if (gBattleStruct->zmove.viewing && windowId == B_WIN_MOVE_NAME_1)
+        if ((gBattleStruct->zmove.viewing && windowId == B_WIN_MOVE_NAME_1)
+         || (gCoopTargetPromptWide && (windowId == B_WIN_MOVE_NAME_1 || windowId == B_WIN_MOVE_NAME_3)))
             printerTemplate.fontId = GetFontIdToFit(text, printerTemplate.fontId, printerTemplate.letterSpacing, 16 * TILE_WIDTH);
         else
             printerTemplate.fontId = GetFontIdToFit(text, printerTemplate.fontId, printerTemplate.letterSpacing, 8 * TILE_WIDTH);

@@ -785,3 +785,8 @@ gSpecials::
 	def_special CoopTeam_Show
 	def_special CoopPartner_Ping
 	def_special CoopFollow_Start
+	def_special CoopTalk_RequestJoin
+	def_special CoopTalk_WaitEvent
+	def_special CoopTalk_BufferPartner
+	def_special CoopTalk_PartnerJoinable
+	def_special CoopTalk_ShowBusyNote

@@ -80,7 +80,9 @@ enum
     DMSG_LOOK,          // arg: COOP_OUTFIT preset, arg2: gender (src/coop_outfit.c)
     DMSG_CLOCK,         // arg: the link master's local hours, arg2: minutes (shared time of day)
     DMSG_LEGEND,        // arg: COOP_LEGEND_MSG_*, arg2: COOP_ENC_*, item: ball, qty: result (src/coop_legend.c)
+    DMSG_TALK,          // kind: talk op, arg/arg2/dealId/item: its fields, mon: text (src/coop_talk.c)
 };
+
 
 // The link master's time of day, received with DMSG_CLOCK (see Clock_Poll).
 static EWRAM_DATA bool8 sPartnerClockValid = FALSE;
@@ -193,6 +195,13 @@ struct CoopDealMsg
     u16 qty;
     u32 otId;
     u32 mon[20];
+    // Each side picks a token when its cable session starts. A message
+    // carries the sender's token and the receiver's as last seen: a new
+    // token restarts the inbound sequence, and acks only count when they
+    // answer this session (a side that linked up later would otherwise
+    // treat the other's fresh numbers as old and drop them).
+    u16 session;
+    u16 peerSession;
     u16 checksum;
     u16 pad;
 };
@@ -248,6 +257,9 @@ struct CoopDealLink
     u16 resendTimer;
     u16 statusTimer;
     u16 quietTimer;
+    u16 mySession;
+    u16 peerSession;
+    bool8 peerSessionKnown;
 };
 
 EWRAM_DATA bool8 gCoopFriendlyBattle = FALSE;
@@ -523,6 +535,8 @@ static void Deal_PumpSend(void)
                 return;
         }
         head->ack = sLink.lastInSeq;
+        head->session = sLink.mySession;
+        head->peerSession = sLink.peerSession;
         head->checksum = Deal_Checksum(head);
         if (SendBlock(BitmaskAllOtherLinkPlayers(), head, sizeof(*head)))
         {
@@ -538,6 +552,8 @@ static void Deal_PumpSend(void)
         ack.type = DMSG_ACK;
         ack.ack = sLink.lastInSeq;
         ack.otId = Deal_MyOtId();
+        ack.session = sLink.mySession;
+        ack.peerSession = sLink.peerSession;
         ack.checksum = Deal_Checksum(&ack);
         if (SendBlock(BitmaskAllOtherLinkPlayers(), &ack, sizeof(ack)))
             sLink.needAck = FALSE;
@@ -901,8 +917,15 @@ void CoopDeal_HandleBlock(u32 playerId, const u16 *words)
     if (msg.otId != Deal_PartnerOtId())
         return;
     sLink.quietTimer = 0;
-    // An ack can only cover messages this game has sent.
-    if (!CoopProtocol_SeqIsNew(sLink.outSeq, msg.ack))
+    // The partner's session started (again): its numbering starts over.
+    if (!sLink.peerSessionKnown || msg.session != sLink.peerSession)
+    {
+        sLink.peerSession = msg.session;
+        sLink.peerSessionKnown = TRUE;
+        sLink.inSeqKnown = FALSE;
+    }
+    // An ack can only cover messages this game has sent, this session.
+    if (msg.peerSession == sLink.mySession && !CoopProtocol_SeqIsNew(sLink.outSeq, msg.ack))
         Deal_Acked(msg.ack);
     if (msg.type == DMSG_ACK)
         return;
@@ -934,6 +957,11 @@ void CoopDeal_HandleBlock(u32 playerId, const u16 *words)
     if (msg.type == DMSG_PARTY_REQ || msg.type == DMSG_PARTY_MON)
     {
         Team_HandleMsg(&msg);
+        return;
+    }
+    if (msg.type == DMSG_TALK)
+    {
+        CoopTalk_HandleMsg(msg.kind, msg.arg, msg.arg2, msg.dealId, msg.item, (const u8 *)msg.mon);
         return;
     }
     if (msg.type == DMSG_QUEST)
@@ -1358,6 +1386,33 @@ void CoopDeal_CopyPartnerTeamMon(u8 index, struct Pokemon *dest)
     BoxMonToMon(&sTeamMons[index], dest);
 }
 
+// ---------------------------------------------------------------- talk
+
+
+// Joined conversations (src/coop_talk.c) ride the same reliable channel.
+u8 CoopDeal_TalkRoom(void)
+{
+    if (!Deal_LinkOk())
+        return 0;
+    // Leave room for a deal's own messages.
+    return sLink.count + 2 < DEAL_QUEUE_SIZE ? DEAL_QUEUE_SIZE - 2 - sLink.count : 0;
+}
+
+bool8 CoopDeal_SendTalk(u8 op, u8 arg, u8 arg2, u16 serial, u16 total, const u8 *data, u8 len)
+{
+    struct CoopDealMsg *msg;
+
+    if (CoopDeal_TalkRoom() == 0)
+        return FALSE;
+    msg = Deal_Push(DMSG_TALK, arg, serial, op);
+    gCoopTalkStats.txOps[gCoopTalkStats.txCount++ & 7] = (op << 4) | (arg & 0xF);
+    msg->arg2 = arg2;
+    msg->item = total;
+    if (data != NULL && len != 0)
+        memcpy(msg->mon, data, len > sizeof(msg->mon) ? sizeof(msg->mon) : len);
+    return TRUE;
+}
+
 // ---------------------------------------------------------------- VIEW TEAM
 
 // The last whole team received for VIEW TEAM, kept so a later look can show
@@ -1707,6 +1762,7 @@ void CoopDeal_OnSessionStart(void)
     // A new cable session restarts both sides' sequence numbers.
     memset(&sLink, 0, sizeof(sLink));
     sSessionCount++;
+    sLink.mySession = (u16)((sSessionCount << 12) ^ (gMain.vblankCounter1 * 0x9E37) ^ Random()) | 1;
     sNoRoomShown = FALSE;
     sLink.statusTimer = DEAL_STATUS_FRAMES - 30;
     if (sDeal.state != DS_PREPARED && sDeal.waitKind == WAIT_NONE)

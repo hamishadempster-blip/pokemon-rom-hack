@@ -1,4 +1,6 @@
 #include "global.h"
+#include "coop.h"
+#include "coop_deal.h"
 #include "main.h"
 #include "battle.h"
 #include "battle_anim.h"
@@ -255,6 +257,12 @@ static void RemoveWindowByIndex(u8);
 static void PrintPageSpecificText(u8);
 static void CreateTextPrinterTask(u8);
 static void PrintInfoPageText(void);
+static void PrintCoopEvoTitle(void);
+static void CoopEvo_NextPage(void);
+// Co-op: the INFO page's memo box also shows how the Pokemon evolves
+// (src/coop_evo_hint.c). SELECT steps through memo, then each evolution;
+// the page title says which is shown. 0: the memo.
+static EWRAM_DATA u8 sCoopEvoPage = 0;
 static void Task_PrintInfoPage(u8);
 static void PrintMonOTName(void);
 static void PrintMonOTID(void);
@@ -1191,6 +1199,7 @@ u32 GetAdjustedIvData(struct Pokemon *mon, u32 stat)
 
 void ShowPokemonSummaryScreen(u8 mode, void *mons, u8 monIndex, u8 maxMonIndex, void (*callback)(void))
 {
+    sCoopEvoPage = 0;
     sMonSummaryScreen = AllocZeroed(sizeof(*sMonSummaryScreen));
     sMonSummaryScreen->mode = mode;
     if (monIndex == PC_MON_CHOSEN)
@@ -1802,6 +1811,10 @@ static void Task_HandleInput(u8 taskId)
             PlaySE(SE_SELECT);
             BeginCloseSummaryScreen(taskId);
         }
+        else if (JOY_NEW(SELECT_BUTTON) && sMonSummaryScreen->currPageIndex == PSS_PAGE_INFO)
+        {
+            CoopEvo_NextPage();
+        }
         else if (DEBUG_POKEMON_SPRITE_VISUALIZER && JOY_NEW(SELECT_BUTTON) && !gMain.inBattle)
         {
             sMonSummaryScreen->callback = CB2_Pokemon_Sprite_Visualizer;
@@ -1945,6 +1958,12 @@ static void UpdateMoveRelearnerState(void)
 static void ChangeSummaryPokemon(u8 taskId, s8 delta)
 {
     s8 monId;
+
+    if (sCoopEvoPage != 0)
+    {
+        sCoopEvoPage = 0;
+        PrintCoopEvoTitle();
+    }
 
     if (!sMonSummaryScreen->lockMonFlag)
     {
@@ -2145,6 +2164,12 @@ static void ChangePage(u8 taskId, s8 delta)
     struct PokeSummary *summary = &sMonSummaryScreen->summary;
     s16 *data = gTasks[taskId].data;
     u32 currPageIndex;
+
+    if (sCoopEvoPage != 0)
+    {
+        sCoopEvoPage = 0;
+        PrintCoopEvoTitle();
+    }
 
     if (summary->isEgg)
         return;
@@ -3588,9 +3613,75 @@ static void BufferMonTrainerMemo(void)
     }
 }
 
+
+static bool32 CoopEvo_IsOwnMon(void)
+{
+    // The partner's team (VIEW TEAM) is a copy: needs only, no "met now".
+    return !gCoopViewingPartnerTeam;
+}
+
+static void PrintCoopEvoTitle(void)
+{
+    FillWindowPixelBuffer(PSS_LABEL_WINDOW_POKEMON_INFO_TITLE, PIXEL_FILL(0));
+    PrintTextOnWindow(PSS_LABEL_WINDOW_POKEMON_INFO_TITLE,
+                      sCoopEvoPage != 0 ? COMPOUND_STRING("EVOLUTION") : gText_PkmnInfo, 2, 1, 0, 1);
+    CopyWindowToVram(PSS_LABEL_WINDOW_POKEMON_INFO_TITLE, COPYWIN_GFX);
+}
+
 static void PrintMonTrainerMemo(void)
 {
-    PrintTextOnWindow(AddWindowFromTemplateList(sPageInfoTemplate, PSS_DATA_WINDOW_INFO_MEMO), gStringVar4, 0, 1, 0, 0);
+    u8 windowId = AddWindowFromTemplateList(sPageInfoTemplate, PSS_DATA_WINDOW_INFO_MEMO);
+    struct Pokemon *mon = &sMonSummaryScreen->currentMon;
+    const u8 *lastLine;
+    u8 *buf;
+
+    if (sCoopEvoPage != 0 && !sMonSummaryScreen->summary.isEgg && (buf = Alloc(400)) != NULL)
+    {
+        CoopEvo_BufferHint(mon, sCoopEvoPage - 1, buf, CoopEvo_IsOwnMon());
+        PrintTextOnWindowWithFont(windowId, buf, 0, 1, 3, 0, FONT_SMALL_NARROW);
+        Free(buf);
+        return;
+    }
+    PrintTextOnWindow(windowId, gStringVar4, 0, 1, 0, 0);
+    // The memo's last line is short: a small cue that SELECT shows how it
+    // evolves, in the space after it.
+    if (!sMonSummaryScreen->summary.isEgg)
+    {
+        lastLine = gStringVar4;
+        for (buf = gStringVar4; *buf != EOS; buf++)
+        {
+            if (*buf == CHAR_NEWLINE)
+                lastLine = buf + 1;
+        }
+        {
+            const u8 *cue = COMPOUND_STRING("{SELECT_BUTTON}EVO");
+            s32 x = GetWindowAttribute(windowId, WINDOW_WIDTH) * 8 - GetStringWidth(FONT_SMALL_NARROW, cue, 0) - 10;
+
+            if (GetStringWidth(FONT_NORMAL, lastLine, 0) < x - 1)
+                PrintTextOnWindowWithFont(windowId, cue, x, 37, 0, 0, FONT_SMALL_NARROW);
+        }
+    }
+}
+
+// SELECT on the INFO page: memo -> evolution 1 -> ... -> memo.
+static void CoopEvo_NextPage(void)
+{
+    u32 pages = CoopEvo_PageCount(&sMonSummaryScreen->currentMon);
+    u8 windowId;
+
+    if (sMonSummaryScreen->summary.isEgg)
+        return;
+    // A Pokemon that doesn't evolve has one page saying so.
+    if (pages == 0)
+        pages = 1;
+    sCoopEvoPage = sCoopEvoPage >= pages ? 0 : sCoopEvoPage + 1;
+    PlaySE(SE_SELECT);
+    windowId = AddWindowFromTemplateList(sPageInfoTemplate, PSS_DATA_WINDOW_INFO_MEMO);
+    FillWindowPixelBuffer(windowId, PIXEL_FILL(0));
+    BufferMonTrainerMemo();
+    PrintMonTrainerMemo();
+    CopyWindowToVram(windowId, COPYWIN_GFX);
+    PrintCoopEvoTitle();
 }
 
 static void BufferNatureString(void)

@@ -93,7 +93,7 @@ static void Task_SetControllerToWaitForString(u8);
 static void Task_GiveExpWithExpBar(u8);
 static void Task_UpdateLvlInHealthbox(u8);
 static bool32 IsMonOutOnAllyOfSameParty(enum BattlerId battler, u32 monIndex);
-static void PrintLinkStandbyMsg(void);
+static void PrintLinkStandbyMsg(enum BattlerId battler, bool32 turnChoice);
 
 static void ReloadMoveNames(enum BattlerId battler);
 static u32 CheckTypeEffectiveness(enum BattlerId battlerAtk, enum BattlerId battlerDef);
@@ -190,6 +190,11 @@ static void PlayerBufferRunCommand(enum BattlerId battler)
             sPlayerBufferCommands[gBattleResources->bufferA[battler][0]](battler);
         else
             BtlController_Complete(battler);
+    }
+    else
+    {
+        // Co-op: chose and waiting for the turn; B asks to change.
+        CoopTurn_ControllerIdle(battler);
     }
 }
 
@@ -300,6 +305,7 @@ static void HandleInputChooseAction(enum BattlerId battler)
                 ArrowsChangeColorLastBallCycle(FALSE);
                 TryHideLastUsedBall();
                 BtlController_EmitTwoReturnValues(battler, B_COMM_TO_ENGINE, B_ACTION_THROW_BALL, 0);
+                CoopTurn_NoteAction(battler, B_ACTION_THROW_BALL);
                 BtlController_Complete(battler);
             }
             return;
@@ -325,6 +331,10 @@ static void HandleInputChooseAction(enum BattlerId battler)
         case 3: // Bottom right
             BtlController_EmitTwoReturnValues(battler, B_COMM_TO_ENGINE, B_ACTION_RUN, 0);
             break;
+        }
+        {
+            static const u8 sCursorAction[4] = { B_ACTION_USE_MOVE, B_ACTION_USE_ITEM, B_ACTION_SWITCH, B_ACTION_RUN };
+            CoopTurn_NoteAction(battler, sCursorAction[gActionSelectionCursor[battler] & 3]);
         }
         BtlController_Complete(battler);
     }
@@ -414,6 +424,12 @@ static void HandleInputChooseAction(enum BattlerId battler)
     }
 }
 
+// Co-op target prompt state (also read by the link test harness).
+EWRAM_DATA bool8 gCoopTargetPromptWide = FALSE;
+EWRAM_DATA u8 gCoopTargetKind = 0;
+EWRAM_DATA u8 gCoopTargetWarned = 0;
+EWRAM_DATA u8 gCoopTargetPrompt[40] = {0};
+
 static bool32 MoveSelectionCanTarget(enum BattlerId battler, enum BattlerId target, enum Move move)
 {
     enum MoveTarget kind = GetBattlerMoveSelectionTargetType(battler, move);
@@ -442,48 +458,77 @@ static bool32 MoveSelectionCanTarget(enum BattlerId battler, enum BattlerId targ
     return CanTargetBattler(battler, target, move);
 }
 
-static void MoveSelectionDrawTargetPrompt(enum BattlerId battler, const u8 *label, const u8 *name)
+// The co-op target prompt, over the move list: the target on the top row
+// (printed across the whole row), a warning or the buttons below.
+static void MoveSelectionDrawTargetPrompt(enum BattlerId battler, const u8 *label, const u8 *name, const u8 *warning)
 {
+    u8 *end;
+
     if (!(gBattleTypeFlags & BATTLE_TYPE_COOP))
         return;
     MoveSelectionDestroyCursorAt(gMoveSelectionCursor[battler]);
-    BattlePutTextOnWindow(label, B_WIN_MOVE_NAME_1);
-    BattlePutTextOnWindow(name, B_WIN_MOVE_NAME_2);
-    BattlePutTextOnWindow(COMPOUND_STRING("A: OK"), B_WIN_MOVE_NAME_3);
-    BattlePutTextOnWindow(COMPOUND_STRING("B: Back"), B_WIN_MOVE_NAME_4);
+    end = StringCopy(gCoopTargetPrompt, label);
+    if (name != NULL)
+    {
+        *end++ = CHAR_SPACE;
+        *end++ = CHAR_SPACE;
+        StringCopy(end, name);
+    }
+    // The right-hand windows first: the wide left ones are drawn over them.
+    BattlePutTextOnWindow(COMPOUND_STRING(""), B_WIN_MOVE_NAME_2);
+    BattlePutTextOnWindow(COMPOUND_STRING(""), B_WIN_MOVE_NAME_4);
+    gCoopTargetPromptWide = TRUE;
+    BattlePutTextOnWindow(gCoopTargetPrompt, B_WIN_MOVE_NAME_1);
+    BattlePutTextOnWindow(warning != NULL ? warning : COMPOUND_STRING("A: OK    B: Back"), B_WIN_MOVE_NAME_3);
+    gCoopTargetPromptWide = FALSE;
+}
+
+static bool32 MoveSelectionHurtsAlly(enum Move move)
+{
+    return GetMovePower(move) != 0 || GetMoveCategory(move) != DAMAGE_CATEGORY_STATUS;
 }
 
 static void MoveSelectionShowTarget(enum BattlerId battler)
 {
     if (!(gBattleTypeFlags & BATTLE_TYPE_COOP))
         return;
+    const struct ChooseMoveStruct *moveInfo = (const struct ChooseMoveStruct *)&gBattleResources->bufferA[battler][4];
+    enum Move move = moveInfo->moves[gMoveSelectionCursor[battler]];
     enum BattlerId target = gMultiUsePlayerCursor;
-    const u8 *label = COMPOUND_STRING("Yourself");
+    const u8 *label = COMPOUND_STRING("YOURSELF");
+    const u8 *warning = NULL;
     if (!IsBattlerAlly(battler, target))
-        label = GetBattlerPosition(target) == B_POSITION_OPPONENT_LEFT ? COMPOUND_STRING("Left foe") : COMPOUND_STRING("Right foe");
+        label = GetBattlerPosition(target) == B_POSITION_OPPONENT_LEFT ? COMPOUND_STRING("FOE (LEFT)") : COMPOUND_STRING("FOE (RIGHT)");
     else if (target != battler)
-        label = COMPOUND_STRING("Partner");
-    MoveSelectionDrawTargetPrompt(battler, label, GetSpeciesName(gBattleMons[target].species));
+    {
+        label = COMPOUND_STRING("ALLY");
+        if (MoveSelectionHurtsAlly(move))
+            warning = COMPOUND_STRING("! This attacks your ALLY");
+    }
+    gCoopTargetKind = IsBattlerAlly(battler, target) ? (target == battler ? 3 : 2) : 1;
+    MoveSelectionDrawTargetPrompt(battler, label, GetSpeciesName(gBattleMons[target].species), warning);
 }
 
 static void MoveSelectionShowSpreadTargets(enum BattlerId battler, enum Move move, enum MoveTarget kind)
 {
-    const u8 *label = COMPOUND_STRING("Both foes");
-    const u8 *name = GetMoveName(move);
+    const u8 *label = COMPOUND_STRING("BOTH FOES");
+    const u8 *warning = NULL;
+    gCoopTargetKind = 4;
     if (kind == TARGET_USER_AND_ALLY)
-        label = COMPOUND_STRING("Your team");
+        label = COMPOUND_STRING("YOUR SIDE"), gCoopTargetKind = 5;
     else if (kind == TARGET_FOES_AND_ALLY)
-        label = COMPOUND_STRING("All others");
+        label = COMPOUND_STRING("ALL OTHER POKéMON"), gCoopTargetKind = 6;
     else if (kind == TARGET_ALL_BATTLERS)
-        label = COMPOUND_STRING("Everyone");
+        label = COMPOUND_STRING("EVERYONE"), gCoopTargetKind = 7;
     else if (kind == TARGET_FIELD)
-        label = COMPOUND_STRING("The field");
-    // Earthquake, Surf, Discharge and friends land on the partner as well.
-    // Say so where the move name would be, while the partner is up.
+        label = COMPOUND_STRING("THE WHOLE FIELD"), gCoopTargetKind = 8;
+    else if (kind == TARGET_OPPONENTS_FIELD)
+        label = COMPOUND_STRING("THE FOES' SIDE"), gCoopTargetKind = 9;
+    // Earthquake, Surf, Discharge and friends land on the ally as well.
     if ((kind == TARGET_FOES_AND_ALLY || kind == TARGET_ALL_BATTLERS)
-     && IsBattlerAlive(GetPartnerBattler(battler)) && GetMovePower(move) != 0)
-        name = COMPOUND_STRING("Hits partner!");
-    MoveSelectionDrawTargetPrompt(battler, label, name);
+     && IsBattlerAlive(GetPartnerBattler(battler)) && MoveSelectionHurtsAlly(move))
+        warning = COMPOUND_STRING("! This hits your ALLY too"), gCoopTargetWarned++;
+    MoveSelectionDrawTargetPrompt(battler, label, NULL, warning);
 }
 
 static void MoveSelectionRestoreMoves(enum BattlerId battler)
@@ -1609,7 +1654,7 @@ static void WaitForMonSelection(enum BattlerId battler)
             BtlController_EmitChosenMonReturnValue(battler, B_COMM_TO_ENGINE, PARTY_SIZE, NULL);
 
         if (gBattleResources->bufferA[battler][1] == PARTY_ACTION_SEND_OUT)
-            PrintLinkStandbyMsg();
+            PrintLinkStandbyMsg(battler, FALSE);
 
         BtlController_Complete(battler);
     }
@@ -1940,17 +1985,19 @@ void CB2_SetUpReshowBattleScreenAfterMenu2(void)
     SetMainCallback2(ReshowBattleScreenAfterMenu);
 }
 
-static void PrintLinkStandbyMsg(void)
+static void PrintLinkStandbyMsg(enum BattlerId battler, bool32 turnChoice)
 {
     if (gBattleTypeFlags & BATTLE_TYPE_LINK)
     {
         gBattle_BG0_X = 0;
         gBattle_BG0_Y = 0;
         // Co-op: the action prompt stays the stock "What will … do?"; once
-        // this player has chosen, the message box says whom it waits for.
+        // this player has chosen, the message box says whom it waits for,
+        // and that B changes the choice while the turn is open.
         if (gBattleTypeFlags & BATTLE_TYPE_COOP)
         {
-            BattleStringExpandPlaceholdersToDisplayedString(COMPOUND_STRING("Ready. Waiting for {B_LINK_PARTNER_NAME}…"));
+            BattleStringExpandPlaceholdersToDisplayedString(turnChoice ? CoopTurn_StandbyText(battler)
+                                                                       : COMPOUND_STRING("Ready. Waiting for {B_LINK_PARTNER_NAME}…"));
             BattlePutTextOnWindow(gDisplayedStringBattle, B_WIN_MSG);
         }
         else
@@ -2105,6 +2152,7 @@ static void PlayerHandleChooseAction(enum BattlerId battler)
 {
     s32 i;
 
+    CoopTurn_OnChooseAction(battler);
     gBattlerControllerFuncs[battler] = HandleChooseActionAfterDma3;
     BattleTv_ClearExplosionFaintCause();
     BattlePutTextOnWindow(gText_BattleMenu, B_WIN_ACTION_MENU);
@@ -2419,14 +2467,14 @@ static void PlayerHandleLinkStandbyMsg(enum BattlerId battler)
     switch (gBattleResources->bufferA[battler][1])
     {
     case LINK_STANDBY_MSG_STOP_BOUNCE:
-        PrintLinkStandbyMsg();
+        PrintLinkStandbyMsg(battler, TRUE);
         // fall through
     case LINK_STANDBY_STOP_BOUNCE_ONLY:
         EndBounceEffect(battler, BOUNCE_HEALTHBOX);
         EndBounceEffect(battler, BOUNCE_MON);
         break;
     case LINK_STANDBY_MSG_ONLY:
-        PrintLinkStandbyMsg();
+        PrintLinkStandbyMsg(battler, TRUE);
         break;
     }
     BtlController_Complete(battler);

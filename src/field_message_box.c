@@ -1,4 +1,5 @@
 #include "global.h"
+#include "coop.h"
 #include "menu.h"
 #include "string_util.h"
 #include "task.h"
@@ -13,11 +14,21 @@ static EWRAM_DATA u8 sFieldMessageBoxMode = 0;
 EWRAM_DATA u8 gWalkAwayFromSignpostTimer = 0;
 
 static void ExpandStringAndStartDrawFieldMessage(const u8 *, bool32);
+
+// The dialog window is drawn (from a message until it is closed): the
+// co-op popups stay away then, since they slide the window's background.
+static EWRAM_DATA bool8 sDialogOnScreen = FALSE;
+
+bool8 IsFieldDialogOnScreen(void)
+{
+    return sDialogOnScreen;
+}
 static void StartDrawFieldMessage(void);
 
 void InitFieldMessageBox(void)
 {
     sFieldMessageBoxMode = FIELD_MESSAGE_BOX_HIDDEN;
+    sDialogOnScreen = FALSE;
     gTextFlags.canABSpeedUpPrint = FALSE;
     gTextFlags.useAlternateDownArrow = FALSE;
     gTextFlags.autoScroll = FALSE;
@@ -123,6 +134,7 @@ bool8 ShowFieldMessageFromBuffer(void)
     if (sFieldMessageBoxMode != FIELD_MESSAGE_BOX_HIDDEN)
         return FALSE;
     sFieldMessageBoxMode = FIELD_MESSAGE_BOX_NORMAL;
+    sDialogOnScreen = TRUE;
     StartDrawFieldMessage();
     return TRUE;
 }
@@ -130,6 +142,9 @@ bool8 ShowFieldMessageFromBuffer(void)
 static void ExpandStringAndStartDrawFieldMessage(const u8 *str, bool32 allowSkippingDelayWithButtonPress)
 {
     StringExpandPlaceholders(gStringVar4, str);
+    sDialogOnScreen = TRUE;
+    // A joined conversation (src/coop_talk.c) passes each line on as shown.
+    CoopTalk_NoteText(gStringVar4);
     TrySpawnNamebox(gStringVar4, NAME_BOX_BASE_TILE_NUM);
     AddTextPrinterForMessage(allowSkippingDelayWithButtonPress);
     CreateTask_DrawFieldMessage();
@@ -147,6 +162,7 @@ void HideFieldMessageBox(void)
     ClearDialogWindowAndFrame(0, TRUE);
     DestroyNamebox();
     sFieldMessageBoxMode = FIELD_MESSAGE_BOX_HIDDEN;
+    sDialogOnScreen = FALSE;
 }
 
 u8 GetFieldMessageBoxMode(void)

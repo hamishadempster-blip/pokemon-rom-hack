@@ -1032,7 +1032,7 @@ static bool8 Coop_LocalWaitingForPartner(void)
 // The local field is locked only because this game waits on the partner.
 bool8 Coop_LocalAwaitingPartner(void)
 {
-    return sWaitingAck || Coop_LocalWaitingForPartner() || CoopDeal_WaitingForPartner();
+    return sWaitingAck || Coop_LocalWaitingForPartner() || CoopDeal_WaitingForPartner() || CoopTalk_Shared();
 }
 
 static u8 Coop_LocalExt(void)
@@ -1075,6 +1075,8 @@ static void Coop_FillFrame(struct CoopFrame *frame)
     frame->talkLocalId = 0;
     if (sBirchBag)
         frame->talkLocalId = 0xFF;
+    else if (CoopTalk_HostNpc() != 0)
+        frame->talkLocalId = CoopTalk_HostNpc();
     else if (ScriptContext_IsEnabled()
           && gSpecialVar_LastTalked != 0
           && gSpecialVar_LastTalked != OBJ_EVENT_ID_COOP_PARTNER)
@@ -2480,6 +2482,7 @@ static void Coop_Drop(const u8 *message)
     sPartnerValid = FALSE;
     sPartnerPingKnown = FALSE;
     sLastSeenValid = FALSE;
+    CoopTalk_Reset();
     sWaitingAck = FALSE;
     sResumeScript = FALSE;
     sRequest = COOP_REQ_NONE;
@@ -2558,7 +2561,8 @@ static void Task_CoopSession(u8 taskId)
         }
         Coop_MaintainCallback();
         Coop_FlushReply();
-        Coop_UpdateSprite();
+        if (gMain.callback1 != CB1_Overworld)
+            Coop_UpdateSprite();
         Coop_AnimateTalkNpc();
         Coop_PollBlocks();
         Coop_PollRescue();
@@ -2785,7 +2789,9 @@ u16 Coop_PingCooldownSeconds(void)
 // and their map.
 bool8 Coop_PartnerTalkInfo(u8 *localId, bool8 *joinable)
 {
-    if (!Coop_PartnerOnSameMap() || (sPartner.activity & 3) != COOP_ACT_TALKING
+    // The talk id is sent only while that player's script runs, so it is
+    // the signal; a script waiting on a checkpoint reads as busy, not talking.
+    if (!Coop_PartnerOnSameMap() || (sPartner.activity & 3) == COOP_ACT_EXPLORING
      || sPartner.talkLocalId == 0 || sPartner.talkLocalId == 0xFF || sPartner.talkLocalId == COOP_TALK_IN_BATTLE)
         return FALSE;
     *localId = sPartner.talkLocalId;
@@ -2836,6 +2842,60 @@ u8 Coop_PartnerSpriteId(u8 *gender)
     return MAX_SPRITES;
 }
 
+// A self-check of the partner's picture, run after it is drawn each field
+// frame: at most one partner object; drawn only where the partner really is
+// (this map or a connected one); its graphics are the partner's current
+// movement mode (on foot, bike, Surf); the palette is the partner's current
+// outfit; the marker sits over the drawn sprite. Each failed frame counts
+// in gCoopAppearanceFaults (a harness reads it across warps, bikes, Surf and
+// outfit changes); nothing in play depends on it.
+EWRAM_DATA u16 gCoopAppearanceFaults = 0;
+EWRAM_DATA u8 gCoopAppearanceLastFault = 0;
+
+static void Coop_AppearanceFault(u8 kind)
+{
+    if (gCoopAppearanceFaults < 0xFFFF)
+        gCoopAppearanceFaults++;
+    gCoopAppearanceLastFault = kind;
+}
+
+static void Coop_CheckAppearance(void)
+{
+    u8 i, count = 0, objectId = OBJECT_EVENTS_COUNT;
+    s16 x, y;
+
+    if (gMain.callback2 != CB2_Overworld)
+        return;
+    for (i = 0; i < OBJECT_EVENTS_COUNT; i++)
+    {
+        if (gObjectEvents[i].active && gObjectEvents[i].localId == OBJ_EVENT_ID_COOP_PARTNER)
+        {
+            count++;
+            objectId = i;
+        }
+    }
+    if (count > 1)
+        Coop_AppearanceFault(1);
+    if (objectId == OBJECT_EVENTS_COUNT)
+        return;
+    if (sLinkState != COOP_LINK_UP)
+    {
+        Coop_AppearanceFault(2);
+        return;
+    }
+    // A quiet link keeps the last picture until it mends or times out.
+    if (!sPartnerValid || !Coop_SessionActive())
+        return;
+    if (!Coop_PartnerLocalCoords(&x, &y))
+        Coop_AppearanceFault(3);
+    else if (gObjectEvents[objectId].graphicsId != Coop_PartnerGfx(&sPartner))
+        Coop_AppearanceFault(4);
+    else if (!CoopOutfit_PartnerLookCurrent())
+        Coop_AppearanceFault(5);
+    else if (!CoopOutfit_MarkerOnSprite(gObjectEvents[objectId].spriteId))
+        Coop_AppearanceFault(6);
+}
+
 void Coop_OverworldFrame(void)
 {
     if (sPartnerPopupCooldown != 0)
@@ -2864,8 +2924,15 @@ void Coop_OverworldFrame(void)
         sFieldFreeFrames++;
     }
     CoopDeal_FieldFrame();
+    CoopTalk_FieldFrame();
     CoopFollow_FieldFrame();
+    // The partner's sprite, then its palette and marker, in the same frame:
+    // a new map, a bike, Surf or an outfit change never shows one part a
+    // frame before the others (the session task skips its own call then).
+    if (sLinkState == COOP_LINK_UP && !gMain.inBattle && gMain.callback2 == CB2_Overworld)
+        Coop_UpdateSprite();
     CoopOutfit_FieldFrame();
+    Coop_CheckAppearance();
     CoopNpc_FieldFrame();
     Coop_PollCoordJoin();
     Coop_PollSharedItems();
@@ -2917,6 +2984,7 @@ u16 Coop_BeginLink(void)
     sPartnerValid = FALSE;
     sPartnerPingKnown = FALSE;
     sLastSeenValid = FALSE;
+    CoopTalk_Reset();
     memset(&sBeacon, 0, sizeof(sBeacon));
     sBeaconQueued = 0;
     sBeaconPrompted = 0;
@@ -3734,6 +3802,7 @@ static void Coop_ClearCatchState(void)
     CoopProtocol_ClearCatches(&sLedger);
     memset(sCatches, 0, sizeof(sCatches));
     memset(gCoopBallTargetFor, 0, sizeof(gCoopBallTargetFor));
+    CoopTurn_Reset();
     sCatchCount = 0;
     sLocalLegendMask = 0;
     sPartnerLegendMask = 0;

@@ -3873,10 +3873,19 @@ bool32 Coop_BattlePartnerReady(enum BattlerId partner)
         || gBattleCommunication[partner] == STATE_WAIT_ACTION_CONFIRMED;
 }
 
+// Co-op: the turn's actions are still being chosen (src/coop_battle_turn.c).
+bool32 Coop_BattleSelectingActions(void)
+{
+    return gBattleMainFunc == HandleTurnActionSelectionState;
+}
+
 static void HandleTurnActionSelectionState(void)
 {
     s32 i;
 
+    // Co-op: a player asked to change an action already taken in; done
+    // before counting, so a change that arrives first always wins.
+    CoopTurn_HostProcess(STATE_WAIT_ACTION_CONFIRMED_STANDBY, STATE_WAIT_ACTION_CONFIRMED, STATE_BEFORE_ACTION_CHOSEN);
     gBattleCommunication[ACTIONS_CONFIRMED_COUNT] = 0;
     for (enum BattlerId battlerIndex = 0; battlerIndex < gBattlersCount; battlerIndex++)
     {
@@ -3886,6 +3895,7 @@ static void HandleTurnActionSelectionState(void)
         {
         case STATE_TURN_START_RECORD: // Recorded battle related action on start of every turn.
             RecordedBattle_CopyBattlerMoves(battler);
+            CoopTurn_HostTurnStart(battler);
             gBattleCommunication[battler] = STATE_BEFORE_ACTION_CHOSEN;
             bool32 isAiBattler = (gBattleTypeFlags & BATTLE_TYPE_HAS_AI || IsWildMonSmart()) && (BattlerHasAi(battler) && !(gBattleTypeFlags & BATTLE_TYPE_PALACE));
             if (isAiBattler)
@@ -4424,6 +4434,8 @@ static void HandleTurnActionSelectionState(void)
         }
 
         gBattleMainFunc = SetActionsAndBattlersTurnOrder;
+        // Co-op: the turn is committed; later changes are refused.
+        CoopTurn_HostCommit();
 
         if (gBattleTypeFlags & BATTLE_TYPE_INGAME_PARTNER)
         {

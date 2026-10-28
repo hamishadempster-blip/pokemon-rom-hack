@@ -39,5 +39,7 @@ void CoopNpc_NoteTalkStart(u8 objectEventId);
 u16 CoopNpc_BufferBusy(void);
 
 extern const u8 Coop_EventScript_NpcBusy[];
+extern const u8 CoopTalk_EventScript_JoinAsk[];
+extern const u8 CoopTalk_EventScript_BusyNote[];
 
 #endif // GUARD_COOP_NPC_H

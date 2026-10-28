@@ -37,4 +37,7 @@ enum {
     COOP_OUTFIT_POSE_SURFING,
 };
 
+bool8 CoopOutfit_PartnerLookCurrent(void);
+bool8 CoopOutfit_MarkerOnSprite(u8 spriteId);
+
 #endif // GUARD_COOP_OUTFIT_H

@@ -199,7 +199,42 @@ u16 CoopPartner_Ping(void);
 u16 CoopPartner_BufferBusyReason(void);
 extern u8 gCoopFollowLastStop;
 extern u16 gCoopFollowSteps;
+extern u16 gCoopAppearanceFaults;
+extern u8 gCoopAppearanceLastFault;
 bool8 CoopTalk_LocalJoinable(void);
+struct ScriptContext;
+struct CoopTalkStats
+{
+    u8 hosted;          // conversations this game started
+    u8 lastClass;       // how the last one was classified (0 joinable)
+    u8 joinsAsked;
+    u8 joinsAccepted;
+    u8 checkpoints;     // host waits at movements and questions
+    u8 readySent;
+    u8 greetings;
+    u8 busyNotes;
+    u16 linesShown;     // lines presented to this game as a joiner
+    u8 lastJoinEnd;     // how this game's last joined conversation ended (COOP_TALK_EV_*)
+    u8 lastNote;        // and the note's reason, if one was shown
+    u8 rxCount;         // talk messages received (the last eight ops below)
+    u8 rxOps[8];
+    u8 txCount;         // talk messages sent (the last eight ops below)
+    u8 txOps[8];
+};
+extern struct CoopTalkStats gCoopTalkStats;
+const u8 *CoopTalk_OnInteract(u8 objectEventId, const u8 *script);
+void CoopTalk_NoteText(const u8 *text);
+bool8 CoopTalk_HostCheckpoint(struct ScriptContext *ctx, bool8 isQuestion);
+void CoopTalk_HandleMsg(u8 op, u8 arg, u8 arg2, u16 serial, u16 total, const u8 *data);
+void CoopTalk_FieldFrame(void);
+void CoopTalk_Reset(void);
+bool8 CoopTalk_Shared(void);
+u8 CoopTalk_HostNpc(void);
+u16 CoopTalk_RequestJoin(void);
+void CoopTalk_WaitEvent(void);
+u16 CoopTalk_BufferPartner(void);
+u16 CoopTalk_PartnerJoinable(void);
+void CoopTalk_ShowBusyNote(void);
 void Coop_NoteCoordScene(s16 x, s16 y);
 u16 Coop_WarpToCoordScene(void);
 const u8 *GetCoordEventScriptAt(s16 x, s16 y, u8 elevation);
@@ -260,6 +295,36 @@ u16 Coop_NextPartnerCatch(void);
 // 0 means the stock target. Otherwise the chosen battler plus one.
 extern u8 gCoopBallTarget;
 extern u8 gCoopBallTargetFor[];
+
+// Changing a submitted battle action while the turn is open
+// (src/coop_battle_turn.c).
+struct CoopTurnState
+{
+    u8 turnId;                  // turns committed this battle (both games)
+    u8 request[4];              // master: a pending change, turn + 1
+    u8 waiting[4];              // this game's player: chose, waiting
+    u8 asked[4];                // this game's player: asked, no answer yet
+    u8 kind[4];                 // this game's player: the action chosen
+    u8 lastResult[4];           // 1 changed, 2 too late (tests read it)
+    u8 orders[4][3];            // master: party order at the turn's start
+    u8 localAsk;
+    u16 asks;
+    u16 cancels;
+    u16 lates;
+};
+extern struct CoopTurnState gCoopTurn;
+void CoopTurn_Reset(void);
+void CoopTurn_HostTurnStart(u32 battler);
+void CoopTurn_HostProcess(u8 standbyState, u8 confirmedState, u8 beforeState);
+void CoopTurn_HostCommit(void);
+void CoopTurn_HandleMsg(u32 battler, const u8 *data);
+void CoopTurn_NoteAction(u32 battler, u8 action);
+const u8 *CoopTurn_StandbyText(u32 battler);
+void CoopTurn_OnChooseAction(u32 battler);
+void CoopTurn_ControllerIdle(u32 battler);
+bool32 Coop_BattleSelectingActions(void);
+u32 CoopEvo_PageCount(struct Pokemon *mon);
+void CoopEvo_BufferHint(struct Pokemon *mon, u32 page, u8 *dest, bool32 own);
 extern u16 gCoopLastBall;
 
 // Stage 5: one optional trainer pair.
@@ -300,5 +365,11 @@ extern const u8 Coop_EventScript_PairAskHost[];
 extern const u8 Coop_EventScript_PairAskGuest[];
 extern const u8 Coop_EventScript_JoinAskGuest[];
 extern const u8 Coop_EventScript_PairTooLate[];
+
+// Co-op move target prompt (src/battle_controller_player.c).
+extern bool8 gCoopTargetPromptWide;
+extern u8 gCoopTargetKind;      // 1 foe, 2 ally, 3 self, 4 both foes, 5 your side, 6 all others, 7 everyone, 8 field, 9 foes' side
+extern u8 gCoopTargetWarned;
+extern u8 gCoopTargetPrompt[40];
 
 #endif // GUARD_COOP_H

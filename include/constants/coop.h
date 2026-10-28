@@ -61,6 +61,12 @@
 #define COOP_FOLLOW_PARTNER_MODE  3   // the partner is on a bike or surfing
 #define COOP_FOLLOW_GONE          4
 
+// A joiner's next step in a shared conversation (CoopTalk_WaitEvent).
+#define COOP_TALK_EV_TEXT   0   // a line, in gStringVar4
+#define COOP_TALK_EV_END    1   // the conversation ended
+#define COOP_TALK_EV_NOTE   2   // it ended early; why is in gStringVar4
+#define COOP_TALK_EV_LEFT   3   // this player left (B)
+
 // Friendly battle rules, packed in one byte: format bit 0, level bits 1-2,
 // team size bits 3-4, unrestricted bit 5.
 #define COOP_RULE_DOUBLES     (1 << 0)

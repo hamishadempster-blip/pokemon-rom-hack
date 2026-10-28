@@ -231,8 +231,9 @@ void CoopOutfit_SendLook(void)
 // a connection), at the partner's layer so a tree top that hides the partner
 // hides the marker too. A map load frees every sprite: the template checks
 // below notice, and the next field frame draws them again; battles never see
-// them (they exist only in the field). With the shrine's compass, a diamond
-// at the screen edge points to a partner on this map who is out of sight.
+// them (they exist only in the field). A steady arrow at the screen edge
+// points to a partner nearby (this map or a connected one) who is out of
+// sight.
 
 #include "data/coop_marker_icons.h"
 
@@ -560,12 +561,15 @@ static s16 PingHop(void)
     return gCoopPingCue != 0 && ((gCoopPingCue >> 3) & 1) ? -2 : 0;
 }
 
+static EWRAM_DATA u8 sMarkerAnchor = 0;      // (0xFF: none) the sprite the marker is drawn over this frame
+
 static bool8 DrawIndicator(struct Sprite *partner, u8 icon, s16 dx)
 {
     struct Sprite *marker = EnsureMarker();
 
     if (marker == NULL)
         return FALSE;
+    sMarkerAnchor = partner - gSprites;
     marker->oam.tileNum = IconTile(icon);
     marker->coordOffsetEnabled = partner->coordOffsetEnabled;
     // The icon's drawn rows end just above the head: an object event's
@@ -765,6 +769,7 @@ void CoopOutfit_FieldFrame(void)
     gCoopCompassShown = FALSE;
     gCoopNameTagShown = FALSE;
     gCoopMarkerIcon = 0xFF;
+    sMarkerAnchor = 0xFF;
     // This player busy: a message, a menu, a scene, a warp or a fade.
     // Waiting on the partner's answer or readiness is not busy: the marker
     // (their '?' or tick) is what this player is watching.
@@ -1016,4 +1021,19 @@ void CoopOutfit_OpenMenu(void)
     else
         gSprites[gTasks[taskId].tPicSprite].oam.priority = 0;
     RefreshPreviewPic(taskId);
+}
+
+// Self-checks for src/coop.c (Coop_CheckAppearance): the loaded partner
+// palette is the partner's current look, and a marker over a partner is
+// over this sprite (not one from before a respawn).
+bool8 CoopOutfit_PartnerLookCurrent(void)
+{
+    return sShownPartner == ((sPartnerGender << 4) | (sPartnerKnown ? sPartnerOutfit : 0));
+}
+
+bool8 CoopOutfit_MarkerOnSprite(u8 spriteId)
+{
+    if (!gCoopMarkerShown || sMarkerAnchor == 0xFF)
+        return TRUE;
+    return sMarkerAnchor == spriteId;
 }
