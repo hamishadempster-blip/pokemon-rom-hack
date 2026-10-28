@@ -657,8 +657,8 @@ static void ShowMapNamePopUpWindow(void)
     else
     {
         // Co-op notes are longer than map names: fit them inside the
-        // frame's inner edge, which clips the last few of the 80 pixels.
-        u32 fontId = GetFontIdToFit(withoutPrefixPtr, FONT_NORMAL, -1, coopText ? 74 : 80);
+        // frame's inner edge, which hides the window's outer pixels.
+        u32 fontId = GetFontIdToFit(withoutPrefixPtr, FONT_NORMAL, -1, coopText ? 68 : 80);
         x = GetStringCenterAlignXOffset(fontId, withoutPrefixPtr, 80);
         AddTextPrinterParameterized(GetMapNamePopUpWindowId(), fontId, mapDisplayHeader, x, 3, TEXT_SKIP_DRAW, NULL);
         CopyWindowToVram(GetMapNamePopUpWindowId(), COPYWIN_FULL);

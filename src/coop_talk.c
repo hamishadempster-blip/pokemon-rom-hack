@@ -1083,14 +1083,14 @@ static EWRAM_DATA u8 sBusyNoteWait = 0;    // frames left to show a held note
 
 static bool8 PopupFits(void)
 {
-    return GetStringWidth(GetFontIdToFit(gCoopPopupText, FONT_NORMAL, -1, 74), gCoopPopupText, -1) <= 74;
+    return GetStringWidth(GetFontIdToFit(gCoopPopupText, FONT_NORMAL, -1, 68), gCoopPopupText, -1) <= 68;
 }
 
 static bool8 ShowBusyNoteNow(void)
 {
     u8 *str = gCoopPopupText;
 
-    // The popup shows 74 pixels of text (src/map_name_popup.c): the longest
+    // The popup shows 68 pixels of text (src/map_name_popup.c): the longest
     // wording that fits the partner's name.
     PartnerName(str);
     str += StringLength(str);
@@ -1098,7 +1098,7 @@ static bool8 ShowBusyNoteNow(void)
     if (!PopupFits())
         StringCopy(str, COMPOUND_STRING("'s talking to them"));
     if (!PopupFits())
-        StringCopy(str, COMPOUND_STRING(" is chatting"));
+        StringCopy(str, COMPOUND_STRING(" is talking"));
     return ShowCoopPopup();
 }
 
