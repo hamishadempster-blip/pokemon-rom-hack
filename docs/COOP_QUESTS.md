@@ -171,7 +171,7 @@ Co-op: "clean" is `COOP_STORY_COAST_CLEAN` (catch-up `FLAG_COAST_CATCHUP`).
 | Twin plates | Shrine hall (5,25) and (11,25) | Something on both at once: the partner, or (alone) the idol boulder pushed with Strength. |
 | Twin lanterns | Statues (4,22) and (12,22) | Both lit within about 12 seconds: one each, or one player lighting both. |
 | Riddle | Sanctum door (7–9,20) | Two half-verses by the plates; the answer is A BEACON. A wrong answer only says so. |
-| Lore | KEEPER, sanctum (8,6) | Unlocks BEACON STYLE (the partner marker's colour: CLASSIC, GOLD, AZURE, ROSE) and the COMPASS (a diamond at the screen edge points to a partner on the same map who is off screen). Cosmetic only. |
+| Lore | KEEPER, sanctum (8,6) | Unlocks BEACON STYLE (the partner marker's colour: CLASSIC, GOLD, AZURE, ROSE). Cosmetic only. (Earlier builds also unlocked a compass here; from 0xC017013A the edge arrow is standard for everyone.) |
 | Twin Trial | KEEPER | Three rounds against pairs, one round per talk, teams restored before each. With the partner (Beacon on, both agree) a round is a co-op multi battle; alone, a double. Leaving the shrine or losing starts it over. First win: ABILITY CAPSULE once per save; later wins: one RARE CANDY a day. |
 
 Co-op: the gates (plates, lanterns, sanctum) are shared live (`COOP_QUEST_SHRINE_GATES`); if both light their lantern at the same moment, the later message opens the gate on both. The shrine milestones are `COOP_STORY_SHRINE_OPEN` and `COOP_STORY_SHRINE_SOLVED`. The trial's final win sets `FLAG_TOURNEY_WON` on both saves; each collects its own capsule. None of this gates linking, invitations, or reconnecting.

@@ -1,4 +1,37 @@
-# Ordinary roster complete, Pokédex 910: build 0xC0170139
+# Co-op polish: build 0xC017013A
+
+Branch `coop-doorway-scenes-rivals` (continued from 0xC0170139), pushed, not merged. Both players need this build; 0xC0170139 and older refuse to link with it. Older saves load (no save layout change). Test log: [COOP_TESTLOG_C017013A.md](COOP_TESTLOG_C017013A.md). Checklist: [COOP_CHECKLIST_C017013A.md](COOP_CHECKLIST_C017013A.md). Player-facing description: [COOP.md](COOP.md) (How a session works, Party in co-op battles, With your partner, Quality of life, Known limits).
+
+- ROM `emerald-coop-C017013A.gba` from source `a714c7f3`: SHA-1 `cb64e3cf311cc0cc4efae804da55b41e828137e8`, SHA-256 `0231ef9b2c1804e37e8550b1d91910a7d0a52cb9d2e8e36e329c47588c8dc154`.
+- Commits: activity icons, arrow, PING, VIEW TEAM, FOLLOW `f9d07377`; shared conversations, battle targets and changes, evolution hints `4805ee12`; build id `88a6aa23`; scenarios `d327521f`; popup width `cda8c960`; busy-note reasons `6d871d34`; scene-announcement retry and B grace `ef024478`; harness `5d0460bd`; busy reason only when needed `a714c7f3`; harness budgets `2d1f1d2b`; docs after it.
+- Final suite on this ROM: 194 scenarios, 189 pass. The 5 failures are test-driver luck and one timing-sensitive comparison (two early battles lost by the A-only driver, a bobbing sprite compared, a teleporting Abra, a rare Safari hunt); the scenarios were adjusted where that made sense and rerun on the same ROM: four pass; `roster_b3_catch` still caught 8 of 9 on rerun (details in the test log). Earlier: 0xC0170139 188 scenarios, 187 pass.
+
+## What changed
+
+- **Activity icons** over the partner (walk, talk, menu, battle, "?" invitation, waiting tick, broken link), from the partner's own state, debounced, never blinking; a steady **edge arrow** to a nearby off-screen partner (standard now; the shrine lore still unlocks BEACON STYLE colours).
+- **Partner menu:** VIEW TEAM (read-only snapshot, age shown when the partner can't answer), PING (five-second cooldown; also in CO-OP), FOLLOW (walks the partner's trail on foot; stops on any button and before doors, scene tiles, ledges, water, hazards and wild terrain; no loops).
+- **Joining a conversation:** A on the person the partner talks to (or on the partner) offers to join; each screen reads at its own pace; questions and movements wait for both; the host answers and the joiner sees the answer; B leaves or goes ahead; a lost link frees both. Shops, gifts, battles, warps and special scripts aren't shared; a short corner note says why.
+- **Battle:** target prompts (FOE (LEFT/RIGHT), ALLY, YOURSELF, BOTH FOES, ALL OTHER POKéMON, EVERYONE, YOUR SIDE, THE FOES' SIDE, THE WHOLE FIELD) with an ally warning for damaging moves; B on the waiting message takes back a move, switch or RUN while the turn is open (master decides, both games agree; late requests refused; items can't be taken back).
+- **Summary screen:** SELECT on the INFO page pages through evolution hints (target, method, conditions, met now or not, where to get the item).
+- **Fixes found in testing:** scene announcements could be lost when the link was busy; long popups clipped their last letter; B right after choosing could request a change; the memo's SELECT cue overflowed; the busy-note reason was sent too often and delayed a quest's progress message.
+
+## Known gaps
+
+- A joined conversation follows the host's story state; the joiner isn't told when their own save would get different lines.
+- Not played: the edge arrow on a connected map; FOLLOW stops at ledges, water, ice and scene tiles (source only); joining across a power-off (nothing to resume: session state is not saved).
+- Items chosen in battle can't be taken back. FOLLOW is on foot only and stops at wild terrain.
+- Harness weak points, not game faults: hunts for rare slots (`roster_b3_catch` caught 8 of 9 in this build's runs; its surf hunt paces only up and down and can stall in an east-west channel); A-only battles in a few early scenarios (now `smart_moves`).
+- Finding #16 still unreproduced. mGBA GUI, real hardware and netplay not tested.
+
+## Where things are (work environment, not committed)
+
+- Checkpoints `/home/claude/journey/jNN` (p0 Kai, p1 Rosa), story_seg6 `/tmp/claude-0/seg6`.
+- Final suite output `/home/claude/journey/final13A/suite`; clips `/home/claude/journey/clips13A`.
+- Full suite: `OUT=dir HARNESS_OUT=dir LONG=1 SEG6=… J16=… J37=… J43=… J48=… J52=… J65=… J68=… tools/coop_link_harness/run_all.sh`.
+
+# Previous build: 0xC0170139
+
+## Ordinary roster complete, Pokédex 910: build 0xC0170139
 
 Branch `coop-doorway-scenes-rivals` (continued from 0xC0170138), pushed, not merged. Both players need this build; 0xC0170138 and older refuse to link with it. Older saves load (save layout and species ids unchanged). Test log: [COOP_TESTLOG_C0170139.md](COOP_TESTLOG_C0170139.md). Checklist: [COOP_CHECKLIST_C0170139.md](COOP_CHECKLIST_C0170139.md). Whole-roster manifest: [COOP_ROSTER_ALL.md](COOP_ROSTER_ALL.md) (this batch alone: [COOP_ROSTER_BATCH3.md](COOP_ROSTER_BATCH3.md); data: `docs/coop_roster_manifest.json`).
 
