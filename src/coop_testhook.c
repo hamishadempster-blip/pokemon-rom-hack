@@ -14,6 +14,8 @@
 #include "random.h"
 #include "pokemon.h"
 #include "script_pokemon_util.h"
+#include "daycare.h"
+#include "pokemon_storage_system.h"
 #include "constants/items.h"
 
 EWRAM_DATA struct CoopTestMailbox gCoopTestMailbox = {0};
@@ -104,6 +106,86 @@ static bool8 TestHook_SetLevel(void)
     return TRUE;
 }
 
+// COOP_TEST_GET_DATA: one field of a party Pokemon or a Day Care Pokemon,
+// read with the game's own accessors (nothing written).
+static bool8 TestHook_GetData(void)
+{
+    u32 slot = gCoopTestMailbox.arg[0], field = gCoopTestMailbox.arg[1], arg = gCoopTestMailbox.arg[2];
+    struct BoxPokemon *box;
+    struct Pokemon *mon = NULL;
+    u32 v = 0, i;
+
+    if (field == COOP_TEST_FIELD_DAYCARE_STEPS)
+    {
+        struct DayCare *daycare = &gSaveBlock1Ptr->daycare;
+        if (slot < DAYCARE_MON_COUNT)
+            v = daycare->mons[slot].steps;
+        else if (slot == 2)
+            v = daycare->stepCounter;
+        else
+            v = daycare->offspringPersonality != 0;
+        gCoopTestMailbox.value = v;
+        return TRUE;
+    }
+    if (gCoopTestMailbox.arg[3] == 1)
+    {
+        if (slot >= DAYCARE_MON_COUNT)
+            return FALSE;
+        box = &gSaveBlock1Ptr->daycare.mons[slot].mon;
+    }
+    else
+    {
+        if (slot >= PARTY_SIZE)
+            return FALSE;
+        mon = &gPlayerParty[slot];
+        box = &mon->box;
+    }
+    if (field != COOP_TEST_FIELD_SPECIES && GetBoxMonData(box, MON_DATA_SPECIES) == SPECIES_NONE)
+        return FALSE;
+    switch (field)
+    {
+    case COOP_TEST_FIELD_SPECIES:     v = GetBoxMonData(box, MON_DATA_SPECIES); break;
+    case COOP_TEST_FIELD_LEVEL:       v = mon != NULL ? GetMonData(mon, MON_DATA_LEVEL) : GetLevelFromBoxMonExp(box); break;
+    case COOP_TEST_FIELD_NATURE:      v = GetNatureFromPersonality(GetBoxMonData(box, MON_DATA_PERSONALITY)); break;
+    case COOP_TEST_FIELD_MINT_NATURE: v = GetBoxMonData(box, MON_DATA_HIDDEN_NATURE); break;
+    case COOP_TEST_FIELD_ABILITY_NUM: v = GetBoxMonData(box, MON_DATA_ABILITY_NUM); break;
+    case COOP_TEST_FIELD_EV_TOTAL:
+        for (i = 0; i < NUM_STATS; i++)
+            v += GetBoxMonData(box, MON_DATA_HP_EV + i);
+        break;
+    case COOP_TEST_FIELD_HYPER_MASK:
+        for (i = 0; i < NUM_STATS; i++)
+            if (GetBoxMonData(box, MON_DATA_HYPER_TRAINED_HP + i))
+                v |= 1 << i;
+        break;
+    case COOP_TEST_FIELD_IV:          v = arg < NUM_STATS ? GetBoxMonData(box, MON_DATA_HP_IV + arg) : 0; break;
+    case COOP_TEST_FIELD_HELD:        v = GetBoxMonData(box, MON_DATA_HELD_ITEM); break;
+    case COOP_TEST_FIELD_EGG:         v = GetBoxMonData(box, MON_DATA_IS_EGG); break;
+    case COOP_TEST_FIELD_PERSONALITY: v = GetBoxMonData(box, MON_DATA_PERSONALITY); break;
+    case COOP_TEST_FIELD_MOVE:        v = arg < MAX_MON_MOVES ? GetBoxMonData(box, MON_DATA_MOVE1 + arg) : 0; break;
+    case COOP_TEST_FIELD_FRIENDSHIP:  v = GetBoxMonData(box, MON_DATA_FRIENDSHIP); break;
+    case COOP_TEST_FIELD_GENDER:      v = GetBoxMonGender(box); break;
+    case COOP_TEST_FIELD_EV:          v = arg < NUM_STATS ? GetBoxMonData(box, MON_DATA_HP_EV + arg) : 0; break;
+    case COOP_TEST_FIELD_OTID:        v = GetBoxMonData(box, MON_DATA_OT_ID); break;
+    case COOP_TEST_FIELD_PERFECT_IVS:
+        for (i = 0; i < NUM_STATS; i++)
+            if (GetBoxMonData(box, MON_DATA_HP_IV + i) == MAX_PER_STAT_IVS)
+                v++;
+        break;
+    case COOP_TEST_FIELD_EXP:         v = GetBoxMonData(box, MON_DATA_EXP); break;
+    case COOP_TEST_FIELD_HAS_MOVE:
+        for (i = 0; i < MAX_MON_MOVES; i++)
+            if (GetBoxMonData(box, MON_DATA_MOVE1 + i) == arg)
+                v = 1;
+        break;
+    case COOP_TEST_FIELD_STAT:        v = (mon != NULL && arg < NUM_STATS) ? GetMonData(mon, MON_DATA_MAX_HP + arg) : 0; break;
+    default:
+        return FALSE;
+    }
+    gCoopTestMailbox.value = v;
+    return TRUE;
+}
+
 void CoopTest_Poll(void)
 {
     bool8 ok = FALSE;
@@ -160,6 +242,38 @@ void CoopTest_Poll(void)
                 SetMonData(mon, MON_DATA_EVOLUTION_TRACKER, &v);
                 ok = TRUE;
             }
+            else if (gCoopTestMailbox.arg[3] == 7 && v <= 1)
+            {
+                // 7: every stat HYPER TRAINED (1) or not (0).
+                u32 k;
+                for (k = 0; k < NUM_STATS; k++)
+                    SetMonData(mon, MON_DATA_HYPER_TRAINED_HP + k, &v);
+                CalculateMonStats(mon);
+                ok = TRUE;
+            }
+            else if (gCoopTestMailbox.arg[3] == 6 && v < 0x10000)
+            {
+                // 6: the Day Care's step counter (the next egg cycle sooner).
+                gSaveBlock1Ptr->daycare.stepCounter = v;
+                ok = TRUE;
+            }
+            else if (gCoopTestMailbox.arg[3] == 5 && gPlayerPartyCount > 1)
+            {
+                // 5: empty the slot (room in a full party), as a deposit would.
+                ZeroMonData(mon);
+                CompactPartySlots();
+                CalculatePlayerPartyCount();
+                ok = TRUE;
+            }
+            else if ((gCoopTestMailbox.arg[3] == 3 && v <= MAX_PER_STAT_EVS) || (gCoopTestMailbox.arg[3] == 4 && v <= MAX_PER_STAT_IVS))
+            {
+                // 3: every EV to v (an EV spread to correct); 4: every IV to v.
+                u32 k, base = gCoopTestMailbox.arg[3] == 3 ? MON_DATA_HP_EV : MON_DATA_HP_IV;
+                for (k = 0; k < NUM_STATS; k++)
+                    SetMonData(mon, base + k, &v);
+                CalculateMonStats(mon);
+                ok = TRUE;
+            }
         }
         else if (gCoopTestMailbox.arg[2] == 0 && gCoopTestMailbox.arg[1] <= MAX_FRIENDSHIP)
         {
@@ -167,6 +281,9 @@ void CoopTest_Poll(void)
             SetMonData(&gPlayerParty[gCoopTestMailbox.arg[0]], MON_DATA_FRIENDSHIP, &v);
             ok = TRUE;
         }
+        break;
+    case COOP_TEST_GET_DATA:
+        ok = TestHook_GetData();
         break;
     case COOP_TEST_GIVE_ITEM:
         ok = gCoopTestMailbox.arg[0] != ITEM_NONE && gCoopTestMailbox.arg[0] < ITEMS_COUNT

@@ -437,3 +437,26 @@ female, 3 a personality divisible by 100; bits 8-12: a nature + 1);
 Rage Fist uses). The battle driver moves the cursor off a move with no PP.
 `visual_check.py` skips the Safari Zone's "What will KAI do?" (the player
 has no Pokémon in battle there).
+
+## Trainer Exchange and Day Care (build 0xC017013B)
+
+| Scenario | Saves | What it checks |
+| --- | --- | --- |
+| `exchange_counters` | seg6 | Door sign, guide, directory; HELD-ITEM stock at 1 BADGE (39), a purchase, COMING SOON; the breeding guide |
+| `exchange_moves` | seg6 | TM stock (24), TM bought; TEACH A MOVE declined (no charge) and taught (charged once, receipt); RELEARN; EGG MOVE refused below 3 BADGES; COMING SOON pages |
+| `exchange_training` | j65 | Stock at 8 BADGES; RESET EVs; HYPER TRAINING one stat; same stat again and all six refused; Lv. 30 refused; HOW IT WORKS; EXP. CANDY XL stops at the cap with a message and is kept when at the cap |
+| `exchange_coop` (+`_reload`) | j37 | Both at one counter on the same frame; each player's own stock (fixture: Rosa 2 BADGES) and money; partner icon; partner menu "busy"; side by side when the partner is already there; too poor; bag full; a 3-BADGE item given to the 2-BADGE partner; after power-on |
+| `exchange_stock_t0/t2/t3/t5` | j06, j43, j52, j68 | Every counter's stock at 0, 4, 6 BADGES and CHAMPION, and the COMING SOON line |
+| `exchange_old_spot` (+`_reload`) | seg6 | A save standing where the building now is (fixture warp) continues in front of its door |
+| `breeding_coop` | j65 | Both players at the Day Care; own deposits; own steps; Everstone regional form and nature; Destiny Knot; egg moves from either parent; full party; an egg can't be given; A at a partner whose egg is hatching; Pokédex; withdrawals with identity kept |
+| `breeding_rules` (+`_reload`) | j65 | Baby without incense (Azurill); Undiscovered group with Ditto; Power item; hyper training not inherited; a pending egg across power-on; hatch and Pokédex |
+
+New verbs: `expect_mon SLOT FIELD VALUE [ARG] [daycare]` (read-only, through
+the ROM's test hook: species, level, nature, mint, ability, evtotal, hyper,
+iv, held, egg, personality, move, friendship, gender, ev, otid, perfect,
+exp, hasmove, stat, dcsteps; VALUE `-` prints, `LO..HI` a range, `@K`
+remembers then compares), `test_data SLOT evs|ivs|hyper|clear|dcsteps V`
+(TEST HELPERS: all EVs, all IVs, all hyper-trained bits, empty a party slot,
+the Day Care step counter), `note_text WORDS` / `expect_noted` (a message
+seen in any frame since), `expect_cb2 FUNC`, `expect_money_change DELTA`
+and `fixture_money N`.

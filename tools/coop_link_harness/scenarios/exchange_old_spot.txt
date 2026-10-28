@@ -1,0 +1,10 @@
+# An old save standing where the Trainer Exchange now is (Rustboro, open
+# ground before build 0xC017013B). FIXTURE: Kai is warped onto (23,50),
+# inside the new walls, and both save (the seg6 pair). The repair is
+# checked by exchange_old_spot_reload after power-on.
+include deal_setup.inc
+0 fixture_warp 0 3 23 50
+0 until_field 3000
+0 wait 30
+0 shot inside-walls
+include save_again.inc

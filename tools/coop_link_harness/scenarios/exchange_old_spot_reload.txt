@@ -1,0 +1,13 @@
+# Continues exchange_old_spot's saves: CONTINUE puts Kai in front of the
+# Exchange door (23,53), the building is drawn (the saved view of Rustboro
+# is not restored), and he walks away and back through the door.
+include continue.inc
+b mash_field 300 B
+0 hexp gSaveBlock1Ptr 4 0
+0 shot after-continue
+0 walk 20 53 2000
+0 walk 23 53 2000
+0 press UP 20
+0 until_field 3000
+0 wait 30
+0 expect_map 11 17

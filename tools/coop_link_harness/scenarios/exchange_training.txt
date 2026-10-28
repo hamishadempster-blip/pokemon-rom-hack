@@ -1,0 +1,202 @@
+# Trainer Exchange, TRAINING & NATURE counter, and EXP candies at the level
+# cap (main journey checkpoint 65: Kai has 8 BADGES, not CHAMPION).
+# TEST HELPERS (logged): PIKACHU Lv. 60 in slot 1 with every EV at 100 and
+# every IV at 10 (test_data evs/ivs), PIKACHU Lv. 30 in slot 2, PIKACHU
+# Lv. 65 in slot 3; two EXP. CANDY XL (fixture_item).
+# FIXTURE: fixture_warp to Rustboro.
+# Checks: the counter's stock at 8 BADGES; RESET EVs (2000) zeroes all six;
+# HYPER TRAINING one stat (15000) marks HP only, the IVs themselves stay;
+# all six refused below CHAMPION; a Lv. 30 refused (no charge); HOW IT
+# WORKS; the same stat again refused as already at its best; EXP. CANDY XL on the Lv. 65 stops at the cap (Lv. 66) with the
+# message; a second one at the cap is refused and kept.
+include continue.inc
+b no_wild 1
+b mash_field 300 B
+0 test_mon 0 25 60
+0 test_data 0 evs 100
+0 test_data 0 ivs 10
+0 test_mon 1 25 30
+0 test_mon 2 25 65
+0 fixture_item 0 107 2
+0 expect_mon 0 evtotal 600
+0 expect_mon 0 hyper 0
+include exchange_enter_p0.inc
+0 walk 9 7 2000
+0 press UP 2
+0 wait 10
+0 press A 2
+0 until_task Task_HandleScrollingMultichoiceInput 900 A
+0 wait 20
+# 1. BUY: the stock this save has unlocked.
+0 press A 2
+0 until_task Task_ShopMenu 600
+0 wait 20
+0 press A 2
+0 until_cb2 CB2_BuyMenu 600
+0 wait 60
+0 shot train-list
+0 expect gCoopExchangeStats+3:1 4
+0 expect_range gCoopExchangeStats+2:1 47 48
+0 press B 2
+0 wait 60
+0 press B 2
+0 until_task Task_ShopMenu 600
+0 wait 30
+0 press DOWN 2
+0 wait 10
+0 press DOWN 2
+0 wait 10
+0 press A 2
+0 until_task Task_HandleScrollingMultichoiceInput 900
+0 wait 20
+# 2. RESET EVs on slot 1.
+0 note_money
+0 press DOWN 2
+0 wait 10
+0 press A 2
+0 until_cb2 CB2_UpdatePartyMenu 900 A
+0 wait 60
+0 press A 2
+0 until_task Task_HandleYesNoInput 900 A
+0 wait 20
+0 shot ev-confirm
+0 expect_text gStringVar4 EVs_for_
+0 expect_text gStringVar4 for_~2000
+0 press A 2
+0 until_field_text back_to_zero 900
+0 shot ev-done
+0 expect_money_change -2000
+0 expect_mon 0 evtotal 0
+0 expect_mon 0 hyper 0
+0 until_task Task_HandleScrollingMultichoiceInput 900 A
+0 wait 20
+# 3. HYPER TRAINING, HP, on slot 1.
+0 note_money
+0 press DOWN 2
+0 wait 10
+0 press DOWN 2
+0 wait 10
+0 press A 2
+0 until_cb2 CB2_UpdatePartyMenu 900 A
+0 wait 60
+0 press A 2
+0 until_task Task_HandleScrollingMultichoiceInput 900 A
+0 wait 20
+0 shot stats
+0 press A 2
+0 until_task Task_HandleYesNoInput 900 A
+0 wait 20
+0 shot hyper-confirm
+0 press A 2
+0 until_field_text top_form 900
+0 shot hyper-done
+0 expect_money_change -15000
+0 expect_mon 0 hyper 1
+0 expect_mon 0 iv 10 0
+0 until_task Task_HandleScrollingMultichoiceInput 900 A
+0 wait 20
+# 4. HP again: nothing to improve; all six: CHAMPION only (no charge).
+0 note_money
+0 press DOWN 2
+0 wait 10
+0 press DOWN 2
+0 wait 10
+0 press A 2
+0 until_cb2 CB2_UpdatePartyMenu 900 A
+0 wait 60
+0 press A 2
+0 until_task Task_HandleScrollingMultichoiceInput 900 A
+0 wait 20
+0 press A 2
+0 wait 90
+0 shot hp-again
+0 expect_text gStringVar4 already_at_its_best
+0 until_task Task_HandleScrollingMultichoiceInput 900 A
+0 wait 20
+0 press DOWN 2
+0 wait 10
+0 press DOWN 2
+0 wait 10
+0 press A 2
+0 until_cb2 CB2_UpdatePartyMenu 900 A
+0 wait 60
+0 press A 2
+0 until_task Task_HandleScrollingMultichoiceInput 900 A
+0 wait 20
+0 press DOWN 2
+0 wait 8
+0 press DOWN 2
+0 wait 8
+0 press DOWN 2
+0 wait 8
+0 press DOWN 2
+0 wait 8
+0 press DOWN 2
+0 wait 8
+0 press DOWN 2
+0 wait 8
+0 shot all-choice
+0 press A 2
+0 wait 90
+0 shot all-locked
+0 expect_text gStringVar4 CHAMPION_only
+0 until_task Task_HandleScrollingMultichoiceInput 900 A
+0 wait 20
+# 5. A Lv. 30 (slot 2): refused, no charge.
+0 press DOWN 2
+0 wait 10
+0 press DOWN 2
+0 wait 10
+0 press A 2
+0 until_cb2 CB2_UpdatePartyMenu 900 A
+0 wait 60
+0 press DOWN 2
+0 wait 20
+0 press A 2
+0 until_task Task_HandleScrollingMultichoiceInput 900 A
+0 wait 20
+0 press A 2
+0 wait 90
+0 shot low-level
+0 expect_text gStringVar4 at_least
+0 until_task Task_HandleScrollingMultichoiceInput 900 A
+0 wait 20
+0 expect_money_change 0
+# 6. HOW IT WORKS.
+0 press DOWN 2
+0 wait 10
+0 press DOWN 2
+0 wait 10
+0 press DOWN 2
+0 wait 10
+0 press A 2
+0 wait 90
+0 shot how1
+0 expect_text gStringVar4 EV
+0 until_task Task_HandleScrollingMultichoiceInput 1500 A
+0 press B 2
+0 mash_field 600 B
+# 7. EXP. CANDY XL on the Lv. 65 (slot 3): cap 66.
+0 expect_mon 2 level 65
+0 press START 2
+0 wait 40
+0 menu_to BAG
+0 press A 2
+0 until_cb2 CB2_BagMenuRun 2500
+0 wait 60
+0 note_text level_cap._The_rest
+0 field_item 107 2
+0 expect_noted
+0 mash_field 600 B
+0 expect_mon 2 level 66
+0 expect_item 0 107 1
+0 press START 2
+0 wait 40
+0 menu_to BAG
+0 press A 2
+0 until_cb2 CB2_BagMenuRun 2500
+0 wait 60
+0 field_item 107 2
+0 mash_field 600 B
+0 expect_mon 2 level 66
+0 expect_item 0 107 1

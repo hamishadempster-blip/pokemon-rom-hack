@@ -1,0 +1,115 @@
+# Trainer Exchange basics (story_seg6 saves, Rustboro, linked; Kai has 1
+# BADGE). FIXTURE: fixture_warp to Rustboro (reloads the town: the save's
+# own view of it predates the building).
+# Checks: the sign by the door; the door leads in; the guide and the
+# directory; the HELD-ITEM counter's stock at 1 BADGE (39), an ORAN BERRY
+# bought for 200 (QUIT, then COMING SOON); the BREEDING counter's guide.
+include deal_setup.inc
+0 fixture_warp 0 3 20 47
+0 until_field 3000
+0 walk 22 53 4000
+0 press UP 2
+0 wait 10
+0 note_text TRAINER_EXCHANGE
+0 press A 2
+0 mash_field 600 B
+0 expect_noted
+0 walk 23 53 4000
+0 press UP 20
+0 until_field 3000
+0 wait 30
+0 shot inside
+0 expect_map 11 17
+0 walk 2 9 2000
+0 press UP 2
+0 wait 10
+0 note_text own_BADGES
+0 press A 2
+0 mash_field 900 B
+0 expect_noted
+0 walk 14 2 2000
+0 press UP 2
+0 wait 10
+0 note_text BATTLE_ITEMS,_EVOLUTION,_TRAINING
+0 press A 2
+0 mash_field 900 B
+0 expect_noted
+0 walk 5 7 2000
+0 press UP 2
+0 wait 10
+0 press A 2
+0 until_task Task_HandleScrollingMultichoiceInput 600 A
+0 wait 20
+0 shot held-menu
+0 press A 2
+0 until_task Task_ShopMenu 600
+0 wait 20
+0 press A 2
+0 until_cb2 CB2_BuyMenu 600
+0 wait 60
+0 expect gCoopExchangeStats+2:1 39
+0 expect gCoopExchangeStats+3:1 1
+0 shot held-list
+0 note_money
+0 press A 2
+0 wait 40
+0 shot qty
+0 press A 2
+0 wait 40
+0 shot confirm
+0 press A 2
+0 wait 60
+0 press A 2
+0 wait 60
+0 shot bought
+0 expect_money_change -200
+0 press B 2
+0 wait 60
+0 press B 2
+0 until_task Task_ShopMenu 600
+0 wait 30
+0 press DOWN 2
+0 wait 10
+0 press DOWN 2
+0 wait 10
+0 press A 2
+0 wait 60
+0 shot after-shop
+0 until_task Task_HandleScrollingMultichoiceInput 600
+0 press DOWN 2
+0 wait 10
+0 press A 2
+0 wait 30
+0 shot soon
+0 until_task Task_HandleScrollingMultichoiceInput 900 A
+0 press UP 2
+0 wait 10
+0 press A 2
+0 mash_field 600 B
+0 expect_item 3 520 1
+# BREEDING counter: the guide.
+0 walk 12 4 2000
+0 press LEFT 2
+0 wait 10
+0 shot at-breed
+0 press A 2
+0 until_task Task_HandleScrollingMultichoiceInput 900 A
+0 wait 20
+0 shot breed-menu
+0 press DOWN 2
+0 wait 10
+0 note_text a_male_and_a_female
+0 press A 2
+0 wait 60
+0 shot breed-guide
+0 until_task Task_HandleScrollingMultichoiceInput 2400 A
+0 expect_noted
+0 wait 20
+0 press DOWN 2
+0 wait 8
+0 press DOWN 2
+0 wait 8
+0 press DOWN 2
+0 wait 8
+0 press A 2
+0 mash_field 600 B

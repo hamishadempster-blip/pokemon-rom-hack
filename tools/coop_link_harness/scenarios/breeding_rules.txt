@@ -1,0 +1,274 @@
+# Day Care rules (main journey checkpoint 65; linked, each player on
+# their own save). TEST HELPERS (logged): parents made by test_mon in party
+# slots 5 and 6; Rosa's parents with every IV 0 and every stat HYPER
+# TRAINED (test_data ivs 0 / hyper 1); party slots emptied for room
+# (test_data clear). FIXTURES: fixture_warp into the Day Care and outside.
+# Kai: two MARILL (no INCENSE) give an AZURILL egg (Gen 9 rule: babies
+# without incense); a PICHU (Undiscovered group) with DITTO: the man says
+# they prefer to play with others. Rosa: a female VULPIX holding a DESTINY
+# KNOT and a DITTO holding a POWER WEIGHT: the egg's HP IV is DITTO's (0),
+# the IVs are the parents' raw ones (HYPER TRAINING isn't passed on: at
+# most one perfect IV, the random one) and the egg is not hyper trained.
+# Rosa leaves her egg with the man and both save; exchange continues in
+# breeding_rules_reload.
+include continue.inc
+include relink.inc
+b no_wild 1
+b mash_field 300 B
+0 test_mon 4 183 30 0 0 0 0 32
+0 test_mon 5 183 30 0 0 0 0 16
+1 test_mon 4 37 30 0 0 0 0 32
+1 test_data 4 ivs 0
+1 test_data 4 hyper 1
+1 test_held 4 486
+1 test_mon 5 132 30
+1 test_data 5 ivs 0
+1 test_data 5 hyper 1
+1 test_held 5 419
+1 expect_mon 4 hyper 63
+1 expect_mon 4 perfect 0
+b fixture_warp 22 0 2 3
+b until_field 3000
+0 press UP 2
+0 wait 20
+0 press A 2
+0 until_task Task_HandleYesNoInput 1500 A
+0 wait 20
+0 press A 2
+0 wait 400
+0 press A 2
+0 wait 300
+0 shot kai-chooser
+0 press UP 2
+0 wait 20
+0 press UP 2
+0 wait 20
+0 press A 2
+0 wait 60
+0 press RIGHT 2
+0 wait 15
+0 press DOWN 2
+0 wait 15
+0 press DOWN 2
+0 wait 15
+0 press DOWN 2
+0 wait 15
+0 shot kai-first
+0 press A 2
+0 wait 60
+0 press A 2
+0 until_task Task_HandleYesNoInput 3000 B
+0 wait 20
+0 press A 2
+0 wait 300
+0 press A 2
+0 wait 300
+0 press UP 2
+0 wait 20
+0 press UP 2
+0 wait 20
+0 press A 2
+0 wait 60
+0 press RIGHT 2
+0 wait 15
+0 press DOWN 2
+0 wait 15
+0 press DOWN 2
+0 wait 15
+0 press DOWN 2
+0 wait 15
+0 shot kai-second
+0 press A 2
+0 wait 60
+0 press A 2
+0 mash_field 3000 B
+b sync
+1 press UP 2
+1 wait 20
+1 press A 2
+1 until_task Task_HandleYesNoInput 1500 A
+1 wait 20
+1 press A 2
+1 wait 400
+1 press A 2
+1 wait 300
+1 shot rosa-chooser
+1 press UP 2
+1 wait 20
+1 press UP 2
+1 wait 20
+1 press A 2
+1 wait 60
+1 press RIGHT 2
+1 wait 15
+1 press DOWN 2
+1 wait 15
+1 press DOWN 2
+1 wait 15
+1 press DOWN 2
+1 wait 15
+1 shot rosa-first
+1 press A 2
+1 wait 60
+1 press A 2
+1 until_task Task_HandleYesNoInput 3000 B
+1 wait 20
+1 press A 2
+1 wait 300
+1 press A 2
+1 wait 300
+1 press UP 2
+1 wait 20
+1 press UP 2
+1 wait 20
+1 press A 2
+1 wait 60
+1 press RIGHT 2
+1 wait 15
+1 press DOWN 2
+1 wait 15
+1 press DOWN 2
+1 wait 15
+1 press DOWN 2
+1 wait 15
+1 shot rosa-second
+1 press A 2
+1 wait 60
+1 press A 2
+1 mash_field 3000 B
+b sync
+0 expect_mon 0 species 183 daycare
+1 expect_mon 1 species 132 daycare
+1 expect_mon 1 held 419 daycare
+# Kai's MARILL pair
+0 fixture_warp 0 32 47 6
+0 until_field 3000
+0 pace_until_flag 0x86 1 200000
+0 fixture_warp 0 32 47 7
+0 until_field 3000
+0 press UP 2
+0 wait 20
+0 press A 2
+0 until_task Task_HandleYesNoInput 3000 A
+0 wait 20
+0 shot kai-offer
+0 press A 2
+0 mash_field 3000 B
+0 expect_flag 0x86 0
+0 expect_species 4 298
+0 expect_mon 4 egg 1
+0 expect_mon 4 personality @3
+# Rosa's pair
+1 fixture_warp 0 32 50 6
+1 until_field 3000
+1 pace_until_flag 0x86 1 200000
+1 expect_flag 0x86 1
+# Kai takes the MARILL back (room made first: a party slot emptied each
+# time) and leaves a PICHU with DITTO.
+0 test_data 2 clear 0
+0 fixture_warp 22 0 2 3
+0 until_field 3000
+0 press UP 2
+0 wait 20
+0 press A 2
+0 until_task Task_HandleYesNoInput 1500 A
+0 wait 20
+0 press A 2
+0 wait 120
+0 shot kai-m1-list
+0 press A 2
+0 until_task Task_HandleYesNoInput 1500 A
+0 wait 20
+0 press A 2
+0 mash_field 3000 B
+0 test_data 2 clear 0
+0 fixture_warp 22 0 2 3
+0 until_field 3000
+0 press UP 2
+0 wait 20
+0 press A 2
+0 until_task Task_HandleYesNoInput 1500 A
+0 wait 20
+0 shot kai-one-more
+0 press B 2
+0 until_task Task_HandleYesNoInput 1500 A
+0 wait 20
+0 shot kai-take-back
+0 press A 2
+0 until_task Task_HandleYesNoInput 1500 A
+0 wait 20
+0 shot kai-m2-fee
+0 press A 2
+0 mash_field 3000 B
+0 party
+0 expect_species 4 183
+0 expect_mon 2 species 298
+0 expect_mon 2 personality @3
+0 test_mon 4 172 10
+0 test_mon 5 132 30
+0 press UP 2
+0 wait 20
+0 press A 2
+0 until_task Task_HandleYesNoInput 1500 A
+0 wait 20
+0 press A 2
+0 wait 400
+0 press A 2
+0 wait 300
+0 shot kai-pichu-chooser
+0 press UP 2
+0 wait 20
+0 press UP 2
+0 wait 20
+0 press A 2
+0 wait 60
+0 press RIGHT 2
+0 wait 15
+0 press DOWN 2
+0 wait 15
+0 press DOWN 2
+0 wait 15
+0 press DOWN 2
+0 wait 15
+0 shot kai-pichu-first
+0 press A 2
+0 wait 60
+0 press A 2
+0 until_task Task_HandleYesNoInput 3000 B
+0 wait 20
+0 press A 2
+0 wait 300
+0 press A 2
+0 wait 300
+0 press UP 2
+0 wait 20
+0 press UP 2
+0 wait 20
+0 press A 2
+0 wait 60
+0 press RIGHT 2
+0 wait 15
+0 press DOWN 2
+0 wait 15
+0 press DOWN 2
+0 wait 15
+0 press DOWN 2
+0 wait 15
+0 shot kai-pichu-second
+0 press A 2
+0 wait 60
+0 press A 2
+0 mash_field 3000 B
+0 expect_mon 0 species 172 daycare
+0 expect_mon 1 species 132 daycare
+0 fixture_warp 0 32 47 5
+0 until_field 3000
+0 press UP 2
+0 wait 20
+0 note_text prefer_to_play_with_other
+0 press A 2
+0 mash_field 2000 B
+0 expect_noted
+0 expect_flag 0x86 0
+b sync
+include save_again.inc

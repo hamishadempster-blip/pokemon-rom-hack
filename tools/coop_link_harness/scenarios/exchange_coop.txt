@@ -1,0 +1,354 @@
+# Trainer Exchange in co-op (main journey checkpoint 37: both players have
+# 3 BADGES, linked). FIXTURE (logged): Rosa's third BADGE flag cleared, so
+# she has 2 (her own progress, not Kai's, must decide her stock).
+# FIXTURES also: fixture_warp to Rustboro; Rosa's money set to 150 and back
+# (too poor); Kai's ITEMS pocket filled (bag full).
+# Checks: both at the HELD-ITEM counter on the same frame, each in their own
+# shop at once (side by side, not "busy"); Kai's stock 84 (3 BADGES), Rosa's
+# 39 (2 BADGES); each pays for their own ORAN BERRY; the partner icon while
+# the other shops; Kai's GIVE ITEM to Rosa while she is in the shop: she is
+# not interrupted and Kai is told she is busy; too poor: nothing bought;
+# bag full at the EVOLUTION counter: nothing bought, nothing taken; Kai
+# buys LEFTOVERS (3 BADGES) and gives it to Rosa (2 BADGES): received;
+# both save, power off, CONTINUE: the LEFTOVERS and both sums kept.
+include continue.inc
+include relink.inc
+b no_wild 1
+b mash_field 300 B
+b expect coop.sLinkState 2
+1 fixture_flag 0x869 0
+include exchange_enter_p0.inc
+0 walk 5 7 2000
+include exchange_enter_p1.inc
+1 walk 6 8 2000
+1 walk 5 7 2000
+b sync
+b press UP 2
+b wait 20
+b note_money
+b sync
+# 1. Both at the counter on the same frame.
+b press A 2
+b until_task Task_HandleScrollingMultichoiceInput 900 A
+b hex gCoopTalkStats 32
+b shot both-menus
+b wait 20
+b press A 2
+b until_task Task_ShopMenu 600
+b wait 20
+b press A 2
+b until_cb2 CB2_BuyMenu 600
+b wait 60
+0 expect gCoopExchangeStats+2:1 84
+0 expect gCoopExchangeStats+3:1 2
+1 expect gCoopExchangeStats+2:1 39
+1 expect gCoopExchangeStats+3:1 1
+b wait 60
+b shot both-lists
+# Each buys an ORAN BERRY (first row) with their own money.
+b press A 2
+b wait 40
+b press A 2
+b wait 40
+b press A 2
+b wait 60
+b press A 2
+b wait 60
+b expect_money_change -200
+b shot both-bought
+# 2. Kai leaves the shop; Rosa stays in hers. Kai's indicator shows her
+# busy; A on her: the partner menu says she is shopping (no request is
+# sent, her shop is not interrupted).
+0 press B 2
+0 wait 60
+0 press B 2
+0 until_task Task_ShopMenu 600
+0 wait 30
+0 press DOWN 2
+0 wait 10
+0 press DOWN 2
+0 wait 10
+0 press A 2
+0 until_task Task_HandleScrollingMultichoiceInput 900
+0 wait 20
+0 press DOWN 2
+0 wait 10
+0 press DOWN 2
+0 wait 10
+0 press A 2
+0 mash_field 600 B
+# (Kai's game draws Rosa a step below him: they share the tile.)
+0 wait 60
+0 shot kai-sees-rosa-shop
+0 expect_range gCoopMarkerIcon 1 2
+0 press DOWN 2
+0 wait 20
+0 expect gCoopTalkStats+7:1 0
+0 press A 2
+0 wait 120
+0 shot kai-told-busy
+0 expect gCoopTalkStats+7:1 1
+0 expect gCoopTalkStats+30:1 2
+0 mash_field 600 B
+1 expect_cb2 CB2_BuyMenu
+0 expect coop_deal.sDeal 0
+1 expect coop_deal.sDeal 0
+# 2b. Kai talks to the same clerk while Rosa is still in her shop: his
+# own shop opens beside hers (side by side), no "busy" note.
+0 press UP 2
+0 wait 10
+0 press A 2
+0 until_task Task_HandleScrollingMultichoiceInput 900 A
+0 hex gCoopTalkStats 32
+0 expect gCoopTalkStats+31:1 1
+0 shot kai-side-by-side
+0 wait 20
+0 press A 2
+0 until_task Task_ShopMenu 600
+0 wait 20
+0 press DOWN 2
+0 wait 10
+0 press DOWN 2
+0 wait 10
+0 press A 2
+0 until_task Task_HandleScrollingMultichoiceInput 900
+0 wait 20
+0 press DOWN 2
+0 wait 10
+0 press DOWN 2
+0 wait 10
+0 press A 2
+0 mash_field 600 B
+1 expect_cb2 CB2_BuyMenu
+b sync
+# 3. Rosa too poor (FIXTURE: 150): nothing bought, nothing taken.
+1 fixture_money 150
+1 note_money
+1 wait 30
+1 press A 2
+1 wait 40
+1 press A 2
+1 wait 60
+1 shot too-poor
+1 press A 2
+1 wait 60
+1 expect_money_change 0
+1 fixture_money 40000
+# Rosa leaves.
+1 press B 2
+1 wait 60
+1 press B 2
+1 until_task Task_ShopMenu 600
+1 wait 30
+1 press DOWN 2
+1 wait 10
+1 press DOWN 2
+1 wait 10
+1 press A 2
+1 until_task Task_HandleScrollingMultichoiceInput 900
+1 wait 20
+1 press DOWN 2
+1 wait 10
+1 press DOWN 2
+1 wait 10
+1 press A 2
+1 mash_field 600 B
+1 walk 5 9 2000
+b sync
+# 4. Bag full at the EVOLUTION counter (FIXTURE: Kai's ITEMS pocket filled):
+# the MOON STONE (first row) is not bought, nothing taken.
+0 walk 7 7 2000
+0 press UP 2
+0 wait 10
+0 expect_item 0 217 0
+0 fixture_fill_pocket 0 900
+0 note_money
+0 press A 2
+0 until_task Task_HandleScrollingMultichoiceInput 900 A
+0 wait 20
+0 press A 2
+0 until_task Task_ShopMenu 600
+0 wait 20
+0 press A 2
+0 until_cb2 CB2_BuyMenu 600
+0 wait 60
+0 press A 2
+0 wait 40
+0 press A 2
+0 wait 40
+0 press A 2
+0 wait 60
+0 shot bag-full
+0 press A 2
+0 wait 60
+0 expect_money_change 0
+0 expect_item 0 217 0
+0 press B 2
+0 wait 60
+0 press B 2
+0 until_task Task_ShopMenu 600
+0 wait 30
+0 press DOWN 2
+0 wait 10
+0 press DOWN 2
+0 wait 10
+0 press A 2
+0 until_task Task_HandleScrollingMultichoiceInput 900
+0 wait 20
+0 press DOWN 2
+0 wait 10
+0 press DOWN 2
+0 wait 10
+0 press A 2
+0 mash_field 600 B
+0 fixture_unfill_pocket 0 900
+# 5. Kai buys LEFTOVERS (row 40 of his 84) and gives it to Rosa.
+0 walk 5 7 2000
+0 press UP 2
+0 wait 10
+0 note_money
+0 press A 2
+0 until_task Task_HandleScrollingMultichoiceInput 900 A
+0 wait 20
+0 press A 2
+0 until_task Task_ShopMenu 600
+0 wait 20
+0 press A 2
+0 until_cb2 CB2_BuyMenu 600
+0 wait 60
+0 press DOWN 2
+0 wait 6
+0 press DOWN 2
+0 wait 6
+0 press DOWN 2
+0 wait 6
+0 press DOWN 2
+0 wait 6
+0 press DOWN 2
+0 wait 6
+0 press DOWN 2
+0 wait 6
+0 press DOWN 2
+0 wait 6
+0 press DOWN 2
+0 wait 6
+0 press DOWN 2
+0 wait 6
+0 press DOWN 2
+0 wait 6
+0 press DOWN 2
+0 wait 6
+0 press DOWN 2
+0 wait 6
+0 press DOWN 2
+0 wait 6
+0 press DOWN 2
+0 wait 6
+0 press DOWN 2
+0 wait 6
+0 press DOWN 2
+0 wait 6
+0 press DOWN 2
+0 wait 6
+0 press DOWN 2
+0 wait 6
+0 press DOWN 2
+0 wait 6
+0 press DOWN 2
+0 wait 6
+0 press DOWN 2
+0 wait 6
+0 press DOWN 2
+0 wait 6
+0 press DOWN 2
+0 wait 6
+0 press DOWN 2
+0 wait 6
+0 press DOWN 2
+0 wait 6
+0 press DOWN 2
+0 wait 6
+0 press DOWN 2
+0 wait 6
+0 press DOWN 2
+0 wait 6
+0 press DOWN 2
+0 wait 6
+0 press DOWN 2
+0 wait 6
+0 press DOWN 2
+0 wait 6
+0 press DOWN 2
+0 wait 6
+0 press DOWN 2
+0 wait 6
+0 press DOWN 2
+0 wait 6
+0 press DOWN 2
+0 wait 6
+0 press DOWN 2
+0 wait 6
+0 press DOWN 2
+0 wait 6
+0 press DOWN 2
+0 wait 6
+0 press DOWN 2
+0 wait 6
+0 shot leftovers-row
+0 press A 2
+0 wait 40
+0 press A 2
+0 wait 40
+0 press A 2
+0 wait 60
+0 press A 2
+0 wait 60
+0 expect_money_change -12000
+0 expect_item 0 472 1
+0 press B 2
+0 wait 60
+0 press B 2
+0 until_task Task_ShopMenu 600
+0 wait 30
+0 press DOWN 2
+0 wait 10
+0 press DOWN 2
+0 wait 10
+0 press A 2
+0 until_task Task_HandleScrollingMultichoiceInput 900
+0 wait 20
+0 press A 2
+0 mash_field 600 B
+0 walk 5 8 2000
+1 walk 5 9 2000
+1 press UP 2
+0 press DOWN 2
+b wait 30
+b sync
+1 expect_item 0 472 0
+0 press A 2
+0 wait 90
+0 press DOWN 2
+0 press DOWN 2
+0 press A 2
+0 until_cb2 CB2_BagMenuRun 600 A
+0 wait 60
+0 bag_item 472
+0 press A 2
+0 wait 60
+0 shot give-leftovers
+0 press A 2
+0 until_cb2 CB2_Overworld 600
+0 wait 60
+0 until_mem coop_deal.sDeal 1 600 A
+1 until_mem coop_deal.sDeal 2 4000
+1 wait 90
+1 shot rosa-offered
+1 until_mem coop_deal.sDeal+13 1 600 A
+b until_mem coop_deal.sDeal 0 3000
+b wait 60
+b mash_field 600 B
+0 expect_item 0 472 0
+1 expect_item 0 472 1
+# 6. Both save (the reload half is exchange_coop_reload).
+include save_again.inc

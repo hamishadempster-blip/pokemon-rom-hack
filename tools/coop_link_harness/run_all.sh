@@ -7,6 +7,7 @@
 #   ONLY="rival_join rival_pending" run_all.sh    # a subset (fresh-save ones)
 #   J16=dir J37=dir: finding #16, shared NPCs, scene joins (J16: co-op revamps)
 #   J43=dir J48=dir: revamps in solo play, showcase trainers at route level
+#   J06=dir: checkpoint 6 (before Roxanne): Trainer Exchange stock
 #   J52=dir J65=dir J68=dir: late-game checkpoints (late wild encounters;
 #   Wally and roster evolutions; shared legendaries)
 #   SEG6=/path/dir run_all.sh                     # also the story_seg6-based
@@ -117,6 +118,13 @@ fi
 if [ -n "${J43:-}" ]; then
 	run revamp_solo_checks SAVE0="$J43/p0.sav" SAVE1="$J43/p1.sav"
 	run revamp_trainers_early SAVE0="$J43/p0.sav" SAVE1="$J43/p1.sav"
+	# Trainer Exchange stock at 4 BADGES.
+	run exchange_stock_t2 SAVE0="$J43/p0.sav" SAVE1="$J43/p1.sav"
+fi
+# J06=dir: checkpoint 6 (Rustboro before Roxanne): the Trainer Exchange's
+# stock with no BADGE.
+if [ -n "${J06:-}" ]; then
+	run exchange_stock_t0 SAVE0="$J06/p0.sav" SAVE1="$J06/p1.sav"
 fi
 if [ -n "${J48:-}" ]; then
 	run revamp_trainers_mid SAVE0="$J48/p0.sav" SAVE1="$J48/p1.sav"
@@ -126,6 +134,10 @@ if [ -n "${J37:-}" ]; then
 	for s in scene_meteor_join scene_meteor_menu; do
 		run "$s" SAVE0="$J37/p0.sav" SAVE1="$J37/p1.sav"
 	done
+	# Trainer Exchange in co-op (both at one counter, mixed BADGES, gifts,
+	# bag full, too poor), then power-on.
+	run exchange_coop SAVE0="$J37/p0.sav" SAVE1="$J37/p1.sav"
+	run exchange_coop_reload SAVE0="$out/exchange_coop/p0.sav" SAVE1="$out/exchange_coop/p1.sav"
 fi
 
 # J65=dir with p0.sav/p1.sav from the main journey's checkpoint 65 (Ever
@@ -147,6 +159,12 @@ if [ -n "${J65:-}" ]; then
 	run roster_b3_services SAVE0="$J65/p0.sav" SAVE1="$J65/p1.sav"
 	# Summary-screen evolution hints (SELECT on the INFO page).
 	run evo_hint SAVE0="$J65/p0.sav" SAVE1="$J65/p1.sav" RTC_EPOCH0=1699963200
+	# Trainer Exchange training counter and candies at the cap; the Day
+	# Care with both players, the breeding rules, and their power-on.
+	run exchange_training SAVE0="$J65/p0.sav" SAVE1="$J65/p1.sav"
+	run breeding_coop SAVE0="$J65/p0.sav" SAVE1="$J65/p1.sav"
+	run breeding_rules SAVE0="$J65/p0.sav" SAVE1="$J65/p1.sav"
+	run breeding_rules_reload SAVE0="$out/breeding_rules/p0.sav" SAVE1="$out/breeding_rules/p1.sav"
 fi
 
 # J52=dir with p0.sav/p1.sav from checkpoint 52 (Lilycove, linked): normal
@@ -155,6 +173,7 @@ fi
 if [ -n "${J52:-}" ]; then
 	run late_wild_tour SAVE0="$J52/p0.sav" SAVE1="$J52/p1.sav"
 	run revamp_trainers_late SAVE0="$J52/p0.sav" SAVE1="$J52/p1.sav"
+	run exchange_stock_t3 SAVE0="$J52/p0.sav" SAVE1="$J52/p1.sav"
 fi
 
 # J68=dir with p0.sav/p1.sav from the main journey's checkpoint 68 (after the
@@ -177,6 +196,7 @@ if [ -n "${J68:-}" ]; then
 	# Joining a partner's conversation; the partner's appearance self-check.
 	run talk_join SAVE0="$J68/p0.sav" SAVE1="$J68/p1.sav"
 	run partner_appearance SAVE0="$J68/p0.sav" SAVE1="$J68/p1.sav"
+	run exchange_stock_t5 SAVE0="$J68/p0.sav" SAVE1="$J68/p1.sav"
 	for s in shoal_solo caravan_solo coast_solo twins_solo beacon_solo pp_solo; do
 		run_as "${s}_j68" "$s" SAVE0="$J68/p0.sav" SAVE1="$J68/p1.sav"
 	done
@@ -187,10 +207,10 @@ fi
 if [ -n "${SEG6:-}" ]; then
 	for s in deal_trade deal_cut_before_partner deal_cut_after_commit deal_lost_ready deal_gifts deal_edge \
 	         deal_battle deal_battle_doubles deal_battle_rules deal_dex deal_fast practice save_identity \
-	         pp_solo pp_coop pp_reconnect roster_g; do
+	         pp_solo pp_coop pp_reconnect roster_g exchange_counters exchange_moves exchange_old_spot; do
 		run "$s" SAVE0="$SEG6/p0.sav" SAVE1="$SEG6/p1.sav"
 	done
-	for s in deal_trade deal_cut_before_partner deal_cut_after_commit deal_gifts; do
+	for s in deal_trade deal_cut_before_partner deal_cut_after_commit deal_gifts exchange_old_spot; do
 		run "${s}_reload" SAVE0="$out/$s/p0.sav" SAVE1="$out/$s/p1.sav"
 	done
 	run deal_dex_offline SAVE0="$out/deal_dex/p0.sav" SAVE1="$out/deal_dex/p1.sav"

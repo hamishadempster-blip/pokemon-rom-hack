@@ -1,0 +1,291 @@
+# Day Care with both players (main journey checkpoint 65, linked).
+# TEST HELPERS (logged): the parents are made by test_mon in party slots 5
+# and 6 (all IVs 31): Kai a female ALOLAN VULPIX (MODEST, knows FREEZE-DRY,
+# holds an EVERSTONE) and a DITTO holding a DESTINY KNOT; Rosa a female
+# ALOLAN VULPIX (no item) and a male VULPIX knowing HYPNOSIS. Later: the
+# eggs' hatch counters at 0 and the Day Care step counter one step short
+# of an egg cycle (test_data dcsteps), two PIKACHU to fill Rosa's party, a
+# slot emptied (test_data clear) to make room.
+# FIXTURES: fixture_warp into the Day Care and beside the Day Care man.
+# Checks: Rosa talks to the Day Care lady while Kai is depositing (each
+# their own, side by side); each Day Care holds that save's own two, with
+# identity kept (species, personality); Kai's steps make Kai's egg only
+# (Rosa's step counter does not move); then Rosa's; Kai's egg: ALOLAN
+# VULPIX (EVERSTONE: the region form and MODEST), FREEZE-DRY, 5+ perfect
+# IVs (DESTINY KNOT); Rosa's: VULPIX (no EVERSTONE: the Hoenn form) with
+# HYPNOSIS (an egg move from the father); Rosa's full party: the egg waits
+# with the man, then is handed over once there is room; an egg can't be
+# given (GIVE POKeMON refuses it); Rosa's A at Kai while his egg hatches;
+# the hatch registers VULPIX in Kai's POKeDEX; the Day Care Pokemon come
+# back with the same identity.
+include continue.inc
+include relink.inc
+b no_wild 1
+b mash_field 300 B
+b party
+0 test_mon 4 961 30 573 0 0 0 4128
+0 test_held 4 245
+0 test_mon 5 132 30 0 0 0 0 0
+0 test_held 5 486
+1 test_mon 4 961 30 0 0 0 0 32
+1 test_mon 5 37 30 95 0 0 0 16
+b expect_mon 4 personality -
+b expect_mon 5 personality -
+b fixture_warp 22 0 2 3
+b until_field 3000
+b sync
+# 1. Kai deposits; Rosa starts while Kai is at the chooser.
+0 press UP 2
+0 wait 20
+0 press A 2
+0 until_task Task_HandleYesNoInput 1500 A
+0 wait 20
+0 press A 2
+0 wait 400
+0 press A 2
+0 wait 300
+b sync
+1 press UP 2
+1 wait 20
+1 hex gCoopTalkStats 32
+1 press A 2
+1 until_task Task_HandleYesNoInput 1500 A
+1 wait 20
+1 press A 2
+1 wait 400
+1 press A 2
+1 wait 300
+1 shot rosa-chooser
+1 press UP 2
+1 wait 20
+1 press UP 2
+1 wait 20
+1 press A 2
+1 wait 60
+1 press RIGHT 2
+1 wait 15
+1 press DOWN 2
+1 wait 15
+1 press DOWN 2
+1 wait 15
+1 press DOWN 2
+1 wait 15
+1 shot rosa-first
+1 press A 2
+1 wait 60
+1 press A 2
+1 until_task Task_HandleYesNoInput 3000 B
+1 wait 20
+1 press A 2
+1 wait 300
+1 press A 2
+1 wait 300
+1 press UP 2
+1 wait 20
+1 press UP 2
+1 wait 20
+1 press A 2
+1 wait 60
+1 press RIGHT 2
+1 wait 15
+1 press DOWN 2
+1 wait 15
+1 press DOWN 2
+1 wait 15
+1 press DOWN 2
+1 wait 15
+1 shot rosa-second
+1 press A 2
+1 wait 60
+1 press A 2
+1 mash_field 3000 B
+0 shot kai-chooser
+0 press UP 2
+0 wait 20
+0 press UP 2
+0 wait 20
+0 press A 2
+0 wait 60
+0 press RIGHT 2
+0 wait 15
+0 press DOWN 2
+0 wait 15
+0 press DOWN 2
+0 wait 15
+0 press DOWN 2
+0 wait 15
+0 shot kai-first
+0 press A 2
+0 wait 60
+0 press A 2
+0 until_task Task_HandleYesNoInput 3000 B
+0 wait 20
+0 press A 2
+0 wait 300
+0 press A 2
+0 wait 300
+0 press UP 2
+0 wait 20
+0 press UP 2
+0 wait 20
+0 press A 2
+0 wait 60
+0 press RIGHT 2
+0 wait 15
+0 press DOWN 2
+0 wait 15
+0 press DOWN 2
+0 wait 15
+0 press DOWN 2
+0 wait 15
+0 shot kai-second
+0 press A 2
+0 wait 60
+0 press A 2
+0 mash_field 3000 B
+
+b sync
+1 hex gCoopTalkStats 32
+1 expect gCoopTalkStats+31:1 1
+0 expect_mon 0 species 961 daycare
+0 expect_mon 1 species 132 daycare
+1 expect_mon 0 species 961 daycare
+1 expect_mon 1 species 37 daycare
+b expect_mon 0 personality - daycare
+b expect_mon 1 personality - daycare
+b expect_mon 0 otid - daycare
+b expect_flag 0x86 0
+# 2. Kai walks outside until his egg is waiting; Rosa stays inside.
+1 expect_mon 2 dcsteps - daycare
+0 fixture_warp 0 32 47 6
+0 until_field 3000
+0 pace_until_flag 0x86 1 200000
+b sync
+0 expect_flag 0x86 1
+1 expect_flag 0x86 0
+1 expect_mon 2 dcsteps - daycare
+1 expect_mon 3 dcsteps 0 daycare
+0 expect_mon 3 dcsteps 1 daycare
+# 3. Kai takes his egg.
+0 fixture_warp 0 32 47 7
+0 until_field 3000
+0 press UP 2
+0 wait 20
+0 press A 2
+0 until_task Task_HandleYesNoInput 3000 A
+0 wait 20
+0 shot kai-offer
+0 press A 2
+0 mash_field 3000 B
+0 expect_flag 0x86 0
+0 expect_species 4 961
+0 expect_mon 4 egg 1
+0 expect_mon 4 nature 15
+0 expect_mon 4 hasmove 1 573
+0 expect_mon 4 perfect 5..6
+0 expect_mon 4 personality -
+0 fixture_warp 0 32 50 7
+0 until_field 3000
+# 4. Rosa walks until hers; Kai stands still (his counter is checked).
+0 expect_mon 2 dcsteps - daycare
+1 fixture_warp 0 32 47 6
+1 until_field 3000
+1 pace_until_flag 0x86 1 200000
+b sync
+0 expect_mon 2 dcsteps - daycare
+0 expect_flag 0x86 0
+# 5. Rosa's party is full (two PIKACHU added): the egg waits with the man.
+1 test_mon 4 25 10
+1 test_mon 5 25 10
+1 fixture_warp 0 32 47 7
+1 until_field 3000
+1 press UP 2
+1 wait 20
+1 press A 2
+1 until_task Task_HandleYesNoInput 3000 A
+1 wait 20
+1 shot rosa-full-offer
+1 press A 2
+1 mash_field 3000 B
+1 expect_flag 0x86 1
+1 expect_species 5 25
+1 test_data 5 clear 0
+1 fixture_warp 0 32 47 7
+1 until_field 3000
+1 press UP 2
+1 wait 20
+1 press A 2
+1 until_task Task_HandleYesNoInput 3000 A
+1 wait 20
+1 shot rosa-offer
+1 press A 2
+1 mash_field 3000 B
+1 expect_flag 0x86 0
+1 expect_species 5 37
+1 expect_mon 5 egg 1
+1 expect_mon 5 hasmove 1 95
+# 6. An egg can't be given: Rosa, GIVE POKeMON to Kai, the egg.
+0 fixture_warp 0 32 47 9
+0 until_field 3000
+0 press RIGHT 2
+1 fixture_warp 0 32 48 9
+1 until_field 3000
+1 press LEFT 2
+b wait 60
+b sync
+1 press A 2
+1 wait 90
+1 shot rosa-partner-menu
+1 press DOWN 2
+1 wait 8
+1 press DOWN 2
+1 wait 8
+1 press DOWN 2
+1 wait 8
+1 press A 2
+1 until_cb2 CB2_UpdatePartyMenu 900 A
+1 wait 60
+1 press DOWN 2
+1 wait 8
+1 press DOWN 2
+1 wait 8
+1 press DOWN 2
+1 wait 8
+1 press DOWN 2
+1 wait 8
+1 press DOWN 2
+1 wait 8
+1 note_text An_EGG_can't
+1 press A 2
+1 wait 90
+1 shot egg-refused
+1 press A 2
+1 wait 60
+1 expect_noted
+1 mash_field 1200 B
+0 mash_field 600 B
+1 expect_mon 5 egg 1
+0 expect coop_deal.sDeal 0
+# 7. Kai's egg hatches on his next step (hatch counter 0; Day Care step
+# counter one short); Rosa presses A at him meanwhile.
+b sync
+0 test_friendship 4 0
+0 test_data 0 dcsteps 127
+1 press LEFT 2
+0 press DOWN 2
+0 until_cb2 CB2_EggHatch 600
+1 wait 30
+1 press A 2
+1 wait 120
+1 shot rosa-asks-during-hatch
+0 wait 300
+0 shot kai-hatching
+0 expect_cb2 CB2_EggHatch
+0 expect coop_deal.sDeal 0
+1 mash_field 1200 B
+0 mash_field 4000 B
+0 expect_species 4 961
+0 expect_mon 4 egg 0
+0 expect_dex_caught 37 1
+b sync
+# 8. Both take their Day Care Pokemon back (Kai first).

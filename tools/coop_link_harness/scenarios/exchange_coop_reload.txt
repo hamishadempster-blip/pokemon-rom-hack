@@ -1,0 +1,29 @@
+# Continues exchange_coop's saves: after power-on, Rosa still has the
+# LEFTOVERS Kai gave her and Kai has none; the Exchange still sells Rosa
+# her own 2-BADGE stock (39), not Kai's. Not linked: on LINK UP, a BADGE
+# both players won together in a co-op gym battle (the save's joint-badge
+# record) is restored to a save that lacks it, which would undo the fixture
+# (see COOP.md, joint badges).
+include continue.inc
+b no_wild 1
+b mash_field 300 B
+0 expect_item 0 472 0
+1 expect_item 0 472 1
+include exchange_enter_p1.inc
+1 walk 5 7 2000
+1 press UP 2
+1 wait 10
+1 press A 2
+1 until_task Task_HandleScrollingMultichoiceInput 900 A
+1 wait 20
+1 press A 2
+1 until_task Task_ShopMenu 600
+1 wait 20
+1 press A 2
+1 until_cb2 CB2_BuyMenu 600
+1 wait 60
+1 expect gCoopExchangeStats+2:1 39
+1 press B 2
+1 wait 60
+1 press B 2
+1 until_task Task_ShopMenu 600

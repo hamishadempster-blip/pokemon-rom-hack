@@ -1,0 +1,207 @@
+# Trainer Exchange stock by BADGES: every counter's BUY list on the main
+# journey's checkpoint 52 (Kai: 6 BADGES), and the COMING SOON line.
+# FIXTURE: fixture_warp to Rustboro. Nothing is bought.
+include continue.inc
+b no_wild 1
+b mash_field 300 B
+include exchange_enter_p0.inc
+# TM counter: 45 for sale
+0 walk 2 4 3000
+0 press RIGHT 2
+0 wait 10
+0 press A 2
+0 until_task Task_HandleScrollingMultichoiceInput 900 A
+0 wait 20
+0 press A 2
+0 until_task Task_ShopMenu 600
+0 wait 20
+0 press A 2
+0 until_cb2 CB2_BuyMenu 600
+0 wait 60
+0 shot tm-stock
+0 expect gCoopExchangeStats+3:1 3
+0 expect_range gCoopExchangeStats+2:1 45 45
+0 press B 2
+0 wait 60
+0 press B 2
+0 until_task Task_ShopMenu 600
+0 wait 30
+0 press DOWN 2
+0 wait 10
+0 press DOWN 2
+0 wait 10
+0 press A 2
+0 until_task Task_HandleScrollingMultichoiceInput 900
+0 wait 20
+0 press DOWN 2
+0 wait 8
+0 press DOWN 2
+0 wait 8
+0 press DOWN 2
+0 wait 8
+0 press DOWN 2
+0 wait 8
+0 press DOWN 2
+0 wait 8
+0 press A 2
+0 mash_field 600 B
+# HELD counter: 116 for sale
+0 walk 5 7 3000
+0 press UP 2
+0 wait 10
+0 press A 2
+0 until_task Task_HandleScrollingMultichoiceInput 900 A
+0 wait 20
+0 press A 2
+0 until_task Task_ShopMenu 600
+0 wait 20
+0 press A 2
+0 until_cb2 CB2_BuyMenu 600
+0 wait 60
+0 shot held-stock
+0 expect gCoopExchangeStats+3:1 3
+0 expect_range gCoopExchangeStats+2:1 116 116
+0 press B 2
+0 wait 60
+0 press B 2
+0 until_task Task_ShopMenu 600
+0 wait 30
+0 press DOWN 2
+0 wait 10
+0 press DOWN 2
+0 wait 10
+0 press A 2
+0 until_task Task_HandleScrollingMultichoiceInput 900
+0 wait 20
+0 press DOWN 2
+0 wait 8
+0 press DOWN 2
+0 wait 8
+0 press A 2
+0 mash_field 600 B
+# EVO counter: 54 for sale
+0 walk 7 7 3000
+0 press UP 2
+0 wait 10
+0 press A 2
+0 until_task Task_HandleScrollingMultichoiceInput 900 A
+0 wait 20
+0 press A 2
+0 until_task Task_ShopMenu 600
+0 wait 20
+0 press A 2
+0 until_cb2 CB2_BuyMenu 600
+0 wait 60
+0 shot evo-stock
+0 expect gCoopExchangeStats+3:1 3
+0 expect_range gCoopExchangeStats+2:1 54 54
+0 press B 2
+0 wait 60
+0 press B 2
+0 until_task Task_ShopMenu 600
+0 wait 30
+0 press DOWN 2
+0 wait 10
+0 press DOWN 2
+0 wait 10
+0 press A 2
+0 until_task Task_HandleScrollingMultichoiceInput 900
+0 wait 20
+0 press DOWN 2
+0 wait 8
+0 note_text Everything_at_this_counter_is_open
+0 press A 2
+0 until_task Task_HandleScrollingMultichoiceInput 1500 A
+0 expect_noted
+0 wait 20
+0 press DOWN 2
+0 wait 8
+0 press DOWN 2
+0 wait 8
+0 press A 2
+0 mash_field 600 B
+# TRAIN counter: 45 for sale
+0 walk 9 7 3000
+0 press UP 2
+0 wait 10
+0 press A 2
+0 until_task Task_HandleScrollingMultichoiceInput 900 A
+0 wait 20
+0 press A 2
+0 until_task Task_ShopMenu 600
+0 wait 20
+0 press A 2
+0 until_cb2 CB2_BuyMenu 600
+0 wait 60
+0 shot train-stock
+0 expect gCoopExchangeStats+3:1 3
+0 expect_range gCoopExchangeStats+2:1 45 45
+0 press B 2
+0 wait 60
+0 press B 2
+0 until_task Task_ShopMenu 600
+0 wait 30
+0 press DOWN 2
+0 wait 10
+0 press DOWN 2
+0 wait 10
+0 press A 2
+0 until_task Task_HandleScrollingMultichoiceInput 900
+0 wait 20
+0 press DOWN 2
+0 wait 8
+0 press DOWN 2
+0 wait 8
+0 press DOWN 2
+0 wait 8
+0 press DOWN 2
+0 wait 8
+0 press DOWN 2
+0 wait 8
+0 press A 2
+0 mash_field 600 B
+# BREED counter: 9 for sale
+0 walk 12 4 3000
+0 press LEFT 2
+0 wait 10
+0 press A 2
+0 until_task Task_HandleScrollingMultichoiceInput 900 A
+0 wait 20
+0 press A 2
+0 until_task Task_ShopMenu 600
+0 wait 20
+0 press A 2
+0 until_cb2 CB2_BuyMenu 600
+0 wait 60
+0 shot breed-stock
+0 expect gCoopExchangeStats+3:1 3
+0 expect_range gCoopExchangeStats+2:1 9 9
+0 press B 2
+0 wait 60
+0 press B 2
+0 until_task Task_ShopMenu 600
+0 wait 30
+0 press DOWN 2
+0 wait 10
+0 press DOWN 2
+0 wait 10
+0 press A 2
+0 until_task Task_HandleScrollingMultichoiceInput 900
+0 wait 20
+0 press DOWN 2
+0 wait 8
+0 press DOWN 2
+0 wait 8
+0 note_text Everything_at_this_counter_is_open
+0 press A 2
+0 until_task Task_HandleScrollingMultichoiceInput 1500 A
+0 expect_noted
+0 wait 20
+0 press DOWN 2
+0 wait 8
+0 press DOWN 2
+0 wait 8
+0 press DOWN 2
+0 wait 8
+0 press A 2
+0 mash_field 600 B

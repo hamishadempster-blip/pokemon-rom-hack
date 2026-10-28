@@ -23,7 +23,7 @@
 #define MAX_CMDS 4096
 #define MAX_SYMS 500000
 
-enum { C_PARTNER, C_GOTO, C_HEX, C_PRESS, C_WAIT, C_SHOT, C_DUMP, C_BARRIER, C_UNTIL_CB2, C_UNTIL_FIELD, C_EXPECT, C_UNTIL_MEM, C_BATTLE, C_MENU, C_PARTY, C_FIXTURE, C_WRITE, C_LEAD, C_MOVE, C_SIX, C_VAR, C_FLAG, C_VS, C_EXPECT_FLAG, C_EXPECT_VAR, C_NO_OBJECT, C_MAP, C_OBJECT, C_TEXT_SPEED, C_PACE, C_MUTE, C_PARTNER_AT, C_ITEM, C_EXPECT_ITEM, C_UNTIL_TEXT, C_WARP, C_PC_COUNT, C_MONS, C_NO_COPIES, C_NOTE_MONEY, C_MONEY_GAIN, C_FORCE_ENC, C_EXPECT_RANGE, C_WALK, C_NO_WILD, C_CROSS, C_WALK_BATTLE, C_SMART, C_STRONG, C_UNTIL_TASK, C_MIRROR, C_SPECIES, C_NOTE_PARTY, C_SAME_PARTY, C_PATCH_RET, C_SLOT, C_TXN, C_MONEY_SAME, C_DEX, C_SWAP, C_GENDER, C_FILL, C_UNFILL, C_WRITEP, C_TINT, C_UNTIL_FTEXT, C_NICK, C_GRIND, C_CATCH, C_HUNT, C_SWITCH_LEAD, C_PARTY_SLOT, C_HEAL_BELOW, C_TALK_OBJ, C_BOXES, C_TEST_HOOK, C_WATCH, C_EXPECT_WRITES, C_SURF, C_BAG_ITEM, C_FLY_MAP, C_STEP_TO, C_PARTY_ACTION, C_DIVE, C_RIDE, C_LEGEND, C_OWNED, C_PCFILL, C_TASKS, C_ALLOW_RESET, C_ROMWRITE, C_OBJBYTE, C_NPC_SYNC, C_BATTLE_ITEM, C_FIELD_ITEM, C_FISH, C_FORCE_MOVE, C_SCREEN_SAME, C_EXPECT_TEXT };
+enum { C_PARTNER, C_GOTO, C_HEX, C_PRESS, C_WAIT, C_SHOT, C_DUMP, C_BARRIER, C_UNTIL_CB2, C_UNTIL_FIELD, C_EXPECT, C_UNTIL_MEM, C_BATTLE, C_MENU, C_PARTY, C_FIXTURE, C_WRITE, C_LEAD, C_MOVE, C_SIX, C_VAR, C_FLAG, C_VS, C_EXPECT_FLAG, C_EXPECT_VAR, C_NO_OBJECT, C_MAP, C_OBJECT, C_TEXT_SPEED, C_PACE, C_MUTE, C_PARTNER_AT, C_ITEM, C_EXPECT_ITEM, C_UNTIL_TEXT, C_WARP, C_PC_COUNT, C_MONS, C_NO_COPIES, C_NOTE_MONEY, C_MONEY_GAIN, C_FORCE_ENC, C_EXPECT_RANGE, C_WALK, C_NO_WILD, C_CROSS, C_WALK_BATTLE, C_SMART, C_STRONG, C_UNTIL_TASK, C_MIRROR, C_SPECIES, C_NOTE_PARTY, C_SAME_PARTY, C_PATCH_RET, C_SLOT, C_TXN, C_MONEY_SAME, C_DEX, C_SWAP, C_GENDER, C_FILL, C_UNFILL, C_WRITEP, C_TINT, C_UNTIL_FTEXT, C_NICK, C_GRIND, C_CATCH, C_HUNT, C_SWITCH_LEAD, C_PARTY_SLOT, C_HEAL_BELOW, C_TALK_OBJ, C_BOXES, C_TEST_HOOK, C_WATCH, C_EXPECT_WRITES, C_SURF, C_BAG_ITEM, C_FLY_MAP, C_STEP_TO, C_PARTY_ACTION, C_DIVE, C_RIDE, C_LEGEND, C_OWNED, C_PCFILL, C_TASKS, C_ALLOW_RESET, C_ROMWRITE, C_OBJBYTE, C_NPC_SYNC, C_BATTLE_ITEM, C_FIELD_ITEM, C_FISH, C_FORCE_MOVE, C_SCREEN_SAME, C_EXPECT_TEXT, C_MONEY_DELTA, C_SET_MONEY, C_NOTE_TEXT, C_EXPECT_CB2 };
 
 struct Cmd {
 	unsigned args[8];
@@ -84,6 +84,8 @@ struct Player {
     int switchLead, switchState;
     int itemPhase;        // battle_item: step within the bag
     int healPct, healState, healsLeft, healTarget, healUses; unsigned healFrame;
+    char noteText[64]; int noteSeen;   // note_text / expect_noted
+    unsigned monNote[8]; int monNoteSet[8];   // expect_mon ... @K
 };
 
 static struct Player P[2];
@@ -1762,6 +1764,13 @@ static void frameCallback(struct mCoreThread* t) {
             p->vsFlags = rd16(p, task + 14);
     }
 
+	// note_text: watch gStringVar4 every frame for the words (a message
+	// that a later one replaces before any command could look).
+	if (p->noteText[0] && !p->noteSeen) {
+		char text[440];
+		gameText(p, symAddr("gStringVar4"), text, sizeof(text));
+		if (strstr(text, p->noteText)) { p->noteSeen = 1; out("[f%06d p%d] noted \"%s\"\n", p->frame, p->id, text); }
+	}
 	unsigned keys = 0;
 	while (!p->done) {
 		if (p->pc >= p->ncmds) { p->done = 1; break; }
@@ -2668,6 +2677,23 @@ static void frameCallback(struct mCoreThread* t) {
             advance = true;
             break;
         }
+        case C_MONEY_DELTA:
+        case C_SET_MONEY: {
+            // expect_money_change DELTA: since note_money. fixture_money N.
+            unsigned key = rd32(p, rd32(p, symAddr("gSaveBlock2Ptr")) + symValue("harness.encryptionKeyOffset"));
+            unsigned addr = rd32(p, sSave1) + symValue("harness.moneyOffset");
+            unsigned money = rd32(p, addr) ^ key;
+            if (c->kind == C_SET_MONEY) {
+                p->core->busWrite32(p->core, addr, c->value ^ key);
+                out("[p%d] FIXTURE money %u (was %u)\n", p->id, c->value, money);
+            } else {
+                int delta = (int)(money - p->moneyBase);
+                if (delta != (int)c->value) { out("[p%d] FAIL money change %d, expected %d\n", p->id, delta, (int)c->value); sFailures++; }
+                else out("[p%d] ok money change %d\n", p->id, delta);
+            }
+            advance = true;
+            break;
+        }
         case C_NOTE_MONEY:
         case C_MONEY_SAME:
         case C_MONEY_GAIN: {
@@ -3104,6 +3130,22 @@ static void frameCallback(struct mCoreThread* t) {
             advance = true;
             break;
         }
+        case C_EXPECT_CB2: {
+            unsigned cb2 = rd32(p, sMain + 4) & ~1u;
+            if (cb2 == c->addr) out("[p%d] ok cb2 is %s\n", p->id, c->text);
+            else { out("[p%d] FAIL cb2 is %08x, not %s\n", p->id, cb2, c->text); sFailures++; }
+            advance = true;
+            break;
+        }
+        case C_NOTE_TEXT:
+            if (c->size) { snprintf(p->noteText, sizeof(p->noteText), "%s", c->text + 16); p->noteSeen = 0; }
+            else {
+                if (p->noteSeen) out("[p%d] ok noted \"%s\"\n", p->id, p->noteText);
+                else { out("[p%d] FAIL \"%s\" was never in a message\n", p->id, p->noteText); sFailures++; }
+                p->noteText[0] = 0; p->noteSeen = 0;
+            }
+            advance = true;
+            break;
         case C_EXPECT_TEXT: {
             // expect_text SYM Words_here: a game string holds the words now.
             char text[440];
@@ -3332,12 +3374,28 @@ static void frameCallback(struct mCoreThread* t) {
 				p->core->busWrite16(p->core, mb + 4, c->value);
 				p->core->busWrite16(p->core, mb + 22, 0);
 				p->core->busWrite32(p->core, mb, 0x7E57C0DEu);
-				out(c->value == 5 ? "[f%06d p%d FIXTURE] %s %u %u %u %u %u %u %u\n" : "[f%06d p%d TEST HELPER] %s %u %u %u %u %u %u %u\n", p->frame, p->id, c->text,
+				if (c->value != 7) out(c->value == 5 ? "[f%06d p%d FIXTURE] %s %u %u %u %u %u %u %u\n" : "[f%06d p%d TEST HELPER] %s %u %u %u %u %u %u %u\n", p->frame, p->id, c->text,
 				    c->args[0], c->args[1], c->args[2], c->args[3], c->args[4], c->args[5], c->args[6]);
 			}
 			if (rd32(p, mb) == 0) {
 				unsigned r = rd16(p, mb + 22);
 				if (r != 1) { out("[p%d] FAIL %s refused (result %u)\n", p->id, c->text, r); sFailures++; }
+				else if (c->value == 7) {
+					unsigned v = rd32(p, mb + 24);
+					if (!c->size) out("[p%d] %s = %u (0x%x)\n", p->id, c->text, v, v);
+					else if (c->size == 3) {
+						unsigned k = c->addr;
+						if (!p->monNoteSet[k]) { p->monNote[k] = v; p->monNoteSet[k] = 1; out("[p%d] %s = %u (0x%x) noted as @%u\n", p->id, c->text, v, v, k); }
+						else if (p->monNote[k] == v) out("[p%d] ok %s = %u, as @%u\n", p->id, c->text, v, k);
+						else { out("[p%d] FAIL %s = %u, @%u was %u\n", p->id, c->text, v, k, p->monNote[k]); sFailures++; }
+					}
+					else if (c->size == 2) {
+						if (v >= c->args[6] && v <= c->args[7]) out("[p%d] ok %s = %u (in %u..%u)\n", p->id, c->text, v, c->args[6], c->args[7]);
+						else { out("[p%d] FAIL %s = %u, expected %u..%u\n", p->id, c->text, v, c->args[6], c->args[7]); sFailures++; }
+					}
+					else if (v == c->addr) out("[p%d] ok %s = %u\n", p->id, c->text, v);
+					else { out("[p%d] FAIL %s = %u, expected %u\n", p->id, c->text, v, c->addr); sFailures++; }
+				}
 				advance = true; break;
 			}
 			if (++p->step >= c->frames) { out("[p%d] FAIL %s: mailbox never served\n", p->id, c->text); sFailures++; advance = true; }
@@ -3881,9 +3939,36 @@ static void loadScript(const char* path, int depth) {
         		sscanf(line, "%*s %*s %u %31s %u", &slot, field, &val);
         		memset(c.args, 0, sizeof(c.args));
         		c.args[0] = slot; c.args[1] = val; c.args[2] = 2;
-        		c.args[3] = !strcmp(field, "hp") ? 1 : !strcmp(field, "tracker") ? 2 : 0;
+        		c.args[3] = !strcmp(field, "hp") ? 1 : !strcmp(field, "tracker") ? 2 : !strcmp(field, "evs") ? 3 : !strcmp(field, "ivs") ? 4 : !strcmp(field, "clear") ? 5 : !strcmp(field, "dcsteps") ? 6 : !strcmp(field, "hyper") ? 7 : 0;
         	}
         	snprintf(c.text, sizeof(c.text), "%s", cmd);
+        	c.frames = 600;
+        } else if (!strcmp(cmd, "expect_mon")) {
+        	// expect_mon SLOT FIELD VALUE [ARG] [daycare]: one field of a party
+        	// (or Day Care) Pokemon read by the ROM's test hook; VALUE "-" only
+        	// prints it. Read-only.
+        	static const char *const fields[] = { "species", "level", "nature", "mint", "ability", "evtotal", "hyper", "iv",
+        	    "held", "egg", "personality", "move", "friendship", "gender", "ev", "otid", "perfect", "exp", "hasmove", "stat", "dcsteps" };
+        	char slot[16] = "", field[24] = "", val[24] = "", arg[24] = "", src[24] = "";
+        	sscanf(line, "%*s %*s %15s %23s %23s %23s %23s", slot, field, val, arg, src);
+        	c.kind = C_TEST_HOOK;
+        	c.value = 7;
+        	memset(c.args, 0, sizeof(c.args));
+        	c.args[0] = atoi(slot);
+        	c.args[1] = 0xFFFF;
+        	for (unsigned k = 0; k < sizeof(fields) / sizeof(fields[0]); k++) if (!strcmp(field, fields[k])) c.args[1] = k;
+        	if (c.args[1] == 0xFFFF) { fprintf(stderr, "expect_mon: unknown field %s\n", field); exit(2); }
+        	c.args[2] = strtoul(arg, NULL, 0);
+        	c.args[3] = !strcmp(src, "daycare") || !strcmp(arg, "daycare");
+        	if (!strcmp(arg, "daycare")) c.args[2] = 0;
+        	c.size = strcmp(val, "-") != 0;
+        	c.addr = strtoul(val, NULL, 0);
+        	// VALUE LO..HI: a range (packed in args[6..7], unused by the hook)
+        	{ char* dots = strstr(val, ".."); if (dots) { c.args[6] = strtoul(val, NULL, 0); c.args[7] = strtoul(dots + 2, NULL, 0); c.size = 2; } }
+        	// VALUE @K: the first time, remember it as note K; later, the same
+        	// value is expected (identity kept through a deposit, a reload).
+        	if (val[0] == '@') { c.size = 3; c.addr = atoi(val + 1) & 7; }
+        	snprintf(c.text, sizeof(c.text), "expect_mon %s %s%s", slot, field, c.args[3] ? " daycare" : "");
         	c.frames = 600;
         } else if (!strcmp(cmd, "watch")) {
         	c.kind = C_WATCH;
@@ -4119,6 +4204,9 @@ static void loadScript(const char* path, int depth) {
             c.value = strtoul(b, NULL, 0);
         } else if (!strcmp(cmd, "note_money")) {
             c.kind = C_NOTE_MONEY;
+        } else if (!strcmp(cmd, "expect_money_change") || !strcmp(cmd, "fixture_money")) {
+            c.kind = !strcmp(cmd, "fixture_money") ? C_SET_MONEY : C_MONEY_DELTA;
+            c.value = (unsigned)strtol(a, NULL, 0);
         } else if (!strcmp(cmd, "expect_money_same")) {
             c.kind = C_MONEY_SAME;
         } else if (!strcmp(cmd, "expect_same_prize")) {
@@ -4150,6 +4238,19 @@ static void loadScript(const char* path, int depth) {
             c.addr = symAddr(a);
             snprintf(c.text, sizeof(c.text), "expect_text");
             snprintf(c.text + 16, sizeof(c.text) - 16, "%s", b);
+            for (char* q = c.text + 16; *q; q++) if (*q == '_') *q = ' ';
+        } else if (!strcmp(cmd, "expect_cb2")) {
+            // expect_cb2 FUNC: gMain.callback2 is FUNC now.
+            c.kind = C_EXPECT_CB2;
+            c.addr = symAddr(a) & ~1u;
+            snprintf(c.text, sizeof(c.text), "%s", a);
+        } else if (!strcmp(cmd, "note_text") || !strcmp(cmd, "expect_noted")) {
+            // note_text Some_words: from now on, watch every frame's
+            // gStringVar4 for them; expect_noted: they were seen.
+            c.kind = C_NOTE_TEXT;
+            c.size = !strcmp(cmd, "note_text");
+            snprintf(c.text, sizeof(c.text), "%s", cmd);
+            snprintf(c.text + 16, sizeof(c.text) - 16, "%s", c.size ? a : "");
             for (char* q = c.text + 16; *q; q++) if (*q == '_') *q = ' ';
         } else if (!strcmp(cmd, "until_field_text")) {
             // until_field_text Some_words_here [timeout]: taps A meanwhile

@@ -12,6 +12,7 @@ enum {
     COOP_TEST_GIVE_ITEM,  // item, count
     COOP_TEST_SEND_REPLY, // kind, seq: a co-op reply block on the link (also in battle)
     COOP_TEST_SET_DATA,   // slot, friendship (test_friendship)
+    COOP_TEST_GET_DATA,   // slot, field (COOP_TEST_FIELD_*), arg, source (0 party, 1 Day Care): value
 };
 
 struct CoopTestMailbox
@@ -20,6 +21,16 @@ struct CoopTestMailbox
     u16 cmd;
     u16 arg[8];
     u16 result;
+    u32 value;            // COOP_TEST_GET_DATA's answer
+};
+
+enum {
+    COOP_TEST_FIELD_SPECIES, COOP_TEST_FIELD_LEVEL, COOP_TEST_FIELD_NATURE, COOP_TEST_FIELD_MINT_NATURE,
+    COOP_TEST_FIELD_ABILITY_NUM, COOP_TEST_FIELD_EV_TOTAL, COOP_TEST_FIELD_HYPER_MASK, COOP_TEST_FIELD_IV,
+    COOP_TEST_FIELD_HELD, COOP_TEST_FIELD_EGG, COOP_TEST_FIELD_PERSONALITY, COOP_TEST_FIELD_MOVE,
+    COOP_TEST_FIELD_FRIENDSHIP, COOP_TEST_FIELD_GENDER, COOP_TEST_FIELD_EV, COOP_TEST_FIELD_OTID,
+    COOP_TEST_FIELD_PERFECT_IVS, COOP_TEST_FIELD_EXP, COOP_TEST_FIELD_HAS_MOVE, COOP_TEST_FIELD_STAT,
+    COOP_TEST_FIELD_DAYCARE_STEPS, // daycare: slot 0/1 that Pokemon's steps, 2 the egg step counter, 3 eggs waiting (offspring personality != 0)
 };
 
 extern struct CoopTestMailbox gCoopTestMailbox;

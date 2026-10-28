@@ -1,0 +1,205 @@
+# Trainer Exchange stock by BADGES: every counter's BUY list on the main
+# journey's checkpoint 43 (Kai: 4 BADGES), and the COMING SOON line.
+# FIXTURE: fixture_warp to Rustboro. Nothing is bought.
+include continue.inc
+b no_wild 1
+b mash_field 300 B
+include exchange_enter_p0.inc
+# TM counter: 38 for sale
+0 walk 2 4 3000
+0 press RIGHT 2
+0 wait 10
+0 press A 2
+0 until_task Task_HandleScrollingMultichoiceInput 900 A
+0 wait 20
+0 press A 2
+0 until_task Task_ShopMenu 600
+0 wait 20
+0 press A 2
+0 until_cb2 CB2_BuyMenu 600
+0 wait 60
+0 shot tm-stock
+0 expect gCoopExchangeStats+3:1 2
+0 expect_range gCoopExchangeStats+2:1 38 38
+0 press B 2
+0 wait 60
+0 press B 2
+0 until_task Task_ShopMenu 600
+0 wait 30
+0 press DOWN 2
+0 wait 10
+0 press DOWN 2
+0 wait 10
+0 press A 2
+0 until_task Task_HandleScrollingMultichoiceInput 900
+0 wait 20
+0 press DOWN 2
+0 wait 8
+0 press DOWN 2
+0 wait 8
+0 press DOWN 2
+0 wait 8
+0 press DOWN 2
+0 wait 8
+0 press DOWN 2
+0 wait 8
+0 press A 2
+0 mash_field 600 B
+# HELD counter: 84 for sale
+0 walk 5 7 3000
+0 press UP 2
+0 wait 10
+0 press A 2
+0 until_task Task_HandleScrollingMultichoiceInput 900 A
+0 wait 20
+0 press A 2
+0 until_task Task_ShopMenu 600
+0 wait 20
+0 press A 2
+0 until_cb2 CB2_BuyMenu 600
+0 wait 60
+0 shot held-stock
+0 expect gCoopExchangeStats+3:1 2
+0 expect_range gCoopExchangeStats+2:1 84 84
+0 press B 2
+0 wait 60
+0 press B 2
+0 until_task Task_ShopMenu 600
+0 wait 30
+0 press DOWN 2
+0 wait 10
+0 press DOWN 2
+0 wait 10
+0 press A 2
+0 until_task Task_HandleScrollingMultichoiceInput 900
+0 wait 20
+0 press DOWN 2
+0 wait 8
+0 note_text Unlocks_with_5_BADGES
+0 press A 2
+0 until_task Task_HandleScrollingMultichoiceInput 1500 A
+0 expect_noted
+0 wait 20
+0 press DOWN 2
+0 wait 8
+0 press DOWN 2
+0 wait 8
+0 press A 2
+0 mash_field 600 B
+# EVO counter: 35 for sale
+0 walk 7 7 3000
+0 press UP 2
+0 wait 10
+0 press A 2
+0 until_task Task_HandleScrollingMultichoiceInput 900 A
+0 wait 20
+0 press A 2
+0 until_task Task_ShopMenu 600
+0 wait 20
+0 press A 2
+0 until_cb2 CB2_BuyMenu 600
+0 wait 60
+0 shot evo-stock
+0 expect gCoopExchangeStats+3:1 2
+0 expect_range gCoopExchangeStats+2:1 35 35
+0 press B 2
+0 wait 60
+0 press B 2
+0 until_task Task_ShopMenu 600
+0 wait 30
+0 press DOWN 2
+0 wait 10
+0 press DOWN 2
+0 wait 10
+0 press A 2
+0 until_task Task_HandleScrollingMultichoiceInput 900
+0 wait 20
+0 press DOWN 2
+0 wait 8
+0 note_text Unlocks_with_5_BADGES
+0 press A 2
+0 until_task Task_HandleScrollingMultichoiceInput 1500 A
+0 expect_noted
+0 wait 20
+0 press DOWN 2
+0 wait 8
+0 press DOWN 2
+0 wait 8
+0 press A 2
+0 mash_field 600 B
+# TRAIN counter: 23 for sale
+0 walk 9 7 3000
+0 press UP 2
+0 wait 10
+0 press A 2
+0 until_task Task_HandleScrollingMultichoiceInput 900 A
+0 wait 20
+0 press A 2
+0 until_task Task_ShopMenu 600
+0 wait 20
+0 press A 2
+0 until_cb2 CB2_BuyMenu 600
+0 wait 60
+0 shot train-stock
+0 expect gCoopExchangeStats+3:1 2
+0 expect_range gCoopExchangeStats+2:1 23 23
+0 press B 2
+0 wait 60
+0 press B 2
+0 until_task Task_ShopMenu 600
+0 wait 30
+0 press DOWN 2
+0 wait 10
+0 press DOWN 2
+0 wait 10
+0 press A 2
+0 until_task Task_HandleScrollingMultichoiceInput 900
+0 wait 20
+0 press DOWN 2
+0 wait 8
+0 press DOWN 2
+0 wait 8
+0 press DOWN 2
+0 wait 8
+0 press DOWN 2
+0 wait 8
+0 press DOWN 2
+0 wait 8
+0 press A 2
+0 mash_field 600 B
+# BREED counter: 7 for sale
+0 walk 12 4 3000
+0 press LEFT 2
+0 wait 10
+0 press A 2
+0 until_task Task_HandleScrollingMultichoiceInput 900 A
+0 wait 20
+0 press A 2
+0 until_task Task_ShopMenu 600
+0 wait 20
+0 press A 2
+0 until_cb2 CB2_BuyMenu 600
+0 wait 60
+0 shot breed-stock
+0 expect gCoopExchangeStats+3:1 2
+0 expect_range gCoopExchangeStats+2:1 7 7
+0 press B 2
+0 wait 60
+0 press B 2
+0 until_task Task_ShopMenu 600
+0 wait 30
+0 press DOWN 2
+0 wait 10
+0 press DOWN 2
+0 wait 10
+0 press A 2
+0 until_task Task_HandleScrollingMultichoiceInput 900
+0 wait 20
+0 press DOWN 2
+0 wait 8
+0 press DOWN 2
+0 wait 8
+0 press DOWN 2
+0 wait 8
+0 press A 2
+0 mash_field 600 B

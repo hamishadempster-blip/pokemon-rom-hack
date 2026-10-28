@@ -1,0 +1,39 @@
+# Continues breeding_rules' saves after power-on (not linked: each save on
+# its own). Rosa's egg was left with the man: it is still waiting, and is
+# the egg she gets: VULPIX, HP IV 0 (POWER WEIGHT), not hyper trained, at
+# most one perfect IV. Kai's AZURILL egg is still an egg; it hatches (hatch
+# counter 0 and the Day Care step counter one short: TEST HELPERS) and
+# AZURILL is in his POKeDEX.
+include continue.inc
+b no_wild 1
+b mash_field 300 B
+1 expect_flag 0x86 1
+1 fixture_warp 0 32 47 7
+1 until_field 3000
+1 press UP 2
+1 wait 20
+1 press A 2
+1 until_task Task_HandleYesNoInput 3000 A
+1 wait 20
+1 shot rosa-offer
+1 press A 2
+1 mash_field 3000 B
+1 expect_flag 0x86 0
+1 party
+1 expect_mon 4 species 37
+1 expect_mon 4 egg 1
+1 expect_mon 4 iv 0 0
+1 expect_mon 4 hyper 0
+1 expect_mon 4 perfect 0..1
+0 expect_mon 2 egg 1
+0 expect_mon 2 species 298
+0 fixture_warp 0 32 50 9
+0 until_field 3000
+0 test_friendship 2 0
+0 test_data 0 dcsteps 127
+0 press DOWN 20
+0 until_cb2 CB2_EggHatch 900 A
+0 mash_field 4000 B
+0 expect_mon 2 egg 0
+0 expect_species 2 298
+0 expect_dex_caught 298 1
