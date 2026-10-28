@@ -56,6 +56,8 @@ extern const u8 Coop_EventScript_TalkPartner[];
 #define COOP_REFUSE_NONE            0
 #define COOP_REFUSE_SELF_NOT_READY  1
 #define COOP_REFUSE_PARTNER_NOT_READY 2
+#define COOP_REFUSE_PARTNER_BUSY    3   // the partner stayed in a menu screen
+extern u16 gCoopBusyRetries;
 
 // Why an ordinary fight stayed solo while linked with the Beacon on. Sent in
 // a NACK's badge byte and shown under the battle's first message.

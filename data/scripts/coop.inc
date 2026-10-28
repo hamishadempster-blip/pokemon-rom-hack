@@ -67,6 +67,7 @@ Coop_EventScript_NeedPartner::
 	specialvar VAR_RESULT, Coop_TakeRefusal
 	goto_if_eq VAR_RESULT, 1, Coop_EventScript_ShowNotReady
 	goto_if_eq VAR_RESULT, 2, Coop_EventScript_ShowPartnerNotReady
+	goto_if_eq VAR_RESULT, 3, Coop_EventScript_ShowPartnerBusy
 	msgbox Coop_Text_NeedPartner, MSGBOX_DEFAULT
 	releaseall
 	end
@@ -105,6 +106,12 @@ Coop_EventScript_ShowNotReady::
 
 Coop_EventScript_ShowPartnerNotReady::
 	msgbox Coop_Text_PartnerNotReady, MSGBOX_DEFAULT
+	releaseall
+	end
+
+Coop_EventScript_ShowPartnerBusy::
+	specialvar VAR_RESULT, CoopDeal_BufferPartnerName
+	msgbox Coop_Text_PartnerBusy, MSGBOX_DEFAULT
 	releaseall
 	end
 
@@ -442,6 +449,11 @@ Coop_Text_NotReady:
 	.string "go into a co-op battle.\p"
 	.string "None of them can fight right now.\n"
 	.string "Heal one or move one up.$"
+
+Coop_Text_PartnerBusy:
+	.string "{STR_VAR_1} stayed busy in a menu or\n"
+	.string "a conversation. Nothing started.\p"
+	.string "Try again once {STR_VAR_1} is free.$"
 
 Coop_Text_PartnerNotReady:
 	.string "Your partner's first three\n"

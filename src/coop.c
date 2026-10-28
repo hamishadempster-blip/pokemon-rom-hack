@@ -19,6 +19,9 @@
 #include "field_player_avatar.h"
 #include "field_screen_effect.h"
 #include "field_message_box.h"
+#include "trainer_hill.h"
+#include "constants/layouts.h"
+#include "constants/trainer_hill.h"
 #include "link.h"
 #include "main.h"
 #include "union_room.h"
@@ -165,6 +168,13 @@ static EWRAM_DATA bool8 sResumeScript = FALSE;
 static EWRAM_DATA bool8 sWaitingAck = FALSE;
 static EWRAM_DATA bool8 sInviteSent = FALSE;
 static EWRAM_DATA u16 sInviteTimer = 0;
+// Frames before a mandatory invite is sent again to a partner who was busy
+// in a menu screen; gCoopBusyRetries counts those (tests).
+static EWRAM_DATA u8 sInviteRetryDelay = 0;
+EWRAM_DATA u16 gCoopBusyRetries = 0;
+#define COOP_BUSY_RETRY_FRAMES 30
+// A partner who answers "busy" (a menu, a message) gets this long in all.
+#define COOP_BUSY_TIMEOUT (60 * 30)
 static EWRAM_DATA u16 sInviteSeq = 0;
 static EWRAM_DATA u8 sBattleKind = 0;
 static EWRAM_DATA u8 sBattleBadge = 0;
@@ -434,12 +444,30 @@ u16 Coop_CableUp(void)
     return sLinkState == COOP_LINK_UP;
 }
 
+// Maps whose room is built from each save's own data: a Secret Base (its
+// owner's decorations), a Battle Pyramid floor and a Trainer Hill floor
+// (their own layouts). Two players there share a map number, not a room, so
+// the partner is neither drawn nor counted as being on this map.
+static bool8 Coop_MapIsPersonalInstance(void)
+{
+    u8 hill = GetCurrentTrainerHillMapId();
+
+    return gMapHeader.mapType == MAP_TYPE_SECRET_BASE
+        || gMapHeader.mapLayoutId == LAYOUT_BATTLE_FRONTIER_BATTLE_PYRAMID_FLOOR
+        || (hill != 0 && hill != TRAINER_HILL_ENTRANCE);
+}
+
+static bool8 Coop_SameRoom(u8 group, u8 num)
+{
+    return CoopProtocol_SameMap(group, num, gSaveBlock1Ptr->location.mapGroup, gSaveBlock1Ptr->location.mapNum)
+        && !Coop_MapIsPersonalInstance();
+}
+
 u16 Coop_PartnerOnSameMap(void)
 {
     if (!Coop_SessionActive() || !sPartnerValid)
         return FALSE;
-    return CoopProtocol_SameMap(sPartner.mapGroup, sPartner.mapNum,
-        gSaveBlock1Ptr->location.mapGroup, gSaveBlock1Ptr->location.mapNum);
+    return Coop_SameRoom(sPartner.mapGroup, sPartner.mapNum);
 }
 
 u16 Coop_PartnerOnSameTile(void)
@@ -585,8 +613,7 @@ bool8 Coop_MapCoordsToLocal(u8 group, u8 num, s16 x, s16 y, s16 *outX, s16 *outY
     const struct MapHeader *otherMap;
     int i, lx, ly;
 
-    if (CoopProtocol_SameMap(group, num,
-        gSaveBlock1Ptr->location.mapGroup, gSaveBlock1Ptr->location.mapNum))
+    if (Coop_SameRoom(group, num))
     {
         *outX = x;
         *outY = y;
@@ -1518,6 +1545,11 @@ static u16 Coop_InviteChecksum(const struct CoopInvite *invite)
 
 static void Coop_SendInvite(void)
 {
+    if (sInviteRetryDelay != 0)
+    {
+        sInviteRetryDelay--;
+        return;
+    }
     if (gLinkTransferringData || sInviteSent)
         return;
     sInvite.checksum = Coop_InviteChecksum(&sInvite);
@@ -1535,6 +1567,7 @@ static void Coop_QueueInvite(u8 kind, u16 trainerA, u16 trainerB, u8 badge, u16 
     sInvite.trainerB = trainerB;
     sInvite.aux = aux;
     sInvite.seq = ++sInviteSeq;
+    sInviteRetryDelay = 0;
     sRefusal = COOP_REFUSE_NONE;
     sWaitingAck = TRUE;
     sInviteSent = FALSE;
@@ -1776,6 +1809,18 @@ static void Coop_HandleInvite(u32 playerId, const struct CoopInvite *invite)
                 sInviteSent = FALSE;
                 return;
             }
+            // Neither is a gym, rival, Elite Four or story fight: a partner
+            // in a menu screen (bag, party, PC, a shop) is asked again a
+            // little later, until the invite's own time runs out.
+            if (Coop_IsMandatoryKind(sBattleKind) && invite->badge == COOP_SOLO_BUSY)
+            {
+                sInviteSent = FALSE;
+                sInviteRetryDelay = COOP_BUSY_RETRY_FRAMES;
+                sRefusal = COOP_REFUSE_PARTNER_BUSY;
+                if (gCoopBusyRetries < 0xFFFF)
+                    gCoopBusyRetries++;
+                return;
+            }
             sRefusal = COOP_REFUSE_PARTNER_NOT_READY;
             sSoloNote = invite->badge < COOP_SOLO_COUNT && invite->badge != COOP_SOLO_NONE
                       ? invite->badge : COOP_SOLO_DECLINED;
@@ -1817,6 +1862,17 @@ static void Coop_HandleInvite(u32 playerId, const struct CoopInvite *invite)
     {
         Coop_NoteBadTrainer(COOP_BADTR_INVITE, invite->trainerA, invite->trainerB);
         Coop_SendReplyWhy(COOP_KIND_NACK, invite->seq, COOP_SOLO_KIND);
+        return;
+    }
+
+    // A shared fight never starts from a menu screen (bag, party, PC, a
+    // shop) or under a message box: the battle would replace that screen
+    // without closing it (from a conversation the heap was left damaged and
+    // the game stopped at the battle's start). The inviter asks again until
+    // this player is back on the field.
+    if (Coop_IsMandatoryKind(invite->kind) && (gMain.callback2 != CB2_Overworld || !IsFieldMessageBoxHidden()))
+    {
+        Coop_SendReplyWhy(COOP_KIND_NACK, invite->seq, COOP_SOLO_BUSY);
         return;
     }
 
@@ -2145,10 +2201,15 @@ static void Coop_PollInviteTimeout(void)
     if ((sBattleKind == COOP_KIND_WILD || sBattleKind == COOP_KIND_TRAINER) && sInviteTimer == 20)
         ShowFieldMessage(sText_CallingPartner);
     Coop_SendInvite();
-    if (++sInviteTimer >= Coop_InviteTimeout(sBattleKind))
+    if (++sInviteTimer >= (Coop_IsMandatoryKind(sBattleKind) && sRefusal == COOP_REFUSE_PARTNER_BUSY
+                           ? COOP_BUSY_TIMEOUT : Coop_InviteTimeout(sBattleKind)))
     {
         if (Coop_IsOptionalKind(sBattleKind))
             sSoloNote = COOP_SOLO_NO_ANSWER;
+        // A mandatory fight whose partner stayed in a menu screen keeps
+        // COOP_REFUSE_PARTNER_BUSY (set by the busy answers) for its message.
+        if (!Coop_IsMandatoryKind(sBattleKind) && sRefusal == COOP_REFUSE_PARTNER_BUSY)
+            sRefusal = COOP_REFUSE_NONE;
         Coop_FailWait();
     }
 }
@@ -3875,6 +3936,29 @@ static void Coop_RestoreParty(bool8 aborted)
     sHasSnapshot = FALSE;
 }
 
+// The flags a shared win may set on both saves (the invite carries one).
+// A flag outside this list, from a damaged or foreign invite, is ignored
+// instead of being set on the partner's save.
+static bool8 Coop_SharedWinFlag(u16 flag)
+{
+    static const u16 sFlags[] = {
+        FLAG_DEFEATED_RUSTBORO_GYM, FLAG_DEFEATED_DEWFORD_GYM, FLAG_DEFEATED_MAUVILLE_GYM,
+        FLAG_DEFEATED_LAVARIDGE_GYM, FLAG_DEFEATED_PETALBURG_GYM, FLAG_DEFEATED_FORTREE_GYM,
+        FLAG_DEFEATED_MOSSDEEP_GYM, FLAG_DEFEATED_SOOTOPOLIS_GYM,
+        FLAG_DEFEATED_ELITE_4_SIDNEY, FLAG_DEFEATED_ELITE_4_PHOEBE, FLAG_DEFEATED_ELITE_4_GLACIA,
+        FLAG_DEFEATED_ELITE_4_DRAKE, FLAG_IS_CHAMPION, FLAG_DEFEATED_MAGMA_SPACE_CENTER,
+        FLAG_CARAVAN_RAIDERS_DUO, FLAG_COAST_CREW_DUO, FLAG_TWIN_EXH_WON, FLAG_TOURNEY_WON,
+    };
+    u32 i;
+
+    for (i = 0; i < ARRAY_COUNT(sFlags); i++)
+    {
+        if (sFlags[i] == flag)
+            return TRUE;
+    }
+    return FALSE;
+}
+
 static void Coop_GiveJointWin(void)
 {
     struct CoopSave *save = CoopSave();
@@ -3887,7 +3971,7 @@ static void Coop_GiveJointWin(void)
         if (save != NULL)
             save->jointBadges |= (u8)(1 << (sBattleBadge - 1));
     }
-    if (sBattleFlag != 0)
+    if (sBattleFlag != 0 && Coop_SharedWinFlag(sBattleFlag))
         FlagSet(sBattleFlag);
     if (sBattleKind == COOP_KIND_TRAINER || sBattleKind == COOP_KIND_STORY)
     {
