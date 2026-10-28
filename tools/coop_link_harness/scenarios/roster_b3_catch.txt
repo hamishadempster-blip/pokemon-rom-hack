@@ -1,0 +1,94 @@
+# Third roster batch: one catch from each encounter method and habitat the
+# batch uses, in ordinary wild battles (j68 saves: after the League, not
+# linked; random encounters on while hunting, nothing forced).
+# FIXTURES: fixture_warp onto each spot (the walk there is ordinary story
+# map); twenty ULTRA BALLs each (test_item); a SUPER ROD registered for
+# player 1 (neither save has a rod: they are optional in the story); a
+# POKeBLOCK CASE for player 0 if missing; inside the Safari Zone a
+# fixture_warp from the South area to the post-game North-East area (the
+# entrance was used normally: 500 paid, 30 SAFARI BALLs, safari mode on).
+# Player 0 (Kai): FLABeBe (#669) in Route 117 grass; KARRABLAST (#588) in
+# Altering Cave; RELLOR (#953) by ROCK SMASH on Route 111 (the rock comes
+# back on each map load); FURFROU (#676) in the post-game Safari Zone
+# North-East, caught with SAFARI BALLs.
+# Player 1 (Rosa): ALOLAN DIGLETT (form 963, #50) in Granite Cave B1F;
+# KRABBY (#98) with the SUPER ROD on Route 104; GALARIAN STUNFISK (form
+# 992, #618) while surfing on Route 114; GALARIAN YAMASK (form 991, #562) in
+# the Sandburied Ruins; HISUIAN ZORUA (form 1002, #570) on Mt. Pyre 6F.
+include continue.inc
+b no_wild 1
+b test_item 3 20
+1 fixture_item 4 711 1
+1 writep gSaveBlock1Ptr+0x496:2 711
+0 fixture_item 4 722 1
+b mash_field 300 B
+# grass
+0 fixture_warp 0 32 18 15
+# cave (Alola stand-in place)
+1 fixture_warp 24 8 6 13
+b until_field 3000
+b no_wild 0
+0 hunt 6 669 200000
+1 hunt 6 963 200000
+b no_wild 1
+b mash_field 600 B
+0 expect_dex_caught 669 1
+1 expect_dex_caught 50 1
+0 shot flabebe
+1 shot alolan-diglett
+# cave / fishing
+0 fixture_warp 24 106 5 13
+1 fixture_warp 0 19 30 8
+b until_field 3000
+1 press DOWN 2
+1 wait 20
+b no_wild 0
+0 hunt 6 588 200000
+1 hunt 6 98 200000 fish
+b no_wild 1
+b mash_field 600 B
+0 expect_dex_caught 588 1
+1 expect_dex_caught 98 1
+# rock smash / surfing
+1 fixture_warp 0 29 8 24
+b until_field 3000
+b no_wild 0
+0 hunt 6 1341 300000 smash 0 26 18 102 UP
+1 hunt 6 992 300000
+b no_wild 1
+b mash_field 600 B
+0 expect_dex_caught 953 1
+1 expect_dex_caught 618 1
+0 shot rellor
+1 shot galarian-stunfisk
+# Safari Zone (post-game area) / ruins
+0 fixture_warp 23 0 9 4
+1 fixture_warp 24 108 4 25
+b until_field 3000
+0 goto 8 4 600
+0 until_task Task_HandleYesNoInput 3000 A
+0 wait 20
+0 press A 2
+0 until_map 26 3 6000
+0 until_field 6000
+0 expect gNumSafariBalls 30
+0 fixture_warp 26 12 29 25
+b until_field 3000
+b no_wild 0
+0 hunt 30 676 300000
+1 hunt 6 991 200000
+b no_wild 1
+b mash_field 600 B
+0 expect_dex_caught 676 1
+1 expect_dex_caught 562 1
+0 shot furfrou
+# Mt. Pyre (Hisui stand-in place)
+1 fixture_warp 24 20 2 10
+1 until_field 3000
+1 no_wild 0
+1 hunt 6 1002 200000
+1 no_wild 1
+1 mash_field 600 B
+1 expect_dex_caught 570 1
+1 shot hisuian-zorua
+b party

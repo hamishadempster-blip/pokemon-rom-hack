@@ -28,7 +28,30 @@ static bool8 TestHook_SetMon(void)
 
     if (slot >= PARTY_SIZE || species == SPECIES_NONE || species >= NUM_SPECIES || level < 1 || level > MAX_LEVEL)
         return FALSE;
-    CreateMonWithIVs(&mon, species, level, Random32(), OTID_STRUCT_PLAYER_ID, MAX_PER_STAT_IVS);
+    // arg 7, bits 4-5: 1 male, 2 female, 3 a personality divisible by 100
+    // (Dunsparce's rare evolution); bits 8-12: a nature + 1. Personalities
+    // are drawn until one fits, as a wild Pokemon's would be.
+    {
+        u32 want = (gCoopTestMailbox.arg[7] >> 4) & 3, nature = (gCoopTestMailbox.arg[7] >> 8) & 0x1F;
+        u32 tries, personality = Random32();
+
+        for (tries = 0; tries < 200000; tries++)
+        {
+            bool32 fits = TRUE;
+            if (want == 1 && GetGenderFromSpeciesAndPersonality(species, personality) != MON_MALE)
+                fits = FALSE;
+            if (want == 2 && GetGenderFromSpeciesAndPersonality(species, personality) != MON_FEMALE)
+                fits = FALSE;
+            if (want == 3 && personality % 100 != 0)
+                fits = FALSE;
+            if (nature != 0 && GetNatureFromPersonality(personality) != nature - 1)
+                fits = FALSE;
+            if (fits)
+                break;
+            personality = Random32();
+        }
+        CreateMonWithIVs(&mon, species, level, personality, OTID_STRUCT_PLAYER_ID, MAX_PER_STAT_IVS);
+    }
     GiveMonInitialMoveset(&mon);
     for (i = 0; i < MAX_MON_MOVES; i++)
     {
@@ -42,9 +65,9 @@ static bool8 TestHook_SetMon(void)
         SetMonData(&mon, MON_DATA_MET_LEVEL, &metLevel);
     }
     // arg 7: an ability slot + 1 (0 keeps the one the personality gave).
-    if (gCoopTestMailbox.arg[7] >= 1 && gCoopTestMailbox.arg[7] <= NUM_ABILITY_SLOTS)
+    if ((gCoopTestMailbox.arg[7] & 0xF) >= 1 && (gCoopTestMailbox.arg[7] & 0xF) <= NUM_ABILITY_SLOTS)
     {
-        u8 abilityNum = gCoopTestMailbox.arg[7] - 1;
+        u8 abilityNum = (gCoopTestMailbox.arg[7] & 0xF) - 1;
         SetMonData(&mon, MON_DATA_ABILITY_NUM, &abilityNum);
     }
     CalculateMonStats(&mon);
@@ -120,6 +143,23 @@ void CoopTest_Poll(void)
             u16 item = gCoopTestMailbox.arg[1];   // held item (test_held)
             SetMonData(&gPlayerParty[gCoopTestMailbox.arg[0]], MON_DATA_HELD_ITEM, &item);
             ok = TRUE;
+        }
+        else if (gCoopTestMailbox.arg[2] == 2)
+        {
+            // test_data: arg 3 = 1 current HP (a hurt Pokemon), 2 the
+            // evolution tracker (moves used, as counted in battle).
+            struct Pokemon *mon = &gPlayerParty[gCoopTestMailbox.arg[0]];
+            u32 v = gCoopTestMailbox.arg[1];
+            if (gCoopTestMailbox.arg[3] == 1 && v >= 1 && v <= GetMonData(mon, MON_DATA_MAX_HP))
+            {
+                SetMonData(mon, MON_DATA_HP, &v);
+                ok = TRUE;
+            }
+            else if (gCoopTestMailbox.arg[3] == 2 && v <= 0x3FF)
+            {
+                SetMonData(mon, MON_DATA_EVOLUTION_TRACKER, &v);
+                ok = TRUE;
+            }
         }
         else if (gCoopTestMailbox.arg[2] == 0 && gCoopTestMailbox.arg[1] <= MAX_FRIENDSHIP)
         {

@@ -1,0 +1,179 @@
+# Battle abilities and forms of the third roster batch in co-op doubles
+# (Route 116, j16 saves, linked, Beacon ON). Kai's game (link master) runs
+# the battle; the checks read its battle data, Rosa's at her next turn, and
+# compare the pictures on both screens at a moment when neither is
+# choosing a move (the chooser's Pokemon bobs).
+# TEST HELPERS (logged): the leads made with test_mon (levels and moves as
+# below; moves picked so each effect happens on the first turns); DRIVER:
+# force_move picks the move (and the ally as the target where shown).
+# FIXTURES: Route 116 grass all LOTAD (as in battleforms_coop); forced
+# encounter steps; Karen's sight hidden.
+# 1. Kai's WISHIWASHI (Lv 30, SCHOOLING) enters in School Form; it uses
+#    SUPER FANG on Rosa's MINIOR (Lv 32, SHIELDS DOWN; 90 HP, so exactly half
+#    is left): at half HP the Meteor Form
+#    turns into its Core Form.
+# 2. Rosa's CHERRIM uses SUNNY DAY: FLOWER GIFT turns it into its Sunshine
+#    Form; next turn it uses SWORDS DANCE and Kai's ORICORIO (DANCER) dances
+#    it too (both screens: "ORICORIO used SWORDS DANCE", its Attack rose).
+# 3. Kai's PASSIMIAN (Lv 70) uses SEISMIC TOSS on Rosa's GOLISOPOD
+#    (EMERGENCY EXIT): below half HP it flees, which in a wild battle ends
+#    the battle (the engine's rule, as in Sun and Moon): both games return
+#    to the field together, still linked.
+# 4. Kai's PASSIMIAN (RECEIVER) knocks out Rosa's TORKOAL (DROUGHT, its
+#    second ability slot, chosen by test_mon; Lv 10)
+#    with SEISMIC TOSS: PASSIMIAN receives DROUGHT.
+include continue.inc
+include relink.inc
+b expect coop.sLinkState 2
+b smart_moves 1
+include beacon_on.inc
+b mash_field 2000 B
+b expect coop.sBeacon+1:1 1
+b no_wild 1
+b fixture_rom16 gRoute116_LandMons+2 270
+b fixture_rom16 gRoute116_LandMons+6 270
+b fixture_rom16 gRoute116_LandMons+10 270
+b fixture_rom16 gRoute116_LandMons+14 270
+b fixture_rom16 gRoute116_LandMons+18 270
+b fixture_rom16 gRoute116_LandMons+22 270
+b fixture_rom16 gRoute116_LandMons+26 270
+b fixture_rom16 gRoute116_LandMons+30 270
+b fixture_rom16 gRoute116_LandMons+34 270
+b fixture_rom16 gRoute116_LandMons+38 270
+b fixture_rom16 gRoute116_LandMons+42 270
+b fixture_rom16 gRoute116_LandMons+46 270
+0 fixture_warp 0 31 23 17
+1 fixture_warp 0 31 25 17
+b until_field 3000
+b sync
+b fixture_obj 17 7 0
+0 test_mon 0 746 30 162 0 0 0 0
+1 test_mon 0 774 32 150 0 0 0 0
+0 force_move 0 ally
+1 force_move 0
+b test_heal
+b sync
+0 no_wild 0
+0 press LEFT 3
+0 wait 20
+0 force_encounter 1
+0 write sWildEncounterImmunitySteps:1 4
+0 write sPrevMetatileBehavior:2 2
+0 press LEFT 10
+b until_cb2 BattleMainCB2 4000 A
+0 until_mem gBattleMons:2 1175 1500
+b until_battle_text nothing_happened 8000 auto
+b sync
+b shot school
+0 expect_screen_same 8 56 56 48
+b until_battle_text used_Super 8000 auto
+0 until_mem gBattleMons+280:2 1199 6000
+b until_battle_text Waiting_for 8000 auto
+1 expect gBattleMons+280:2 1199
+1 expect gBattleMons:2 1175
+b until_battle_text nothing_happened 8000 auto
+b sync
+b shot core
+0 expect_screen_same 72 64 64 40
+b force_move -1
+b mash_field 20000
+b until_field 3000
+b sync
+0 no_wild 1
+0 fixture_warp 0 31 23 17
+1 fixture_warp 0 31 25 17
+b until_field 3000
+b sync
+b fixture_obj 17 7 0
+0 test_mon 0 741 30 150 0 0 0 0
+1 test_mon 0 421 30 241 14 0 0 0
+0 force_move 0
+1 force_move 0
+b test_heal
+b sync
+0 no_wild 0
+0 press LEFT 3
+0 wait 20
+0 force_encounter 1
+0 write sWildEncounterImmunitySteps:1 4
+0 write sPrevMetatileBehavior:2 2
+0 press LEFT 10
+b until_cb2 BattleMainCB2 4000 A
+b until_battle_text used_Sunny 8000 auto
+0 until_mem gBattleMons+280:2 1061 3000
+1 force_move 1
+b until_battle_text Waiting_for 8000 auto
+1 expect gBattleMons+280:2 1061
+b until_battle_text nothing_happened 8000 auto
+b sync
+b shot sunshine
+0 expect_screen_same 72 64 64 40
+b until_battle_text Oricorio_used_Swords 8000 auto
+b until_battle_text Attack_rose 3000 auto
+b wait 30
+b shot dancer
+b until_battle_text What_will 8000 auto
+b force_move -1
+b mash_field 20000
+b until_field 3000
+b sync
+0 no_wild 1
+0 fixture_warp 0 31 23 17
+1 fixture_warp 0 31 25 17
+b until_field 3000
+b sync
+b fixture_obj 17 7 0
+0 test_mon 0 766 70 69 0 0 0 0
+1 test_mon 0 768 30 150 0 0 0 0
+0 force_move 0 ally
+1 force_move 0
+b test_heal
+b sync
+0 no_wild 0
+0 press LEFT 3
+0 wait 20
+0 force_encounter 1
+0 write sWildEncounterImmunitySteps:1 4
+0 write sPrevMetatileBehavior:2 2
+0 press LEFT 10
+b until_cb2 BattleMainCB2 4000 A
+b until_battle_text used_Seismic 8000 auto
+b until_field 4000
+b force_move -1
+b sync
+b shot emergency-exit
+b expect coop.sLinkState 2
+b hex gBattleOutcome 1
+b party
+0 no_wild 1
+0 fixture_warp 0 31 23 17
+1 fixture_warp 0 31 25 17
+b until_field 3000
+b sync
+b fixture_obj 17 7 0
+0 test_mon 0 766 70 69 0 0 0 0
+1 test_mon 0 324 10 150 0 0 0 2
+0 force_move 0 ally
+1 force_move 0
+b test_heal
+b sync
+0 no_wild 0
+0 press LEFT 3
+0 wait 20
+0 force_encounter 1
+0 write sWildEncounterImmunitySteps:1 4
+0 write sPrevMetatileBehavior:2 2
+0 press LEFT 10
+b until_cb2 BattleMainCB2 4000 A
+b until_battle_text used_Seismic 8000 auto
+b until_battle_text taken_over 8000 auto
+0 until_mem gBattleMons+32:2 70 900
+b wait 60
+b shot receiver
+b force_move -1
+b mash_field 20000
+b until_field 3000
+b sync
+0 no_wild 1
+b expect coop.sLinkState 2
+b expect_tasks MAX 2

@@ -107,6 +107,7 @@ if [ -n "${J16:-}" ]; then
 	run revamp_coop_support SAVE0="$J16/p0.sav" SAVE1="$J16/p1.sav"
 	# Second roster batch: Cramorant, Morpeko and Eiscue forms on both games.
 	run battleforms_coop SAVE0="$J16/p0.sav" SAVE1="$J16/p1.sav"
+	run roster_b3_battle SAVE0="$J16/p0.sav" SAVE1="$J16/p1.sav"
 fi
 
 # J43/J48=dir: checkpoints 43 (Rustboro, after Route 117) and 48 (Route
@@ -139,6 +140,9 @@ if [ -n "${J65:-}" ]; then
 	run roster_breeding SAVE0="$J65/p0.sav" SAVE1="$J65/p1.sav"
 	run fieldguide_probe SAVE0="$J65/p0.sav" SAVE1="$J65/p1.sav"
 	run shop_b2 SAVE0="$J65/p0.sav" SAVE1="$J65/p1.sav"
+	run roster_b3_evo_place SAVE0="$J65/p0.sav" SAVE1="$J65/p1.sav" RTC_EPOCH0=1699923600 RTC_EPOCH1=1699963200
+	run roster_b3_evo_misc SAVE0="$J65/p0.sav" SAVE1="$J65/p1.sav" RTC_EPOCH0=1699923600 RTC_EPOCH1=1699963200
+	run roster_b3_services SAVE0="$J65/p0.sav" SAVE1="$J65/p1.sav"
 fi
 
 # J52=dir with p0.sav/p1.sav from checkpoint 52 (Lilycove, linked): normal
@@ -164,6 +168,7 @@ if [ -n "${J68:-}" ]; then
 	# Pokedex reach and search; every optional quest started and finished
 	# on a save that has cleared the League.
 	run dex_probe SAVE0="$J68/p0.sav" SAVE1="$J68/p1.sav"
+	run roster_b3_catch SAVE0="$J68/p0.sav" SAVE1="$J68/p1.sav"
 	for s in shoal_solo caravan_solo coast_solo twins_solo beacon_solo pp_solo; do
 		run_as "${s}_j68" "$s" SAVE0="$J68/p0.sav" SAVE1="$J68/p1.sav"
 	done
@@ -218,6 +223,8 @@ if [ -n "${SEG6:-}" ]; then
 	# Second roster batch in play: catch, trade, store, reload.
 	run roster_b2_play SAVE0="$SEG6/p0.sav" SAVE1="$SEG6/p1.sav"
 	run roster_b2_reload SAVE0="$out/roster_b2_play/p0.sav" SAVE1="$out/roster_b2_play/p1.sav"
+	run roster_b3_play SAVE0="$SEG6/p0.sav" SAVE1="$SEG6/p1.sav"
+	run roster_b3_reload SAVE0="$out/roster_b3_play/p0.sav" SAVE1="$out/roster_b3_play/p1.sav"
 	# Quests: Shoal Cave at both tides (and left half done across a reload),
 	# loss/retreat/retry, a busy partner and simultaneous interaction.
 	run_as shoal_solo_high shoal_solo SAVE0="$SEG6/p0.sav" SAVE1="$SEG6/p1.sav" RTC_EPOCH0=1699923600

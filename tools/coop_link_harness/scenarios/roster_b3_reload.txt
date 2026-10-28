@@ -1,0 +1,20 @@
+# Continues roster_b3_play's saves: after a power-on reload the traded
+# catches are in the parties, the Pokedex flags kept, nothing copied; the
+# partner Pokedex (kept in each save from the last link) still marks the
+# partner's catches; it is not the save's own caught list.
+include continue.inc
+b no_wild 1
+0 expect_species 1 734
+1 expect_species 1 427
+0 expect_dex_caught 427 1
+0 expect_dex_caught 734 1
+1 expect_dex_caught 734 1
+1 expect_dex_caught 427 1
+0 expect_partner_dex 734 1
+0 expect_partner_dex 427 1
+1 expect_partner_dex 427 1
+1 expect_partner_dex 734 1
+b expect_mons_intact
+b expect_no_copies
+b party
+0 expect_pc_count 0

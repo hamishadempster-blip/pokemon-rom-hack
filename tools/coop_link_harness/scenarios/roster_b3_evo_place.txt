@@ -1,0 +1,359 @@
+# Third roster batch: evolutions that depend on the place, the time of day,
+# a held or used item, a known move or another Pokemon in the party (j65
+# saves: eight badges, not linked; Kai's clock is midday, Rosa's 23:00).
+# TEST HELPERS (logged): each Pokemon made in the lead slot (test_mon at the
+# level shown, moves where the method needs one), forty RARE CANDIES; the
+# evolution items come from the bag after a logged test_item (all of them
+# are sold in Lilycove; shop_b3 buys them). FIXTURES: fixture_warp to each
+# place. Every evolution runs through the game: the Bag's USE, the party
+# menu, the evolution scene.
+# Regional branches by place (src/pokemon.c GetEvolutionRegion): DEWFORD
+# TOWN = Alola, ROUTE 114 = Galar, MT. PYRE = Hisui.
+# Kai: PIKACHU + THUNDER STONE in Dewford -> ALOLAN RAICHU, on Route 114 ->
+# RAICHU; on Route 114: KOFFING Lv 35 -> GALARIAN WEEZING; MIME JR. knowing
+# MIMIC -> GALARIAN MR. MIME, Lv 42 -> MR. RIME; GALARIAN MEOWTH Lv 28 ->
+# PERRSERKER. Mt. Pyre 1F: QUILAVA Lv 36 -> HISUIAN TYPHLOSION; GOOMY Lv 40
+# -> HISUIAN SLIGGOO; at the foggy summit Lv 50 -> HISUIAN GOODRA and
+# SLIGGOO Lv 50 -> GOODRA. By day: HISUIAN SNEASEL + RAZOR CLAW -> SNEASLER;
+# SCYTHER + BLACK AUGURITE -> KLEAVOR; HISUIAN QWILFISH knowing BARB
+# BARRAGE -> OVERQWIL; PALDEAN WOOPER Lv 20 -> CLODSIRE; GALARIAN SLOWPOKE +
+# GALARICA CUFF -> GALARIAN SLOWBRO, + GALARICA WREATH -> GALARIAN SLOWKING;
+# KARRABLAST + LINKING CORD with SHELMET in the party -> ESCAVALIER, and
+# the other way round -> ACCELGOR.
+# Rosa (night): URSARING + PEAT BLOCK on Mt. Pyre -> URSALUNA; in Dewford
+# CUBONE Lv 28 -> ALOLAN MAROWAK and EXEGGCUTE + LEAF STONE -> ALOLAN
+# EXEGGUTOR; on Route 114 CUBONE -> MAROWAK (the ordinary form outside the
+# Alola place); GALARIAN LINOONE Lv 35 at night -> OBSTAGOON; GALARIAN
+# CORSOLA Lv 38 -> CURSOLA.
+include continue.inc
+b no_wild 1
+b press START 2
+b wait 40
+b menu_to COOP
+b press A 2
+b wait 60
+b press DOWN 2
+b wait 10
+b press DOWN 2
+b wait 10
+b press DOWN 2
+b wait 10
+b press A 2
+b wait 120
+b press A 2
+b wait 120
+b mash_field 1500
+b test_item 102 40
+0 test_item 213 2
+0 test_item 492 1
+0 test_item 795 1
+0 test_item 225 1
+0 test_item 226 1
+0 test_item 796 2
+1 test_item 797 1
+1 test_item 214 1
+# Kai: Dewford Town stands in for Alola
+0 fixture_warp 0 11 8 11
+0 until_field 3000
+0 test_mon 0 25 20
+0 mash_field 300 B
+0 press START 2
+0 wait 40
+0 menu_to BAG
+0 press A 2
+0 until_cb2 CB2_BagMenuRun 2500
+0 wait 60
+0 field_item 213 0
+0 expect_species 0 958
+0 shot alolan-raichu
+# Kai: Route 114 stands in for Galar
+0 fixture_warp 0 29 22 11
+0 until_field 3000
+0 test_mon 0 25 20
+0 mash_field 300 B
+0 press START 2
+0 wait 40
+0 menu_to BAG
+0 press A 2
+0 until_cb2 CB2_BagMenuRun 2500
+0 wait 60
+0 field_item 213 0
+0 expect_species 0 26
+0 shot raichu-on-route114
+0 test_mon 0 109 34
+0 mash_field 300 B
+0 press START 2
+0 wait 40
+0 menu_to BAG
+0 press A 2
+0 until_cb2 CB2_BagMenuRun 2500
+0 wait 60
+0 field_item 102 0
+0 expect_species 0 980
+0 shot galarian-weezing
+0 test_mon 0 439 20 102 0 0 0 0
+0 mash_field 300 B
+0 press START 2
+0 wait 40
+0 menu_to BAG
+0 press A 2
+0 until_cb2 CB2_BagMenuRun 2500
+0 wait 60
+0 field_item 102 0
+0 expect_species 0 981
+0 test_level 0 41
+0 mash_field 300 B
+0 press START 2
+0 wait 40
+0 menu_to BAG
+0 press A 2
+0 until_cb2 CB2_BagMenuRun 2500
+0 wait 60
+0 field_item 102 0
+0 expect_species 0 866
+0 shot mr-rime
+0 test_mon 0 974 27
+0 mash_field 300 B
+0 press START 2
+0 wait 40
+0 menu_to BAG
+0 press A 2
+0 until_cb2 CB2_BagMenuRun 2500
+0 wait 60
+0 field_item 102 0
+0 expect_species 0 863
+0 shot perrserker
+# Kai: Mt. Pyre stands in for Hisui
+0 fixture_warp 24 15 6 5
+0 until_field 3000
+0 test_mon 0 156 35
+0 mash_field 300 B
+0 press START 2
+0 wait 40
+0 menu_to BAG
+0 press A 2
+0 until_cb2 CB2_BagMenuRun 2500
+0 wait 60
+0 field_item 102 0
+0 expect_species 0 997
+0 shot hisuian-typhlosion
+0 test_mon 0 704 39
+0 mash_field 300 B
+0 press START 2
+0 wait 40
+0 menu_to BAG
+0 press A 2
+0 until_cb2 CB2_BagMenuRun 2500
+0 wait 60
+0 field_item 102 0
+0 expect_species 0 1005
+# Kai: the summit has fog (counts as rain for GOODRA)
+0 fixture_warp 24 22 23 9
+0 until_field 3000
+0 test_level 0 49
+0 mash_field 300 B
+0 press START 2
+0 wait 40
+0 menu_to BAG
+0 press A 2
+0 until_cb2 CB2_BagMenuRun 2500
+0 wait 60
+0 field_item 102 0
+0 expect_species 0 1006
+0 shot hisuian-goodra
+0 test_mon 0 705 49
+0 mash_field 300 B
+0 press START 2
+0 wait 40
+0 menu_to BAG
+0 press A 2
+0 until_cb2 CB2_BagMenuRun 2500
+0 wait 60
+0 field_item 102 0
+0 expect_species 0 706
+0 shot goodra
+# Kai: by day; held/used items; known moves
+0 test_mon 0 999 30
+0 mash_field 300 B
+0 press START 2
+0 wait 40
+0 menu_to BAG
+0 press A 2
+0 until_cb2 CB2_BagMenuRun 2500
+0 wait 60
+0 field_item 492 0
+0 expect_species 0 903
+0 shot sneasler
+0 test_mon 0 123 30
+0 mash_field 300 B
+0 press START 2
+0 wait 40
+0 menu_to BAG
+0 press A 2
+0 until_cb2 CB2_BagMenuRun 2500
+0 wait 60
+0 field_item 795 0
+0 expect_species 0 900
+0 shot kleavor
+0 test_mon 0 998 30 767 0 0 0 0
+0 mash_field 300 B
+0 press START 2
+0 wait 40
+0 menu_to BAG
+0 press A 2
+0 until_cb2 CB2_BagMenuRun 2500
+0 wait 60
+0 field_item 102 0
+0 expect_species 0 904
+0 shot overqwil
+0 test_mon 0 1405 19
+0 mash_field 300 B
+0 press START 2
+0 wait 40
+0 menu_to BAG
+0 press A 2
+0 until_cb2 CB2_BagMenuRun 2500
+0 wait 60
+0 field_item 102 0
+0 expect_species 0 1371
+0 shot clodsire
+0 test_mon 0 977 30
+0 mash_field 300 B
+0 press START 2
+0 wait 40
+0 menu_to BAG
+0 press A 2
+0 until_cb2 CB2_BagMenuRun 2500
+0 wait 60
+0 field_item 225 0
+0 expect_species 0 978
+0 test_mon 0 977 30
+0 mash_field 300 B
+0 press START 2
+0 wait 40
+0 menu_to BAG
+0 press A 2
+0 until_cb2 CB2_BagMenuRun 2500
+0 wait 60
+0 field_item 226 0
+0 expect_species 0 985
+0 shot galarian-slowking
+# Kai: KARRABLAST and SHELMET, each with the other in the party
+0 test_mon 1 616 30
+0 test_mon 0 588 30
+0 mash_field 300 B
+0 press START 2
+0 wait 40
+0 menu_to BAG
+0 press A 2
+0 until_cb2 CB2_BagMenuRun 2500
+0 wait 60
+0 field_item 796 0
+0 expect_species 0 589
+0 shot escavalier
+0 test_mon 1 588 30
+0 test_mon 0 616 30
+0 mash_field 300 B
+0 press START 2
+0 wait 40
+0 menu_to BAG
+0 press A 2
+0 until_cb2 CB2_BagMenuRun 2500
+0 wait 60
+0 field_item 796 0
+0 expect_species 0 617
+0 shot accelgor
+# Rosa (night): Mt. Pyre, PEAT BLOCK
+1 fixture_warp 24 15 6 5
+1 until_field 3000
+1 test_mon 0 217 40
+1 mash_field 300 B
+1 press START 2
+1 wait 40
+1 menu_to BAG
+1 press A 2
+1 until_cb2 CB2_BagMenuRun 2500
+1 wait 60
+1 field_item 797 0
+1 expect_species 0 901
+1 shot ursaluna
+# Rosa: Dewford Town (Alola) at night
+1 fixture_warp 0 11 8 11
+1 until_field 3000
+1 test_mon 0 104 27
+1 mash_field 300 B
+1 press START 2
+1 wait 40
+1 menu_to BAG
+1 press A 2
+1 until_cb2 CB2_BagMenuRun 2500
+1 wait 60
+1 field_item 102 0
+1 expect_species 0 973
+1 shot alolan-marowak
+1 test_mon 0 102 30
+1 mash_field 300 B
+1 press START 2
+1 wait 40
+1 menu_to BAG
+1 press A 2
+1 until_cb2 CB2_BagMenuRun 2500
+1 wait 60
+1 field_item 214 0
+1 expect_species 0 972
+1 shot alolan-exeggutor
+# Rosa: elsewhere (Route 114 is Galar, not Alola): ordinary forms; night evolutions
+1 fixture_warp 0 29 22 11
+1 until_field 3000
+1 test_mon 0 104 27
+1 mash_field 300 B
+1 press START 2
+1 wait 40
+1 menu_to BAG
+1 press A 2
+1 until_cb2 CB2_BagMenuRun 2500
+1 wait 60
+1 field_item 102 0
+1 expect_species 0 105
+1 shot marowak-elsewhere
+1 test_mon 0 988 34
+1 mash_field 300 B
+1 press START 2
+1 wait 40
+1 menu_to BAG
+1 press A 2
+1 until_cb2 CB2_BagMenuRun 2500
+1 wait 60
+1 field_item 102 0
+1 expect_species 0 862
+1 shot obstagoon
+1 test_mon 0 986 37
+1 mash_field 300 B
+1 press START 2
+1 wait 40
+1 menu_to BAG
+1 press A 2
+1 until_cb2 CB2_BagMenuRun 2500
+1 wait 60
+1 field_item 102 0
+1 expect_species 0 864
+1 shot cursola
+b party
+0 expect_dex_caught 26 1
+0 expect_dex_caught 110 1
+0 expect_dex_caught 866 1
+0 expect_dex_caught 863 1
+0 expect_dex_caught 157 1
+0 expect_dex_caught 706 1
+0 expect_dex_caught 903 1
+0 expect_dex_caught 900 1
+0 expect_dex_caught 904 1
+0 expect_dex_caught 980 1
+0 expect_dex_caught 199 1
+0 expect_dex_caught 589 1
+0 expect_dex_caught 617 1
+1 expect_dex_caught 901 1
+1 expect_dex_caught 105 1
+1 expect_dex_caught 103 1
+1 expect_dex_caught 862 1
+1 expect_dex_caught 864 1

@@ -2232,6 +2232,9 @@ static void frameCallback(struct mCoreThread* t) {
             unsigned cb2 = rd32(p, sMain + 4) & ~1u;
             static unsigned bagCb, chooseAction;
             if (!bagCb) { bagCb = symAddr("CB2_BagMenuRun") & ~1u; chooseAction = symAddr("HandleInputChooseAction") & ~1u; }
+            // An evolution scene at the battle's end (battle-end evolutions,
+            // level-ups): A, never B, which would stop it.
+            if (cb2 == (symFind("CB2_EvolutionSceneUpdate") & ~1u)) { ++p->step; keys = (p->step % 24) < 2 ? 1 : 0; break; }
             if (++p->step >= c->frames) {
                 out("[p%d] FAIL catch timeout (%d throws)\n", p->id, p->grindCount);
                 dump(p, "fail"); writePng(p, "fail"); sFailures++;
@@ -2342,20 +2345,65 @@ static void frameCallback(struct mCoreThread* t) {
             unsigned cb2 = rd32(p, sMain + 4) & ~1u;
             static unsigned bagCb;
             if (!bagCb) bagCb = symAddr("CB2_BagMenuRun") & ~1u;
+            if (cb2 == (symFind("CB2_EvolutionSceneUpdate") & ~1u)) { ++p->step; keys = (p->step % 24) < 2 ? 1 : 0; break; }
             if (++p->step >= c->frames) {
                 out("[p%d] FAIL hunt timeout\n", p->id);
                 dump(p, "fail"); writePng(p, "fail"); sFailures++;
                 p->grindCount = 0; p->grindInBattle = 0; advance = true; break;
             }
+            // Field modes (c->size): 0 pace in grass, cave or water; 1 fish
+            // with the registered rod (SELECT); 2 Rock Smash: warp to the
+            // tile in front of a rock (map reload brings the rock back), face
+            // it, A and YES; again after a smash with no encounter.
+            static int huntSub[2], huntIdle[2], huntBattle[2];
             if (!battling && cb2 != bagCb) {
                 if (p->grindInBattle) {
                     if (!inField(p)) { keys = (p->step % 24) < 2 ? 2 : 0; break; }
                     unsigned outcome = rd8(p, symAddr("gBattleOutcome"));
                     out("[f%06d p%d hunt] battle over: outcome=%u throws=%d party=%u\n", p->frame, p->id, outcome, p->grindCount, rd8(p, symAddr("gPartiesCount")));
-                    p->grindInBattle = 0; p->grindCount = 0;
+                    p->grindInBattle = 0; p->grindCount = 0; huntSub[p->id] = 0; huntBattle[p->id] = 0;
                     if (outcome == 7) { advance = true; break; }
                 }
-                if (!inField(p)) { keys = (p->step % 24) < 2 ? 2 : 0; break; }
+                if (c->size == 1 && taskActive(p, "Task_Fishing")) {
+                    unsigned tasks = symAddr("gTasks"), fn = symAddr("Task_Fishing") & ~1u; int st = -1;
+                    for (int t = 0; t < 16; t++)
+                        if (rd8(p, tasks + t * 0x28 + 4) && (rd32(p, tasks + t * 0x28) & ~1u) == fn) st = (int16_t)rd16(p, tasks + t * 0x28 + 8);
+                    keys = (st >= 8 && (p->step & 1)) ? 1 : 0;
+                    break;
+                }
+                if (!inField(p)) { huntIdle[p->id] = 0; keys = (p->step % 24) < 2 ? 1 : 0; if (c->size == 0) keys = (p->step % 24) < 2 ? 2 : 0; break; }
+                if (c->size == 1) { keys = (p->step % 120) == 60 ? (1u << 2) : 0; break; }
+                if (c->size == 2) {
+                    if (huntSub[p->id] == 0) {
+                        unsigned dest = symAddr("overworld.sWarpDestination"), save = rd32(p, sSave1);
+                        unsigned g = c->args[0], m = c->args[1], x = c->args[2], y = c->args[3];
+                        p->core->busWrite8(p->core, dest, g); p->core->busWrite8(p->core, dest + 1, m);
+                        p->core->busWrite8(p->core, dest + 2, 0xFF);
+                        p->core->busWrite16(p->core, dest + 4, x); p->core->busWrite16(p->core, dest + 6, y);
+                        p->core->busWrite16(p->core, save + 0, x); p->core->busWrite16(p->core, save + 2, y);
+                        p->core->busWrite8(p->core, save + 4, g); p->core->busWrite8(p->core, save + 5, m);
+                        p->core->busWrite8(p->core, save + 6, 0xFF);
+                        p->core->busWrite16(p->core, save + 8, x); p->core->busWrite16(p->core, save + 10, y);
+                        p->core->busWrite32(p->core, sMain + 4, symAddr("CB2_LoadMap") | 1);
+                        p->core->busWrite8(p->core, sMain + 0x438, 0);
+                        huntSub[p->id] = 1; huntIdle[p->id] = 0; keys = 0;
+                        p->grindCount = 0;
+                        break;
+                    }
+                    huntIdle[p->id]++;
+                    if (huntSub[p->id] == 1) {
+                        // face the rock, then A (the YES/NO answer is the A above)
+                        if (huntIdle[p->id] < 20) keys = 0;
+                        else if (huntIdle[p->id] < 24) keys = c->keys;
+                        else if (huntIdle[p->id] < 40) keys = 0;
+                        else if (huntIdle[p->id] < 42) { keys = 1; huntSub[p->id] = 2; huntIdle[p->id] = 0; }
+                        break;
+                    }
+                    // back in the field after the smash: no encounter, again
+                    keys = 0;
+                    if (huntIdle[p->id] > 90) huntSub[p->id] = 0;
+                    break;
+                }
                 keys = ((p->step / 24) & 1) ? (1u << 7) : (1u << 6);
                 break;
             }
@@ -2376,6 +2424,11 @@ static void frameCallback(struct mCoreThread* t) {
                 else keys = t < 2 ? 1 : 0;
                 break;
             }
+            // A trainer who saw the player while pacing: fight it out (no RUN).
+            // So too a wild battle that RUN has not ended in 2500 frames
+            // (ARENA TRAP, SHADOW TAG): the driver's moves.
+            if (rd32(p, symAddr("gBattleTypeFlags")) & (1u << 3)) { p->stable = 0; keys = autoKeys(p, p->step); break; }
+            if (!p->stable && ++huntBattle[p->id] > 2500) { keys = autoKeys(p, p->step); break; }
             int atMenu = 0;
             unsigned funcs = symAddr("gBattlerControllerFuncs");
             for (int b = 0; b < 4; b++)
@@ -2383,7 +2436,9 @@ static void frameCallback(struct mCoreThread* t) {
             // Steer the action cursor (0 FIGHT, 1 BAG, 2 POKEMON, 3 RUN)
             // to RUN or BAG by reading it, then press A.
             if (atMenu && (!p->stable || p->grindCount < (int)c->value)) {
-                unsigned want = p->stable ? 1 : 3, t = p->step % 20;
+                // Safari Zone: BALL is the first entry (0), RUN the last.
+                unsigned safari = rd32(p, symAddr("gBattleTypeFlags")) & (1u << 7);
+                unsigned want = p->stable ? (safari ? 0 : 1) : 3, t = p->step % 20;
                 unsigned cur = rd8(p, symAddr("gActionSelectionCursor"));
                 if (t != 0) { keys = 0; break; }
                 if ((cur & 1) != (want & 1)) keys = (want & 1) ? (1u << 4) : (1u << 5);
@@ -3790,14 +3845,22 @@ static void loadScript(const char* path, int depth) {
         } else if (!strcmp(cmd, "smart_moves")) {
         	c.kind = C_SMART;
         	c.value = strtoul(a, NULL, 0);
-        } else if (!strcmp(cmd, "test_mon") || !strcmp(cmd, "test_level") || !strcmp(cmd, "test_heal") || !strcmp(cmd, "test_item") || !strcmp(cmd, "test_send_reply") || !strcmp(cmd, "test_friendship") || !strcmp(cmd, "test_held")) {
+        } else if (!strcmp(cmd, "test_mon") || !strcmp(cmd, "test_level") || !strcmp(cmd, "test_heal") || !strcmp(cmd, "test_item") || !strcmp(cmd, "test_send_reply") || !strcmp(cmd, "test_friendship") || !strcmp(cmd, "test_held") || !strcmp(cmd, "test_data")) {
         	// TEST HELPER (combat assistance, recorded in the log): the ROM's
         	// harness-only mailbox, gCoopTestMailbox (src/coop_testhook.c).
         	c.kind = C_TEST_HOOK;
-        	c.value = !strcmp(cmd, "test_mon") ? 1 : !strcmp(cmd, "test_level") ? 2 : !strcmp(cmd, "test_heal") ? 3 : !strcmp(cmd, "test_item") ? 4 : (!strcmp(cmd, "test_friendship") || !strcmp(cmd, "test_held")) ? 6 : 5;
+        	c.value = !strcmp(cmd, "test_mon") ? 1 : !strcmp(cmd, "test_level") ? 2 : !strcmp(cmd, "test_heal") ? 3 : !strcmp(cmd, "test_item") ? 4 : (!strcmp(cmd, "test_friendship") || !strcmp(cmd, "test_held") || !strcmp(cmd, "test_data")) ? 6 : 5;
         	memset(c.args, 0, sizeof(c.args));
         	sscanf(line, "%*s %*s %u %u %u %u %u %u %u %u", &c.args[0], &c.args[1], &c.args[2], &c.args[3], &c.args[4], &c.args[5], &c.args[6], &c.args[7]);
         	if (!strcmp(cmd, "test_held")) c.args[2] = 1;
+        	// test_data SLOT hp|tracker VALUE: a hurt Pokemon, a move-use count.
+        	if (!strcmp(cmd, "test_data")) {
+        		char field[32] = ""; unsigned slot = 0, val = 0;
+        		sscanf(line, "%*s %*s %u %31s %u", &slot, field, &val);
+        		memset(c.args, 0, sizeof(c.args));
+        		c.args[0] = slot; c.args[1] = val; c.args[2] = 2;
+        		c.args[3] = !strcmp(field, "hp") ? 1 : !strcmp(field, "tracker") ? 2 : 0;
+        	}
         	snprintf(c.text, sizeof(c.text), "%s", cmd);
         	c.frames = 600;
         } else if (!strcmp(cmd, "watch")) {
@@ -3950,11 +4013,19 @@ static void loadScript(const char* path, int depth) {
             }
         } else if (!strcmp(cmd, "hunt")) {
             // hunt THROWS SPECIES[,SPECIES...] [timeout] (species numbers)
+            // hunt THROWS LIST T fish | hunt THROWS LIST T smash G N X Y DIR
             c.kind = C_HUNT;
             c.value = strtoul(a, NULL, 0);
             snprintf(c.text, sizeof(c.text), "hunt");
             snprintf(c.text + 16, sizeof(c.text) - 16, "%s", b);
             c.frames = n >= 5 ? atoi(d) : 60000;
+            c.size = 0;
+            {
+                char mode[16] = "", dir[16] = ""; unsigned g = 0, m = 0, x = 0, y = 0;
+                int k = sscanf(line, "%*s %*s %*s %*s %*s %15s %u %u %u %u %15s", mode, &g, &m, &x, &y, dir);
+                if (k >= 1 && !strcmp(mode, "fish")) c.size = 1;
+                if (k >= 6 && !strcmp(mode, "smash")) { c.size = 2; c.args[0] = g; c.args[1] = m; c.args[2] = x; c.args[3] = y; c.keys = parseKeys(dir); }
+            }
         } else if (!strcmp(cmd, "catch")) {
             // catch N [timeout] [BALL]
             c.kind = C_CATCH;

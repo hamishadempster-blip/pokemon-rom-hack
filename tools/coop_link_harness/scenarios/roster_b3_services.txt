@@ -1,0 +1,264 @@
+# Third roster batch: the services a player uses for it (j65 saves: eight
+# badges, not linked).
+# Kai: the evolution clerk in the Lilycove Department Store (3F, middle
+# counter) sells the new items: he buys a PINK NECTAR (row 55) and a METAL
+# ALLOY (row 52) with his own money; the nectar, used on an ORICORIO
+# (Baile Style), changes it to Pa'u Style; the alloy evolves a DURALUDON.
+# Rosa: the FOSSIL MANIAC (Route 114 tunnel) offers the four Galar pairs
+# beside the eleven fossils: she takes BIRD + DRAKE; DEVON's scientist lists
+# the pair as one entry and revives DRACOZOLT after she leaves the floor and
+# comes back. Then the cracked carving in the Sandburied Ruins: a GALARIAN
+# YAMASK that has lost 49 HP or more evolves into RUNERIGUS when she
+# touches it; with no such Pokemon in the party the carving gives a hint.
+# TEST HELPERS (logged): ORICORIO, DURALUDON and GALARIAN YAMASK made by
+# test_mon; the YAMASK's HP lowered by test_data (as a battle would).
+# FIXTURES: fixture_warp next to the clerk, the FOSSIL MANIAC, the scientist
+# and the carving.
+include continue.inc
+b no_wild 1
+b mash_field 300 B
+0 fixture_warp 13 18 9 3
+0 until_field 3000
+0 press UP 2
+0 wait 20
+0 press A 2
+0 until_cb2 CB2_BuyMenu 3000 A
+0 wait 60
+0 press DOWN 2
+0 wait 10
+0 press DOWN 2
+0 wait 10
+0 press DOWN 2
+0 wait 10
+0 press DOWN 2
+0 wait 10
+0 press DOWN 2
+0 wait 10
+0 press DOWN 2
+0 wait 10
+0 press DOWN 2
+0 wait 10
+0 press DOWN 2
+0 wait 10
+0 press DOWN 2
+0 wait 10
+0 press DOWN 2
+0 wait 10
+0 press DOWN 2
+0 wait 10
+0 press DOWN 2
+0 wait 10
+0 press DOWN 2
+0 wait 10
+0 press DOWN 2
+0 wait 10
+0 press DOWN 2
+0 wait 10
+0 press DOWN 2
+0 wait 10
+0 press DOWN 2
+0 wait 10
+0 press DOWN 2
+0 wait 10
+0 press DOWN 2
+0 wait 10
+0 press DOWN 2
+0 wait 10
+0 press DOWN 2
+0 wait 10
+0 press DOWN 2
+0 wait 10
+0 press DOWN 2
+0 wait 10
+0 press DOWN 2
+0 wait 10
+0 press DOWN 2
+0 wait 10
+0 press DOWN 2
+0 wait 10
+0 press DOWN 2
+0 wait 10
+0 press DOWN 2
+0 wait 10
+0 press DOWN 2
+0 wait 10
+0 press DOWN 2
+0 wait 10
+0 press DOWN 2
+0 wait 10
+0 press DOWN 2
+0 wait 10
+0 press DOWN 2
+0 wait 10
+0 press DOWN 2
+0 wait 10
+0 press DOWN 2
+0 wait 10
+0 press DOWN 2
+0 wait 10
+0 press DOWN 2
+0 wait 10
+0 press DOWN 2
+0 wait 10
+0 press DOWN 2
+0 wait 10
+0 press DOWN 2
+0 wait 10
+0 press DOWN 2
+0 wait 10
+0 press DOWN 2
+0 wait 10
+0 press DOWN 2
+0 wait 10
+0 press DOWN 2
+0 wait 10
+0 press DOWN 2
+0 wait 10
+0 press DOWN 2
+0 wait 10
+0 press DOWN 2
+0 wait 10
+0 press DOWN 2
+0 wait 10
+0 press DOWN 2
+0 wait 10
+0 press DOWN 2
+0 wait 10
+0 press DOWN 2
+0 wait 10
+0 press DOWN 2
+0 wait 10
+0 press DOWN 2
+0 wait 10
+0 press DOWN 2
+0 wait 10
+0 shot shop-pink-nectar
+0 press A 2
+0 wait 200
+0 press A 2
+0 wait 120
+0 press A 2
+0 wait 120
+0 press A 2
+0 wait 120
+0 press UP 2
+0 wait 10
+0 press UP 2
+0 wait 10
+0 press UP 2
+0 wait 10
+0 shot shop-metal-alloy
+0 press A 2
+0 wait 200
+0 press A 2
+0 wait 120
+0 press A 2
+0 wait 120
+0 press A 2
+0 wait 120
+0 press B 2
+0 wait 60
+0 press B 2
+0 mash_field 3000 B
+0 expect_item 0 248 1
+0 expect_item 0 814 1
+0 test_mon 0 741 30
+0 mash_field 300 B
+0 press START 2
+0 wait 40
+0 menu_to BAG
+0 press A 2
+0 until_cb2 CB2_BagMenuRun 2500
+0 wait 60
+0 field_item 248 0
+0 expect_species 0 1170
+0 shot oricorio-pau
+0 test_mon 0 884 30
+0 mash_field 300 B
+0 press START 2
+0 wait 40
+0 menu_to BAG
+0 press A 2
+0 until_cb2 CB2_BagMenuRun 2500
+0 wait 60
+0 field_item 814 0
+0 expect_species 0 1425
+0 shot archaludon-bought
+1 fixture_warp 20 1 5 4
+1 until_field 3000
+1 press UP 2
+1 wait 20
+1 press A 2
+1 until_task Task_HandleYesNoInput 1500 A
+1 wait 20
+1 press A 2
+1 until_task Task_HandleScrollingMultichoiceInput 2500 A
+1 wait 30
+1 press DOWN 2
+1 wait 10
+1 press DOWN 2
+1 wait 10
+1 press DOWN 2
+1 wait 10
+1 press DOWN 2
+1 wait 10
+1 press DOWN 2
+1 wait 10
+1 press DOWN 2
+1 wait 10
+1 press DOWN 2
+1 wait 10
+1 press DOWN 2
+1 wait 10
+1 press DOWN 2
+1 wait 10
+1 press DOWN 2
+1 wait 10
+1 press DOWN 2
+1 wait 10
+1 shot maniac-pair
+1 press A 2
+1 mash_field 2500 B
+1 expect_flag 0x936 1
+1 fixture_warp 11 1 14 9
+1 until_field 3000
+1 press UP 2
+1 wait 20
+1 press A 2
+1 until_task Task_HandleScrollingMultichoiceInput 2500 A
+1 wait 30
+1 shot scientist-pair
+1 press A 2
+1 mash_field 2500 B
+1 fixture_warp 11 1 14 9
+1 until_field 3000
+1 press UP 2
+1 wait 20
+1 press A 2
+1 until_task Task_HandleYesNoInput 2500 A
+1 wait 20
+1 press B 2
+1 mash_field 2500 B
+1 expect_var 0x40C4 0
+1 expect_dex_caught 880 1
+1 shot dracozolt
+# the carving: first with nothing chosen (hint), then with a hurt GALARIAN YAMASK
+1 fixture_warp 24 108 12 22
+1 until_field 3000
+1 press RIGHT 2
+1 wait 20
+1 press A 2
+1 until_field_text hurt_by_49 3000
+1 shot carving-hint
+1 mash_field 2000 B
+1 test_mon 0 991 30
+1 test_data 0 hp 20
+1 press RIGHT 2
+1 wait 20
+1 press A 2
+1 mash_field 6000 A
+1 expect_species 0 867
+1 shot runerigus
+b party
+0 expect_dex_caught 1018 1
+1 expect_dex_caught 867 1

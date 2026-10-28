@@ -1,0 +1,74 @@
+# Third roster batch in play (story_seg6 saves: Rustboro, linked; Beacon
+# off, so wild battles are solo).
+# FIXTURES: twenty POKe BALLs each (test_item); fixture_warp to the Route
+# 102 and Route 103 grass, back to Rustboro, and into its POKeMON CENTER.
+# Checks:
+# - catching from the new placements (normal encounters): Kai a BUNEARY on
+#   Route 102, Rosa a YUNGOOS on Route 103 (Pokedex caught flags set);
+# - trading them through the partner menu: each save ends with the other's
+#   catch, nothing copied or lost;
+# - storing and taking back: Kai deposits the traded SKWOVET in the Centre
+#   PC (party one shorter, box holds it), then withdraws it;
+# - UNLINK and LINK UP again: each partner Pokedex marks the other's
+#   catches after the reconnect;
+# - the saves are written; roster_b3_reload continues them.
+include continue.inc
+include relink.inc
+b expect coop.sLinkState 2
+b no_wild 1
+b test_item 1 20
+b mash_field 300 B
+0 fixture_warp 0 17 5 5
+1 fixture_warp 0 18 14 4
+b until_field 3000
+b no_wild 0
+0 hunt 6 427 120000
+1 hunt 6 734 200000
+b no_wild 1
+b sync
+0 expect_dex_caught 427 1
+1 expect_dex_caught 734 1
+0 expect_species 1 427
+1 expect_species 1 734
+b fixture_warp 0 3 16 40
+b until_field 3000
+1 walk 17 41 4000
+1 walk 16 41 2000
+0 walk 14 41 4000
+0 walk 15 41 2000
+b sync
+b wait 30
+include deal_trade_offer.inc
+1 until_mem coop_deal.sDeal+13 1 900 A
+0 until_mem coop_deal.sDeal+13 1 900 A
+b mash_field 9000 B
+b expect_txn 0
+b expect_mons_intact
+b expect_no_copies
+0 expect_species 1 734
+1 expect_species 1 427
+0 expect_dex_caught 734 1
+1 expect_dex_caught 427 1
+b sync
+0 fixture_warp 11 5 7 6
+0 until_field 3000
+include pc_p0_deposit_slot1.inc
+0 expect_species 1 0
+0 expect_pc_count 1
+include pc_p0_withdraw_first.inc
+0 expect_species 1 734
+0 expect_pc_count 0
+0 expect_mons_intact
+b sync
+include unlink.inc
+b expect coop.sLinkState 0
+include relink.inc
+b expect coop.sLinkState 2
+b mash_field 600 B
+0 expect_partner_dex 734 1
+0 expect_partner_dex 427 1
+1 expect_partner_dex 427 1
+1 expect_partner_dex 734 1
+include save_again.inc
+b expect coop.sLinkState 2
+b party

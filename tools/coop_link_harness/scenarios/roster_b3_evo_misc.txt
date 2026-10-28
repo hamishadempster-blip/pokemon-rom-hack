@@ -1,0 +1,466 @@
+# Third roster batch: the other evolution mechanisms in play (j65 saves:
+# eight badges, not linked; Kai's clock is midday, Rosa's 23:00).
+# TEST HELPERS (logged): each Pokemon made in a party slot by test_mon (level,
+# moves, and where the method needs it the gender, nature or a personality
+# divisible by 100 drawn as for a wild Pokemon); friendship 255
+# (test_friendship); a held LEEK (test_held); PRIMEAPE's RAGE FIST count set
+# to 19 (test_data tracker); forty RARE CANDIES and the evolution items
+# (test_item; all are sold in Lilycove). FIXTURES: fixture_warp to the
+# places; the step counter set to 0 before RELLOR walks (a lead change does
+# the same in play). Evolutions run through the Bag, the party menu, the
+# battle end and the evolution scene; the battles are ordinary wild ones.
+# Kai: TYROGUE -> HITMONLEE / HITMONCHAN / HITMONTOP by Attack and Defence;
+# female COMBEE -> VESPIQUEN, a male one stays; ESPURR -> MEOWSTIC female and
+# male forms; HAPPINY + OVAL STONE by day -> CHANSEY, friendly -> BLISSEY;
+# MUNCHLAX -> SNORLAX, BUNEARY -> LOPUNNY (friendship); YANMA, TANGELA
+# (ANCIENTPOWER), LICKITUNG (ROLLOUT), DUNSPARCE (HYPER DRILL: two-segment,
+# and three-segment for a personality divisible by 100); MANTYKE with
+# REMORAID in the party -> MANTINE; HAUNTER + LINKING CORD -> GENGAR; ONIX +
+# METAL COAT -> STEELIX; ELECTABUZZ + ELECTIRIZER -> ELECTIVIRE; SPRITZEE +
+# SACHET; SWIRLIX + WHIPPED DREAM; POLTCHAGEIST + UNREMARKABLE TEACUP ->
+# SINISTCHA, the ARTISAN form + MASTERPIECE TEACUP -> MASTERPIECE SINISTCHA;
+# DURALUDON + METAL ALLOY -> ARCHALUDON; INKAY Lv 30 -> MALAMAR; RELLOR
+# after 1000 steps in the lead -> RABSCA.
+# Rosa: female BURMY fights in Granite Cave -> SANDY CLOAK -> WORMADAM
+# (sandy); on Mt. Pyre 1F (a building) -> TRASH CLOAK -> WORMADAM (trash);
+# male BURMY -> MOTHIM; PRIMEAPE uses RAGE FIST (its 20th) in a wild battle
+# -> ANNIHILAPE on its next level; GALARIAN FARFETCH'D holding a LEEK lands
+# 3 critical hits with FALSE SWIPE in one wild battle -> SIRFETCH'D at the
+# battle's end.
+include continue.inc
+b no_wild 1
+b press START 2
+b wait 40
+b menu_to COOP
+b press A 2
+b wait 60
+b press DOWN 2
+b wait 10
+b press DOWN 2
+b wait 10
+b press DOWN 2
+b wait 10
+b press A 2
+b wait 120
+b press A 2
+b wait 120
+b mash_field 1500
+b test_item 102 40
+0 test_item 237 1
+0 test_item 796 1
+0 test_item 441 1
+0 test_item 230 1
+0 test_item 801 1
+0 test_item 802 1
+0 test_item 814 1
+0 test_item 236 1
+0 test_item 235 1
+# Kai: TYROGUE by its stats (nature decides: ADAMANT Atk > Def, BOLD Def > Atk, HARDY equal)
+0 test_mon 0 236 19 0 0 0 0 1024
+0 mash_field 300 B
+0 press START 2
+0 wait 40
+0 menu_to BAG
+0 press A 2
+0 until_cb2 CB2_BagMenuRun 2500
+0 wait 60
+0 field_item 102 0
+0 expect_species 0 106
+0 shot hitmonlee
+0 test_mon 0 236 19 0 0 0 0 1536
+0 mash_field 300 B
+0 press START 2
+0 wait 40
+0 menu_to BAG
+0 press A 2
+0 until_cb2 CB2_BagMenuRun 2500
+0 wait 60
+0 field_item 102 0
+0 expect_species 0 107
+0 shot hitmonchan
+0 test_mon 0 236 19 0 0 0 0 256
+0 mash_field 300 B
+0 press START 2
+0 wait 40
+0 menu_to BAG
+0 press A 2
+0 until_cb2 CB2_BagMenuRun 2500
+0 wait 60
+0 field_item 102 0
+0 expect_species 0 237
+0 shot hitmontop
+# Kai: gender
+0 test_mon 0 415 20 0 0 0 0 32
+0 mash_field 300 B
+0 press START 2
+0 wait 40
+0 menu_to BAG
+0 press A 2
+0 until_cb2 CB2_BagMenuRun 2500
+0 wait 60
+0 field_item 102 0
+0 expect_species 0 416
+0 shot vespiquen
+0 test_mon 0 415 20 0 0 0 0 16
+0 mash_field 300 B
+0 press START 2
+0 wait 40
+0 menu_to BAG
+0 press A 2
+0 until_cb2 CB2_BagMenuRun 2500
+0 wait 60
+0 field_item 102 0
+0 expect_species 0 415
+0 shot male-combee-stays
+0 test_mon 0 677 24 0 0 0 0 32
+0 mash_field 300 B
+0 press START 2
+0 wait 40
+0 menu_to BAG
+0 press A 2
+0 until_cb2 CB2_BagMenuRun 2500
+0 wait 60
+0 field_item 102 0
+0 expect_species 0 1155
+0 shot meowstic-f
+0 test_mon 0 677 24 0 0 0 0 16
+0 mash_field 300 B
+0 press START 2
+0 wait 40
+0 menu_to BAG
+0 press A 2
+0 until_cb2 CB2_BagMenuRun 2500
+0 wait 60
+0 field_item 102 0
+0 expect_species 0 678
+# Kai: by day with an OVAL STONE; friendship
+0 test_mon 0 440 20
+0 mash_field 300 B
+0 press START 2
+0 wait 40
+0 menu_to BAG
+0 press A 2
+0 until_cb2 CB2_BagMenuRun 2500
+0 wait 60
+0 field_item 237 0
+0 expect_species 0 113
+0 shot chansey
+0 test_friendship 0 255
+0 mash_field 300 B
+0 press START 2
+0 wait 40
+0 menu_to BAG
+0 press A 2
+0 until_cb2 CB2_BagMenuRun 2500
+0 wait 60
+0 field_item 102 0
+0 expect_species 0 242
+0 shot blissey
+0 test_mon 0 446 20
+0 test_friendship 0 255
+0 mash_field 300 B
+0 press START 2
+0 wait 40
+0 menu_to BAG
+0 press A 2
+0 until_cb2 CB2_BagMenuRun 2500
+0 wait 60
+0 field_item 102 0
+0 expect_species 0 143
+0 shot snorlax
+0 test_mon 0 427 20
+0 test_friendship 0 255
+0 mash_field 300 B
+0 press START 2
+0 wait 40
+0 menu_to BAG
+0 press A 2
+0 until_cb2 CB2_BagMenuRun 2500
+0 wait 60
+0 field_item 102 0
+0 expect_species 0 428
+# Kai: a known move
+0 test_mon 0 193 30 246 0 0 0 0
+0 mash_field 300 B
+0 press START 2
+0 wait 40
+0 menu_to BAG
+0 press A 2
+0 until_cb2 CB2_BagMenuRun 2500
+0 wait 60
+0 field_item 102 0
+0 expect_species 0 469
+0 shot yanmega
+0 test_mon 0 114 30 246 0 0 0 0
+0 mash_field 300 B
+0 press START 2
+0 wait 40
+0 menu_to BAG
+0 press A 2
+0 until_cb2 CB2_BagMenuRun 2500
+0 wait 60
+0 field_item 102 0
+0 expect_species 0 465
+0 test_mon 0 108 30 205 0 0 0 0
+0 mash_field 300 B
+0 press START 2
+0 wait 40
+0 menu_to BAG
+0 press A 2
+0 until_cb2 CB2_BagMenuRun 2500
+0 wait 60
+0 field_item 102 0
+0 expect_species 0 463
+0 test_mon 0 206 30 813 0 0 0 0
+0 mash_field 300 B
+0 press START 2
+0 wait 40
+0 menu_to BAG
+0 press A 2
+0 until_cb2 CB2_BagMenuRun 2500
+0 wait 60
+0 field_item 102 0
+0 expect_species 0 1373
+0 shot dudunsparce
+0 test_mon 0 206 30 813 0 0 0 48
+0 mash_field 300 B
+0 press START 2
+0 wait 40
+0 menu_to BAG
+0 press A 2
+0 until_cb2 CB2_BagMenuRun 2500
+0 wait 60
+0 field_item 102 0
+0 expect_species 0 1374
+0 shot dudunsparce-three
+# Kai: another species in the party
+0 test_mon 1 223 20
+0 test_mon 0 458 20
+0 mash_field 300 B
+0 press START 2
+0 wait 40
+0 menu_to BAG
+0 press A 2
+0 until_cb2 CB2_BagMenuRun 2500
+0 wait 60
+0 field_item 102 0
+0 expect_species 0 226
+0 shot mantine
+# Kai: trade evolutions without a trade (LINKING CORD, or the item used)
+0 test_mon 0 93 30
+0 mash_field 300 B
+0 press START 2
+0 wait 40
+0 menu_to BAG
+0 press A 2
+0 until_cb2 CB2_BagMenuRun 2500
+0 wait 60
+0 field_item 796 0
+0 expect_species 0 94
+0 shot gengar
+0 test_mon 0 95 30
+0 mash_field 300 B
+0 press START 2
+0 wait 40
+0 menu_to BAG
+0 press A 2
+0 until_cb2 CB2_BagMenuRun 2500
+0 wait 60
+0 field_item 441 0
+0 expect_species 0 208
+0 shot steelix
+0 test_mon 0 125 30
+0 mash_field 300 B
+0 press START 2
+0 wait 40
+0 menu_to BAG
+0 press A 2
+0 until_cb2 CB2_BagMenuRun 2500
+0 wait 60
+0 field_item 230 0
+0 expect_species 0 466
+0 test_mon 0 682 30
+0 mash_field 300 B
+0 press START 2
+0 wait 40
+0 menu_to BAG
+0 press A 2
+0 until_cb2 CB2_BagMenuRun 2500
+0 wait 60
+0 field_item 236 0
+0 expect_species 0 683
+0 test_mon 0 684 30
+0 mash_field 300 B
+0 press START 2
+0 wait 40
+0 menu_to BAG
+0 press A 2
+0 until_cb2 CB2_BagMenuRun 2500
+0 wait 60
+0 field_item 235 0
+0 expect_species 0 685
+# Kai: tea and alloy
+0 test_mon 0 1409 30
+0 mash_field 300 B
+0 press START 2
+0 wait 40
+0 menu_to BAG
+0 press A 2
+0 until_cb2 CB2_BagMenuRun 2500
+0 wait 60
+0 field_item 801 0
+0 expect_species 0 1411
+0 shot sinistcha
+0 test_mon 0 1410 30
+0 mash_field 300 B
+0 press START 2
+0 wait 40
+0 menu_to BAG
+0 press A 2
+0 until_cb2 CB2_BagMenuRun 2500
+0 wait 60
+0 field_item 802 0
+0 expect_species 0 1412
+0 shot sinistcha-masterpiece
+0 test_mon 0 884 30
+0 mash_field 300 B
+0 press START 2
+0 wait 40
+0 menu_to BAG
+0 press A 2
+0 until_cb2 CB2_BagMenuRun 2500
+0 wait 60
+0 field_item 814 0
+0 expect_species 0 1425
+0 shot archaludon
+0 test_mon 0 686 29
+0 mash_field 300 B
+0 press START 2
+0 wait 40
+0 menu_to BAG
+0 press A 2
+0 until_cb2 CB2_BagMenuRun 2500
+0 wait 60
+0 field_item 102 0
+0 expect_species 0 687
+0 shot malamar
+# Kai: RELLOR leading for 1000 steps on Mt. Pyre 1F (counter set to 0 first, as a lead change does)
+0 fixture_warp 24 15 10 4
+0 until_field 3000
+0 test_mon 0 1341 20
+0 write gFollowerSteps:2 0
+0 pace_until_mem gFollowerSteps:2 1000 40000
+0 mash_field 300 B
+0 press START 2
+0 wait 40
+0 menu_to BAG
+0 press A 2
+0 until_cb2 CB2_BagMenuRun 2500
+0 wait 60
+0 field_item 102 0
+0 expect_species 0 1342
+0 shot rabsca
+1 test_item 3 10
+# Rosa: BURMY changes its cloak after a battle where it fought: a cave (sandy), a building (trash)
+1 fixture_warp 24 8 6 13
+1 until_field 3000
+1 test_mon 0 412 60 450 0 0 0 32
+1 no_wild 0
+1 grind 1 0 30000
+1 no_wild 1
+1 mash_field 600 B
+1 expect_species 0 1057
+1 shot burmy-sandy
+1 mash_field 300 B
+1 press START 2
+1 wait 40
+1 menu_to BAG
+1 press A 2
+1 until_cb2 CB2_BagMenuRun 2500
+1 wait 60
+1 field_item 102 0
+1 expect_species 0 1059
+1 shot wormadam-sandy
+1 fixture_warp 24 15 6 5
+1 until_field 3000
+1 test_mon 0 412 60 450 0 0 0 32
+1 no_wild 0
+1 grind 1 0 30000
+1 no_wild 1
+1 mash_field 600 B
+1 expect_species 0 1058
+1 shot burmy-trash
+1 mash_field 300 B
+1 press START 2
+1 wait 40
+1 menu_to BAG
+1 press A 2
+1 until_cb2 CB2_BagMenuRun 2500
+1 wait 60
+1 field_item 102 0
+1 expect_species 0 1060
+1 shot wormadam-trash
+1 test_mon 0 412 19 0 0 0 0 16
+1 mash_field 300 B
+1 press START 2
+1 wait 40
+1 menu_to BAG
+1 press A 2
+1 until_cb2 CB2_BagMenuRun 2500
+1 wait 60
+1 field_item 102 0
+1 expect_species 0 414
+1 shot mothim
+# Rosa: PRIMEAPE has used RAGE FIST 19 times (helper); one more in a wild battle, then a level
+1 fixture_warp 24 8 6 13
+1 until_field 3000
+1 test_mon 0 57 40 815 0 0 0 0
+1 test_data 0 tracker 19
+1 no_wild 0
+1 grind 1 0 30000
+1 no_wild 1
+1 mash_field 600 B
+1 mash_field 300 B
+1 press START 2
+1 wait 40
+1 menu_to BAG
+1 press A 2
+1 until_cb2 CB2_BagMenuRun 2500
+1 wait 60
+1 field_item 102 0
+1 expect_species 0 1370
+1 shot annihilape
+# Rosa: GALARIAN FARFETCHD holding a LEEK: FALSE SWIPE (never faints the foe) until 3 critical hits, then a catch ends the battle
+1 fixture_warp 0 18 14 4
+1 until_field 3000
+1 test_mon 0 979 70 206 0 0 0 0
+1 test_held 0 393
+1 no_wild 0
+1 pace_until_battle 12000
+1 no_wild 1
+1 catch 10 40000 3 14
+1 mash_field 3000 B
+1 expect_species 0 865
+1 shot sirfetchd
+b party
+0 expect_dex_caught 106 1
+0 expect_dex_caught 107 1
+0 expect_dex_caught 237 1
+0 expect_dex_caught 416 1
+0 expect_dex_caught 678 1
+0 expect_dex_caught 113 1
+0 expect_dex_caught 242 1
+0 expect_dex_caught 143 1
+0 expect_dex_caught 469 1
+0 expect_dex_caught 982 1
+0 expect_dex_caught 226 1
+0 expect_dex_caught 94 1
+0 expect_dex_caught 208 1
+0 expect_dex_caught 1013 1
+0 expect_dex_caught 1018 1
+0 expect_dex_caught 687 1
+0 expect_dex_caught 954 1
+1 expect_dex_caught 413 1
+1 expect_dex_caught 414 1
+1 expect_dex_caught 979 1
+1 expect_dex_caught 865 1
