@@ -1,6 +1,6 @@
 # Co-op quests: foundations, Power Problems, five optional quests
 
-This page covers the quest framework added in build 0xC0170131, the quest built on it then (New Mauville, "Power Problems"), and the five optional quests added in build 0xC0170132. Player-facing text is in [COOP.md](COOP.md#quests).
+This page covers the quest framework added in build 0xC0170131, the quest built on it then (New Mauville, "Power Problems"), the five optional quests added in build 0xC0170132, and the audit and test matrix of build 0xC0170138 (section 4). Player-facing text is in [COOP.md](COOP.md#quests).
 
 ## 1. Foundations
 
@@ -193,3 +193,34 @@ Co-op: the gates (plates, lanterns, sanctum) are shared live (`COOP_QUEST_SHRINE
 
 - A co-op story battle (`Coop_StartStoryBattle`) resumes the **host's** script after a win; the **guest** returns to the field with no script running. Guest-side outcomes are therefore applied by flags (the battle's flag on both saves, then map `ON_RESUME`/`ON_TRANSITION` handlers or the next talk), never by script lines after the battle.
 - If both players talk to the same duo NPC at once, one becomes the host and the other's open message closes as they join; nothing is lost.
+
+## 4. Audit and test matrix (build 0xC0170138)
+
+Every stage requested for the six quests was already in the scripts (sections 2 and 3); the audit found none missing. One addition: the Shoal Cave journal page now says the paths down are uncovered at low tide (3:00–8:59 and 15:00–20:59). No quest defect was found by the tests below, so no quest script was changed otherwise.
+
+### Shared and personal state (unchanged, restated)
+
+| Shared (both saves, live while linked, merged on relink) | Personal (each save) |
+| --- | --- |
+| Breakers (`VAR_PP_BREAKERS`), clues, crates, inscriptions, shrine gates, twin meetings heard (`DMSG_QUEST`) | Trainer flags (except duo fights, which both record), static encounters (Rotom, Porygon, Alolan Vulpix, Alolan Grimer, Sigilyph), item balls, rewards (`COOP_REWARD_*`), journal |
+| Milestones: generator off, Isla rescued, caravan resupplied, beach clean, shrine open/solved (added only; applied at the other save's next map change, with a catch-up flag and its own reward) | Bags, parties, money |
+
+### Matrix
+
+| Condition | How it was tested (gameplay) | Result |
+| --- | --- | --- |
+| Either player initiating | `shoal_coop` (player 1 briefed, player 0 finds a clue), `caravan_coop`/`coast_coop` (player 0), `pp_coop` | PASS (regression suite) |
+| Together / on different maps | `*_coop`: the finisher's partner in another room or town gets the catch-up at its next map change | PASS |
+| One player in a menu or battle | `quest_busy_partner`: player 1 in the party menu while player 0 takes a crate; player 1 in a wild battle (normal encounter) while player 0 beats both raiders and takes the last crate | PASS: player 1's save has every crate after closing the menu / after the battle |
+| Simultaneous interaction | `quest_busy_partner`: both press A on one crate on the same frame (one bit, gone on both screens); `shoal_coop`: both talk to ISLA at once (paid once each) | PASS |
+| Different progress | `pp_stagger` (one save finished long before), `shoal_coop` (one player offline for a clue) | PASS |
+| Unlink/relink | `shoal_coop` (clue found offline, merged at relink), `pp_reconnect` (higher breaker count kept) | PASS |
+| Save/reload mid-quest | `shoal_tide_a` → `shoal_tide_b` (quest left half done, saved, power cycle, finished later), every `*_reload` | PASS |
+| Tide states | `shoal_solo` at noon (high tide) and 16:00 (low tide); `shoal_tide_a` at high tide, `shoal_tide_b` at low tide; the rescue warp and every quest object are on dry tiles at both tides (source check) | PASS |
+| Full bag | `shoal_solo`, `coast_solo`, `twins_solo`/`twins_coop`: the reward waits, then is given once | PASS |
+| Full party | `shoal_vulpix_full_party`: the quest's Alolan Vulpix caught with six in the party goes to the PC and stays gone | see the test log |
+| Loss, retreat, retry | `quest_loss_retry`: run from an Alolan Grimer (it stays), lose to SLAG (quest unchanged, no reward, sent to the Pokémon Center), win on the retry (beach cleaned once, MARLIN pays once); `caravan_coop`: Sigilyph knocked out stays for another try | PASS |
+| Post-League saves | `shoal_solo`, `caravan_solo`, `coast_solo`, `twins_solo`, `beacon_solo`, `pp_solo` run on the checkpoint after the Hall of Fame (j68) | PASS (all six) |
+| VOLT + FUSE, `pp_coop` | Final suite (`pp_coop`, the `genpp_*` timing matrix) | see the test log |
+
+Not covered: a loss in the Twin Trial or against VOLT (documented to restart / allow a rematch, not played); a heartbeat loss (as opposed to UNLINK) in the middle of a quest step; a full PC with a quest Pokémon (the legendary tests cover full storage for the shared legendaries); real hardware and netplay.

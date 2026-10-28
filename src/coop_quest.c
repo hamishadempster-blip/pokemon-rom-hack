@@ -588,6 +588,8 @@ static u8 *JournalShoal(u8 *end, bool8 *first)
             end = AddLine(end, COMPOUND_STRING("Hint: her notes would say where\nshe went. Try the inner cave."), first);
         else
             end = AddLine(end, COMPOUND_STRING("Notes: she slid down the ice\nby the TM ledge in the B1F ice room."), first);
+        // The lower rooms are only dry at low tide (UpdateShoalTideFlag).
+        end = AddLine(end, COMPOUND_STRING("Low tide uncovers the paths down:\n3:00-8:59 and 15:00-20:59."), first);
         if (state == SHOAL_FOUND && !(VarGet(VAR_SHOAL_CLUES) & SHOAL_CLUE_RADIO))
             end = AddLine(end, COMPOUND_STRING("Found her! She needs her RADIO.\nIt fell near the ice room ladder."), first);
         else if (state == SHOAL_FOUND)

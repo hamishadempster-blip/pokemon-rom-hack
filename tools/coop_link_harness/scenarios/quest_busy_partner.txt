@@ -1,0 +1,109 @@
+# Quest progress while the partner is busy, and simultaneous interaction
+# (The Desert Caravan; story_seg6 saves, linked, Twin Beacon off).
+# Checks:
+# - both players press A on the same crate on the same frame: it counts
+#   once (one bit), it is gone on both screens, nothing is given twice;
+# - player 1 sits in the party menu while player 0 takes the second crate:
+#   when player 1 closes the menu, its save already has the crate and the
+#   crate is gone from its screen;
+# - player 1 is in a wild battle (normal encounter in the ruins) while
+#   player 0 beats both raiders alone and takes the guarded crate: after
+#   player 1's battle its save has all three crates (journal 3 of 3);
+#   the raiders stay on player 1's save (each fights their own unless a
+#   duo is fought).
+# FIXTURES: fixture_warp to the camp and ruins; strong cached battle stats;
+# random wild battles only for player 1's battle.
+include deal_setup.inc
+b no_wild 1
+b smart_moves 1
+b strong_battlers 600
+0 fixture_warp 0 26 30 92
+1 fixture_warp 0 26 31 93
+b until_field 3000
+b sync
+0 press RIGHT 2
+0 wait 20
+0 press A 2
+0 mash_field 5000
+1 press UP 2
+1 wait 20
+1 press A 2
+1 mash_field 5000
+b sync
+b expect_var 0x4091 1
+# Same crate, same frame.
+0 fixture_warp 24 108 5 28
+1 fixture_warp 24 108 4 27
+b until_field 3000
+b sync
+0 press UP 2
+1 press RIGHT 2
+b wait 20
+b sync
+b press A 2
+b mash_field 3000
+b sync
+b wait 120
+b expect_var 0x409B 1
+b expect_no_object 1
+b shot same-crate
+# Player 1 in the party menu while player 0 takes crate 2.
+1 press START 2
+1 wait 40
+1 menu_to POKEMON
+1 press A 2
+1 wait 120
+1 shot p1-party-menu
+0 fixture_warp 24 108 11 27
+0 until_field 3000
+0 press UP 2
+0 wait 20
+0 press A 2
+0 mash_field 2000
+0 expect_var 0x409B 3
+1 wait 120
+1 expect_var 0x409B 3
+1 press B 2
+1 wait 60
+1 press B 2
+1 mash_field 600 B
+1 expect_var 0x409B 3
+1 expect_no_object 2
+b sync
+# Player 1 in a wild battle while player 0 beats the raiders and takes
+# the guarded crate.
+1 fixture_warp 24 108 12 25
+1 until_field 3000
+1 no_wild 0
+1 pace_until_battle 20000
+1 until_cb2 BattleMainCB2 4000
+1 shot p1-wild
+1 note_party
+0 walk 6 24 2000
+0 press UP 2
+0 wait 20
+0 press A 2
+0 until_cb2 BattleMainCB2 8000 A
+0 mash_field 30000
+0 expect gBattleOutcome 1
+0 walk 10 24 2000
+0 press UP 2
+0 wait 20
+0 press A 2
+0 until_cb2 BattleMainCB2 8000 A
+0 mash_field 30000
+0 expect gBattleOutcome 1
+0 walk 8 23 2000
+0 press UP 2
+0 wait 20
+0 press A 2
+0 mash_field 2000
+0 expect_var 0x409B 7
+b sync
+1 shot p1-still-in-battle
+1 no_wild 1
+1 mash_field 30000
+1 expect_var 0x409B 7
+1 expect_no_object 3
+b sync
+b expect_mons_intact

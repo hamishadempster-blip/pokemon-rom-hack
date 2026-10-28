@@ -1,0 +1,157 @@
+# Loss, retreat and retry in a quest (Coastal Cleanup; story_seg6 save,
+# player 0, not linked).
+# Checks:
+# - retreat: running from an ALOLAN GRIMER leaves it on the beach (it can
+#   be met again), then beating it removes it;
+# - loss: losing to SLAG (party made weak) sends the player to the last
+#   POKeMON CENTER with the quest unchanged (crew beaten, SLAG still there,
+#   no reward, the beach still dirty);
+# - retry: back with the party restored, SLAG is beaten and the beach is
+#   cleaned once; MARLIN pays once.
+# FIXTURES/TEST HELPERS (logged): fixture_warp along the beach; strong
+# cached battle stats except for the lost fight; the party's one member
+# (this save has a single Combusken) set to level 2 for the lost fight
+# (test_level), then to level 40 and healed (test_level, test_heal); no
+# random wild battles.
+include continue.inc
+0 no_wild 1
+0 smart_moves 1
+0 strong_battlers 600
+0 fixture_warp 0 24 10 9
+0 until_field 3000
+0 expect_object 31 11 11
+0 expect_object 27 9 6
+0 expect_no_object 33
+0 press UP 2
+0 wait 20
+0 press A 2
+0 mash_field 4000
+0 expect_var 0x40A1 1
+0 shot coast-polluted
+# The crew won't fight before the clues.
+0 fixture_warp 0 24 9 8
+0 until_field 3000
+0 walk 9 7 1000
+0 press UP 2
+0 wait 20
+0 press A 2
+0 mash_field 2000
+0 expect_var 0x40A1 1
+0 expect_flag 0x738 0
+# The sheen (9,12), the drum (13,19), the tracks (9,11).
+0 fixture_warp 0 24 10 12
+0 until_field 3000
+0 press LEFT 2
+0 wait 20
+0 press A 2
+0 mash_field 2000
+0 expect_var 0x40A8 1
+0 fixture_warp 0 24 13 20
+0 until_field 3000
+0 press UP 2
+0 wait 20
+0 press A 2
+0 mash_field 2000
+0 fixture_warp 0 24 10 11
+0 until_field 3000
+0 press LEFT 2
+0 wait 20
+0 press A 2
+0 mash_field 2000
+0 expect_var 0x40A8 7
+0 expect_var 0x40A1 2
+# Retreat: run from the ALOLAN GRIMER; it stays.
+0 fixture_warp 0 24 11 12
+0 until_field 3000
+0 press UP 2
+0 wait 20
+0 press A 2
+0 until_cb2 BattleMainCB2 6000 A
+0 until_mem gBattlerControllerFuncs:4 HandleInputChooseAction 6000 A
+0 wait 60
+0 press RIGHT 2
+0 wait 6
+0 press DOWN 2
+0 wait 6
+0 press A 2
+0 mash_field 6000 B
+0 expect gBattleOutcome 4
+0 expect_flag 0x498 0
+0 expect_object 31 11 11
+# One ALOLAN GRIMER, beaten: it leaves for good.
+0 fixture_warp 0 24 11 12
+0 until_field 3000
+0 press UP 2
+0 wait 20
+0 press A 2
+0 until_cb2 BattleMainCB2 6000 A
+0 mash_field 25000
+0 expect gBattleOutcome 1
+0 expect_flag 0x498 1
+0 expect_no_object 31
+# The crew, one by one.
+0 fixture_warp 0 24 9 8
+0 until_field 3000
+0 walk 9 7 1000
+0 press UP 2
+0 wait 20
+0 press A 2
+0 until_cb2 BattleMainCB2 6000 A
+0 mash_field 25000
+0 expect gBattleOutcome 1
+0 expect_var 0x40A1 2
+0 fixture_warp 0 24 10 8
+0 until_field 3000
+0 walk 10 7 1000
+0 press UP 2
+0 wait 20
+0 press A 2
+0 until_cb2 BattleMainCB2 6000 A
+0 mash_field 25000
+0 expect gBattleOutcome 1
+0 expect_var 0x40A1 3
+0 expect_flag 0x2AD 1
+0 expect_no_object 27
+# Loss: SLAG against a level 2 party.
+0 party
+0 strong_battlers 0
+0 test_level 0 2
+0 walk 9 4 2000
+0 press UP 2
+0 wait 20
+0 press A 2
+0 until_cb2 BattleMainCB2 6000 A
+0 mash_field 30000
+0 expect gBattleOutcome 2
+0 mash_field 3000
+0 shot after-loss
+0 expect_var 0x40A1 3
+0 expect_flag 0x2AD 1
+0 expect_item 1 16 0
+# Retry with the party restored.
+0 test_level 0 40
+0 test_heal
+0 strong_battlers 600
+0 fixture_warp 0 24 10 7
+0 until_field 3000
+0 expect_object 29 9 3
+0 walk 9 4 2000
+0 press UP 2
+0 wait 20
+0 press A 2
+0 until_cb2 BattleMainCB2 6000 A
+0 mash_field 25000
+0 expect gBattleOutcome 1
+0 mash_field 4000
+0 expect_var 0x40A1 5
+0 expect_no_object 29
+0 fixture_warp 0 24 10 9
+0 until_field 3000
+0 press UP 2
+0 wait 20
+0 press A 2
+0 mash_field 3000
+0 expect_item 1 16 5
+0 press A 2
+0 mash_field 3000
+0 expect_item 1 16 5

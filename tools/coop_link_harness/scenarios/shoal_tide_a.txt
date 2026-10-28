@@ -1,0 +1,49 @@
+# Shoal Cave quest across the tides, part 1 (story_seg6 save, player 0, not
+# linked; run with RTC_EPOCH0 at noon: HIGH tide).
+# Checks: the cave loads its high-tide layout (FLAG_SYS_SHOAL_TIDE set);
+# PIERS, the thermometer (entrance) and ISLA's notes (inner room) are all
+# reachable at high tide; the player then leaves the cave (Mossdeep) with
+# the quest half done and saves. shoal_tide_b continues at low tide.
+# FIXTURES: fixture_warp into the cave rooms and to Mossdeep; no wild battles.
+include continue.inc
+0 no_wild 1
+0 expect_var 0x4083 0
+0 fixture_warp 24 46 4 26
+0 until_field 3000
+0 expect_flag 0x89A 1
+0 shot entrance-high-tide
+0 press UP 2
+0 wait 20
+0 press A 2
+0 mash_field 4000
+0 expect_var 0x4083 1
+0 fixture_warp 24 46 9 28
+0 until_field 3000
+0 press RIGHT 2
+0 wait 20
+0 press A 2
+0 mash_field 2000
+0 expect_var 0x408B 1
+0 fixture_warp 24 47 41 27
+0 until_field 3000
+0 shot inner-high-tide
+0 press UP 2
+0 wait 20
+0 press A 2
+0 mash_field 3000
+0 expect_var 0x408B 3
+# Leave with the radio and ISLA still to do.
+0 fixture_warp 0 6 31 19
+0 until_field 3000
+0 press START 2
+0 wait 60
+0 menu_to SAVE
+0 press A 2
+0 wait 50
+0 press A 2
+0 wait 250
+0 press A 2
+0 wait 300
+0 press A 2
+0 wait 40
+0 mash_field 600 B

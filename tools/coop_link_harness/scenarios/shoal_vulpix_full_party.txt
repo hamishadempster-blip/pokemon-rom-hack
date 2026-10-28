@@ -1,0 +1,33 @@
+# Quest Pokemon with a full party (shoal_solo's save after the rescue,
+# player 0, not linked): the ALOLAN VULPIX by the ice room ladder is caught
+# with six in the party; it goes to the PC, leaves the map for good, and
+# stays caught after the next map load.
+# TEST HELPERS (logged): five more party members (test_mon, so the party
+# is full); one MASTER BALL (test_item); strong cached battle stats.
+# FIXTURE: fixture_warp below the Vulpix; no random wild battles.
+include continue.inc
+0 no_wild 1
+0 strong_battlers 600
+0 test_mon 1 263 20
+0 test_mon 2 263 20
+0 test_mon 3 263 20
+0 test_mon 4 263 20
+0 test_mon 5 263 20
+0 test_item 4 1
+0 party
+0 expect_pc_count 0
+0 fixture_warp 24 83 16 13
+0 until_field 3000
+0 expect_object 5 16 12
+0 press UP 2
+0 wait 20
+0 press A 2
+0 until_cb2 BattleMainCB2 6000 A
+0 catch 1 30000 4
+0 mash_field 8000 B
+0 expect_pc_count 1
+0 expect_no_object 5
+0 fixture_warp 24 83 16 13
+0 until_field 3000
+0 expect_no_object 5
+0 party

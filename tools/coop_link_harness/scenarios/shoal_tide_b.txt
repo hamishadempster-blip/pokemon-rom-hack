@@ -1,0 +1,43 @@
+# Shoal Cave quest across the tides, part 2: shoal_tide_a's save after a
+# power cycle, now at LOW tide (RTC_EPOCH0 16:00).
+# Checks: the half-done quest is kept (briefing, two clues); the cave now
+# loads its low-tide layout; the radio in the lower room, then ISLA in the
+# ice room with all three clues: rescued at once, both walk out to the
+# entrance; her gift once; the journal page.
+# FIXTURES: fixture_warp from Mossdeep into the cave rooms; no wild battles.
+include continue.inc
+0 no_wild 1
+0 expect_var 0x4083 1
+0 expect_var 0x408B 3
+0 fixture_warp 24 46 4 26
+0 until_field 3000
+0 expect_flag 0x89A 0
+0 shot entrance-low-tide
+0 fixture_warp 24 49 28 9
+0 until_field 3000
+0 press UP 2
+0 wait 20
+0 press A 2
+0 mash_field 2000
+0 expect_var 0x408B 7
+0 fixture_warp 24 83 13 8
+0 until_field 3000
+0 press RIGHT 2
+0 wait 20
+0 press A 2
+0 until_map 24 46 4000 A
+0 until_field 3000
+0 mash_field 1500
+0 expect_var 0x4083 3
+0 expect_flag 0x29E 1
+0 expect_object 4 5 26
+0 press UP 2
+0 wait 20
+0 press A 2
+0 mash_field 3000
+0 expect_item 0 215 2
+0 press A 2
+0 mash_field 3000
+0 press A 2
+0 mash_field 3000
+0 expect_item 0 215 3
