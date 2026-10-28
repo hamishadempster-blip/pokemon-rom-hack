@@ -1,4 +1,5 @@
 #include "global.h"
+#include "coop.h"
 #include "item.h"
 #include "berry.h"
 #include "pokeball.h"
@@ -819,6 +820,12 @@ const u8 *GetItemName(enum Item itemId)
 
 u32 GetItemPrice(enum Item itemId)
 {
+    // The Trainer Exchange's price list applies in every shop (one price
+    // per item; src/data/coop_exchange_stock.h).
+    u32 price = CoopExchange_PriceOverride(SanitizeItemId(itemId));
+
+    if (price != 0)
+        return price;
     return gItemsInfo[SanitizeItemId(itemId)].price;
 }
 

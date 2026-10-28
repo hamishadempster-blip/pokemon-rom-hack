@@ -16,6 +16,7 @@ u16 CoopQuest_PowerRestored(void);
 u16 CoopQuest_DuoReady(void);
 u16 CoopQuest_ForceSolo(void);
 u16 CoopQuest_ClaimReward(void);
+bool8 CoopQuest_IsRewardClaimed(u8 bit);
 u16 CoopQuest_RewardClaimed(void);
 u16 CoopQuest_PagesRead(void);
 u16 CoopQuest_OpenChamber(void);

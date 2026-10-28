@@ -16,6 +16,7 @@
 #include "tv.h"
 #include "constants/rgb.h"
 #include "constants/layouts.h"
+#include "constants/maps.h"
 #include "constants/metatile_behaviors.h"
 #include "constants/metatile_behaviors_frlg.h"
 #include "wild_encounter.h"
@@ -144,7 +145,13 @@ void InitMapFromSavedGame(void)
     InitMapLayoutData(&gMapHeader);
     InitSecretBaseAppearance(FALSE);
     SetOccupiedSecretBaseEntranceMetatiles(gMapHeader.events);
-    LoadSavedMapView();
+    // Rustboro's saved view can predate the Trainer Exchange (build
+    // 0xC017013B): it would draw the old ground over the new building
+    // around the player until the town is loaded again. No script changes
+    // Rustboro's tiles, so its view is not restored.
+    if (!(gSaveBlock1Ptr->location.mapGroup == MAP_GROUP(MAP_RUSTBORO_CITY)
+       && gSaveBlock1Ptr->location.mapNum == MAP_NUM(MAP_RUSTBORO_CITY)))
+        LoadSavedMapView();
     RunOnLoadMapScript();
     UpdateTVScreensOnMap(gBackupMapLayout.width, gBackupMapLayout.height);
 }

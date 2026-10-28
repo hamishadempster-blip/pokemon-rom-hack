@@ -2291,6 +2291,7 @@ void CB2_ContinueSavedGame(void)
     LoadSaveblockMapHeader();
     ClearDiveAndHoleWarps();
     Coop_RepairUnsetHealLocation();
+    CoopExchange_RepairSavedPosition();
     Coop_RefreshPartyStats();
     trainerHillMapId = GetCurrentTrainerHillMapId();
     if (gMapHeader.mapLayoutId == LAYOUT_BATTLE_FRONTIER_BATTLE_PYRAMID_FLOOR)

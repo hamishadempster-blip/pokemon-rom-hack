@@ -790,3 +790,16 @@ gSpecials::
 	def_special CoopTalk_BufferPartner
 	def_special CoopTalk_PartnerJoinable
 	def_special CoopTalk_ShowBusyNote
+	def_special CoopExchange_Tier
+	def_special CoopExchange_OpenShop
+	def_special CoopExchange_CountStock
+	def_special CoopExchange_BufferUpcoming
+	def_special CoopExchange_PushTutorTypes
+	def_special CoopExchange_PushTutorMoves
+	def_special CoopExchange_SelectTutorMove
+	def_special CoopExchange_SetPrice
+	def_special CoopExchange_Charge
+	def_special CoopExchange_CheckEvReset
+	def_special CoopExchange_ResetEvs
+	def_special CoopExchange_CheckHyperTrain
+	def_special CoopExchange_HyperTrain

@@ -469,6 +469,11 @@ static bool8 RewardClaimed(u8 bit)
         && (save->rewardsClaimed[bit / 8] & (1 << (bit % 8)));
 }
 
+bool8 CoopQuest_IsRewardClaimed(u8 bit)
+{
+    return RewardClaimed(bit);
+}
+
 u16 CoopQuest_RewardClaimed(void)
 {
     return RewardClaimed(gSpecialVar_0x8004);

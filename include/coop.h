@@ -221,6 +221,7 @@ struct CoopTalkStats
     u8 txCount;         // talk messages sent (the last eight ops below)
     u8 txOps[8];
     u8 busyClass;       // why the partner's last unshareable conversation was (CLASS_* in src/coop_talk.c: 1 gift, 2 shop, 3 battle, 4 warp, 5 other)
+    u8 sideBySide;      // NPCs used while the partner used them too (shops, Exchange counters, gifts)
 };
 extern struct CoopTalkStats gCoopTalkStats;
 const u8 *CoopTalk_OnInteract(u8 objectEventId, const u8 *script);
@@ -372,5 +373,33 @@ extern bool8 gCoopTargetPromptWide;
 extern u8 gCoopTargetKind;      // 1 foe, 2 ally, 3 self, 4 both foes, 5 your side, 6 all others, 7 everyone, 8 field, 9 foes' side
 extern u8 gCoopTargetWarned;
 extern u8 gCoopTargetPrompt[40];
+
+// The Rustboro Trainer Exchange (src/coop_exchange.c).
+struct CoopExchangeStats
+{
+    u8 shopsOpened;
+    u8 lastCounter;
+    u8 lastCount;       // items in the last stock opened
+    u8 lastTier;
+    u8 charges;
+    u8 pad;
+    u16 lastCharge;
+};
+extern struct CoopExchangeStats gCoopExchangeStats;
+u32 CoopExchange_PriceOverride(u16 item);
+u16 CoopExchange_Tier(void);
+void CoopExchange_OpenShop(void);
+u16 CoopExchange_CountStock(void);
+u16 CoopExchange_BufferUpcoming(void);
+void CoopExchange_RepairSavedPosition(void);
+u16 CoopExchange_PushTutorTypes(void);
+u16 CoopExchange_PushTutorMoves(void);
+u16 CoopExchange_SelectTutorMove(void);
+u16 CoopExchange_SetPrice(void);
+u16 CoopExchange_Charge(void);
+u16 CoopExchange_CheckEvReset(void);
+void CoopExchange_ResetEvs(void);
+u16 CoopExchange_CheckHyperTrain(void);
+void CoopExchange_HyperTrain(void);
 
 #endif // GUARD_COOP_H

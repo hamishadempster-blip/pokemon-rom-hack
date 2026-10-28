@@ -219,4 +219,11 @@
 #define COOP_STARTER_GUEST_HOENN  7
 #define COOP_STARTER_GUEST_COUNT  8
 
+// Trainer Exchange counters (src/coop_exchange.c).
+#define COOP_EXCHANGE_TM     0
+#define COOP_EXCHANGE_HELD   1
+#define COOP_EXCHANGE_EVO    2
+#define COOP_EXCHANGE_TRAIN  3
+#define COOP_EXCHANGE_BREED  4
+
 #endif // GUARD_CONSTANTS_COOP_H

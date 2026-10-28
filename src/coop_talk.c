@@ -623,6 +623,27 @@ static void Host_End(void)
 // A player starts a script with an NPC (src/field_control_avatar.c).
 // Returns the script to run: the NPC's own, or a join offer / busy note
 // when the partner is already talking to this NPC.
+// NPCs that serve each player on their own game, side by side.
+extern const u8 RustboroCity_TrainerExchange_EventScript_MovesClerk[];
+extern const u8 RustboroCity_TrainerExchange_EventScript_HeldClerk[];
+extern const u8 RustboroCity_TrainerExchange_EventScript_EvoClerk[];
+extern const u8 RustboroCity_TrainerExchange_EventScript_TrainClerk[];
+extern const u8 RustboroCity_TrainerExchange_EventScript_BreedClerk[];
+extern const u8 Route117_PokemonDayCare_EventScript_DaycareWoman[];
+extern const u8 Route117_EventScript_DaycareMan[];
+
+static bool8 IsIndependentService(const u8 *script)
+{
+    return script == RustboroCity_TrainerExchange_EventScript_MovesClerk
+        || script == RustboroCity_TrainerExchange_EventScript_HeldClerk
+        || script == RustboroCity_TrainerExchange_EventScript_EvoClerk
+        || script == RustboroCity_TrainerExchange_EventScript_TrainClerk
+        || script == RustboroCity_TrainerExchange_EventScript_BreedClerk
+        // The Day Care: each save's own deposits, eggs and fees.
+        || script == Route117_PokemonDayCare_EventScript_DaycareWoman
+        || script == Route117_EventScript_DaycareMan;
+}
+
 const u8 *CoopTalk_OnInteract(u8 objectEventId, const u8 *script)
 {
     struct ObjectEvent *obj;
@@ -634,9 +655,20 @@ const u8 *CoopTalk_OnInteract(u8 objectEventId, const u8 *script)
     obj = &gObjectEvents[objectEventId];
     if (obj->localId == OBJ_EVENT_ID_COOP_PARTNER || obj->localId == OBJ_EVENT_ID_COOP_TWIN)
         return script;
-    // The partner is talking to this NPC: never a second run of its script.
+    // The partner is talking to this NPC. A shop, a counter of the Trainer
+    // Exchange, the Day Care or a personal gift serves each player on their own game
+    // (their own money, bag and rewards): this player gets the NPC as usual.
+    // Anything else is joined (dialogue) or left to the partner (a note).
     if (Coop_PartnerTalkInfo(&partnerNpc, &joinable) && partnerNpc == obj->localId)
     {
+        u8 own = IsIndependentService(script) ? CLASS_SHOP : Talk_Classify(script);
+
+        if (own == CLASS_SHOP || own == CLASS_GIFT)
+        {
+            if (gCoopTalkStats.sideBySide < 0xFF)
+                gCoopTalkStats.sideBySide++;
+            return script;
+        }
         sJoin.npcLocalId = obj->localId;
         if (joinable)
             return CoopTalk_EventScript_JoinAsk;
@@ -656,7 +688,7 @@ const u8 *CoopTalk_OnInteract(u8 objectEventId, const u8 *script)
     }
     sHost.active = TRUE;
     sHost.npcLocalId = obj->localId;
-    sHost.class = Talk_Classify(script);
+    sHost.class = IsIndependentService(script) ? CLASS_SHOP : Talk_Classify(script);
     sHost.joinable = (sHost.class == CLASS_OK);
     // Tell the partner why this one can't be shared, for their note: only
     // for a reason the note names (a shop, a gift, a battle, a warp; scenes
