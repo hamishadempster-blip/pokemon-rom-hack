@@ -952,6 +952,19 @@ static unsigned autoKeys(struct Player* p, unsigned step) {
 	}
 	unsigned cbNow = rd32(p, sMain + 4) & ~1u;
 	bool battling = rd8(p, sMain + 0x439) & 2;
+	// A move with no PP left under the cursor: move the cursor to the first
+	// move that has some (as a player would), else A loops on "no PP left".
+	if (battling && p->forceMove < 0) {
+		unsigned funcs = symAddr("gBattlerControllerFuncs");
+		for (int b = 0; b < 4; b++) {
+			if (strcmp(symName(rd32(p, funcs + b * 4)), "HandleInputChooseMove")) continue;
+			unsigned res = rd32(p, symAddr("gBattleResources")), cur = symAddr("gMoveSelectionCursor");
+			unsigned m = res + 0x10 + b * 0x200 + 4, at = rd8(p, cur + b);
+			if (res && at < 4 && rd8(p, m + 8 + at) == 0)
+				for (int i = 0; i < 4; i++)
+					if (rd16(p, m + i * 2) && rd8(p, m + 8 + i)) { p->core->busWrite8(p->core, cur + b, i); break; }
+		}
+	}
 	// switch_lead SLOT (driver aid): in a solo battle, the first action is to
 	// switch the lead out for party slot SLOT, so a weak lead shares the
 	// experience (Gen 6+ full experience) without fighting. 0 is off.

@@ -21,7 +21,8 @@
 # SINISTCHA, the ARTISAN form + MASTERPIECE TEACUP -> MASTERPIECE SINISTCHA;
 # DURALUDON + METAL ALLOY -> ARCHALUDON; INKAY Lv 30 -> MALAMAR; RELLOR
 # after 1000 steps in the lead -> RABSCA.
-# Rosa: female BURMY fights in Granite Cave -> SANDY CLOAK -> WORMADAM
+# Rosa: female BURMY (Lv 60, HIDDEN POWER, a move it learns by TM, and
+# BUG BITE, so it outlasts Mt. Pyre's ghosts) fights in Granite Cave -> SANDY CLOAK -> WORMADAM
 # (sandy); on Mt. Pyre 1F (a building) -> TRASH CLOAK -> WORMADAM (trash);
 # male BURMY -> MOTHIM; PRIMEAPE uses RAGE FIST (its 20th) in a wild battle
 # -> ANNIHILAPE on its next level; GALARIAN FARFETCH'D holding a LEEK lands
@@ -364,7 +365,7 @@ b test_item 102 40
 # Rosa: BURMY changes its cloak after a battle where it fought: a cave (sandy), a building (trash)
 1 fixture_warp 24 8 6 13
 1 until_field 3000
-1 test_mon 0 412 60 450 0 0 0 32
+1 test_mon 0 412 60 237 450 0 0 32
 1 no_wild 0
 1 grind 1 0 30000
 1 no_wild 1
@@ -383,7 +384,7 @@ b test_item 102 40
 1 shot wormadam-sandy
 1 fixture_warp 24 15 6 5
 1 until_field 3000
-1 test_mon 0 412 60 450 0 0 0 32
+1 test_mon 0 412 60 237 450 0 0 32
 1 no_wild 0
 1 grind 1 0 30000
 1 no_wild 1

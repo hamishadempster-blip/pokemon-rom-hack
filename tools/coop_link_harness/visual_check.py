@@ -146,6 +146,10 @@ def main():
             filled = [b for b, (sp, hp, mx, ab) in st.items() if sp]
             if not filled:
                 continue
+            # The Safari Zone: "What will KAI do?" and no Pokemon of the
+            # player's own in battle (battler 0 is empty by design).
+            if t.startswith('What will Kai do') or t.startswith('What will Rosa do'):
+                continue
             for b, (sp, hp, mx, ab) in st.items():
                 if sp == 0 and not ab:
                     phantom.append('p%d f%d battler %d' % (p, f, b))

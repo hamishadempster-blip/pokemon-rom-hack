@@ -413,3 +413,27 @@ never confirm in the one-foe co-op double (the legend scenarios leave it
 off; plain A presses work on both screens, `diag_master_move`), and the
 Sky Pillar top's cracked floor is not avoided by `walk` (the scenarios walk
 the solid tiles by waypoints).
+
+## Third roster batch (build 0xC0170139)
+
+| Scenario | What it checks |
+| --- | --- |
+| `roster_b3_catch` (j68) | One catch per encounter method and habitat: grass, cave, Rock Smash, Safari Zone (through the gate, Safari Balls), Super Rod, surfing, ruins, Mt. Pyre; regional forms among them |
+| `roster_b3_evo_place` (j65, Kai noon, Rosa 23:00) | Regional branches by place (Dewford = Alola, Route 114 = Galar, Mt. Pyre = Hisui) and the item, time and party evolutions |
+| `roster_b3_evo_misc` (j65) | Stats, gender, cloak, friendship, known-move, party-member, personality, item, step, move-use and critical-hit evolutions |
+| `roster_b3_services` (j65) | Lilycove clerk's new stock, Oricorio's nectar, the Galar fossil pair, the Sandburied carving (Runerigus) |
+| `roster_b3_battle` (j16, co-op doubles) | Schooling, Shields Down, Flower Gift, Dancer, Emergency Exit, Receiver on both screens |
+| `roster_b3_play` + `_reload` (seg6) | Catch, trade, PC, UNLINK/LINK UP and power-on with batch-3 species; partner Pokédex marks |
+
+New or extended verbs: `hunt THROWS LIST T fish` (the registered rod) and
+`hunt THROWS LIST T smash G N X Y DIR` (warp before a rock, face it, Rock
+Smash; the map load brings the rock back); `hunt` throws Safari Balls in the
+Safari Zone, fights trainers who spot the player and wild Pokémon that RUN
+cannot leave; `hunt` and `catch` press A, never B, in an evolution scene at
+a battle's end (B stopped Sirfetch'd's evolution in the first runs);
+`test_mon ... ARG7` (low nibble an ability slot + 1; bits 4-5: 1 male, 2
+female, 3 a personality divisible by 100; bits 8-12: a nature + 1);
+`test_data SLOT hp|tracker VALUE` (current HP; the evolution tracker, e.g.
+Rage Fist uses). The battle driver moves the cursor off a move with no PP.
+`visual_check.py` skips the Safari Zone's "What will KAI do?" (the player
+has no Pokémon in battle there).
