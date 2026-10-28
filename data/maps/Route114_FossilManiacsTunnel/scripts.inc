@@ -34,6 +34,7 @@ Route114_FossilManiacsTunnel_EventScript_ManiacMentionCaveIn::
 Route114_FossilManiacsTunnel_EventScript_FossilManiac::
 	lock
 	faceplayer
+	call Coop_EventScript_FossilManiacDaily
 	goto_if_set FLAG_RECEIVED_REVIVED_FOSSIL_MON, Route114_FossilManiacsTunnel_EventScript_PlayerRevivedFossil
 	checkitem ITEM_ROOT_FOSSIL
 	goto_if_eq VAR_RESULT, TRUE, Route114_FossilManiacsTunnel_EventScript_PlayerHasFossil

@@ -1614,7 +1614,129 @@ enum NationalDexOrder
     F(MAREANIE) \
     F(TOXAPEX) \
     F(FRILLISH) \
-    F(JELLICENT)
+    F(JELLICENT) \
+    F(ROWLET) \
+    F(DARTRIX) \
+    F(DECIDUEYE) \
+    F(LITTEN) \
+    F(TORRACAT) \
+    F(INCINEROAR) \
+    F(POPPLIO) \
+    F(BRIONNE) \
+    F(PRIMARINA) \
+    F(GROOKEY) \
+    F(THWACKEY) \
+    F(RILLABOOM) \
+    F(SCORBUNNY) \
+    F(RABOOT) \
+    F(CINDERACE) \
+    F(SOBBLE) \
+    F(DRIZZILE) \
+    F(INTELEON) \
+    F(SPRIGATITO) \
+    F(FLORAGATO) \
+    F(MEOWSCARADA) \
+    F(FUECOCO) \
+    F(CROCALOR) \
+    F(SKELEDIRGE) \
+    F(QUAXLY) \
+    F(QUAXWELL) \
+    F(QUAQUAVAL) \
+    F(EEVEE) \
+    F(VAPOREON) \
+    F(JOLTEON) \
+    F(FLAREON) \
+    F(ESPEON) \
+    F(UMBREON) \
+    F(LEAFEON) \
+    F(GLACEON) \
+    F(SYLVEON) \
+    F(TOGEPI) \
+    F(TOGETIC) \
+    F(TOGEKISS) \
+    F(CLEFFA) \
+    F(CLEFAIRY) \
+    F(CLEFABLE) \
+    F(OMANYTE) \
+    F(OMASTAR) \
+    F(KABUTO) \
+    F(KABUTOPS) \
+    F(AERODACTYL) \
+    F(CRANIDOS) \
+    F(RAMPARDOS) \
+    F(SHIELDON) \
+    F(BASTIODON) \
+    F(TIRTOUGA) \
+    F(CARRACOSTA) \
+    F(ARCHEN) \
+    F(ARCHEOPS) \
+    F(TYRUNT) \
+    F(TYRANTRUM) \
+    F(AMAURA) \
+    F(AURORUS) \
+    F(SKWOVET) \
+    F(GREEDENT) \
+    F(BLIPBUG) \
+    F(DOTTLER) \
+    F(ORBEETLE) \
+    F(GOSSIFLEUR) \
+    F(ELDEGOSS) \
+    F(CHEWTLE) \
+    F(DREDNAW) \
+    F(YAMPER) \
+    F(BOLTUND) \
+    F(SILICOBRA) \
+    F(SANDACONDA) \
+    F(TOXEL) \
+    F(TOXTRICITY) \
+    F(SINISTEA) \
+    F(POLTEAGEIST) \
+    F(MILCERY) \
+    F(ALCREMIE) \
+    F(FALINKS) \
+    F(PINCURCHIN) \
+    F(STONJOURNER) \
+    F(EISCUE) \
+    F(MORPEKO) \
+    F(CRAMORANT) \
+    F(LILLIPUP) \
+    F(HERDIER) \
+    F(STOUTLAND) \
+    F(PURRLOIN) \
+    F(LIEPARD) \
+    F(MUNNA) \
+    F(MUSHARNA) \
+    F(PIDOVE) \
+    F(TRANQUILL) \
+    F(UNFEZANT) \
+    F(BLITZLE) \
+    F(ZEBSTRIKA) \
+    F(WOOBAT) \
+    F(SWOOBAT) \
+    F(AUDINO) \
+    F(TYMPOLE) \
+    F(PALPITOAD) \
+    F(SEISMITOAD) \
+    F(DUCKLETT) \
+    F(SWANNA) \
+    F(VANILLITE) \
+    F(VANILLISH) \
+    F(VANILLUXE) \
+    F(DEERLING) \
+    F(SAWSBUCK) \
+    F(EMOLGA) \
+    F(ELGYEM) \
+    F(BEHEEYEM) \
+    F(DRUDDIGON) \
+    F(BOUFFALANT) \
+    F(PORYGON) \
+    F(PORYGON2) \
+    F(PORYGON_Z) \
+    F(HIPPOPOTAS) \
+    F(HIPPOWDON) \
+    F(DWEBBLE) \
+    F(CRUSTLE) \
+    F(SIGILYPH)
 
 // Hoenn Pokédex order
 enum HoennDexOrder
@@ -1835,7 +1957,7 @@ enum KantoDexOrder
 };
 
 #define KANTO_DEX_COUNT (KANTO_DEX_MEW + 1)
-#define HOENN_DEX_COUNT (HOENN_DEX_JELLICENT + 1)
+#define HOENN_DEX_COUNT (HOENN_DEX_SIGILYPH + 1)
 
 #define REGIONAL_DEX_COUNT (IS_FRLG ? KANTO_DEX_COUNT : HOENN_DEX_COUNT)
 

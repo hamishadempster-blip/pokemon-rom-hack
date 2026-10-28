@@ -59,6 +59,7 @@ RustboroCity_DevonCorp_2F_EventScript_FossilScientist::
 	faceplayer
 	goto_if_eq VAR_FOSSIL_RESURRECTION_STATE, 2, RustboroCity_DevonCorp_2F_EventScript_FossilMonReady
 	goto_if_eq VAR_FOSSIL_RESURRECTION_STATE, 1, RustboroCity_DevonCorp_2F_EventScript_StillRegenerating
+	call Coop_EventScript_FossilScientistOffer
 	msgbox RustboroCity_DevonCorp_2F_Text_DevelopDeviceToResurrectFossils, MSGBOX_DEFAULT
 	checkitem ITEM_ROOT_FOSSIL
 	goto_if_eq VAR_RESULT, TRUE, RustboroCity_DevonCorp_2F_EventScript_NoticeRootFossil
@@ -125,6 +126,7 @@ RustboroCity_DevonCorp_2F_EventScript_StillRegenerating::
 	end
 
 RustboroCity_DevonCorp_2F_EventScript_FossilMonReady::
+	goto_if_ge VAR_WHICH_FOSSIL_REVIVED, 3, Coop_EventScript_FossilMonReady
 	goto_if_eq VAR_WHICH_FOSSIL_REVIVED, 1, RustboroCity_DevonCorp_2F_EventScript_LileepReady
 	goto_if_eq VAR_WHICH_FOSSIL_REVIVED, 2, RustboroCity_DevonCorp_2F_EventScript_AnorithReady
 	end

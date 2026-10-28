@@ -1580,7 +1580,7 @@
 #define FLAG_DAILY_STARTER_SINNOH                   (DAILY_FLAGS_START + 0x6)  // Starter guest (Lavaridge): one a day
 #define FLAG_DAILY_STARTER_UNOVA                    (DAILY_FLAGS_START + 0x7)  // Starter guest (Fortree): one a day
 #define FLAG_DAILY_STARTER_KALOS                    (DAILY_FLAGS_START + 0x8)  // Starter guest (Mossdeep): one a day
-#define FLAG_UNUSED_0x929                           (DAILY_FLAGS_START + 0x9)  // Unused Flag
+#define FLAG_DAILY_STARTER_ALOLA                    (DAILY_FLAGS_START + 0x9)  // Starter guest (Slateport): one a day
 #define FLAG_DAILY_PICKED_LOTO_TICKET               (DAILY_FLAGS_START + 0xA)
 #define FLAG_DAILY_ROUTE_114_RECEIVED_BERRY         (DAILY_FLAGS_START + 0xB)
 #define FLAG_DAILY_ROUTE_111_RECEIVED_BERRY         (DAILY_FLAGS_START + 0xC)
@@ -1590,12 +1590,12 @@
 #define FLAG_DAILY_FLOWER_SHOP_RECEIVED_BERRY       (DAILY_FLAGS_START + 0x10)
 #define FLAG_DAILY_BERRY_MASTERS_WIFE               (DAILY_FLAGS_START + 0x11)
 #define FLAG_DAILY_SOOTOPOLIS_RECEIVED_BERRY        (DAILY_FLAGS_START + 0x12)
-#define FLAG_UNUSED_0x933                           (DAILY_FLAGS_START + 0x13) // Unused Flag
+#define FLAG_DAILY_STARTER_GALAR                    (DAILY_FLAGS_START + 0x13) // Starter guest (Petalburg): one a day
 #define FLAG_DAILY_APPRENTICE_LEAVES                (DAILY_FLAGS_START + 0x14)
 
-#define FLAG_UNUSED_0x935                           (DAILY_FLAGS_START + 0x15) // Unused Flag
-#define FLAG_UNUSED_0x936                           (DAILY_FLAGS_START + 0x16) // Unused Flag
-#define FLAG_UNUSED_0x937                           (DAILY_FLAGS_START + 0x17) // Unused Flag
+#define FLAG_DAILY_STARTER_PALDEA                   (DAILY_FLAGS_START + 0x15) // Starter guest (Sootopolis): one a day
+#define FLAG_DAILY_FOSSIL_DIG                       (DAILY_FLAGS_START + 0x16) // Fossil Maniac: one fossil a day
+#define FLAG_DAILY_STARTER_HOENN                    (DAILY_FLAGS_START + 0x17) // Starter guest (Fallarbor): one a day
 #define FLAG_UNUSED_0x938                           (DAILY_FLAGS_START + 0x18) // Unused Flag
 #define FLAG_UNUSED_0x939                           (DAILY_FLAGS_START + 0x19) // Unused Flag
 #define FLAG_UNUSED_0x93A                           (DAILY_FLAGS_START + 0x1A) // Unused Flag

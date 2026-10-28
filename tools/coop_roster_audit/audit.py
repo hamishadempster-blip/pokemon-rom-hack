@@ -57,7 +57,9 @@ COND = {v: k for k, v in enum_values('include/constants/pokemon.h', 'IF_', 'Evol
 MOVES_COUNT = enum_values('include/constants/moves.h', 'MOVE').get('MOVES_COUNT_ALL') or enum_values('include/constants/moves.h', 'MOVE').get('MOVES_COUNT', 2000)
 
 # Layout written by build_layout.sh from this build's headers.
-L = struct.unpack('<21I', open(os.path.join(OUT, 'layout.bin'), 'rb').read())
+_lb = open(os.path.join(OUT, 'layout.bin'), 'rb').read()
+L = struct.unpack('<21I', _lb[:84])
+O_FOOTPRINT = struct.unpack('<I', _lb[84:88])[0] if len(_lb) >= 88 else None
 (SI_SIZE, O_HP, O_TYPES, O_ABIL, O_NAME, O_DESC, O_FRONT, O_BACK, O_PAL, O_SHINY, O_ICON,
  O_LEARN, O_TEACH, O_EVOS, O_CATCH, EVO_SIZE, EVO_METHOD, EVO_PARAM, EVO_TARGET, LUM_SIZE, O_HEIGHT) = L
 # cryId:16 and natDexNum:16 are bitfields after the 13-byte name: the cry
@@ -111,6 +113,7 @@ def info(sid):
     d['desc'] = text(desc) if 0x08000000 <= desc < 0x0A000000 else ''
     d['gfx'] = {k: r32(a + o) for k, o in (('front', O_FRONT), ('back', O_BACK), ('palette', O_PAL),
                                           ('shiny', O_SHINY), ('icon', O_ICON))}
+    d['footprint'] = r32(a + O_FOOTPRINT) if O_FOOTPRINT is not None else None
     learn = r32(a + O_LEARN)
     moves = []
     if 0x08000000 <= learn < 0x0A000000:

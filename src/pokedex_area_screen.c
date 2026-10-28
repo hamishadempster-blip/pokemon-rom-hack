@@ -112,7 +112,48 @@ struct
     /*0xFBC*/ u8 areaUnknownGraphicsBuffer[0x600];
     /*0xFC0*/ u8 areaScreenLabelIds[NUM_LABEL_WINDOWS];
     /*0xFC8*/ u8 areaState;
+    bool8 coopHintShown;
 } static EWRAM_DATA *sPokedexAreaScreen = NULL;
+
+// Co-op roster: for a Pokemon with no wild area (gifts, fossils, trades,
+// one-off encounters, evolutions), one line saying how it is obtained,
+// instead of the AREA UNKNOWN banner (src/data/coop_dex_hints.h, generated
+// by tools/coop_roster_audit/roster.py from the game's own data).
+struct CoopDexHint
+{
+    u16 nationalNum;
+    const u8 *text;
+};
+#include "data/coop_dex_hints.h"
+
+static const struct WindowTemplate sCoopHintWindowTemplate =
+{
+    .bg = LABEL_WINDOW_BG,
+    .tilemapLeft = 1,
+    .tilemapTop = 18,
+    .width = 28,
+    .height = 2,
+    .paletteNum = 0,
+    .baseBlock = 0x240
+};
+
+static const u8 *GetCoopDexHint(enum Species species)
+{
+    u32 nat = SpeciesToNationalPokedexNum(species);
+    u32 lo = 0, hi = ARRAY_COUNT(sCoopDexHints);
+
+    while (lo < hi)
+    {
+        u32 mid = (lo + hi) / 2;
+        if (sCoopDexHints[mid].nationalNum == nat)
+            return sCoopDexHints[mid].text;
+        if (sCoopDexHints[mid].nationalNum < nat)
+            lo = mid + 1;
+        else
+            hi = mid;
+    }
+    return NULL;
+}
 
 EWRAM_DATA u8 gAreaTimeOfDay = 0;
 
@@ -135,6 +176,7 @@ static void DestroyAreaScreenSprites(void);
 static void AddTimeOfDayLabels(void);
 static void ShowEncounterInfoLabel(void);
 static void ShowAreaUnknownLabel(void);
+static void ShowCoopDexHint(const u8 *text);
 static void PrintAreaLabelText(const u8 *text, enum PokedexAreaLabels labelId, int textXPos);
 static void ClearAreaWindowLabel(enum PokedexAreaLabels labelId);
 
@@ -701,6 +743,23 @@ static void PrintAreaLabelText(const u8 *text, enum PokedexAreaLabels labelId, i
     CopyWindowToVram(sPokedexAreaScreen->areaScreenLabelIds[labelId], COPYWIN_FULL);
 }
 
+static void ShowCoopDexHint(const u8 *text)
+{
+    u8 id;
+
+    RemoveAllWindowsOnBg(LABEL_WINDOW_BG);
+    id = AddWindow(&sCoopHintWindowTemplate);
+    sPokedexAreaScreen->areaScreenLabelIds[DEX_AREA_LABEL_AREA_UNKNOWN] = id;
+    PutWindowTilemap(id);
+    FillWindowPixelBuffer(id, PIXEL_FILL(7));
+    AddTextPrinterParameterized4(id, FONT_SMALL_NARROW, GetStringCenterAlignXOffset(FONT_SMALL_NARROW, text, 28 * 8), 2, 0, 0,
+                                 sFontColor_AreaInfo, TEXT_SKIP_DRAW, text);
+    CopyWindowToVram(id, COPYWIN_FULL);
+    ScheduleBgCopyTilemapToVram(LABEL_WINDOW_BG);
+    DoScheduledBgTilemapCopiesToVram();
+    sPokedexAreaScreen->coopHintShown = TRUE;
+}
+
 bool32 ShouldShowAreaUnknownLabel(void)
 {
     return !sPokedexAreaScreen->numOverworldAreas && !sPokedexAreaScreen->numSpecialAreas;
@@ -768,7 +827,7 @@ static void Task_ShowPokedexAreaScreen(u8 taskId)
             LoadAreaUnknownGraphics();
         break;
     case 8:
-        if (!OW_TIME_OF_DAY_ENCOUNTERS)
+        if (!OW_TIME_OF_DAY_ENCOUNTERS && !(ShouldShowAreaUnknownLabel() && GetCoopDexHint(sPokedexAreaScreen->species)))
             CreateAreaUnknownSprites();
         break;
     case 9:
@@ -785,6 +844,8 @@ static void Task_ShowPokedexAreaScreen(u8 taskId)
                 ShowAreaUnknownLabel();
             DoScheduledBgTilemapCopiesToVram();
         }
+        if (!OW_TIME_OF_DAY_ENCOUNTERS && ShouldShowAreaUnknownLabel() && GetCoopDexHint(sPokedexAreaScreen->species))
+            ShowCoopDexHint(GetCoopDexHint(sPokedexAreaScreen->species));
         if (POKEDEX_PLUS_HGSS)
             LoadHGSSScreenSelectBarSubmenu();
         ShowBg(2);
@@ -914,6 +975,11 @@ static void Task_HandlePokedexAreaScreenInput(u8 taskId)
         if (gPaletteFade.active)
             return;
         DestroyAreaScreenSprites();
+        if (sPokedexAreaScreen->coopHintShown)
+        {
+            ClearAreaWindowLabel(DEX_AREA_LABEL_AREA_UNKNOWN);
+            RemoveAllWindowsOnBg(LABEL_WINDOW_BG);
+        }
         if (OW_TIME_OF_DAY_ENCOUNTERS)
         {
             ClearAreaWindowLabel(DEX_AREA_LABEL_TIME_OF_DAY);

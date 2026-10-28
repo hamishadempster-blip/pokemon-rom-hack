@@ -664,6 +664,8 @@ gSpecials::
 	def_special CoopRoster_BufferStarterNames
 	def_special CoopRoster_StarterChoice
 	def_special CoopRoster_StarterTaken
+	def_special CoopRoster_FossilId
+	def_special CoopRoster_FossilSpecies
 	def_special Coop_PartnerChatOk
 	def_special Coop_BufferCapText
 	def_special Coop_BufferBeaconStatus

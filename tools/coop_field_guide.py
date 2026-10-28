@@ -87,15 +87,65 @@ GUIDE2 = [
     ('FRILLISH', 'SUPER ROD on ROUTES 124 and 126.', 'Level 40: JELLICENT.'),
 ]
 
+# The second roster expansion (tools/coop_roster/batch2.py) and fossils.
+GUIDE4 = [
+    ('EEVEE', 'ROUTE 117, in the grass.', 'A WATER, THUNDER, FIRE, LEAF or ICE\nSTONE picks its form. Very friendly\\land knowing a FAIRY move: SYLVEON.\\lVery friendly without one: ESPEON by\\lday, UMBREON at night.'),
+    ('LILLIPUP', 'ROUTE 101.', 'Level 16: HERDIER.\nLevel 32: STOUTLAND.'),
+    ('SKWOVET', 'ROUTE 101.', 'Level 24: GREEDENT.'),
+    ('PIDOVE', 'ROUTE 103.', 'Level 21: TRANQUILL.\nLevel 32: UNFEZANT.'),
+    ('CRAMORANT', 'Surf on ROUTE 103.', 'It does not evolve. After SURF or\nDIVE it carries a catch, and spits\\lit at whoever hits it.'),
+    ('PURRLOIN', 'ROUTE 104.', 'Level 20: LIEPARD.'),
+    ('BLIPBUG', 'PETALBURG WOODS.', 'Level 10: DOTTLER.\nLevel 30: ORBEETLE.'),
+    ('TYMPOLE', "Surf on PETALBURG's pond.", 'Level 25: PALPITOAD.\nLevel 36: SEISMITOAD.'),
+    ('CHEWTLE', 'GOOD ROD in PETALBURG and on\nROUTE 102.', 'Level 22: DREDNAW.'),
+    ('WOOBAT', 'RUSTURF TUNNEL.', 'Level up while very friendly:\nSWOOBAT.'),
+    ('BLITZLE', 'ROUTE 110.', 'Level 27: ZEBSTRIKA.'),
+    ('YAMPER', 'ROUTE 110.', 'Level 25: BOLTUND.'),
+    ('GOSSIFLEUR', 'ROUTE 117, among the flowers.', 'Level 20: ELDEGOSS.'),
+    ('TOXEL', "NEW MAUVILLE's entrance.", 'Level 30: TOXTRICITY. Its nature\ndecides the AMPED or LOW KEY form.'),
+    ('TOGEPI', 'ROUTE 113, in the ash.', 'Very friendly: TOGETIC. A SHINY\nSTONE: TOGEKISS.'),
+    ('MUNNA', 'ROUTE 113.', 'A MOON STONE: MUSHARNA.'),
+    ('MILCERY', 'ROUTE 114.', 'Hold a SWEET and spin on the spot\nwith the D-PAD: ALCREMIE. The hour,\\lthe way you spin and the SWEET\\lchoose its look. MAUVILLE sells SWEETS.'),
+    ('STONJOURNER', 'ROUTE 114, among the rocks.', 'It does not evolve.'),
+    ('CLEFFA', 'METEOR FALLS, first room. CLEFAIRY\nlives there too.', 'Very friendly: CLEFAIRY. A MOON\nSTONE: CLEFABLE.'),
+    ('ELGYEM', 'METEOR FALLS, first room.', 'Level 42: BEHEEYEM.'),
+    ('DRUDDIGON', 'METEOR FALLS, the deep room past\nthe falls.', 'It does not evolve.'),
+    ('FALINKS', 'JAGGED PASS.', 'It does not evolve.'),
+    ('SILICOBRA', 'The SANDBURIED RUINS.', 'Level 36: SANDACONDA.'),
+    ('PINCURCHIN', 'Surf on ROUTE 107.', 'It does not evolve.'),
+    ('DUCKLETT', 'Surf on ROUTE 118.', 'Level 35: SWANNA.'),
+    ('MORPEKO', 'ROUTE 118.', 'It does not evolve. HUNGER SWITCH\nchanges its mode every turn.'),
+    ('EMOLGA', 'ROUTE 119.', 'It does not evolve.'),
+    ('DEERLING', 'ROUTE 120. Only its spring coat\nis seen in HOENN.', 'Level 34: SAWSBUCK.'),
+    ('AUDINO', 'ROUTE 120.', 'It does not evolve.'),
+    ('BOUFFALANT', 'ROUTE 123.', 'It does not evolve.'),
+    ('SINISTEA', 'MT. PYRE 1F. The ANTIQUE kind is\nrarer.', 'A CRACKED POT: POLTEAGEIST. An\nANTIQUE one needs a CHIPPED POT.\\lMAUVILLE sells both from 6 BADGES.'),
+    ('VANILLITE', 'SHOAL CAVE ice room, low tide.', 'Level 35: VANILLISH.\nLevel 47: VANILLUXE.'),
+    ('EISCUE', 'SHOAL CAVE ice room, low tide.', 'It does not evolve. ICE FACE takes\none physical hit, back in hail.'),
+    ('SURSKIT', 'ROUTE 102, in the grass.', 'Level 22: MASQUERAIN.'),
+    ('BUDEW', 'ROUTE 103, in the grass.', 'Very friendly, by day: ROSELIA.\nA SHINY STONE: ROSERADE.'),
+    ('ZIGZAGOON', 'GALARIAN ZIGZAGOON: ROUTE 103.', 'Level 20: GALARIAN LINOONE.\nLevel 35 at night: OBSTAGOON.'),
+    ('ZANGOOSE', 'ROUTE 114, in the grass. Partners\non one tile may meet it with SEVIPER.', 'It does not evolve.'),
+    ('LUNATONE', 'METEOR FALLS. Partners on one\ntile may meet it with SOLROCK.', 'It does not evolve.'),
+    ('MEDITITE', 'MT. PYRE, on the outside slopes.', 'Level 37: MEDICHAM.'),
+    ('CORSOLA', 'GALARIAN CORSOLA: surf in the\nflooded ABANDONED SHIP rooms.', 'Level 38: CURSOLA.'),
+    ('EGGS', 'The DAY CARE on ROUTE 117. Two\nthat get along leave an EGG.', 'An EGG hatches the first form,\nso POLIWAG, SNOVER and ROGGENROLA\\lcome from their evolved forms.'),
+    ('FOSSILS', 'The FOSSIL MANIAC in the ROUTE 114\ntunnel digs up one a day, any kind.\\lDEVON in RUSTBORO revives it.', 'They come back at level 20 and\nevolve by level: OMASTAR 40,\\lKABUTOPS 40, RAMPARDOS 30, BASTIODON\\l30, CARRACOSTA 37, ARCHEOPS 37,\\lTYRANTRUM 39, AURORUS 39.'),
+]
+
 # Partner Pokemon from other regions (src/coop_roster.c).
 GUIDE3 = [
     ('KANTO', 'A visitor in the RUSTBORO POKéMON\nCENTER, after 1 BADGE: BULBASAUR,\\lCHARMANDER or SQUIRTLE, Lv 10.', 'One a day. They evolve at level\n16, then 32 or 36.'),
     ('SINNOH', 'A visitor in the LAVARIDGE POKéMON\nCENTER, after 4 BADGES: TURTWIG,\\lCHIMCHAR or PIPLUP, Lv 18.', 'One a day. They evolve at level\n14 to 18, then 32 or 36.'),
     ('UNOVA', 'A visitor in the FORTREE POKéMON\nCENTER, after 6 BADGES: SNIVY,\\lTEPIG or OSHAWOTT, Lv 25.', 'One a day. They evolve at level\n17, then 36.'),
     ('KALOS', 'A visitor in the MOSSDEEP POKéMON\nCENTER, after 7 BADGES: CHESPIN,\\lFENNEKIN or FROAKIE, Lv 30.', 'One a day. They evolve at level\n16, then 36.'),
+    ('ALOLA', 'A visitor in the SLATEPORT POKéMON\nCENTER, after 2 BADGES: ROWLET,\\lLITTEN or POPPLIO, Lv 14.', 'One a day. They evolve at level\n17, then 34.'),
+    ('GALAR', 'A visitor in the PETALBURG POKéMON\nCENTER, after 5 BADGES: GROOKEY,\\lSCORBUNNY or SOBBLE, Lv 22.', 'One a day. They evolve at level\n16, then 35.'),
+    ('HOENN', 'A visitor in the FALLARBOR POKéMON\nCENTER, after 3 BADGES: TREECKO,\\lTORCHIC or MUDKIP, Lv 16.', 'One a day. They evolve at level\n16, then 36.'),
+    ('PALDEA', 'A visitor in the SOOTOPOLIS POKéMON\nCENTER, after 8 BADGES: SPRIGATITO,\\lFUECOCO or QUAXLY, Lv 35.', 'One a day. They evolve at level\n16, then 36.'),
 ]
 
-GROUPS = [('EARLIER ARRIVALS', GUIDE), ('NEW ARRIVALS', GUIDE2), ('PARTNER POKéMON', GUIDE3)]
+GROUPS = [('EARLIER ARRIVALS', GUIDE), ('NEW ARRIVALS', GUIDE2), ('NEWEST ARRIVALS', GUIDE4), ('PARTNER POKéMON', GUIDE3)]
 
 
 def strblock(label, text):

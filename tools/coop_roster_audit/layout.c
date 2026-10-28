@@ -10,4 +10,7 @@ const u32 rosterLayout[] = {
     sizeof(struct Evolution), offsetof(struct Evolution, method),
     offsetof(struct Evolution, param), offsetof(struct Evolution, targetSpecies),
     sizeof(struct LevelUpMove), O(height),
+#if P_FOOTPRINTS
+    O(footprint),
+#endif
 };

@@ -1182,6 +1182,8 @@ static void Cmd_attackanimation(void)
     }
 }
 
+static EWRAM_DATA bool8 sFormChangeAnimPending = FALSE;
+
 static void Cmd_waitanimation(void)
 {
     CMD_ARGS();
@@ -1189,10 +1191,23 @@ static void Cmd_waitanimation(void)
     if (gBattleControllerExecFlags != 0 || gBattleStruct->battlerKOAnimsRunning != 0)
         return;
 
-    if (TryBattleFormChange(gBattlerAttacker, FORM_CHANGE_BATTLE_HP_PERCENT_DURING_MOVE, GetBattlerAbility(gBattlerAttacker)))
+    if (sFormChangeAnimPending)
     {
-        // Only execute B_ANIM_FORM_CHANGE_INSTANT for those who have changed forms
+        // The new species reached every controller (below); now the picture.
+        sFormChangeAnimPending = FALSE;
         PlayAnimation(gBattlerAttacker, B_ANIM_FORM_CHANGE_INSTANT, NULL, cmd->nextInstr);
+    }
+    else if (TryBattleFormChange(gBattlerAttacker, FORM_CHANGE_BATTLE_HP_PERCENT_DURING_MOVE, GetBattlerAbility(gBattlerAttacker)))
+    {
+        // Only execute B_ANIM_FORM_CHANGE_INSTANT for those who have changed forms.
+        // Send the species first, as handleformchange does: the animation
+        // draws the controller's own copy of the Pokemon, and in a co-op or
+        // link battle that copy is on the other game (Cramorant's Gulping
+        // form stayed invisible on the partner's screen).
+        BtlController_EmitSetMonData(gBattlerAttacker, B_COMM_TO_CONTROLLER, REQUEST_SPECIES_BATTLE, 1u << gBattlerPartyIndexes[gBattlerAttacker],
+                                     sizeof(gBattleMons[gBattlerAttacker].species), &gBattleMons[gBattlerAttacker].species);
+        MarkBattlerForControllerExec(gBattlerAttacker);
+        sFormChangeAnimPending = TRUE;
     }
     else
     {

@@ -803,8 +803,13 @@ static void WindUpSpinTimer(enum Direction direction)
     gPlayerSpinData.spinDirection = SPIN_DIRECTION_NONE;
 }
 
+// SPIN_CW_SHORT is 0, the same value as EVO_NONE, so the result is a flag of
+// its own: comparing the special var with EVO_NONE dropped every short
+// clockwise spin (several ALCREMIE forms could never appear).
 bool32 CanTriggerSpinEvolution()
 {
+    bool32 trigger = FALSE;
+
     gSpecialVar_0x8000 = EVO_NONE;
     if (gPlayerSpinData.triggerEvo)
     {
@@ -813,28 +818,37 @@ bool32 CanTriggerSpinEvolution()
         if (seconds >= 10)
         {
             gSpecialVar_0x8000 = SPIN_EITHER;
+            trigger = TRUE;
         }
-
         else if (seconds >= 5 && seconds < 10)
         {
             if (direction == SPIN_DIRECTION_CLOCKWISE)
+            {
                 gSpecialVar_0x8000 = SPIN_CW_LONG;
+                trigger = TRUE;
+            }
             else if (direction == SPIN_DIRECTION_COUNTER_CLOCKWISE)
+            {
                 gSpecialVar_0x8000 = SPIN_CCW_LONG;
+                trigger = TRUE;
+            }
         }
         else if (seconds < 5)
         {
             if (direction == SPIN_DIRECTION_CLOCKWISE)
+            {
                 gSpecialVar_0x8000 = SPIN_CW_SHORT;
+                trigger = TRUE;
+            }
             else if (direction == SPIN_DIRECTION_COUNTER_CLOCKWISE)
+            {
                 gSpecialVar_0x8000 = SPIN_CCW_SHORT;
+                trigger = TRUE;
+            }
         }
         gPlayerSpinData.triggerEvo = FALSE;
     }
-    if (gSpecialVar_0x8000 != EVO_NONE)
-        return TRUE;
-
-    return FALSE;
+    return trigger;
 }
 
 static void PlayerNotOnBikeTurningInPlace(enum Direction direction, u16 heldKeys)
