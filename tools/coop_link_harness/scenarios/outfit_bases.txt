@@ -110,3 +110,5 @@ b wait 300
 b press A 2
 b wait 40
 b mash_field 600 B
+# Partner picture self-check (src/coop.c Coop_CheckAppearance): no faulty frame.
+b expect gCoopAppearanceFaults:2 0

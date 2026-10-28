@@ -31,3 +31,5 @@ b shot bedroom-relinked
 include save_game.inc
 b expect_map 1 3
 b expect_no_object 1
+# Partner picture self-check (src/coop.c Coop_CheckAppearance): no faulty frame.
+b expect gCoopAppearanceFaults:2 0

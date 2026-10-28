@@ -80,3 +80,5 @@ b shot dark-cave
 0 walk 8 12 3000
 b wait 30
 b shot dark-cave-apart
+# Partner picture self-check (src/coop.c Coop_CheckAppearance): no faulty frame.
+b expect gCoopAppearanceFaults:2 0

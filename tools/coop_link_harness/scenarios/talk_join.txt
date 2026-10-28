@@ -1,0 +1,222 @@
+# Joining a conversation (src/coop_talk.c), j68 saves, linked, Lilycove.
+# The POKéFAN in House 3 asks a yes/no question, explains, then turns back
+# (applymovement): two shared checkpoints.
+# Part 1: Kai (fast text) talks to her; Rosa (slow text) presses A on her
+# and joins. Each reads at their own speed: Kai's question waits until Rosa
+# has read the first line (tick over Kai on Rosa's screen); Rosa sees Kai's
+# answer and the explanation; the NPC's script runs on Kai's game only.
+# Part 2: roles swapped. Rosa talks to her; Kai presses A on Rosa (the
+# partner) and joins; at the question Rosa goes on alone (B): Kai gets a
+# note and is free.
+# Part 3: Kai talks to the POKéFAN; Rosa joins, catches up, and leaves
+# with B while Kai decides: Kai goes on alone.
+# Part 4: Kai talks to the POKéFAN, Rosa joins, Kai waits at the question;
+# the link goes quiet (Rosa's heartbeat muted): Kai's wait ends, Rosa's
+# conversation ends with a note.
+# Part 5: Dewford Hall: Kai talks to a man whose script runs special code
+# (can't be shared); Rosa's A on him gives a short corner note, no box,
+# not repeated; her field stays free.
+# FIXTURES: warps; text speeds (player options); the heartbeat muted.
+include continue.inc
+include relink.inc
+b expect coop.sLinkState 2
+b no_wild 1
+0 text_speed 2
+1 text_speed 0
+0 fixture_warp 13 14 9 4
+1 fixture_warp 13 14 7 2
+b until_field 3000
+b sync
+b wait 60
+0 walk 8 4 3000
+1 walk 7 3 3000
+b sync
+b wait 30
+# Kai talks; Rosa presses A on the same NPC a moment later and says YES.
+0 press A 2
+0 wait 30
+b sync
+1 press A 2
+1 until_field_text Join_the_conversation 600
+1 wait 60
+1 shot join-offer
+1 until_mem gCoopTalkStats+2:1 1 900 A
+b sync
+0 until_mem gCoopTalkStats+3:1 1 900
+# Kai pages through her long first message (fast text) and reaches the
+# question: his game waits there for Rosa.
+0 until_mem gCoopLocalWaiting 1 3000 A
+0 wait 30
+0 shot host-waits
+0 expect gCoopTalkStats+0:1 1
+0 expect gCoopTalkStats+1:1 0
+0 expect gCoopTalkStats+3:1 1
+0 expect gCoopTalkStats+4:1 1
+b sync
+1 wait 30
+1 expect gCoopMarkerIcon 5
+1 shot joiner-sees-tick
+# Rosa reads the greeting and the first message at her own (slow) speed;
+# her game reports ready, and Kai's question opens.
+1 until_mem gCoopTalkStats+5:1 1 6000 A
+1 shot joiner-ready
+0 until_mem gCoopLocalWaiting 0 12000
+0 wait 60
+0 shot question
+# Kai answers YES; Rosa sees the answer, then the explanation.
+0 press A 2
+0 wait 60
+0 shot host-explains
+# Both read on; the NPC turning back is the second checkpoint.
+0 until_mem gCoopTalkStats+4:1 2 6000 A
+1 until_mem gCoopTalkStats+5:1 2 9000 A
+1 mash_field 6000 B
+0 mash_field 6000 B
+b sync
+b wait 60
+b shot after
+0 expect gCoopTalkStats+4:1 2
+0 expect gCoopTalkStats+5:1 0
+1 expect gCoopTalkStats+0:1 0
+1 expect gCoopTalkStats+5:1 2
+1 expect_range gCoopTalkStats+8:2 3 20
+b expect gCoopLocalWaiting 0
+b expect coop.sLinkState 2
+# ---- Part 2: Rosa hosts, Kai joins through Rosa.
+0 text_speed 2
+1 text_speed 2
+0 fixture_warp 13 14 8 6
+1 fixture_warp 13 14 9 4
+b until_field 3000
+b sync
+b wait 60
+1 walk 8 4 3000
+0 walk 8 5 3000
+b sync
+b wait 30
+1 press A 2
+1 wait 30
+b sync
+0 press A 2
+0 until_field_text Join_the_conversation 600
+0 until_mem gCoopTalkStats+2:1 1 900 A
+b sync
+1 until_mem gCoopTalkStats+3:1 1 900
+1 until_mem gCoopLocalWaiting 1 3000 A
+1 wait 30
+1 shot host2-waits
+# Rosa goes ahead alone.
+1 press B 2
+1 wait 30
+1 expect gCoopLocalWaiting 0
+1 shot host2-question
+0 until_mem gCoopTalkStats+11:1 2 3000 A
+0 shot joiner2-note
+0 mash_field 900 B
+1 mash_field 3000 B
+b sync
+b wait 30
+0 expect gCoopTalkStats+11:1 2
+1 expect gCoopTalkStats+3:1 1
+# ---- Part 3: Kai hosts the POKéFAN; Rosa joins, reads up to the question,
+# and leaves with B while Kai is still deciding.
+0 fixture_warp 13 14 9 4
+1 fixture_warp 13 14 7 2
+b until_field 3000
+b sync
+b wait 60
+0 walk 8 4 3000
+1 walk 7 3 3000
+b sync
+b wait 30
+0 press A 2
+0 wait 20
+b sync
+1 press A 2
+1 until_field_text Join_the_conversation 600
+1 until_mem gCoopTalkStats+2:1 2 900 A
+b sync
+0 until_mem gCoopTalkStats+3:1 2 900
+0 until_mem gCoopLocalWaiting 1 3000 A
+b sync
+1 until_mem gCoopTalkStats+5:1 3 6000 A
+1 until_mem gCoopLocalWaiting 1 600
+1 wait 60
+1 shot joiner3-ready
+1 press B 2
+1 wait 30
+1 expect gCoopTalkStats+10:1 4
+1 expect gCoopLocalWaiting 0
+b sync
+0 until_mem gCoopLocalWaiting 0 900
+0 wait 60
+0 expect coop_talk.sHost+2:1 0
+0 shot host3-alone
+0 mash_field 3000 B
+1 mash_field 900 B
+b sync
+b wait 30
+# ---- Part 4: the link goes quiet during a joined conversation.
+0 fixture_warp 13 14 9 4
+1 fixture_warp 13 14 7 2
+b until_field 3000
+b sync
+b wait 60
+0 walk 8 4 3000
+1 walk 7 3 3000
+b sync
+b wait 30
+0 press A 2
+0 wait 20
+b sync
+1 press A 2
+1 until_field_text Join_the_conversation 600
+1 until_mem gCoopTalkStats+2:1 3 900 A
+b sync
+0 until_mem gCoopTalkStats+3:1 3 900
+0 until_mem gCoopLocalWaiting 1 3000 A
+b sync
+1 mute_coop 600
+0 until_mem gCoopLocalWaiting 0 1500
+0 shot host4-released
+1 until_mem gCoopTalkStats+11:1 4 3000 A
+1 shot joiner4-lost
+b until_mem coop.sPartnerValid 1 3000
+0 mash_field 3000 B
+1 mash_field 3000 B
+b sync
+b wait 60
+b expect coop.sLinkState 2
+# ---- Part 5: a conversation that can't be shared (Dewford Hall: the man's
+# script runs special code). Rosa's A on him: a short corner note, no box.
+0 fixture_warp 3 4 7 4
+1 fixture_warp 3 4 5 7
+b mash_field 3000 B
+b sync
+b wait 60
+0 walk 6 4 3000
+1 walk 5 5 3000
+b sync
+b wait 30
+0 press A 2
+0 wait 20
+b sync
+0 expect gCoopTalkStats+1:1 5
+1 press A 2
+1 wait 30
+1 expect gCoopTalkStats+7:1 1
+1 shot busy-note
+1 wait 40
+1 shot busy-note2
+1 expect_text gCoopPopupText Kai
+# A second A within a few seconds: no second note, no box.
+1 until_field 120
+1 press A 2
+1 wait 30
+1 expect gCoopTalkStats+7:1 1
+1 wait 60
+1 shot busy-note3
+0 mash_field 3000 B
+b sync
+b wait 30
+b expect coop.sLinkState 2

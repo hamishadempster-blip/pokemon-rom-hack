@@ -170,3 +170,5 @@ b expect gCoopMarkerShown 0
 b expect gCoopNameTagShown 0
 b expect coop.sLinkState 0
 b shot unlinked-field
+# Partner picture self-check (src/coop.c Coop_CheckAppearance): no faulty frame.
+b expect gCoopAppearanceFaults:2 0

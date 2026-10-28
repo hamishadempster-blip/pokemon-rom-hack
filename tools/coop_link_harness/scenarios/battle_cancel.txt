@@ -1,0 +1,235 @@
+# Changing a chosen battle action while the turn is open (src/coop_battle_turn.c),
+# co-op wild double on Route 116 (j16 saves, linked, Beacon ON). Kai's game
+# is the link master and runs the battle.
+# 1. Rosa chooses TAIL WHIP, then B on "Ready. Waiting for Kai… B: change": her
+#    game asks, Kai's engine withdraws the action and answers, and only then
+#    her action menu reopens. She chooses GROWL instead; Kai chooses; the
+#    turn runs with GROWL (TAIL WHIP not used by her that turn).
+# 2. Kai (the master) chooses first and changes his own choice the same way.
+# 3. The commit boundary: Rosa has chosen; Kai's last A and Rosa's B land on
+#    the same frame. Whatever the master decided, both games agree: either
+#    the change was accepted (Rosa's menu reopens, the master counted a
+#    cancel) or it was refused as late (Rosa sees "Too late…", the master
+#    counted a late request, her first choice is used).
+# TEST HELPERS (logged): leads made with test_mon (ZIGZAGOON and PIKACHU,
+# Lv 30, TAIL WHIP and GROWL: no damage, so the battle lasts). FIXTURES: Route 116 grass all LOTAD; a forced
+# encounter step; Karen's sight hidden.
+include continue.inc
+include relink.inc
+b expect coop.sLinkState 2
+include beacon_on.inc
+b mash_field 2000 B
+b expect coop.sBeacon+1:1 1
+b no_wild 1
+b fixture_rom16 gRoute116_LandMons+2 270
+b fixture_rom16 gRoute116_LandMons+6 270
+b fixture_rom16 gRoute116_LandMons+10 270
+b fixture_rom16 gRoute116_LandMons+14 270
+b fixture_rom16 gRoute116_LandMons+18 270
+b fixture_rom16 gRoute116_LandMons+22 270
+b fixture_rom16 gRoute116_LandMons+26 270
+b fixture_rom16 gRoute116_LandMons+30 270
+b fixture_rom16 gRoute116_LandMons+34 270
+b fixture_rom16 gRoute116_LandMons+38 270
+b fixture_rom16 gRoute116_LandMons+42 270
+b fixture_rom16 gRoute116_LandMons+46 270
+0 fixture_warp 0 31 23 17
+1 fixture_warp 0 31 25 17
+b until_field 3000
+b sync
+b fixture_obj 17 7 0
+0 test_mon 0 263 30 39 45 0 0 0
+1 test_mon 0 25 30 39 45 89 33 0
+b test_heal
+b sync
+0 no_wild 0
+0 press LEFT 3
+0 wait 20
+0 force_encounter 1
+0 write sWildEncounterImmunitySteps:1 4
+0 write sPrevMetatileBehavior:2 2
+0 press LEFT 10
+b until_cb2 BattleMainCB2 4000 A
+0 force_encounter 0
+0 no_wild 1
+b until_battle_text What_will 9000
+b sync
+b wait 90
+b shot turn1-menu
+# --- 0. Target prompts (Rosa's PIKACHU also knows EARTHQUAKE and TACKLE,
+# looked at only, never used). FIGHT, then EARTHQUAKE (bottom left): the
+# confirm says ALL OTHER POKeMON and warns that it hits her ally; B back.
+1 press A 2
+1 wait 90
+1 press DOWN 2
+1 wait 30
+1 press A 2
+1 wait 40
+1 shot target-eq
+1 expect gCoopTargetKind 6
+1 expect_text gCoopTargetPrompt ALL_OTHER_POK
+1 expect gCoopTargetWarned 1
+1 press B 2
+1 wait 40
+# TACKLE (bottom right): one target; the cursor starts on the left foe;
+# LEFT twice skips Rosa herself and lands on Kai's ZIGZAGOON: ALLY, warned.
+1 press RIGHT 2
+1 wait 30
+1 press A 2
+1 wait 40
+1 shot target-foe
+1 expect gCoopTargetKind 1
+1 expect_text gCoopTargetPrompt FOE_~LEFT~
+1 expect_text gCoopTargetPrompt Lotad
+1 press LEFT 2
+1 wait 30
+1 press LEFT 2
+1 wait 40
+1 shot target-ally
+1 expect gCoopTargetKind 2
+1 expect_text gCoopTargetPrompt ALLY
+1 expect_text gCoopTargetPrompt Zigzagoon
+1 press B 2
+1 wait 40
+# Back to TAIL WHIP (top left), then out to the action menu.
+1 press UP 2
+1 wait 30
+1 press LEFT 2
+1 wait 30
+1 press B 2
+1 wait 60
+# --- 1. Rosa: TAIL WHIP (FIGHT, move 1, BOTH FOES shown, A), then B.
+1 press A 2
+1 wait 90
+1 press A 2
+1 wait 90
+1 press A 2
+1 wait 90
+1 press A 2
+1 until_battle_text Waiting_for 900
+1 wait 20
+1 shot rosa-ready
+1 expect gCoopTargetKind 4
+1 expect_text gCoopTargetPrompt BOTH_FOES
+1 expect gCoopTurn+7:1 1
+1 expect gCoopTurn+15:1 0
+1 press B 2
+1 wait 4
+1 shot rosa-changing
+1 until_battle_text What_will 900
+1 wait 90
+1 shot rosa-reopened
+1 expect gCoopTurn+19:1 1
+b sync
+0 expect gCoopTurn+36:2 1
+0 expect gCoopTurn+0:1 0
+# GROWL instead (FIGHT, move 2, both foes shown, A).
+1 press A 2
+1 wait 90
+1 press RIGHT 2
+1 wait 30
+1 press A 2
+1 wait 90
+1 press A 2
+1 until_battle_text Waiting_for 900
+b sync
+# Kai: TAIL WHIP; the turn runs.
+0 press A 2
+0 wait 90
+0 press A 2
+0 wait 90
+0 press A 2
+b until_battle_text Pikachu_used_Growl 6000
+b sync
+b shot turn1-growl
+b until_battle_text What_will 9000
+b sync
+0 expect gCoopTurn+0:1 1
+1 expect gCoopTurn+0:1 1
+b wait 90
+# --- 2. Kai chooses first, then changes his own choice.
+0 press A 2
+0 wait 90
+0 press A 2
+0 wait 90
+0 press A 2
+0 wait 90
+0 press A 2
+0 until_battle_text Waiting_for 900
+0 wait 20
+0 shot kai-ready
+0 press B 2
+0 until_battle_text What_will 900
+0 wait 90
+0 shot kai-reopened
+0 expect gCoopTurn+17:1 1
+0 expect gCoopTurn+36:2 2
+0 press A 2
+0 wait 90
+0 press RIGHT 2
+0 wait 30
+0 press A 2
+0 wait 90
+0 press A 2
+0 until_battle_text Waiting_for 900
+b sync
+1 press A 2
+1 wait 90
+1 press A 2
+1 wait 90
+1 press A 2
+b until_battle_text What_will 9000
+b sync
+0 expect gCoopTurn+0:1 2
+1 expect gCoopTurn+0:1 2
+b wait 90
+# --- 3. The commit boundary: Rosa's B and Kai's final A on one frame.
+1 press A 2
+1 wait 90
+1 press A 2
+1 wait 90
+1 press A 2
+1 wait 90
+1 press A 2
+1 until_battle_text Waiting_for 900
+0 press A 2
+0 wait 90
+0 press A 2
+0 wait 90
+b sync
+0 press A 2
+1 press B 2
+b wait 120
+b sync
+b shot boundary
+0 hex gCoopTurn 40
+1 hex gCoopTurn 40
+# Agreement: accepted (Rosa's menu reopened, the master's cancel count went
+# up, Kai's choice stands and waits for hers) or refused (late on both,
+# the turn runs). Either way Rosa's next action menu opens.
+1 until_battle_text What_will 12000
+b sync
+b wait 30
+0 expect_range gCoopTurn+36:2 2 3
+1 expect_range gCoopTurn+19:1 1 2
+0 hex gCoopTurn 40
+1 hex gCoopTurn 40
+# Rosa chooses RUN (bottom right of the action menu). If the turn was
+# refused as late, Kai's menu is open too and he runs as well; if it was
+# accepted, his move already stands and DOWN/RIGHT/A do nothing while he
+# waits. The wild battle ends.
+1 press DOWN 2
+1 wait 20
+1 press RIGHT 2
+1 wait 20
+1 press A 2
+0 wait 200
+0 press DOWN 2
+0 wait 20
+0 press RIGHT 2
+0 wait 20
+0 press A 2
+b wait 120
+b mash_field 9000 B
+b sync
+b expect coop.sLinkState 2

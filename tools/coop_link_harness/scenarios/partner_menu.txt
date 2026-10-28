@@ -34,6 +34,15 @@ b note_party
 0 press DOWN 2
 0 wait 60
 0 shot team-second
+# The evolution hint (SELECT on the INFO page) on a partner's POKeMON: what
+# it evolves into and how, without judging Rosa's bag or time.
+0 press LEFT 2
+0 wait 60
+0 press SELECT 2
+0 wait 40
+0 shot team-evo
+0 expect_text gCoopEvoHintText EVOLVES_INTO
+0 expect_text gCoopEvoHintText Your_partner
 b sync
 1 shot partner-while-viewing
 0 press B 2

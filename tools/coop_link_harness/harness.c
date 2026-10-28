@@ -23,7 +23,7 @@
 #define MAX_CMDS 4096
 #define MAX_SYMS 500000
 
-enum { C_PARTNER, C_GOTO, C_HEX, C_PRESS, C_WAIT, C_SHOT, C_DUMP, C_BARRIER, C_UNTIL_CB2, C_UNTIL_FIELD, C_EXPECT, C_UNTIL_MEM, C_BATTLE, C_MENU, C_PARTY, C_FIXTURE, C_WRITE, C_LEAD, C_MOVE, C_SIX, C_VAR, C_FLAG, C_VS, C_EXPECT_FLAG, C_EXPECT_VAR, C_NO_OBJECT, C_MAP, C_OBJECT, C_TEXT_SPEED, C_PACE, C_MUTE, C_PARTNER_AT, C_ITEM, C_EXPECT_ITEM, C_UNTIL_TEXT, C_WARP, C_PC_COUNT, C_MONS, C_NO_COPIES, C_NOTE_MONEY, C_MONEY_GAIN, C_FORCE_ENC, C_EXPECT_RANGE, C_WALK, C_NO_WILD, C_CROSS, C_WALK_BATTLE, C_SMART, C_STRONG, C_UNTIL_TASK, C_MIRROR, C_SPECIES, C_NOTE_PARTY, C_SAME_PARTY, C_PATCH_RET, C_SLOT, C_TXN, C_MONEY_SAME, C_DEX, C_SWAP, C_GENDER, C_FILL, C_UNFILL, C_WRITEP, C_TINT, C_UNTIL_FTEXT, C_NICK, C_GRIND, C_CATCH, C_HUNT, C_SWITCH_LEAD, C_PARTY_SLOT, C_HEAL_BELOW, C_TALK_OBJ, C_BOXES, C_TEST_HOOK, C_WATCH, C_EXPECT_WRITES, C_SURF, C_BAG_ITEM, C_FLY_MAP, C_STEP_TO, C_PARTY_ACTION, C_DIVE, C_RIDE, C_LEGEND, C_OWNED, C_PCFILL, C_TASKS, C_ALLOW_RESET, C_ROMWRITE, C_OBJBYTE, C_NPC_SYNC, C_BATTLE_ITEM, C_FIELD_ITEM, C_FISH, C_FORCE_MOVE, C_SCREEN_SAME };
+enum { C_PARTNER, C_GOTO, C_HEX, C_PRESS, C_WAIT, C_SHOT, C_DUMP, C_BARRIER, C_UNTIL_CB2, C_UNTIL_FIELD, C_EXPECT, C_UNTIL_MEM, C_BATTLE, C_MENU, C_PARTY, C_FIXTURE, C_WRITE, C_LEAD, C_MOVE, C_SIX, C_VAR, C_FLAG, C_VS, C_EXPECT_FLAG, C_EXPECT_VAR, C_NO_OBJECT, C_MAP, C_OBJECT, C_TEXT_SPEED, C_PACE, C_MUTE, C_PARTNER_AT, C_ITEM, C_EXPECT_ITEM, C_UNTIL_TEXT, C_WARP, C_PC_COUNT, C_MONS, C_NO_COPIES, C_NOTE_MONEY, C_MONEY_GAIN, C_FORCE_ENC, C_EXPECT_RANGE, C_WALK, C_NO_WILD, C_CROSS, C_WALK_BATTLE, C_SMART, C_STRONG, C_UNTIL_TASK, C_MIRROR, C_SPECIES, C_NOTE_PARTY, C_SAME_PARTY, C_PATCH_RET, C_SLOT, C_TXN, C_MONEY_SAME, C_DEX, C_SWAP, C_GENDER, C_FILL, C_UNFILL, C_WRITEP, C_TINT, C_UNTIL_FTEXT, C_NICK, C_GRIND, C_CATCH, C_HUNT, C_SWITCH_LEAD, C_PARTY_SLOT, C_HEAL_BELOW, C_TALK_OBJ, C_BOXES, C_TEST_HOOK, C_WATCH, C_EXPECT_WRITES, C_SURF, C_BAG_ITEM, C_FLY_MAP, C_STEP_TO, C_PARTY_ACTION, C_DIVE, C_RIDE, C_LEGEND, C_OWNED, C_PCFILL, C_TASKS, C_ALLOW_RESET, C_ROMWRITE, C_OBJBYTE, C_NPC_SYNC, C_BATTLE_ITEM, C_FIELD_ITEM, C_FISH, C_FORCE_MOVE, C_SCREEN_SAME, C_EXPECT_TEXT };
 
 struct Cmd {
 	unsigned args[8];
@@ -3104,6 +3104,15 @@ static void frameCallback(struct mCoreThread* t) {
             advance = true;
             break;
         }
+        case C_EXPECT_TEXT: {
+            // expect_text SYM Words_here: a game string holds the words now.
+            char text[440];
+            gameText(p, c->addr, text, sizeof(text));
+            if (strstr(text, c->text + 16)) out("[p%d] ok text \"%s\"\n", p->id, text);
+            else { out("[p%d] FAIL text never had \"%s\" (now \"%s\")\n", p->id, c->text + 16, text); sFailures++; }
+            advance = true;
+            break;
+        }
         case C_UNTIL_FTEXT: {
             // Tap A (every 24 frames) until a field message containing the
             // text is up; the message text is expanded into gStringVar4.
@@ -4133,6 +4142,13 @@ static void loadScript(const char* path, int depth) {
             c.kind = C_NICK;
             c.size = atoi(a);
             snprintf(c.text, sizeof(c.text), "fixture_nick");
+            snprintf(c.text + 16, sizeof(c.text) - 16, "%s", b);
+            for (char* q = c.text + 16; *q; q++) if (*q == '_') *q = ' ';
+        } else if (!strcmp(cmd, "expect_text")) {
+            // expect_text SYM Some_words: a game string (game charset) has them
+            c.kind = C_EXPECT_TEXT;
+            c.addr = symAddr(a);
+            snprintf(c.text, sizeof(c.text), "expect_text");
             snprintf(c.text + 16, sizeof(c.text) - 16, "%s", b);
             for (char* q = c.text + 16; *q; q++) if (*q == '_') *q = ' ';
         } else if (!strcmp(cmd, "until_field_text")) {

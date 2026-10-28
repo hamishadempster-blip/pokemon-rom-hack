@@ -1,0 +1,95 @@
+# Summary-screen evolution hint (src/coop_evo_hint.c), j65 saves (not
+# linked). The INFO page's memo shows a "SELECT EVO" cue; SELECT
+# steps through each evolution (target, method, conditions, where this
+# Pokemon stands, where to get a needed item), then back to the memo. The
+# text each page built is read from gCoopEvoHintText and shot.
+# TEST HELPERS (logged): the party is six copies of one Pokemon made with
+# test_mon for each case; a held Oval Stone (test_held). FIXTURE: the
+# clock (RTC_EPOCH0, set by run_all.sh) is at night.
+include continue.inc
+0 no_wild 1
+# One case: $SPECIES at $LEVEL; open its summary and press SELECT.
+0 test_mon 0 4 10 52 0 0 0 0
+0 fixture_six
+include evo_hint_open.inc
+0 shot charmander-memo
+0 press SELECT 2
+0 wait 40
+0 expect_text gCoopEvoHintText EVOLVES_INTO_Charmeleon
+0 expect_text gCoopEvoHintText At_Lv._16
+0 expect_text gCoopEvoHintText Now_Lv._10:_6_levels_to_go.
+0 shot charmander-evo
+include evo_hint_close.inc
+# Pikachu: THUNDER STONE, ordinary and (near Dewford) Alolan Raichu.
+0 test_mon 0 25 30 84 0 0 0 0
+0 fixture_six
+include evo_hint_open.inc
+0 press SELECT 2
+0 wait 40
+0 expect_text gCoopEvoHintText EVOLVES_INTO_Raichu_~1~2~
+0 expect_text gCoopEvoHintText Use_a_Thunder_Stone_not_near_DEWFORD
+0 expect_text gCoopEvoHintText None_in_BAG._Sold:_Mauville_Mart
+0 shot pikachu-1
+0 press SELECT 2
+0 wait 40
+0 expect_text gCoopEvoHintText Raichu_~2~2~
+0 expect_text gCoopEvoHintText Thunder_Stone_near_DEWFORD_~Alola~
+0 shot pikachu-2
+0 press SELECT 2
+0 wait 40
+0 shot pikachu-memo-again
+include evo_hint_close.inc
+# Eevee: many branches.
+0 test_mon 0 133 20 33 0 0 0 0
+0 fixture_six
+include evo_hint_open.inc
+0 press SELECT 2
+0 wait 40
+0 expect_text gCoopEvoHintText EVOLVES_INTO
+0 expect_text gCoopEvoHintText ~1~10~
+0 shot eevee-1
+include evo_hint_close.inc
+# Chansey: friendship.
+0 test_mon 0 113 30 1 0 0 0 0
+0 fixture_six
+include evo_hint_open.inc
+0 press SELECT 2
+0 wait 40
+0 expect_text gCoopEvoHintText EVOLVES_INTO_Blissey
+0 expect_text gCoopEvoHintText Not_yet:_high_friendship
+0 shot chansey
+include evo_hint_close.inc
+# Happiny: an Oval Stone held, levelling up by day. The hint names both
+# conditions and whether it is day now, by the game's own clock.
+0 test_mon 0 440 20 1 0 0 0 0
+0 fixture_six
+include evo_hint_open.inc
+0 press SELECT 2
+0 wait 40
+0 expect_text gCoopEvoHintText EVOLVES_INTO_Chansey
+0 expect_text gCoopEvoHintText holding_Oval_Stone
+0 expect_text gCoopEvoHintText level-up,_not_at_night
+0 hex gLocalTime 8
+0 shot happiny
+include evo_hint_close.inc
+# Happiny holding the Oval Stone: only the time of day is left. run_all.sh
+# sets this game's clock to the night (RTC_EPOCH0).
+0 test_mon 0 440 20 1 0 0 0 0
+0 test_held 0 237
+0 fixture_six
+include evo_hint_open.inc
+0 press SELECT 2
+0 wait 40
+0 hex gLocalTime 8
+0 expect_text gCoopEvoHintText Not_now:_it's_night.
+0 shot happiny-held-night
+include evo_hint_close.inc
+# Charizard: no further evolution.
+0 test_mon 0 6 50 52 0 0 0 0
+0 fixture_six
+include evo_hint_open.inc
+0 press SELECT 2
+0 wait 40
+0 expect_text gCoopEvoHintText does_not
+0 shot charizard
+include evo_hint_close.inc

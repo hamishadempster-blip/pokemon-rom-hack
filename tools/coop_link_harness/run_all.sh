@@ -108,6 +108,8 @@ if [ -n "${J16:-}" ]; then
 	# Second roster batch: Cramorant, Morpeko and Eiscue forms on both games.
 	run battleforms_coop SAVE0="$J16/p0.sav" SAVE1="$J16/p1.sav"
 	run roster_b3_battle SAVE0="$J16/p0.sav" SAVE1="$J16/p1.sav"
+	# Target prompts; changing a chosen action while the turn is open.
+	run battle_cancel SAVE0="$J16/p0.sav" SAVE1="$J16/p1.sav"
 fi
 
 # J43/J48=dir: checkpoints 43 (Rustboro, after Route 117) and 48 (Route
@@ -143,6 +145,8 @@ if [ -n "${J65:-}" ]; then
 	run roster_b3_evo_place SAVE0="$J65/p0.sav" SAVE1="$J65/p1.sav" RTC_EPOCH0=1699923600 RTC_EPOCH1=1699963200
 	run roster_b3_evo_misc SAVE0="$J65/p0.sav" SAVE1="$J65/p1.sav" RTC_EPOCH0=1699923600 RTC_EPOCH1=1699963200
 	run roster_b3_services SAVE0="$J65/p0.sav" SAVE1="$J65/p1.sav"
+	# Summary-screen evolution hints (SELECT on the INFO page).
+	run evo_hint SAVE0="$J65/p0.sav" SAVE1="$J65/p1.sav" RTC_EPOCH0=1699963200
 fi
 
 # J52=dir with p0.sav/p1.sav from checkpoint 52 (Lilycove, linked): normal
@@ -169,6 +173,9 @@ if [ -n "${J68:-}" ]; then
 	# on a save that has cleared the League.
 	run dex_probe SAVE0="$J68/p0.sav" SAVE1="$J68/p1.sav"
 	run roster_b3_catch SAVE0="$J68/p0.sav" SAVE1="$J68/p1.sav"
+	# Joining a partner's conversation; the partner's appearance self-check.
+	run talk_join SAVE0="$J68/p0.sav" SAVE1="$J68/p1.sav"
+	run partner_appearance SAVE0="$J68/p0.sav" SAVE1="$J68/p1.sav"
 	for s in shoal_solo caravan_solo coast_solo twins_solo beacon_solo pp_solo; do
 		run_as "${s}_j68" "$s" SAVE0="$J68/p0.sav" SAVE1="$J68/p1.sav"
 	done
@@ -208,6 +215,9 @@ if [ -n "${SEG6:-}" ]; then
 	# Doors, nurse, menus, save, bikes, FLY, a solo and a co-op battle, UNLINK/LINK UP.
 	run transitions_tour SAVE0="$SEG6/p0.sav" SAVE1="$SEG6/p1.sav"
 	run coop_partner_mach_bike SAVE0="$SEG6/p0.sav" SAVE1="$SEG6/p1.sav"
+	# Activity icons, the edge arrow; partner menu VIEW TEAM, PING, FOLLOW.
+	run partner_activity SAVE0="$SEG6/p0.sav" SAVE1="$SEG6/p1.sav"
+	run partner_menu SAVE0="$SEG6/p0.sav" SAVE1="$SEG6/p1.sav"
 	# One trainer, two of his Pokemon down on one turn, one left in reserve.
 	run coop_one_trainer_faints SAVE0="$SEG6/p0.sav" SAVE1="$SEG6/p1.sav"
 	run coop_admin_flag SAVE0="$SEG6/p0.sav" SAVE1="$SEG6/p1.sav"
@@ -227,10 +237,10 @@ if [ -n "${SEG6:-}" ]; then
 	run roster_b3_reload SAVE0="$out/roster_b3_play/p0.sav" SAVE1="$out/roster_b3_play/p1.sav"
 	# Quests: Shoal Cave at both tides (and left half done across a reload),
 	# loss/retreat/retry, a busy partner and simultaneous interaction.
-	run_as shoal_solo_high shoal_solo SAVE0="$SEG6/p0.sav" SAVE1="$SEG6/p1.sav" RTC_EPOCH0=1699923600
+	run_as shoal_solo_high shoal_solo SAVE0="$SEG6/p0.sav" SAVE1="$SEG6/p1.sav" RTC_EPOCH0=1699963200
 	run_as shoal_solo_low shoal_solo SAVE0="$SEG6/p0.sav" SAVE1="$SEG6/p1.sav" RTC_EPOCH0=1699938000
 	run shoal_vulpix_full_party SAVE0="$out/shoal_solo_high/p0.sav" SAVE1="$out/shoal_solo_high/p1.sav"
-	run shoal_tide_a SAVE0="$SEG6/p0.sav" SAVE1="$SEG6/p1.sav" RTC_EPOCH0=1699923600
+	run shoal_tide_a SAVE0="$SEG6/p0.sav" SAVE1="$SEG6/p1.sav" RTC_EPOCH0=1699963200
 	run shoal_tide_b SAVE0="$out/shoal_tide_a/p0.sav" SAVE1="$out/shoal_tide_a/p1.sav" RTC_EPOCH0=1699938000
 	run quest_loss_retry SAVE0="$SEG6/p0.sav" SAVE1="$SEG6/p1.sav"
 	run quest_busy_partner SAVE0="$SEG6/p0.sav" SAVE1="$SEG6/p1.sav"

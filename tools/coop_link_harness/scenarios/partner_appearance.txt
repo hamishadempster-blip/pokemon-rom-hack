@@ -1,0 +1,109 @@
+# Partner picture and doorways (j68 saves, post-League, linked).
+# Every overworld frame the game checks the partner's picture after drawing
+# it (src/coop.c Coop_CheckAppearance): one partner object at most, drawn
+# only where the partner is (this map or a connected one), graphics for the
+# partner's current movement mode, the partner's current outfit palette,
+# the marker over that same sprite. gCoopAppearanceFaults counts failed
+# frames; it must stay 0 through:
+# - both players entering and leaving May's house through one door on the
+#   same frames (neither blocks the other; both arrive);
+# - walking straight through the partner on an open row;
+# - Rosa getting on the Mach Bike, riding around Kai, getting off;
+# - Rosa surfing on Petalburg's pond and landing again.
+# FIXTURES: warps; a Mach Bike for Rosa; no random wild battles.
+include continue.inc
+include relink.inc
+b expect coop.sLinkState 2
+b no_wild 1
+1 fixture_item 4 707 1
+0 fixture_warp 0 9 14 11
+1 fixture_warp 0 9 14 10
+b until_field 3000
+b sync
+b wait 60
+b write gCoopAppearanceFaults:2 0
+# One door, both at once: Rosa in front, Kai right behind her.
+1 press UP 2
+1 wait 20
+b sync
+1 cross UP 1 2 3000
+0 cross UP 1 2 3000
+b sync
+b wait 60
+b expect_map 1 2
+b shot both-inside
+b expect gCoopAppearanceFaults:2 0
+# Out again together: both start on the mat.
+b cross DOWN 0 9 3000
+b sync
+b wait 60
+b expect_map 0 9
+b shot both-outside
+b expect gCoopAppearanceFaults:2 0
+# Straight through the partner: Kai at (8,11) walks east past Rosa at (9,11).
+1 walk 9 11 3000
+0 walk 7 11 3000
+0 walk 8 11 3000
+b sync
+b wait 30
+0 press RIGHT 40
+0 wait 30
+b sync
+0 expect_object 255 11 11
+1 expect_object 255 9 11
+b shot passed-through
+b expect gCoopAppearanceFaults:2 0
+# The Mach Bike: on, a loop around Kai, off.
+include bike_on_p1.inc
+1 walk 6 12 3000
+b sync
+b wait 30
+0 shot partner-bike
+0 expect gCoopMarkerShown 1
+# Off the bike (the same USE again).
+1 mash_field 3000 B
+1 press START 2
+1 wait 40
+1 menu_to BAG
+1 press A 2
+1 until_cb2 CB2_BagMenuRun 2500
+1 wait 80
+1 bag_item 707
+1 press A 2
+1 wait 40
+1 press A 2
+1 until_field 3000
+1 wait 30
+1 expect_range gPlayerAvatar:1 1 1 0x1F
+b sync
+b wait 30
+b expect gCoopAppearanceFaults:2 0
+# Surf: Rosa on Petalburg's pond and back.
+0 fixture_warp 0 0 9 21
+1 fixture_warp 0 0 7 21
+b until_field 3000
+b sync
+b wait 60
+1 press LEFT 2
+1 wait 20
+1 press A 2
+1 until_field_text SURF 600
+1 mash_field 600 A
+1 wait 60
+1 expect_range gPlayerAvatar:1 8 8 0x08
+1 press LEFT 16
+1 press DOWN 16
+b sync
+b wait 30
+0 shot partner-surf
+0 expect gCoopMarkerShown 1
+1 press UP 16
+1 press RIGHT 16
+1 press RIGHT 16
+1 wait 60
+1 expect_range gPlayerAvatar:1 1 1 0x09
+b sync
+b wait 30
+0 shot partner-landed
+b expect gCoopAppearanceFaults:2 0
+b expect coop.sLinkState 2

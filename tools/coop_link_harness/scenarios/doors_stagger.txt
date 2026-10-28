@@ -21,3 +21,5 @@ b dump outside-tiles
 b wait 30
 b expect_no_partner p0-back-inside
 b dump p0-inside
+# Partner picture self-check (src/coop.c Coop_CheckAppearance): no faulty frame.
+b expect gCoopAppearanceFaults:2 0
