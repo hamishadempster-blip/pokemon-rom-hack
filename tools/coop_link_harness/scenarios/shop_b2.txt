@@ -1,0 +1,91 @@
+# The POWER SHOP's batch-2 stock in play (j65 save of Kai, player 0, eight
+# badges, not linked): a STRAWBERRY SWEET (row 10) and a CRACKED POT (row
+# 26, six badges and up) bought with his own money.
+# FIXTURES: VAR_NEW_MAUVILLE_STATE 2 (the generator off: the shop is
+# open); fixture_warp by the clerk.
+include continue.inc
+0 no_wild 1
+0 mash_field 300 B
+0 fixture_var 0x40BA 2
+0 fixture_warp 0 2 12 8
+0 until_field 3000
+0 walk 12 7 1000
+0 press UP 2
+0 wait 20
+0 press A 2
+0 until_cb2 CB2_BuyMenu 3000 A
+0 wait 60
+0 press DOWN 2
+0 wait 10
+0 press DOWN 2
+0 wait 10
+0 press DOWN 2
+0 wait 10
+0 press DOWN 2
+0 wait 10
+0 press DOWN 2
+0 wait 10
+0 press DOWN 2
+0 wait 10
+0 press DOWN 2
+0 wait 10
+0 press DOWN 2
+0 wait 10
+0 press DOWN 2
+0 wait 10
+0 shot shop-sweet
+0 press A 2
+0 wait 200
+0 press A 2
+0 wait 120
+0 press A 2
+0 wait 120
+0 press A 2
+0 wait 120
+0 press DOWN 2
+0 wait 10
+0 press DOWN 2
+0 wait 10
+0 press DOWN 2
+0 wait 10
+0 press DOWN 2
+0 wait 10
+0 press DOWN 2
+0 wait 10
+0 press DOWN 2
+0 wait 10
+0 press DOWN 2
+0 wait 10
+0 press DOWN 2
+0 wait 10
+0 press DOWN 2
+0 wait 10
+0 press DOWN 2
+0 wait 10
+0 press DOWN 2
+0 wait 10
+0 press DOWN 2
+0 wait 10
+0 press DOWN 2
+0 wait 10
+0 press DOWN 2
+0 wait 10
+0 press DOWN 2
+0 wait 10
+0 press DOWN 2
+0 wait 10
+0 shot shop-pot
+0 press A 2
+0 wait 200
+0 press A 2
+0 wait 120
+0 press A 2
+0 wait 120
+0 press A 2
+0 wait 120
+0 press B 2
+0 wait 60
+0 press B 2
+0 mash_field 3000 B
+0 expect_item 0 238 1
+0 expect_item 0 223 1

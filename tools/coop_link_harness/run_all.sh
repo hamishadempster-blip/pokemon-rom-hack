@@ -138,6 +138,7 @@ if [ -n "${J65:-}" ]; then
 	run roster_repair SAVE0="$J65/p0.sav" SAVE1="$J65/p1.sav"
 	run roster_breeding SAVE0="$J65/p0.sav" SAVE1="$J65/p1.sav"
 	run fieldguide_probe SAVE0="$J65/p0.sav" SAVE1="$J65/p1.sav"
+	run shop_b2 SAVE0="$J65/p0.sav" SAVE1="$J65/p1.sav"
 fi
 
 # J52=dir with p0.sav/p1.sav from checkpoint 52 (Lilycove, linked): normal
