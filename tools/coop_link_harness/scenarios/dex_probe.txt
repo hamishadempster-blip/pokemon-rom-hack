@@ -1,16 +1,16 @@
 # Pokedex reach and search with the expanded roster (j68 save of Kai,
 # player 0: post-League, not linked).
-# FIXTURES (logged): SINISTCHA (#1013, Hoenn No 882, the last regional entry)
+# FIXTURES (logged): MILTANK (#241, Hoenn No 910, the last regional entry)
 # marked seen and caught; PECHARUNT (#1025, the last National entry) and
 # SYLVEON (#700) seen and caught (type search lists caught ones only,
 # as in stock Emerald).
 # Checks (screenshots and state): LIST BOTTOM in the Hoenn list lands on
-# No 882; its entry and AREA page open (an acquisition hint, no wild area);
+# No 910; its entry and AREA page open (Safari Zone, a wild area);
 # search by type; the National list's bottom.
 include continue.inc
 0 no_wild 1
-0 dex_seen 1013 1
-0 dex_caught 1013 1
+0 dex_seen 241 1
+0 dex_caught 241 1
 0 dex_seen 1025 1
 0 dex_seen 700 1
 0 dex_caught 700 1

@@ -1816,6 +1816,8 @@ enum NationalDexOrder
     F(QWILFISH) \
     F(OVERQWIL) \
     F(SNEASLER) \
+    F(TEDDIURSA) \
+    F(URSARING) \
     F(URSALUNA) \
     F(DELIBIRD) \
     F(TYROGUE) \
@@ -1972,7 +1974,33 @@ enum NationalDexOrder
     F(BOMBIRDIER) \
     F(ORTHWORM) \
     F(POLTCHAGEIST) \
-    F(SINISTCHA)
+    F(SINISTCHA) \
+    F(DITTO) \
+    F(CHIKORITA) \
+    F(BAYLEEF) \
+    F(MEGANIUM) \
+    F(CYNDAQUIL) \
+    F(QUILAVA) \
+    F(TYPHLOSION) \
+    F(TOTODILE) \
+    F(CROCONAW) \
+    F(FERALIGATR) \
+    F(MAREEP) \
+    F(FLAAFFY) \
+    F(AMPHAROS) \
+    F(AIPOM) \
+    F(AMBIPOM) \
+    F(PINECO) \
+    F(FORRETRESS) \
+    F(GLIGAR) \
+    F(GLISCOR) \
+    F(SNUBBULL) \
+    F(GRANBULL) \
+    F(SHUCKLE) \
+    F(STANTLER) \
+    F(WYRDEER) \
+    F(SMEARGLE) \
+    F(MILTANK)
 
 // Hoenn Pokédex order
 enum HoennDexOrder
@@ -2193,7 +2221,7 @@ enum KantoDexOrder
 };
 
 #define KANTO_DEX_COUNT (KANTO_DEX_MEW + 1)
-#define HOENN_DEX_COUNT (HOENN_DEX_SINISTCHA + 1)
+#define HOENN_DEX_COUNT (HOENN_DEX_MILTANK + 1)
 
 #define REGIONAL_DEX_COUNT (IS_FRLG ? KANTO_DEX_COUNT : HOENN_DEX_COUNT)
 

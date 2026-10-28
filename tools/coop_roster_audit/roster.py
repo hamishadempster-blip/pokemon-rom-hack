@@ -749,6 +749,12 @@ print('Hoenn Pokedex size: %d entries (unique: %s)' % (len(hoenn), len(hoenn) ==
 obt_nats = {e['national_dex'] for e in entries}
 dex_unobtainable = [n for n in hoenn if natnum.get(n) not in obt_nats]
 print('Hoenn Pokedex entries with no acquisition path in this build: %d (%s)' % (len(dex_unobtainable), ', '.join(dex_unobtainable)))
+hoenn_set = set(hoenn)
+natnum_name = {v: k for k, v in natnum.items()}
+not_regional = [e['species'][8:] for e in entries if natnum_name.get(e['national_dex']) not in hoenn_set]
+print('Obtainable species missing from the Hoenn Pokedex: %d%s' % (len(not_regional), ' (%s)' % ', '.join(not_regional) if not_regional else ''))
+if not_regional:
+    issues.append('obtainable species with no Hoenn number: %s' % ', '.join(not_regional))
 for bname in ('BATCH1', 'BATCH2', 'BATCH3'):
     names = getattr(SRC, bname)
     got = [n for n in names if natnum.get(n) in obt_nats]
