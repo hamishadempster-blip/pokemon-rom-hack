@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# usage: run_scenario.sh SCRIPT [OUTDIR] [MAX_FRAMES]
+# usage: run_scenario.sh SCRIPT [OUTDIR] [MAX_FRAMES]   (or MAX_FRAMES in the environment)
 # ROM overrides the image (default: pokeemerald.gba in the repo root).
 set -euo pipefail
 root="$(cd "$(dirname "$0")/../.." && pwd)"
@@ -10,4 +10,4 @@ mkdir -p "$out"
 rm -f "$out/p0.sav" "$out/p1.sav"
 [ -n "${SAVE0:-}" ] && cp "$SAVE0" "$out/p0.sav"
 [ -n "${SAVE1:-}" ] && cp "$SAVE1" "$out/p1.sav"
-exec "$bin/coop_link_harness" "${ROM:-$root/pokeemerald.gba}" "$bin/syms.txt" "$out/p0.sav" "$out/p1.sav" "$script" "$out" "${3:-200000}"
+exec "$bin/coop_link_harness" "${ROM:-$root/pokeemerald.gba}" "$bin/syms.txt" "$out/p0.sav" "$out/p1.sav" "$script" "$out" "${3:-${MAX_FRAMES:-200000}}"

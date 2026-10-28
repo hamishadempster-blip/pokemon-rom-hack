@@ -172,7 +172,8 @@ if [ -n "${J68:-}" ]; then
 	# Pokedex reach and search; every optional quest started and finished
 	# on a save that has cleared the League.
 	run dex_probe SAVE0="$J68/p0.sav" SAVE1="$J68/p1.sav"
-	run roster_b3_catch SAVE0="$J68/p0.sav" SAVE1="$J68/p1.sav"
+	# Catches by hunting: luck sets the length; room beyond the default budget.
+	run roster_b3_catch SAVE0="$J68/p0.sav" SAVE1="$J68/p1.sav" MAX_FRAMES=500000
 	# Joining a partner's conversation; the partner's appearance self-check.
 	run talk_join SAVE0="$J68/p0.sav" SAVE1="$J68/p1.sav"
 	run partner_appearance SAVE0="$J68/p0.sav" SAVE1="$J68/p1.sav"
@@ -223,7 +224,7 @@ if [ -n "${SEG6:-}" ]; then
 	run coop_admin_flag SAVE0="$SEG6/p0.sav" SAVE1="$SEG6/p1.sav"
 	# First roster batch: new species caught, traded, gifted (party and PC),
 	# reloaded; the partner-Pokemon badge gate.
-	run roster_b1_play SAVE0="$SEG6/p0.sav" SAVE1="$SEG6/p1.sav"
+	run roster_b1_play SAVE0="$SEG6/p0.sav" SAVE1="$SEG6/p1.sav" MAX_FRAMES=400000
 	run roster_b1_reload SAVE0="$out/roster_b1_play/p0.sav" SAVE1="$out/roster_b1_play/p1.sav"
 	run roster_b1_gate SAVE0="$SEG6/p0.sav" SAVE1="$SEG6/p1.sav"
 	# Revamps: an owned revamped Pokemon's stats after a reload.
