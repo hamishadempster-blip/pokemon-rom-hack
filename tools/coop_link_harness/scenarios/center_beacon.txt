@@ -1,3 +1,6 @@
+# Driver choice: each battler's most effective move (an A-only driver
+# repeats a status move such as Leer and can lose these early fights).
+b smart_moves 1
 include oldale_reconnect.inc
 include center_stagger.inc
 b goto 10 10 2500

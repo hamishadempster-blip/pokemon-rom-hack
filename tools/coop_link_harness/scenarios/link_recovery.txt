@@ -1,4 +1,7 @@
 # KIND: recovery (a fault is induced on purpose; the game must recover)
+# Driver choice: each battler's most effective move (an A-only driver
+# repeats a status move such as Leer and can lose these early fights).
+b smart_moves 1
 include route102_reconnect_start.inc
 # Drop application heartbeats, not the emulated serial cable, for 15 seconds.
 b mute_coop 900
