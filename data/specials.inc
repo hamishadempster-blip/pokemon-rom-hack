@@ -666,6 +666,9 @@ gSpecials::
 	def_special CoopRoster_StarterTaken
 	def_special CoopRoster_FossilId
 	def_special CoopRoster_FossilSpecies
+	def_special CoopRoster_GiveFossil
+	def_special CoopRoster_FossilPairReady
+	def_special CoopRoster_TakeFossil
 	def_special Coop_PartnerChatOk
 	def_special Coop_BufferCapText
 	def_special Coop_BufferBeaconStatus

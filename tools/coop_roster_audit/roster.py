@@ -42,6 +42,24 @@ MAP_NAME = {}
 for _m in re.finditer(r'^\s*(MAP_\w+)\s*=\s*\((\d+)\s*\|\s*\((\d+)\s*<<\s*8\)\)', read('include/constants/map_groups.h'), re.M):
     MAP_NAME[int(_m.group(2)) | (int(_m.group(3)) << 8)] = _m.group(1)
 MAPSEC = {v: k for k, v in enum_values('include/constants/region_map_sections.h', 'MAPSEC_').items()}
+# Regional evolution branches (src/pokemon.c GetEvolutionRegion): the places
+# that stand in for Alola, Galar and Hisui.
+_REG = enum_values('include/constants/regions.h', 'REGION_')
+_g['REGION'] = {v: k for k, v in _REG.items()}
+_pc = read('src/pokemon.c')
+_gr = _pc[_pc.index('static enum Region GetEvolutionRegion'):]
+_gr = _gr[:_gr.index('\n}\n')]
+REGION_PLACES = {}
+for _block in re.findall(r'((?:case MAPSEC_\w+:\s*)+)return (REGION_\w+);', _gr):
+    REGION_PLACES[_block[1]] = ', '.join(x.replace('_', ' ').title() for x in re.findall(r'case MAPSEC_(\w+):', _block[0]))
+# Script evolution triggers placed on reachable maps (tryspecialevo).
+SCRIPT_TRIGGERS = {}
+_TRIG = enum_values('include/constants/pokemon.h', 'EVO_TRIGGER_', 'EvoTriggerVersion')
+for _sc in glob.glob(os.path.join(ROOT, 'data/maps/*/scripts.inc')):
+    for _t in re.findall(r'tryspecialevo\s+(EVO_TRIGGER_\w+)', open(_sc, encoding='utf-8').read()):
+        if _t in _TRIG:
+            SCRIPT_TRIGGERS[_TRIG[_t]] = re.sub(r'(?<=[a-z0-9])(?=[A-Z])', ' ', os.path.basename(os.path.dirname(_sc)))
+RAIN_WEATHERS = {v for k, v in enum_values('include/constants/weather.h', 'WEATHER_').items() if k in ('WEATHER_RAIN', 'WEATHER_FOG')}
 
 
 # --- progression -----------------------------------------------------------
@@ -233,6 +251,10 @@ for it, sp in FOSSIL_TO.items():
     sources[sp] = [s for s in sources.get(sp, []) if 'coop_roster.c' not in s['location'] and 'DevonCorp' not in s['location']]
     add(sp, {'method': 'fossil revival', 'location': 'Fossil Maniac, Route 114 tunnel (one fossil a day, any kind) -> DEVON 2F, Rustboro',
              'item': it, 'levels': '20', 'requires': 'Route 114 (after the Mauville Gym)', 'badges': 3, 'renewable': True})
+# Galar fossils: a pair (upper and lower half) per revival.
+for a, b, sp in re.findall(r'\{\s*(ITEM_FOSSILIZED_\w+),\s*(ITEM_FOSSILIZED_\w+),\s*(SPECIES_\w+)\s*\}', roster_c):
+    add(sp, {'method': 'fossil revival', 'location': 'Fossil Maniac, Route 114 tunnel (one pair a day) -> DEVON 2F, Rustboro',
+             'item': '%s + %s' % (a, b), 'levels': '20', 'requires': 'Route 114 (after the Mauville Gym)', 'badges': 3, 'renewable': True})
 
 # Item sources (for evolution items), as in audit.py.
 item_src = {}
@@ -258,6 +280,12 @@ for sc in glob.glob(os.path.join(ROOT, 'data/maps/*/scripts.inc')) + glob.glob(o
         item_src.setdefault(it, set()).add(('shop', where, True))
 for it in FOSSIL_TO:
     item_src.setdefault(it, set()).add(('daily gift', 'Route114_FossilManiacsTunnel', True))
+
+
+def quest_gated(where):
+    # The POWER SHOP (MauvilleCity's lists) opens after Power Problems; the
+    # quest scripts' givers and stalls need their quest.
+    return where == 'MauvilleCity' or where.startswith('coop_quest')
 
 
 def item_sources(it):
@@ -306,13 +334,24 @@ def evo_requirement(sid, m, p, conds):
     elif m == 'EVO_TRADE':
         solo = False
         notes.append('trade')
+    elif m == 'EVO_SCRIPT_TRIGGER':
+        trig = SCRIPT_TRIGGERS.get(p)
+        if not trig:
+            return False, False, 'script trigger %s: no place in this build' % p, []
+        notes.append('at ' + trig)
+    elif m == 'EVO_BATTLE_END':
+        notes.append('at the end of a battle')
     elif m == 'EVO_SPIN':
         notes.append('spin in place on the field (%s)' % {0: 'clockwise, short', 1: 'counter-clockwise, short', 2: 'clockwise, long', 3: 'counter-clockwise, long', 4: 'either way, 10 s+'}.get(p, p))
     else:
         notes.append(str(m).replace('EVO_', '').lower())
     for c, a in conds:
         if c == 'IF_REGION':
-            return False, False, 'needs another region', []
+            place = REGION_PLACES.get(_g['REGION'].get(a, a)) if 'REGION' in _g else REGION_PLACES.get(a)
+            if not place:
+                return False, False, 'needs another region', []
+            notes.append('in ' + place)
+            continue
         if c in ('IF_HOLD_ITEM', 'IF_BAG_ITEM_COUNT'):
             it = ITEM_NAME.get(a, a)
             src = item_sources(it)
@@ -346,6 +385,25 @@ def evo_requirement(sid, m, p, conds):
             notes.append('female' if a == 254 else 'male' if a == 0 else 'gender %d' % a)
         elif c == 'IF_NOT_REGION':
             pass
+        elif c == 'IF_SPECIES_IN_PARTY':
+            notes.append('with %s in the party' % (SPECIES_NAME.get(a, str(a))[8:].title()))
+            if a not in obtainable:
+                feasible = False
+        elif c == 'IF_WEATHER':
+            notes.append('in rain or fog (Route 119 rain; fog on Mt. Pyre summit, Rusturf Tunnel)' if a in RAIN_WEATHERS else 'weather %s' % a)
+            if a not in RAIN_WEATHERS:
+                feasible = False
+        elif c == 'IF_USED_MOVE_X_TIMES':
+            mv = MOVE_NAME.get(a, a)
+            notes.append('after using ' + str(mv).replace('MOVE_', '').replace('_', ' ').title() + ' many times')
+            if not learns(sid, a):
+                notes.append('(not by level-up)')
+        elif c == 'IF_CRITICAL_HITS_GE':
+            notes.append('landing %d critical hits in one battle' % a)
+        elif c == 'IF_CURRENT_DAMAGE_GE':
+            notes.append('having lost %d HP or more' % a)
+        elif c == 'IF_MIN_OVERWORLD_STEPS':
+            notes.append('after %d steps in the lead' % a)
         elif c.startswith('IF_PID'):
             notes.append('decided by personality')
         else:
@@ -581,6 +639,14 @@ for nat in sorted(by_nat):
         'issues': probs,
     })
 
+# Evolution resources must have a source that no quest gates (the POWER
+# SHOP opens after Power Problems; quest stalls and givers need their quest).
+for e in entries:
+    for v in e['evolution']:
+        for r in v['resources']:
+            if r['sources'] and all(quest_gated(x.split(': ', 1)[-1]) for x in r['sources']):
+                issues.append('%s: %s only from a quest (%s)' % (e['species'], r['item'], ', '.join(r['sources'])))
+
 # Verification status: species seen caught/received/evolved in gameplay logs.
 ver_path = os.path.join(HERE, 'verified.json')
 verified = json.load(open(ver_path)) if os.path.exists(ver_path) else {}
@@ -595,6 +661,15 @@ HINT_OVERRIDE = {
     849: 'EVOLVE TOXEL: LV 30 (NATURE SETS THE FORM)',
     152: 'GIFT AFTER THE LEAGUE: BIRCH\'S LAB', 155: 'GIFT AFTER THE LEAGUE: BIRCH\'S LAB',
     158: 'GIFT AFTER THE LEAGUE: BIRCH\'S LAB',
+    106: 'EVOLVE TYROGUE: LV 20, ATTACK > DEFENSE', 107: 'EVOLVE TYROGUE: LV 20, ATTACK < DEFENSE',
+    237: 'EVOLVE TYROGUE: LV 20, ATTACK = DEFENSE',
+    589: 'KARRABLAST + LINKING CORD, SHELMET IN PARTY', 617: 'SHELMET + LINKING CORD, KARRABLAST IN PARTY',
+    675: 'EVOLVE PANCHAM: LV 32, DARK TYPE IN PARTY', 706: 'EVOLVE SLIGGOO: LV 50 IN RAIN OR FOG',
+    865: 'GALAR FARFETCH\'D: 3 CRITS IN ONE BATTLE', 867: 'GALAR YAMASK, 49 HP LOST: RUINS CARVING',
+    899: 'EVOLVE STANTLER: USE PSYSHIELD BASH 20 TIMES', 901: 'EVOLVE URSARING: PEAT BLOCK, MT PYRE, NIGHT',
+    923: 'EVOLVE PAWMO: 1000 STEPS IN THE LEAD', 947: 'EVOLVE BRAMBLIN: 1000 STEPS IN THE LEAD',
+    954: 'EVOLVE RELLOR: 1000 STEPS IN THE LEAD', 979: 'EVOLVE PRIMEAPE: USE RAGE FIST 20 TIMES',
+    982: 'DUNSPARCE: LEVEL UP KNOWING HYPER DRILL', 1013: 'POLTCHAGEIST ARTISAN: MASTERPIECE TEACUP',
 }
 
 
@@ -674,10 +749,36 @@ print('Hoenn Pokedex size: %d entries (unique: %s)' % (len(hoenn), len(hoenn) ==
 obt_nats = {e['national_dex'] for e in entries}
 dex_unobtainable = [n for n in hoenn if natnum.get(n) not in obt_nats]
 print('Hoenn Pokedex entries with no acquisition path in this build: %d (%s)' % (len(dex_unobtainable), ', '.join(dex_unobtainable)))
-for bname in ('BATCH1', 'BATCH2'):
+for bname in ('BATCH1', 'BATCH2', 'BATCH3'):
     names = getattr(SRC, bname)
     got = [n for n in names if natnum.get(n) in obt_nats]
     print('%s: %d of %d obtainable%s' % (bname, len(got), len(names), '' if len(got) == len(names) else ' (missing: %s)' % ', '.join(n for n in names if n not in got)))
+# The intended ordinary roster: every National Dex species except the
+# legendary, mythical, Ultra Beast and Paradox ones (deferred: no new
+# encounters for them; the existing Hoenn legendaries stay).
+_R = lambda a, b: set(range(a, b + 1))
+DEFERRED = (_R(144, 146) | {150, 151} | _R(243, 245) | _R(249, 251) | _R(377, 386) | _R(480, 494) | _R(638, 649)
+            | _R(716, 721) | {772, 773} | _R(785, 809) | _R(888, 898) | {905} | _R(984, 995) | _R(1001, 1010)
+            | _R(1014, 1017) | _R(1020, 1025))
+ordinary_missing = [n for n in range(1, 1026) if n not in DEFERRED and n not in obt_nats]
+print('Ordinary roster (National Dex minus %d deferred legendary/mythical/UB/Paradox): %d of %d obtainable%s' % (
+    len(DEFERRED), 1025 - len(DEFERRED) - len(ordinary_missing), 1025 - len(DEFERRED),
+    '' if not ordinary_missing else ' (missing No %s)' % ', '.join(map(str, ordinary_missing))))
+if ordinary_missing:
+    issues.append('ordinary species with no path: %s' % ordinary_missing)
+# The AREA hint is one line in FONT_SMALL_NARROW in a 28-tile window.
+_fsrc = read('src/fonts.c')
+_ftab = _fsrc[_fsrc.index('gFontSmallNarrowLatinGlyphWidths[] = {'):]
+_ftab = [int(x) for x in re.findall(r'\d+', _ftab[_ftab.index('{') + 1:_ftab.index('};')])]
+_fchar = {}
+for _line in read('charmap.txt').splitlines():
+    _m = re.match(r"^'(.)'\s*=\s*([0-9A-Fa-f]{2})\s*$", _line)
+    if _m and _m.group(1) not in _fchar:
+        _fchar[_m.group(1)] = int(_m.group(2), 16)
+for _n, _h in hints:
+    _w = sum(_ftab[_fchar[c]] if c in _fchar else 6 for c in _h)
+    if _w > 28 * 8:
+        issues.append('AREA hint too wide (%d px): %s' % (_w, _h))
 missing_hint = [e['species'] for e in entries if e['dex_area'] == 'acquisition hint' and 'dex_hint' not in e]
 print('AREA hints: %d (missing %d)' % (len(hints), len(missing_hint)))
 for i in issues:

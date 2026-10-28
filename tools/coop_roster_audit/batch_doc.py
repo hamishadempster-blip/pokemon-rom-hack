@@ -11,7 +11,8 @@ ROOT = os.path.abspath(os.path.join(HERE, '..', '..'))
 sys.path.insert(0, os.path.join(ROOT, 'tools/coop_roster'))
 import audit as SRC  # noqa: E402
 
-TITLE = {'BATCH2': 'Second roster batch (build 0xC0170138)'}
+TITLE = {'BATCH1': 'First roster batch (build 0xC0170137)', 'BATCH2': 'Second roster batch (build 0xC0170138)',
+         'BATCH3': 'Third and final roster batch (build 0xC0170139)', 'ALL': 'Whole roster (build 0xC0170139)'}
 
 
 def nice(c):
@@ -33,8 +34,15 @@ def where(s):
 
 def main():
     batch = sys.argv[1] if len(sys.argv) > 1 else 'BATCH2'
-    names = getattr(SRC, batch)
     man = json.load(open(os.path.join(ROOT, 'docs/coop_roster_manifest.json')))
+    if batch == 'ALL':
+        names = [e['species'][len('SPECIES_'):] for e in sorted(man['species'], key=lambda e: e['national_dex'])]
+    else:
+        names = getattr(SRC, batch)
+    inbatch = {}
+    for b in ('BATCH1', 'BATCH2', 'BATCH3'):
+        for n in getattr(SRC, b):
+            inbatch.setdefault(n, b[-1])
     by = {}
     for e in man['species']:
         by[e['species'][len('SPECIES_'):]] = e
@@ -51,12 +59,16 @@ def main():
         len(got), len(names), 'yes' if all(by[n]['solo'] for n in got) else 'no',
         sum(1 for n in got if any(s['method'] != 'breeding' for s in by[n]['sources'])),
         sum(1 for n in got if not any(s['method'] != 'breeding' for s in by[n]['sources']))))
-    out.append('| Pokémon | National / Hoenn No | How to get it | Unlock | Evolution and resources | Renewable | Verified |')
-    out.append('|---|---|---|---|---|---|---|')
+    if batch == 'ALL':
+        out.append('Batch column: 1, 2 or 3 for the species added by the three roster batches (0xC0170137, 0xC0170138, '
+                   '0xC0170139); "—" for species that were obtainable before them. Regional forms are listed after the table; '
+                   'they are not counted as separate species.\n')
+    out.append('| Pokémon | National / Hoenn No | Batch | How to get it | Unlock | Evolution and resources | Renewable | Verified |')
+    out.append('|---|---|---|---|---|---|---|---|')
     for n in names:
         e = by.get(n)
         if not e:
-            out.append('| %s | | **not obtainable** | | | | |' % nice(n))
+            out.append('| %s | | %s | **not obtainable** | | | | |' % (nice(n), inbatch.get(n, '—')))
             continue
         srcs = [s for s in e['sources'] if s['method'] != 'breeding']
         how = '<br>'.join(where(s) for s in srcs) or '—'
@@ -76,10 +88,54 @@ def main():
         ver = e.get('verification', 'source')
         if ver.startswith('gameplay: '):
             ver = ver[len('gameplay: '):]
-        out.append('| %s | %d / %s | %s | %s | %s | %s | %s |' % (
-            e['name'], e['national_dex'], e['hoenn_dex'], how, unlock, '<br>'.join(evo) or '—',
+        out.append('| %s | %d / %s | %s | %s | %s | %s | %s | %s |' % (
+            e['name'], e['national_dex'], e['hoenn_dex'], inbatch.get(n, '—'), how, unlock, '<br>'.join(evo) or '—',
             'yes' if e['renewable'] else 'no', ver))
+    if batch in ('ALL', 'BATCH3'):
+        out.extend(regional_forms(man))
     print('\n'.join(out))
+
+
+REGIONS = (('_ALOLA', 'Alolan'), ('_GALAR', 'Galarian'), ('_HISUI', 'Hisuian'), ('_PALDEA', 'Paldean'))
+
+
+def regional_forms(man):
+    wild = json.load(open(os.path.join(ROOT, 'src/data/wild_encounters.json')))
+    tables = {}
+    for g in wild['wild_encounter_groups']:
+        for enc in g['encounters']:
+            for k, v in enc.items():
+                if isinstance(v, dict) and 'mons' in v:
+                    for m in v['mons']:
+                        tables.setdefault(m['species'], set()).add('%s (%s)' % (
+                            nice(enc.get('map', enc.get('base_label', '?')).replace('MAP_', '')), k.replace('_mons', '').replace('_', ' ')))
+    rows = []
+    for e in man['species']:
+        for f in e['forms_obtainable']:
+            reg = next((r for suf, r in REGIONS if suf in f), None)
+            if not reg:
+                continue
+            how = []
+            if f in tables:
+                how.append('Wild: ' + ', '.join(sorted(tables[f])))
+            for v in e['evolution']:
+                if v['to'] == f:
+                    how.append('Evolve %s: %s' % (nice(v['from']), v['how']))
+            if not how and f in ('SPECIES_VULPIX_ALOLA', 'SPECIES_GRIMER_ALOLA'):
+                how.append('Quest encounter (see the wild entry)')
+            if not how:
+                how.append('Day Care egg from the evolved form (Everstone keeps the form)')
+            rows.append((reg, e['national_dex'], f, how))
+    rows.sort()
+    out = ['', '## Regional forms (%d obtainable; not counted as species)' % len(rows), '',
+           'Regional evolutions happen in a stand-in place in Hoenn (the game has no other regions): Alola = Dewford Town, '
+           'Granite Cave, Routes 106 and 107; Galar = Route 114; Hisui = Mt. Pyre (inside and outside). Elsewhere the '
+           'same evolution gives the ordinary form. Eggs hatch in the local (ordinary) form unless the regional parent '
+           'holds an Everstone.', '',
+           '| Region | Form | How to get it |', '|---|---|---|']
+    for reg, nat, f, how in rows:
+        out.append('| %s | %s (No %d) | %s |' % (reg, nice(f), nat, '<br>'.join(how)))
+    return out
 
 
 if __name__ == '__main__':

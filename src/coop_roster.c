@@ -5,6 +5,7 @@
 #include "coop_roster.h"
 #include "event_data.h"
 #include "pokemon.h"
+#include "item.h"
 #include "string_util.h"
 #include "constants/flags.h"
 #include "constants/species.h"
@@ -113,6 +114,72 @@ static const u16 sFossils[][2] = {
 
 #define FOSSIL_FIRST_EXTRA 3
 
+// The Galar fossils revive in pairs (one upper and one lower half). In the
+// Fossil Maniac's and the scientist's lists a pair is a single entry with a
+// script value from FOSSIL_COMBO_VALUE; its revival number follows sFossils.
+#define FOSSIL_COMBO_VALUE 1001
+static const u16 sFossilPairs[][3] = {
+    { ITEM_FOSSILIZED_BIRD, ITEM_FOSSILIZED_DRAKE, SPECIES_DRACOZOLT },
+    { ITEM_FOSSILIZED_BIRD, ITEM_FOSSILIZED_DINO,  SPECIES_ARCTOZOLT },
+    { ITEM_FOSSILIZED_FISH, ITEM_FOSSILIZED_DRAKE, SPECIES_DRACOVISH },
+    { ITEM_FOSSILIZED_FISH, ITEM_FOSSILIZED_DINO,  SPECIES_ARCTOVISH },
+};
+#define FOSSIL_FIRST_PAIR (FOSSIL_FIRST_EXTRA + ARRAY_COUNT(sFossils))
+
+static s32 FossilPairIndex(u16 value)
+{
+    if (value >= FOSSIL_COMBO_VALUE && value < FOSSIL_COMBO_VALUE + ARRAY_COUNT(sFossilPairs))
+        return value - FOSSIL_COMBO_VALUE;
+    return -1;
+}
+
+// VAR_0x8004: a fossil item or a pair value. Gives it (both halves for a
+// pair). VAR_RESULT-style return: TRUE if it fit in the bag.
+u16 CoopRoster_GiveFossil(void)
+{
+    s32 pair = FossilPairIndex(gSpecialVar_0x8004);
+
+    if (pair < 0)
+        return AddBagItem(gSpecialVar_0x8004, 1);
+    if (!CheckBagHasSpace(sFossilPairs[pair][0], 1) || !CheckBagHasSpace(sFossilPairs[pair][1], 1))
+        return FALSE;
+    AddBagItem(sFossilPairs[pair][0], 1);
+    AddBagItem(sFossilPairs[pair][1], 1);
+    return TRUE;
+}
+
+// VAR_0x8004: a pair value. TRUE if both halves are in the bag.
+u16 CoopRoster_FossilPairReady(void)
+{
+    s32 pair = FossilPairIndex(gSpecialVar_0x8004);
+
+    return pair >= 0 && CheckBagHasItem(sFossilPairs[pair][0], 1) && CheckBagHasItem(sFossilPairs[pair][1], 1);
+}
+
+// VAR_0x8004: a fossil item or a pair value. Removes it (both halves) and
+// buffers its name in STR_VAR_1.
+u16 CoopRoster_TakeFossil(void)
+{
+    s32 pair = FossilPairIndex(gSpecialVar_0x8004);
+
+    if (pair < 0)
+    {
+        CopyItemName(gSpecialVar_0x8004, gStringVar1);
+        RemoveBagItem(gSpecialVar_0x8004, 1);
+        return 0;
+    }
+    {
+        static const u8 *const sPairNames[] = {
+            COMPOUND_STRING("BIRD and DRAKE"), COMPOUND_STRING("BIRD and DINO"),
+            COMPOUND_STRING("FISH and DRAKE"), COMPOUND_STRING("FISH and DINO"),
+        };
+        StringCopy(gStringVar1, sPairNames[pair]);
+    }
+    RemoveBagItem(sFossilPairs[pair][0], 1);
+    RemoveBagItem(sFossilPairs[pair][1], 1);
+    return 0;
+}
+
 // VAR_0x8004: a fossil item. Returns its VAR_WHICH_FOSSIL_REVIVED value (0
 // for anything that is not a fossil) and buffers its name in STR_VAR_1.
 u16 CoopRoster_FossilId(void)
@@ -126,6 +193,8 @@ u16 CoopRoster_FossilId(void)
     for (i = 0; i < ARRAY_COUNT(sFossils); i++)
         if (sFossils[i][0] == gSpecialVar_0x8004)
             return FOSSIL_FIRST_EXTRA + i;
+    if (FossilPairIndex(gSpecialVar_0x8004) >= 0)
+        return FOSSIL_FIRST_PAIR + FossilPairIndex(gSpecialVar_0x8004);
     return 0;
 }
 
@@ -134,6 +203,11 @@ u16 CoopRoster_FossilSpecies(void)
 {
     u16 which = VarGet(VAR_WHICH_FOSSIL_REVIVED);
 
+    if (which >= FOSSIL_FIRST_PAIR && which < FOSSIL_FIRST_PAIR + ARRAY_COUNT(sFossilPairs))
+    {
+        StringCopy(gStringVar1, GetSpeciesName(sFossilPairs[which - FOSSIL_FIRST_PAIR][2]));
+        return sFossilPairs[which - FOSSIL_FIRST_PAIR][2];
+    }
     if (which < FOSSIL_FIRST_EXTRA || which >= FOSSIL_FIRST_EXTRA + ARRAY_COUNT(sFossils))
         return SPECIES_NONE;
     StringCopy(gStringVar1, GetSpeciesName(sFossils[which - FOSSIL_FIRST_EXTRA][1]));

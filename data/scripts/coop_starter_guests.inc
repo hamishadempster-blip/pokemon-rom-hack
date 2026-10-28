@@ -155,13 +155,21 @@ Coop_EventScript_FossilManiacDaily::
 	dynmultipush Coop_Text_Fossil_PLUME_FOSSIL, ITEM_PLUME_FOSSIL
 	dynmultipush Coop_Text_Fossil_JAW_FOSSIL, ITEM_JAW_FOSSIL
 	dynmultipush Coop_Text_Fossil_SAIL_FOSSIL, ITEM_SAIL_FOSSIL
+	dynmultipush Coop_Text_FossilPair0, 1001
+	dynmultipush Coop_Text_FossilPair1, 1002
+	dynmultipush Coop_Text_FossilPair2, 1003
+	dynmultipush Coop_Text_FossilPair3, 1004
 	dynmultipush gText_Cancel, 0
-	dynmultistack 16, 1, FALSE, 6, FALSE, 999, DYN_MULTICHOICE_CB_NONE
+	dynmultistack 15, 1, FALSE, 6, FALSE, 999, DYN_MULTICHOICE_CB_NONE
 	goto_if_eq VAR_RESULT, 0, Coop_EventScript_FossilManiacLater
 	goto_if_eq VAR_RESULT, MULTI_B_PRESSED, Coop_EventScript_FossilManiacLater
 	copyvar VAR_0x8004, VAR_RESULT
-	giveitem VAR_0x8004
+	specialvar VAR_RESULT, CoopRoster_GiveFossil
 	goto_if_eq VAR_RESULT, FALSE, Coop_EventScript_FossilManiacBagFull
+	playfanfare MUS_OBTAIN_ITEM
+	message Coop_Text_FossilManiacGot
+	waitfanfare
+	waitmessage
 	setflag FLAG_DAILY_FOSSIL_DIG
 	msgbox Coop_Text_FossilManiacDevon, MSGBOX_DEFAULT
 	return
@@ -196,6 +204,7 @@ Coop_EventScript_FossilScientistOffer::
 	call_if_eq VAR_RESULT, TRUE, Coop_EventScript_FossilCount
 	checkitem ITEM_SAIL_FOSSIL
 	call_if_eq VAR_RESULT, TRUE, Coop_EventScript_FossilCount
+	call Coop_EventScript_FossilPairsCount
 	goto_if_eq VAR_0x8009, 0, Coop_EventScript_FossilReturn
 	msgbox Coop_Text_FossilScientistNotice, MSGBOX_DEFAULT
 	message Coop_Text_FossilScientistWhich
@@ -222,6 +231,18 @@ Coop_EventScript_FossilScientistOffer::
 	call_if_eq VAR_RESULT, TRUE, Coop_EventScript_FossilPush_JAW_FOSSIL
 	checkitem ITEM_SAIL_FOSSIL
 	call_if_eq VAR_RESULT, TRUE, Coop_EventScript_FossilPush_SAIL_FOSSIL
+	setvar VAR_0x8004, 1001
+	specialvar VAR_RESULT, CoopRoster_FossilPairReady
+	call_if_eq VAR_RESULT, TRUE, Coop_EventScript_FossilPushPair0
+	setvar VAR_0x8004, 1002
+	specialvar VAR_RESULT, CoopRoster_FossilPairReady
+	call_if_eq VAR_RESULT, TRUE, Coop_EventScript_FossilPushPair1
+	setvar VAR_0x8004, 1003
+	specialvar VAR_RESULT, CoopRoster_FossilPairReady
+	call_if_eq VAR_RESULT, TRUE, Coop_EventScript_FossilPushPair2
+	setvar VAR_0x8004, 1004
+	specialvar VAR_RESULT, CoopRoster_FossilPairReady
+	call_if_eq VAR_RESULT, TRUE, Coop_EventScript_FossilPushPair3
 	dynmultipush gText_Cancel, 0
 	dynmultistack 16, 1, FALSE, 6, FALSE, 999, DYN_MULTICHOICE_CB_NONE
 	goto_if_eq VAR_RESULT, 0, Coop_EventScript_FossilScientistDecline
@@ -231,9 +252,8 @@ Coop_EventScript_FossilScientistOffer::
 	goto_if_eq VAR_0x8005, 1, RustboroCity_DevonCorp_2F_EventScript_GiveRootFossil
 	goto_if_eq VAR_0x8005, 2, RustboroCity_DevonCorp_2F_EventScript_GiveClawFossil
 	goto_if_eq VAR_0x8005, 0, Coop_EventScript_FossilScientistDecline
-	bufferitemname STR_VAR_1, VAR_0x8004
+	special CoopRoster_TakeFossil
 	msgbox Coop_Text_FossilScientistHandOver, MSGBOX_DEFAULT
-	removeitem VAR_0x8004
 	setvar VAR_FOSSIL_RESURRECTION_STATE, 1
 	copyvar VAR_WHICH_FOSSIL_REVIVED, VAR_0x8005
 	release
@@ -244,6 +264,32 @@ Coop_EventScript_FossilScientistDecline::
 	end
 Coop_EventScript_FossilCount::
 	addvar VAR_0x8009, 1
+	return
+Coop_EventScript_FossilPairsCount::
+	setvar VAR_0x8004, 1001
+	specialvar VAR_RESULT, CoopRoster_FossilPairReady
+	call_if_eq VAR_RESULT, TRUE, Coop_EventScript_FossilCount
+	setvar VAR_0x8004, 1002
+	specialvar VAR_RESULT, CoopRoster_FossilPairReady
+	call_if_eq VAR_RESULT, TRUE, Coop_EventScript_FossilCount
+	setvar VAR_0x8004, 1003
+	specialvar VAR_RESULT, CoopRoster_FossilPairReady
+	call_if_eq VAR_RESULT, TRUE, Coop_EventScript_FossilCount
+	setvar VAR_0x8004, 1004
+	specialvar VAR_RESULT, CoopRoster_FossilPairReady
+	call_if_eq VAR_RESULT, TRUE, Coop_EventScript_FossilCount
+	return
+Coop_EventScript_FossilPushPair0::
+	dynmultipush Coop_Text_FossilPair0, 1001
+	return
+Coop_EventScript_FossilPushPair1::
+	dynmultipush Coop_Text_FossilPair1, 1002
+	return
+Coop_EventScript_FossilPushPair2::
+	dynmultipush Coop_Text_FossilPair2, 1003
+	return
+Coop_EventScript_FossilPushPair3::
+	dynmultipush Coop_Text_FossilPair3, 1004
 	return
 Coop_EventScript_FossilPush_HELIX_FOSSIL::
 	dynmultipush Coop_Text_Fossil_HELIX_FOSSIL, ITEM_HELIX_FOSSIL
@@ -388,3 +434,18 @@ Coop_Text_Fossil_JAW_FOSSIL:
 
 Coop_Text_Fossil_SAIL_FOSSIL:
 	.string "SAIL FOSSIL$"
+
+Coop_Text_FossilPair0:
+	.string "BIRD + DRAKE$"
+
+Coop_Text_FossilPair1:
+	.string "BIRD + DINO$"
+
+Coop_Text_FossilPair2:
+	.string "FISH + DRAKE$"
+
+Coop_Text_FossilPair3:
+	.string "FISH + DINO$"
+
+Coop_Text_FossilManiacGot:
+	.string "{PLAYER} got the fossil!$"

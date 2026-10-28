@@ -316,3 +316,29 @@ SandburiedRuins_Text_Tablet:
 
 SandburiedRuins_Text_SigilyphStays:
 	.string "SIGILYPH hovers back to its post.$"
+
+@ The cursed carving (Galarian YAMASK -> RUNERIGUS). The stock trigger is a
+@ stone arch in Galar's Dusty Bowl, passed by a Galarian Yamask that has
+@ lost at least 49 HP; here the carving by the east wall does the same.
+SandburiedRuins_EventScript_CursedCarving::
+	lockall
+	msgbox SandburiedRuins_Text_CursedCarving, MSGBOX_DEFAULT
+	setvar VAR_0x8005, EVO_TRIGGER_TABLET_CURSE
+	pickpartymon SELECT_PC_MON_EVOLUTION
+	goto_if_eq VAR_0x8004, PARTY_NOTHING_CHOSEN, SandburiedRuins_EventScript_CursedCarvingNothing
+	tryspecialevo EVO_TRIGGER_TABLET_CURSE, FALSE
+	releaseall
+	end
+SandburiedRuins_EventScript_CursedCarvingNothing::
+	msgbox SandburiedRuins_Text_CursedCarvingNothing, MSGBOX_DEFAULT
+	releaseall
+	end
+
+SandburiedRuins_Text_CursedCarving:
+	.string "A carving of a stone slab, cracked\n"
+	.string "down the middle. It feels cold.$"
+
+SandburiedRuins_Text_CursedCarvingNothing:
+	.string "A sign beneath it reads: “A GALARIAN\n"
+	.string "YAMASK hurt by 49 HP or more is\l"
+	.string "drawn into the slab.”$"

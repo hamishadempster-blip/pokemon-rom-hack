@@ -11,13 +11,15 @@ Coop_EventScript_FieldGuideMenu::
 	dynmultipush Coop_Text_FG_Group1, 1
 	dynmultipush Coop_Text_FG_Group2, 2
 	dynmultipush Coop_Text_FG_Group3, 3
-	dynmultipush gText_Cancel, 4
+	dynmultipush Coop_Text_FG_Group4, 4
+	dynmultipush gText_Cancel, 5
 	dynmultistack 15, 1, FALSE, 6, FALSE, 0, DYN_MULTICHOICE_CB_NONE
-	goto_if_ge VAR_RESULT, 4, Coop_EventScript_FieldGuideBye
+	goto_if_ge VAR_RESULT, 5, Coop_EventScript_FieldGuideBye
 	goto_if_eq VAR_RESULT, 0, Coop_EventScript_FG_List0
 	goto_if_eq VAR_RESULT, 1, Coop_EventScript_FG_List1
 	goto_if_eq VAR_RESULT, 2, Coop_EventScript_FG_List2
 	goto_if_eq VAR_RESULT, 3, Coop_EventScript_FG_List3
+	goto_if_eq VAR_RESULT, 4, Coop_EventScript_FG_List4
 	goto Coop_EventScript_FieldGuideBye
 Coop_EventScript_FG_List0:
 	message Coop_Text_FieldGuideAsk
@@ -729,9 +731,26 @@ Coop_EventScript_FG_List3:
 	dynmultipush Coop_Text_FG_Name3_5, 5
 	dynmultipush Coop_Text_FG_Name3_6, 6
 	dynmultipush Coop_Text_FG_Name3_7, 7
-	dynmultipush gText_Cancel, 8
+	dynmultipush Coop_Text_FG_Name3_8, 8
+	dynmultipush Coop_Text_FG_Name3_9, 9
+	dynmultipush Coop_Text_FG_Name3_10, 10
+	dynmultipush Coop_Text_FG_Name3_11, 11
+	dynmultipush Coop_Text_FG_Name3_12, 12
+	dynmultipush Coop_Text_FG_Name3_13, 13
+	dynmultipush Coop_Text_FG_Name3_14, 14
+	dynmultipush Coop_Text_FG_Name3_15, 15
+	dynmultipush Coop_Text_FG_Name3_16, 16
+	dynmultipush Coop_Text_FG_Name3_17, 17
+	dynmultipush Coop_Text_FG_Name3_18, 18
+	dynmultipush Coop_Text_FG_Name3_19, 19
+	dynmultipush Coop_Text_FG_Name3_20, 20
+	dynmultipush Coop_Text_FG_Name3_21, 21
+	dynmultipush Coop_Text_FG_Name3_22, 22
+	dynmultipush Coop_Text_FG_Name3_23, 23
+	dynmultipush Coop_Text_FG_Name3_24, 24
+	dynmultipush gText_Cancel, 25
 	dynmultistack 17, 1, FALSE, 6, FALSE, 0, DYN_MULTICHOICE_CB_NONE
-	goto_if_ge VAR_RESULT, 8, Coop_EventScript_FieldGuideMenu
+	goto_if_ge VAR_RESULT, 25, Coop_EventScript_FieldGuideMenu
 	goto_if_eq VAR_RESULT, 0, Coop_EventScript_FG_3_0
 	goto_if_eq VAR_RESULT, 1, Coop_EventScript_FG_3_1
 	goto_if_eq VAR_RESULT, 2, Coop_EventScript_FG_3_2
@@ -740,6 +759,23 @@ Coop_EventScript_FG_List3:
 	goto_if_eq VAR_RESULT, 5, Coop_EventScript_FG_3_5
 	goto_if_eq VAR_RESULT, 6, Coop_EventScript_FG_3_6
 	goto_if_eq VAR_RESULT, 7, Coop_EventScript_FG_3_7
+	goto_if_eq VAR_RESULT, 8, Coop_EventScript_FG_3_8
+	goto_if_eq VAR_RESULT, 9, Coop_EventScript_FG_3_9
+	goto_if_eq VAR_RESULT, 10, Coop_EventScript_FG_3_10
+	goto_if_eq VAR_RESULT, 11, Coop_EventScript_FG_3_11
+	goto_if_eq VAR_RESULT, 12, Coop_EventScript_FG_3_12
+	goto_if_eq VAR_RESULT, 13, Coop_EventScript_FG_3_13
+	goto_if_eq VAR_RESULT, 14, Coop_EventScript_FG_3_14
+	goto_if_eq VAR_RESULT, 15, Coop_EventScript_FG_3_15
+	goto_if_eq VAR_RESULT, 16, Coop_EventScript_FG_3_16
+	goto_if_eq VAR_RESULT, 17, Coop_EventScript_FG_3_17
+	goto_if_eq VAR_RESULT, 18, Coop_EventScript_FG_3_18
+	goto_if_eq VAR_RESULT, 19, Coop_EventScript_FG_3_19
+	goto_if_eq VAR_RESULT, 20, Coop_EventScript_FG_3_20
+	goto_if_eq VAR_RESULT, 21, Coop_EventScript_FG_3_21
+	goto_if_eq VAR_RESULT, 22, Coop_EventScript_FG_3_22
+	goto_if_eq VAR_RESULT, 23, Coop_EventScript_FG_3_23
+	goto_if_eq VAR_RESULT, 24, Coop_EventScript_FG_3_24
 	goto Coop_EventScript_FieldGuideMenu
 Coop_EventScript_FG_3_0:
 	msgbox Coop_Text_FG_Where3_0, MSGBOX_DEFAULT
@@ -773,6 +809,129 @@ Coop_EventScript_FG_3_7:
 	msgbox Coop_Text_FG_Where3_7, MSGBOX_DEFAULT
 	msgbox Coop_Text_FG_Evo3_7, MSGBOX_DEFAULT
 	goto Coop_EventScript_FG_List3
+Coop_EventScript_FG_3_8:
+	msgbox Coop_Text_FG_Where3_8, MSGBOX_DEFAULT
+	msgbox Coop_Text_FG_Evo3_8, MSGBOX_DEFAULT
+	goto Coop_EventScript_FG_List3
+Coop_EventScript_FG_3_9:
+	msgbox Coop_Text_FG_Where3_9, MSGBOX_DEFAULT
+	msgbox Coop_Text_FG_Evo3_9, MSGBOX_DEFAULT
+	goto Coop_EventScript_FG_List3
+Coop_EventScript_FG_3_10:
+	msgbox Coop_Text_FG_Where3_10, MSGBOX_DEFAULT
+	msgbox Coop_Text_FG_Evo3_10, MSGBOX_DEFAULT
+	goto Coop_EventScript_FG_List3
+Coop_EventScript_FG_3_11:
+	msgbox Coop_Text_FG_Where3_11, MSGBOX_DEFAULT
+	msgbox Coop_Text_FG_Evo3_11, MSGBOX_DEFAULT
+	goto Coop_EventScript_FG_List3
+Coop_EventScript_FG_3_12:
+	msgbox Coop_Text_FG_Where3_12, MSGBOX_DEFAULT
+	msgbox Coop_Text_FG_Evo3_12, MSGBOX_DEFAULT
+	goto Coop_EventScript_FG_List3
+Coop_EventScript_FG_3_13:
+	msgbox Coop_Text_FG_Where3_13, MSGBOX_DEFAULT
+	msgbox Coop_Text_FG_Evo3_13, MSGBOX_DEFAULT
+	goto Coop_EventScript_FG_List3
+Coop_EventScript_FG_3_14:
+	msgbox Coop_Text_FG_Where3_14, MSGBOX_DEFAULT
+	msgbox Coop_Text_FG_Evo3_14, MSGBOX_DEFAULT
+	goto Coop_EventScript_FG_List3
+Coop_EventScript_FG_3_15:
+	msgbox Coop_Text_FG_Where3_15, MSGBOX_DEFAULT
+	msgbox Coop_Text_FG_Evo3_15, MSGBOX_DEFAULT
+	goto Coop_EventScript_FG_List3
+Coop_EventScript_FG_3_16:
+	msgbox Coop_Text_FG_Where3_16, MSGBOX_DEFAULT
+	msgbox Coop_Text_FG_Evo3_16, MSGBOX_DEFAULT
+	goto Coop_EventScript_FG_List3
+Coop_EventScript_FG_3_17:
+	msgbox Coop_Text_FG_Where3_17, MSGBOX_DEFAULT
+	msgbox Coop_Text_FG_Evo3_17, MSGBOX_DEFAULT
+	goto Coop_EventScript_FG_List3
+Coop_EventScript_FG_3_18:
+	msgbox Coop_Text_FG_Where3_18, MSGBOX_DEFAULT
+	msgbox Coop_Text_FG_Evo3_18, MSGBOX_DEFAULT
+	goto Coop_EventScript_FG_List3
+Coop_EventScript_FG_3_19:
+	msgbox Coop_Text_FG_Where3_19, MSGBOX_DEFAULT
+	msgbox Coop_Text_FG_Evo3_19, MSGBOX_DEFAULT
+	goto Coop_EventScript_FG_List3
+Coop_EventScript_FG_3_20:
+	msgbox Coop_Text_FG_Where3_20, MSGBOX_DEFAULT
+	msgbox Coop_Text_FG_Evo3_20, MSGBOX_DEFAULT
+	goto Coop_EventScript_FG_List3
+Coop_EventScript_FG_3_21:
+	msgbox Coop_Text_FG_Where3_21, MSGBOX_DEFAULT
+	msgbox Coop_Text_FG_Evo3_21, MSGBOX_DEFAULT
+	goto Coop_EventScript_FG_List3
+Coop_EventScript_FG_3_22:
+	msgbox Coop_Text_FG_Where3_22, MSGBOX_DEFAULT
+	msgbox Coop_Text_FG_Evo3_22, MSGBOX_DEFAULT
+	goto Coop_EventScript_FG_List3
+Coop_EventScript_FG_3_23:
+	msgbox Coop_Text_FG_Where3_23, MSGBOX_DEFAULT
+	msgbox Coop_Text_FG_Evo3_23, MSGBOX_DEFAULT
+	goto Coop_EventScript_FG_List3
+Coop_EventScript_FG_3_24:
+	msgbox Coop_Text_FG_Where3_24, MSGBOX_DEFAULT
+	msgbox Coop_Text_FG_Evo3_24, MSGBOX_DEFAULT
+	goto Coop_EventScript_FG_List3
+Coop_EventScript_FG_List4:
+	message Coop_Text_FieldGuideAsk
+	waitmessage
+	dynmultipush Coop_Text_FG_Name4_0, 0
+	dynmultipush Coop_Text_FG_Name4_1, 1
+	dynmultipush Coop_Text_FG_Name4_2, 2
+	dynmultipush Coop_Text_FG_Name4_3, 3
+	dynmultipush Coop_Text_FG_Name4_4, 4
+	dynmultipush Coop_Text_FG_Name4_5, 5
+	dynmultipush Coop_Text_FG_Name4_6, 6
+	dynmultipush Coop_Text_FG_Name4_7, 7
+	dynmultipush gText_Cancel, 8
+	dynmultistack 17, 1, FALSE, 6, FALSE, 0, DYN_MULTICHOICE_CB_NONE
+	goto_if_ge VAR_RESULT, 8, Coop_EventScript_FieldGuideMenu
+	goto_if_eq VAR_RESULT, 0, Coop_EventScript_FG_4_0
+	goto_if_eq VAR_RESULT, 1, Coop_EventScript_FG_4_1
+	goto_if_eq VAR_RESULT, 2, Coop_EventScript_FG_4_2
+	goto_if_eq VAR_RESULT, 3, Coop_EventScript_FG_4_3
+	goto_if_eq VAR_RESULT, 4, Coop_EventScript_FG_4_4
+	goto_if_eq VAR_RESULT, 5, Coop_EventScript_FG_4_5
+	goto_if_eq VAR_RESULT, 6, Coop_EventScript_FG_4_6
+	goto_if_eq VAR_RESULT, 7, Coop_EventScript_FG_4_7
+	goto Coop_EventScript_FieldGuideMenu
+Coop_EventScript_FG_4_0:
+	msgbox Coop_Text_FG_Where4_0, MSGBOX_DEFAULT
+	msgbox Coop_Text_FG_Evo4_0, MSGBOX_DEFAULT
+	goto Coop_EventScript_FG_List4
+Coop_EventScript_FG_4_1:
+	msgbox Coop_Text_FG_Where4_1, MSGBOX_DEFAULT
+	msgbox Coop_Text_FG_Evo4_1, MSGBOX_DEFAULT
+	goto Coop_EventScript_FG_List4
+Coop_EventScript_FG_4_2:
+	msgbox Coop_Text_FG_Where4_2, MSGBOX_DEFAULT
+	msgbox Coop_Text_FG_Evo4_2, MSGBOX_DEFAULT
+	goto Coop_EventScript_FG_List4
+Coop_EventScript_FG_4_3:
+	msgbox Coop_Text_FG_Where4_3, MSGBOX_DEFAULT
+	msgbox Coop_Text_FG_Evo4_3, MSGBOX_DEFAULT
+	goto Coop_EventScript_FG_List4
+Coop_EventScript_FG_4_4:
+	msgbox Coop_Text_FG_Where4_4, MSGBOX_DEFAULT
+	msgbox Coop_Text_FG_Evo4_4, MSGBOX_DEFAULT
+	goto Coop_EventScript_FG_List4
+Coop_EventScript_FG_4_5:
+	msgbox Coop_Text_FG_Where4_5, MSGBOX_DEFAULT
+	msgbox Coop_Text_FG_Evo4_5, MSGBOX_DEFAULT
+	goto Coop_EventScript_FG_List4
+Coop_EventScript_FG_4_6:
+	msgbox Coop_Text_FG_Where4_6, MSGBOX_DEFAULT
+	msgbox Coop_Text_FG_Evo4_6, MSGBOX_DEFAULT
+	goto Coop_EventScript_FG_List4
+Coop_EventScript_FG_4_7:
+	msgbox Coop_Text_FG_Where4_7, MSGBOX_DEFAULT
+	msgbox Coop_Text_FG_Evo4_7, MSGBOX_DEFAULT
+	goto Coop_EventScript_FG_List4
 Coop_EventScript_FieldGuideBye::
 	msgbox Coop_Text_FieldGuideBye, MSGBOX_DEFAULT
 	release
@@ -1565,68 +1724,257 @@ Coop_Text_FG_Evo2_41:
 	.string "They come back at level 20 and\n"
 	.string "evolve by level: OMASTAR 40,\lKABUTOPS 40, RAMPARDOS 30, BASTIODON\l30, CARRACOSTA 37, ARCHEOPS 37,\lTYRANTRUM 39, AURORUS 39.$"
 Coop_Text_FG_Group3:
-	.string "PARTNER POKéMON$"
+	.string "FINAL ARRIVALS$"
 Coop_Text_FG_Name3_0:
-	.string "KANTO$"
+	.string "ALOLA FORMS$"
 Coop_Text_FG_Where3_0:
+	.string "ALOLAN RATTATA and MEOWTH: ROUTE 115.\n"
+	.string "ALOLAN GEODUDE and DIGLETT: GRANITE\lCAVE. ALOLAN SANDSHREW: SHOAL CAVE.$"
+Coop_Text_FG_Evo3_0:
+	.string "Evolve PIKACHU or EXEGGCUTE with\n"
+	.string "their stone, or CUBONE at night, on\lDEWFORD's island or ROUTES 106-107.$"
+Coop_Text_FG_Name3_1:
+	.string "GALAR FORMS$"
+Coop_Text_FG_Where3_1:
+	.string "MEOWTH: ROUTE 115. PONYTA and\n"
+	.string "FARFETCH'D: SAFARI ZONE. SLOWPOKE,\lSTUNFISK: surf ROUTES 120, 114.$"
+Coop_Text_FG_Evo3_1:
+	.string "KOFFING at 35 or MIME JR. with MIMIC\n"
+	.string "on ROUTE 114 become GALARIAN.\lYAMASK and DARUMAKA: see their own.$"
+Coop_Text_FG_Name3_2:
+	.string "HISUI FORMS$"
+Coop_Text_FG_Where3_2:
+	.string "GROWLITHE: JAGGED PASS. VOLTORB:\n"
+	.string "NEW MAUVILLE. ZORUA: MT. PYRE.\lSNEASEL: METEOR FALLS. QWILFISH: 129.$"
+Coop_Text_FG_Evo3_2:
+	.string "QUILAVA, DEWOTT, DARTRIX, PETILIL,\n"
+	.string "RUFFLET, GOOMY and BERGMITE evolve\lthe HISUI way inside MT. PYRE.$"
+Coop_Text_FG_Name3_3:
+	.string "PALDEA FORMS$"
+Coop_Text_FG_Where3_3:
+	.string "WOOPER: surf in PETALBURG. TAUROS,\n"
+	.string "all three breeds: SAFARI ZONE.$"
+Coop_Text_FG_Evo3_3:
+	.string "PALDEAN WOOPER at level 20:\n"
+	.string "CLODSIRE.$"
+Coop_Text_FG_Name3_4:
+	.string "TYROGUE$"
+Coop_Text_FG_Where3_4:
+	.string "SAFARI ZONE.$"
+Coop_Text_FG_Evo3_4:
+	.string "Level 20. ATTACK higher: HITMONLEE.\n"
+	.string "DEFENSE higher: HITMONCHAN. Equal:\lHITMONTOP.$"
+Coop_Text_FG_Name3_5:
+	.string "BURMY$"
+Coop_Text_FG_Where3_5:
+	.string "PETALBURG WOODS.$"
+Coop_Text_FG_Evo3_5:
+	.string "Its cloak follows its last battle:\n"
+	.string "grass PLANT, cave or sand SANDY,\lbuilding TRASH. Level 20: a female\lWORMADAM in that cloak, a male MOTHIM.$"
+Coop_Text_FG_Name3_6:
+	.string "KARRABLAST$"
+Coop_Text_FG_Where3_6:
+	.string "KARRABLAST and SHELMET: the ALTERING\n"
+	.string "CAVE off ROUTE 103.$"
+Coop_Text_FG_Evo3_6:
+	.string "Trade them for each other, or use a\n"
+	.string "LINKING CORD while the other one is\lin your party.$"
+Coop_Text_FG_Name3_7:
+	.string "PRIMEAPE$"
+Coop_Text_FG_Where3_7:
+	.string "MANKEY: ROUTE 112.$"
+Coop_Text_FG_Evo3_7:
+	.string "PRIMEAPE that has used RAGE FIST\n"
+	.string "20 times in solo battles evolves\lon its next level: ANNIHILAPE.$"
+Coop_Text_FG_Name3_8:
+	.string "FARFETCH'D$"
+Coop_Text_FG_Where3_8:
+	.string "GALARIAN FARFETCH'D: SAFARI ZONE.$"
+Coop_Text_FG_Evo3_8:
+	.string "3 critical hits in one solo battle:\n"
+	.string "SIRFETCH'D. A LEEK and FOCUS ENERGY\lhelp. LILYCOVE sells LEEKS.$"
+Coop_Text_FG_Name3_9:
+	.string "YAMASK$"
+Coop_Text_FG_Where3_9:
+	.string "GALARIAN YAMASK: SANDBURIED RUINS.\n"
+	.string "YAMASK: MT. PYRE.$"
+Coop_Text_FG_Evo3_9:
+	.string "A GALARIAN YAMASK down 49 HP or more\n"
+	.string "touching the cracked carving in the\lSANDBURIED RUINS: RUNERIGUS.$"
+Coop_Text_FG_Name3_10:
+	.string "RELLOR$"
+Coop_Text_FG_Where3_10:
+	.string "Smash rocks on ROUTE 111.$"
+Coop_Text_FG_Evo3_10:
+	.string "Walk 1000 steps with it leading,\n"
+	.string "then level up: RABSCA.$"
+Coop_Text_FG_Name3_11:
+	.string "GOOMY$"
+Coop_Text_FG_Where3_11:
+	.string "ROUTE 123.$"
+Coop_Text_FG_Evo3_11:
+	.string "Level 40, then level 50 in rain or\n"
+	.string "fog (ROUTE 119 rain, MT. PYRE summit\lor RUSTURF fog): GOODRA.$"
+Coop_Text_FG_Name3_12:
+	.string "INKAY$"
+Coop_Text_FG_Where3_12:
+	.string "Super Rod, ROUTE 128.$"
+Coop_Text_FG_Evo3_12:
+	.string "Level 30: MALAMAR. No need to turn\n"
+	.string "your system upside down here.$"
+Coop_Text_FG_Name3_13:
+	.string "DUNSPARCE$"
+Coop_Text_FG_Where3_13:
+	.string "RUSTURF TUNNEL.$"
+Coop_Text_FG_Evo3_13:
+	.string "Knowing HYPER DRILL at a level-up:\n"
+	.string "DUDUNSPARCE. Rarely, three segments.$"
+Coop_Text_FG_Name3_14:
+	.string "QWILFISH$"
+Coop_Text_FG_Where3_14:
+	.string "Super Rod in the SAFARI ZONE.\n"
+	.string "HISUIAN: Super Rod on ROUTE 129.$"
+Coop_Text_FG_Evo3_14:
+	.string "HISUIAN QWILFISH knowing BARB\n"
+	.string "BARRAGE at a level-up: OVERQWIL.$"
+Coop_Text_FG_Name3_15:
+	.string "SCYTHER$"
+Coop_Text_FG_Where3_15:
+	.string "SAFARI ZONE.$"
+Coop_Text_FG_Evo3_15:
+	.string "METAL COAT: SCIZOR. BLACK AUGURITE:\n"
+	.string "KLEAVOR. LILYCOVE sells both.$"
+Coop_Text_FG_Name3_16:
+	.string "URSARING$"
+Coop_Text_FG_Where3_16:
+	.string "TEDDIURSA: SAFARI ZONE.$"
+Coop_Text_FG_Evo3_16:
+	.string "A PEAT BLOCK used at night inside\n"
+	.string "MT. PYRE: URSALUNA.$"
+Coop_Text_FG_Name3_17:
+	.string "DURALUDON$"
+Coop_Text_FG_Where3_17:
+	.string "METEOR FALLS, deep inside.$"
+Coop_Text_FG_Evo3_17:
+	.string "A METAL ALLOY: ARCHALUDON.\n"
+	.string "LILYCOVE sells them.$"
+Coop_Text_FG_Name3_18:
+	.string "POLTCHAGEIST$"
+Coop_Text_FG_Where3_18:
+	.string "MT. PYRE, inside. Rare: the\n"
+	.string "ARTISAN form.$"
+Coop_Text_FG_Evo3_18:
+	.string "UNREMARKABLE TEACUP, or for an\n"
+	.string "ARTISAN a MASTERPIECE TEACUP:\lSINISTCHA. LILYCOVE sells both.$"
+Coop_Text_FG_Name3_19:
+	.string "SLOWPOKE$"
+Coop_Text_FG_Where3_19:
+	.string "Super Rod, ROUTE 119. GALARIAN:\n"
+	.string "surf on ROUTE 120.$"
+Coop_Text_FG_Evo3_19:
+	.string "Level 37 or KING'S ROCK. GALARIAN:\n"
+	.string "GALARICA CUFF or WREATH (LILYCOVE).$"
+Coop_Text_FG_Name3_20:
+	.string "MANTYKE$"
+Coop_Text_FG_Where3_20:
+	.string "Surf in the SAFARI ZONE.$"
+Coop_Text_FG_Evo3_20:
+	.string "Level up with a REMORAID in your\n"
+	.string "party: MANTINE.$"
+Coop_Text_FG_Name3_21:
+	.string "ORICORIO$"
+Coop_Text_FG_Where3_21:
+	.string "SAFARI ZONE, after the LEAGUE.$"
+Coop_Text_FG_Evo3_21:
+	.string "Feed it a NECTAR (LILYCOVE) to\n"
+	.string "change its dance style.$"
+Coop_Text_FG_Name3_22:
+	.string "GALAR FOSSILS$"
+Coop_Text_FG_Where3_22:
+	.string "The FOSSIL MANIAC also digs a pair:\n"
+	.string "BIRD, FISH, DRAKE or DINO halves.$"
+Coop_Text_FG_Evo3_22:
+	.string "DEVON joins a pair: DRACOZOLT,\n"
+	.string "ARCTOZOLT, DRACOVISH or ARCTOVISH.$"
+Coop_Text_FG_Name3_23:
+	.string "BABIES$"
+Coop_Text_FG_Where3_23:
+	.string "HAPPINY, MUNCHLAX, MIME JR.:\n"
+	.string "SAFARI ZONE. SMOOCHUM: SHOAL CAVE.\lELEKID: NEW MAUVILLE. MAGBY: FIERY\lPATH.$"
+Coop_Text_FG_Evo3_23:
+	.string "HAPPINY with an OVAL STONE by day,\n"
+	.string "MUNCHLAX very friendly, MIME JR.\lknowing MIMIC.$"
+Coop_Text_FG_Name3_24:
+	.string "SPRITZEE$"
+Coop_Text_FG_Where3_24:
+	.string "SPRITZEE and SWIRLIX: MT. PYRE,\n"
+	.string "outside.$"
+Coop_Text_FG_Evo3_24:
+	.string "A SACHET: AROMATISSE. A WHIPPED\n"
+	.string "DREAM: SLURPUFF. LILYCOVE sells both.$"
+Coop_Text_FG_Group4:
+	.string "PARTNER POKéMON$"
+Coop_Text_FG_Name4_0:
+	.string "KANTO$"
+Coop_Text_FG_Where4_0:
 	.string "A visitor in the RUSTBORO POKéMON\n"
 	.string "CENTER, after 1 BADGE: BULBASAUR,\lCHARMANDER or SQUIRTLE, Lv 10.$"
-Coop_Text_FG_Evo3_0:
+Coop_Text_FG_Evo4_0:
 	.string "One a day. They evolve at level\n"
 	.string "16, then 32 or 36.$"
-Coop_Text_FG_Name3_1:
+Coop_Text_FG_Name4_1:
 	.string "SINNOH$"
-Coop_Text_FG_Where3_1:
+Coop_Text_FG_Where4_1:
 	.string "A visitor in the LAVARIDGE POKéMON\n"
 	.string "CENTER, after 4 BADGES: TURTWIG,\lCHIMCHAR or PIPLUP, Lv 18.$"
-Coop_Text_FG_Evo3_1:
+Coop_Text_FG_Evo4_1:
 	.string "One a day. They evolve at level\n"
 	.string "14 to 18, then 32 or 36.$"
-Coop_Text_FG_Name3_2:
+Coop_Text_FG_Name4_2:
 	.string "UNOVA$"
-Coop_Text_FG_Where3_2:
+Coop_Text_FG_Where4_2:
 	.string "A visitor in the FORTREE POKéMON\n"
 	.string "CENTER, after 6 BADGES: SNIVY,\lTEPIG or OSHAWOTT, Lv 25.$"
-Coop_Text_FG_Evo3_2:
+Coop_Text_FG_Evo4_2:
 	.string "One a day. They evolve at level\n"
 	.string "17, then 36.$"
-Coop_Text_FG_Name3_3:
+Coop_Text_FG_Name4_3:
 	.string "KALOS$"
-Coop_Text_FG_Where3_3:
+Coop_Text_FG_Where4_3:
 	.string "A visitor in the MOSSDEEP POKéMON\n"
 	.string "CENTER, after 7 BADGES: CHESPIN,\lFENNEKIN or FROAKIE, Lv 30.$"
-Coop_Text_FG_Evo3_3:
+Coop_Text_FG_Evo4_3:
 	.string "One a day. They evolve at level\n"
 	.string "16, then 36.$"
-Coop_Text_FG_Name3_4:
+Coop_Text_FG_Name4_4:
 	.string "ALOLA$"
-Coop_Text_FG_Where3_4:
+Coop_Text_FG_Where4_4:
 	.string "A visitor in the SLATEPORT POKéMON\n"
 	.string "CENTER, after 2 BADGES: ROWLET,\lLITTEN or POPPLIO, Lv 14.$"
-Coop_Text_FG_Evo3_4:
+Coop_Text_FG_Evo4_4:
 	.string "One a day. They evolve at level\n"
 	.string "17, then 34.$"
-Coop_Text_FG_Name3_5:
+Coop_Text_FG_Name4_5:
 	.string "GALAR$"
-Coop_Text_FG_Where3_5:
+Coop_Text_FG_Where4_5:
 	.string "A visitor in the PETALBURG POKéMON\n"
 	.string "CENTER, after 5 BADGES: GROOKEY,\lSCORBUNNY or SOBBLE, Lv 22.$"
-Coop_Text_FG_Evo3_5:
+Coop_Text_FG_Evo4_5:
 	.string "One a day. They evolve at level\n"
 	.string "16, then 35.$"
-Coop_Text_FG_Name3_6:
+Coop_Text_FG_Name4_6:
 	.string "HOENN$"
-Coop_Text_FG_Where3_6:
+Coop_Text_FG_Where4_6:
 	.string "A visitor in the FALLARBOR POKéMON\n"
 	.string "CENTER, after 3 BADGES: TREECKO,\lTORCHIC or MUDKIP, Lv 16.$"
-Coop_Text_FG_Evo3_6:
+Coop_Text_FG_Evo4_6:
 	.string "One a day. They evolve at level\n"
 	.string "16, then 36.$"
-Coop_Text_FG_Name3_7:
+Coop_Text_FG_Name4_7:
 	.string "PALDEA$"
-Coop_Text_FG_Where3_7:
+Coop_Text_FG_Where4_7:
 	.string "A visitor in the SOOTOPOLIS POKéMON\n"
 	.string "CENTER, after 8 BADGES: SPRIGATITO,\lFUECOCO or QUAXLY, Lv 35.$"
-Coop_Text_FG_Evo3_7:
+Coop_Text_FG_Evo4_7:
 	.string "One a day. They evolve at level\n"
 	.string "16, then 36.$"

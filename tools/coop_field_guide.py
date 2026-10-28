@@ -133,6 +133,36 @@ GUIDE4 = [
     ('FOSSILS', 'The FOSSIL MANIAC in the ROUTE 114\ntunnel digs up one a day, any kind.\\lDEVON in RUSTBORO revives it.', 'They come back at level 20 and\nevolve by level: OMASTAR 40,\\lKABUTOPS 40, RAMPARDOS 30, BASTIODON\\l30, CARRACOSTA 37, ARCHEOPS 37,\\lTYRANTRUM 39, AURORUS 39.'),
 ]
 
+# The final batch (build 0xC0170139): unusual methods and the regional
+# branches.
+GUIDE5 = [
+    ('ALOLA FORMS', 'ALOLAN RATTATA and MEOWTH: ROUTE 115.\nALOLAN GEODUDE and DIGLETT: GRANITE\\lCAVE. ALOLAN SANDSHREW: SHOAL CAVE.', 'Evolve PIKACHU or EXEGGCUTE with\ntheir stone, or CUBONE at night, on\\lDEWFORD\'s island or ROUTES 106-107.'),
+    ('GALAR FORMS', 'MEOWTH: ROUTE 115. PONYTA and\nFARFETCH\'D: SAFARI ZONE. SLOWPOKE,\\lSTUNFISK: surf ROUTES 120, 114.', 'KOFFING at 35 or MIME JR. with MIMIC\non ROUTE 114 become GALARIAN.\\lYAMASK and DARUMAKA: see their own.'),
+    ('HISUI FORMS', 'GROWLITHE: JAGGED PASS. VOLTORB:\nNEW MAUVILLE. ZORUA: MT. PYRE.\\lSNEASEL: METEOR FALLS. QWILFISH: 129.', 'QUILAVA, DEWOTT, DARTRIX, PETILIL,\nRUFFLET, GOOMY and BERGMITE evolve\\lthe HISUI way inside MT. PYRE.'),
+    ('PALDEA FORMS', 'WOOPER: surf in PETALBURG. TAUROS,\nall three breeds: SAFARI ZONE.', 'PALDEAN WOOPER at level 20:\nCLODSIRE.'),
+    ('TYROGUE', 'SAFARI ZONE.', 'Level 20. ATTACK higher: HITMONLEE.\nDEFENSE higher: HITMONCHAN. Equal:\\lHITMONTOP.'),
+    ('BURMY', 'PETALBURG WOODS.', 'Its cloak follows its last battle:\ngrass PLANT, cave or sand SANDY,\\lbuilding TRASH. Level 20: a female\\lWORMADAM in that cloak, a male MOTHIM.'),
+    ('KARRABLAST', 'KARRABLAST and SHELMET: the ALTERING\nCAVE off ROUTE 103.', 'Trade them for each other, or use a\nLINKING CORD while the other one is\\lin your party.'),
+    ('PRIMEAPE', 'MANKEY: ROUTE 112.', 'PRIMEAPE that has used RAGE FIST\n20 times in solo battles evolves\\lon its next level: ANNIHILAPE.'),
+    ('FARFETCH\'D', 'GALARIAN FARFETCH\'D: SAFARI ZONE.', '3 critical hits in one solo battle:\nSIRFETCH\'D. A LEEK and FOCUS ENERGY\\lhelp. LILYCOVE sells LEEKS.'),
+    ('YAMASK', 'GALARIAN YAMASK: SANDBURIED RUINS.\nYAMASK: MT. PYRE.', 'A GALARIAN YAMASK down 49 HP or more\ntouching the cracked carving in the\\lSANDBURIED RUINS: RUNERIGUS.'),
+    ('RELLOR', 'Smash rocks on ROUTE 111.', 'Walk 1000 steps with it leading,\nthen level up: RABSCA.'),
+    ('GOOMY', 'ROUTE 123.', 'Level 40, then level 50 in rain or\nfog (ROUTE 119 rain, MT. PYRE summit\\lor RUSTURF fog): GOODRA.'),
+    ('INKAY', 'Super Rod, ROUTE 128.', 'Level 30: MALAMAR. No need to turn\nyour system upside down here.'),
+    ('DUNSPARCE', 'RUSTURF TUNNEL.', 'Knowing HYPER DRILL at a level-up:\nDUDUNSPARCE. Rarely, three segments.'),
+    ('QWILFISH', 'Super Rod in the SAFARI ZONE.\nHISUIAN: Super Rod on ROUTE 129.', 'HISUIAN QWILFISH knowing BARB\nBARRAGE at a level-up: OVERQWIL.'),
+    ('SCYTHER', 'SAFARI ZONE.', 'METAL COAT: SCIZOR. BLACK AUGURITE:\nKLEAVOR. LILYCOVE sells both.'),
+    ('URSARING', 'TEDDIURSA: SAFARI ZONE.', 'A PEAT BLOCK used at night inside\nMT. PYRE: URSALUNA.'),
+    ('DURALUDON', 'METEOR FALLS, deep inside.', 'A METAL ALLOY: ARCHALUDON.\nLILYCOVE sells them.'),
+    ('POLTCHAGEIST', 'MT. PYRE, inside. Rare: the\nARTISAN form.', 'UNREMARKABLE TEACUP, or for an\nARTISAN a MASTERPIECE TEACUP:\\lSINISTCHA. LILYCOVE sells both.'),
+    ('SLOWPOKE', 'Super Rod, ROUTE 119. GALARIAN:\nsurf on ROUTE 120.', 'Level 37 or KING\'S ROCK. GALARIAN:\nGALARICA CUFF or WREATH (LILYCOVE).'),
+    ('MANTYKE', 'Surf in the SAFARI ZONE.', 'Level up with a REMORAID in your\nparty: MANTINE.'),
+    ('ORICORIO', 'SAFARI ZONE, after the LEAGUE.', 'Feed it a NECTAR (LILYCOVE) to\nchange its dance style.'),
+    ('GALAR FOSSILS', 'The FOSSIL MANIAC also digs a pair:\nBIRD, FISH, DRAKE or DINO halves.', 'DEVON joins a pair: DRACOZOLT,\nARCTOZOLT, DRACOVISH or ARCTOVISH.'),
+    ('BABIES', 'HAPPINY, MUNCHLAX, MIME JR.:\nSAFARI ZONE. SMOOCHUM: SHOAL CAVE.\\lELEKID: NEW MAUVILLE. MAGBY: FIERY\\lPATH.', 'HAPPINY with an OVAL STONE by day,\nMUNCHLAX very friendly, MIME JR.\\lknowing MIMIC.'),
+    ('SPRITZEE', 'SPRITZEE and SWIRLIX: MT. PYRE,\noutside.', 'A SACHET: AROMATISSE. A WHIPPED\nDREAM: SLURPUFF. LILYCOVE sells both.'),
+]
+
 # Partner Pokemon from other regions (src/coop_roster.c).
 GUIDE3 = [
     ('KANTO', 'A visitor in the RUSTBORO POKéMON\nCENTER, after 1 BADGE: BULBASAUR,\\lCHARMANDER or SQUIRTLE, Lv 10.', 'One a day. They evolve at level\n16, then 32 or 36.'),
@@ -145,7 +175,7 @@ GUIDE3 = [
     ('PALDEA', 'A visitor in the SOOTOPOLIS POKéMON\nCENTER, after 8 BADGES: SPRIGATITO,\\lFUECOCO or QUAXLY, Lv 35.', 'One a day. They evolve at level\n16, then 36.'),
 ]
 
-GROUPS = [('EARLIER ARRIVALS', GUIDE), ('NEW ARRIVALS', GUIDE2), ('NEWEST ARRIVALS', GUIDE4), ('PARTNER POKéMON', GUIDE3)]
+GROUPS = [('EARLIER ARRIVALS', GUIDE), ('NEW ARRIVALS', GUIDE2), ('NEWEST ARRIVALS', GUIDE4), ('FINAL ARRIVALS', GUIDE5), ('PARTNER POKéMON', GUIDE3)]
 
 
 def strblock(label, text):

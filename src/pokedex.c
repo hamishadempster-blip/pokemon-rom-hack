@@ -4625,6 +4625,18 @@ bool16 HasAllRegionalMons(void)
     return HasAllHoennMons();
 }
 
+// Co-op: the diplomas ask for every ordinary Pokemon. Legendary, mythical,
+// Ultra Beast and Paradox entries are optional: this build adds no new
+// encounters for them, and some can only be had once per save (Latias or
+// Latios), so requiring them would make completion impossible alone.
+static bool32 IsDexEntryOptional(u32 nationalNum)
+{
+    const struct SpeciesInfo *info = &gSpeciesInfo[NationalPokedexNumToSpecies(nationalNum)];
+
+    return (info->isMythical && !info->dexForceRequired) || info->isRestrictedLegendary
+        || info->isSubLegendary || info->isUltraBeast || info->isParadox;
+}
+
 bool16 HasAllHoennMons(void)
 {
     u32 i, j;
@@ -4632,7 +4644,7 @@ bool16 HasAllHoennMons(void)
     for (i = 0; i < HOENN_DEX_COUNT - 1; i++)
     {
         j = HoennToNationalOrder(i + 1);
-        if (!(gSpeciesInfo[j].isMythical && !gSpeciesInfo[j].dexForceRequired) && !GetSetPokedexFlag(j, FLAG_GET_CAUGHT))
+        if (!IsDexEntryOptional(j) && !GetSetPokedexFlag(j, FLAG_GET_CAUGHT))
             return FALSE;
     }
     return TRUE;
@@ -4659,7 +4671,8 @@ bool16 HasAllMons(void)
     for (i = 1; i < NATIONAL_DEX_COUNT + 1; i++)
     {
         j = NationalPokedexNumToSpecies(i);
-        if (!(gSpeciesInfo[j].isMythical && !gSpeciesInfo[j].dexForceRequired) && !GetSetPokedexFlag(i, FLAG_GET_CAUGHT))
+        (void)j;
+        if (!IsDexEntryOptional(i) && !GetSetPokedexFlag(i, FLAG_GET_CAUGHT))
             return FALSE;
     }
 

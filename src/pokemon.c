@@ -4097,6 +4097,29 @@ enum Species GetGMaxTargetSpecies(enum Species species)
     return species;
 }
 
+// Co-op: regional evolution branches. Hoenn has no Alola, Galar or Hisui,
+// so a few places stand in for them for IF_REGION/IF_NOT_REGION (evolution
+// only; breeding and everything else keep the real region): Dewford's
+// island and the sea around it for Alola, Route 114 for Galar, Mt. Pyre for
+// Hisui. Explained by the field researcher and the Pokedex AREA hints.
+static enum Region GetEvolutionRegion(void)
+{
+    switch (gMapHeader.regionMapSectionId)
+    {
+    case MAPSEC_DEWFORD_TOWN:
+    case MAPSEC_GRANITE_CAVE:
+    case MAPSEC_ROUTE_106:
+    case MAPSEC_ROUTE_107:
+        return REGION_ALOLA;
+    case MAPSEC_ROUTE_114:
+        return REGION_GALAR;
+    case MAPSEC_MT_PYRE:
+        return REGION_HISUI;
+    default:
+        return GetCurrentRegion();
+    }
+}
+
 bool32 DoesMonMeetAdditionalConditions(struct Pokemon *mon, const struct EvolutionParam *params, struct Pokemon *tradePartner, u32 partyId, bool32 *canStopEvo, enum EvoState evoState)
 {
     u32 i, j;
@@ -4387,11 +4410,11 @@ bool32 DoesMonMeetAdditionalConditions(struct Pokemon *mon, const struct Evoluti
             }
             break;
         case IF_REGION:
-            if (GetCurrentRegion() == params[i].arg1)
+            if (GetEvolutionRegion() == params[i].arg1)
                 currentCondition = TRUE;
             break;
         case IF_NOT_REGION:
-            if (GetCurrentRegion() != params[i].arg1)
+            if (GetEvolutionRegion() != params[i].arg1)
                 currentCondition = TRUE;
             break;
         case CONDITIONS_END:
