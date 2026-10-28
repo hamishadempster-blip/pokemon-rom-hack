@@ -403,6 +403,24 @@ static u8 Deal_CheckMonCanLeave(u8 slot)
     return COOP_DEAL_OK;
 }
 
+// A Pokemon arriving from the partner's game: its checksum holds (not a Bad
+// Egg), it is a species of this build and not an egg. Anything else is
+// refused before it can reach this save.
+static bool8 Deal_IncomingMonValid(const struct BoxPokemon *mon)
+{
+    struct BoxPokemon copy = *mon;
+    u32 species;
+
+    if (GetBoxMonData(&copy, MON_DATA_SANITY_IS_BAD_EGG))
+        return FALSE;
+    species = GetBoxMonData(&copy, MON_DATA_SPECIES);
+    if (species == SPECIES_NONE || species >= NUM_SPECIES || !IsSpeciesEnabled(species))
+        return FALSE;
+    if (GetBoxMonData(&copy, MON_DATA_IS_EGG) || GetBoxMonData(&copy, MON_DATA_SANITY_IS_BAD_EGG))
+        return FALSE;
+    return TRUE;
+}
+
 static bool8 Deal_RoomForMon(void)
 {
     return CalculatePlayerPartyCount() < PARTY_SIZE || Coop_PcFreeSlots() != 0;
@@ -804,7 +822,9 @@ static void Deal_HandleRequest(const struct CoopDealMsg *msg)
     sDeal.myItem = ITEM_NONE;
     sDeal.myQty = 0;
 
-    if (Deal_HasPending())
+    if (sDeal.partnerHasMon && !Deal_IncomingMonValid(&sDeal.partnerMon))
+        refuse = COOP_DEAL_INVALID;
+    else if (Deal_HasPending())
         refuse = COOP_DEAL_PENDING;
     else if (Coop_OtherInteractionBusy() || gMain.inBattle || !Coop_DealPartnerHere())
         refuse = COOP_DEAL_BUSY;
@@ -1015,7 +1035,9 @@ void CoopDeal_HandleBlock(u32 playerId, const u16 *words)
             break;
         sDeal.answered = TRUE;
         sDeal.answer = msg.arg;
-        if (msg.arg == COOP_DEAL_OK)
+        if (msg.arg == COOP_DEAL_OK && sDeal.kind == COOP_DEAL_TRADE && !Deal_IncomingMonValid((const struct BoxPokemon *)msg.mon))
+            sDeal.answer = COOP_DEAL_INVALID;
+        if (sDeal.answer == COOP_DEAL_OK)
         {
             sDeal.partnerItem = msg.item;
             sDeal.partnerQty = msg.qty;
