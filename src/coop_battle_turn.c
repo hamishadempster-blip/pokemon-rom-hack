@@ -42,6 +42,11 @@ enum {
 
 EWRAM_DATA struct CoopTurnState gCoopTurn = {0};
 
+// Frames each battler's waiting note has been up: B right after choosing
+// (a player still pressing B through the menus) is not a change request.
+#define CHANGE_GRACE 20
+static EWRAM_DATA u8 sStandbyAge[MAX_BATTLERS_COUNT] = {0};
+
 void CoopTurn_Reset(void)
 {
     memset(&gCoopTurn, 0, sizeof(gCoopTurn));
@@ -259,6 +264,7 @@ const u8 *CoopTurn_StandbyText(u32 battler)
     {
         gCoopTurn.waiting[battler] = TRUE;
         gCoopTurn.asked[battler] = FALSE;
+        sStandbyAge[battler] = 0;
         if (KindCanChange(gCoopTurn.kind[battler]))
             return COMPOUND_STRING("Ready. Waiting for {B_LINK_PARTNER_NAME}…\nB: change your choice");
     }
@@ -279,6 +285,11 @@ void CoopTurn_ControllerIdle(u32 battler)
 {
     if (!IsCoop() || battler >= MAX_BATTLERS_COUNT || !gCoopTurn.waiting[battler] || gCoopTurn.asked[battler])
         return;
+    if (sStandbyAge[battler] < CHANGE_GRACE)
+    {
+        sStandbyAge[battler]++;
+        return;
+    }
     if (!JOY_NEW(B_BUTTON))
         return;
     if (!KindCanChange(gCoopTurn.kind[battler]))

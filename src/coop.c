@@ -4091,7 +4091,8 @@ void Coop_ApplyPendingStory(void)
             save->storyApplied |= 1 << id;
 }
 
-static void Coop_SendStory(u8 kind, u8 scene)
+// FALSE when the link could not take the block this frame.
+static bool8 Coop_SendStory(u8 kind, u8 scene)
 {
     struct CoopSave *save = CoopSave();
     struct CoopStoryMsg msg;
@@ -4105,11 +4106,17 @@ static void Coop_SendStory(u8 kind, u8 scene)
     msg.mapNum = gSaveBlock1Ptr->location.mapNum;
     msg.seq = ++sStorySeq;
     msg.checksum = CoopProtocol_StoryChecksum(&msg);
-    if (SendBlock(BitmaskAllOtherLinkPlayers(), &msg, sizeof(msg)) && kind == COOP_STORY_MSG_LEDGER)
+    if (!SendBlock(BitmaskAllOtherLinkPlayers(), &msg, sizeof(msg)))
+    {
+        sStorySeq--;
+        return FALSE;
+    }
+    if (kind == COOP_STORY_MSG_LEDGER)
     {
         sStorySent = msg.ledger;
         sStorySentValid = TRUE;
     }
+    return TRUE;
 }
 
 // A scene this game just started. A partner standing in the same room who
@@ -4298,8 +4305,11 @@ static void Coop_PollStory(void)
         return;
     if (sSceneAnnounce != COOP_SCENE_NONE)
     {
-        Coop_SendStory(COOP_STORY_MSG_SCENE, sSceneAnnounce);
-        sSceneAnnounce = COOP_SCENE_NONE;
+        // Kept until the link takes it (another block may be on its way,
+        // such as a conversation note): a lost announcement would leave the
+        // partner out of the scene.
+        if (Coop_SendStory(COOP_STORY_MSG_SCENE, sSceneAnnounce))
+            sSceneAnnounce = COOP_SCENE_NONE;
         sStoryTimer = 0;
         return;
     }

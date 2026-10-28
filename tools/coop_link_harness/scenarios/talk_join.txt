@@ -248,3 +248,4 @@ b sync
 1 mash_field 600 B
 b sync
 b expect coop.sLinkState 2
+b wait 300

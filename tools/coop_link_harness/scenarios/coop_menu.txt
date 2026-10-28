@@ -7,7 +7,7 @@ b mash_field 2000 B
 b sync
 1 press START 2
 1 wait 40
-0 until_mem coop.sPartner+21:1 2 300
+0 until_mem coop.sPartner+19:1 2 300
 0 press START 2
 0 wait 40
 0 expect start_menu.sCoopStatusShown 1
@@ -25,7 +25,7 @@ b sync
 0 shot back-to-start-menu
 0 press B 2
 0 until_field 600
-0 until_mem coop.sPartner+21:1 0 300
+0 until_mem coop.sPartner+19:1 0 300
 b sync
 0 press START 2
 0 wait 40
