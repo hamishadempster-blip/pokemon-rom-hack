@@ -25,9 +25,15 @@ failed=0
 visualFailed=0
 
 run() {
-	local name="$1"; shift
+	run_as "$1" "$@"
+}
+
+# run_as OUTNAME SCENARIO [VAR=value...]: the same scenario on other saves
+# or at another hour, kept under its own name.
+run_as() {
+	local name="$1" scen="$2"; shift 2
 	local start=$SECONDS
-	if env BATTLE_LOG=1 "$@" "$here/run_scenario.sh" "$here/scenarios/$name.txt" "$out/$name" > "$out/$name.log" 2>&1; then
+	if env BATTLE_LOG=1 "$@" "$here/run_scenario.sh" "$here/scenarios/$scen.txt" "$out/$name" > "$out/$name.log" 2>&1; then
 		status=PASS
 	else
 		status=FAIL
@@ -43,7 +49,7 @@ run() {
 		visualFailed=$((visualFailed + 1))
 	fi
 	local tag=""
-	grep -q '^# KIND: recovery' "$here/scenarios/$name.txt" 2>/dev/null && tag=" [deliberate fault/recovery test]"
+	grep -q '^# KIND: recovery' "$here/scenarios/$scen.txt" 2>/dev/null && tag=" [deliberate fault/recovery test]"
 	[ -f "$out/$name/QUARANTINED" ] && tag="$tag [saves quarantined]"
 	printf '%-28s %s  %s  %s  (%ss)%s\n' "$name" "$status" "$frames" "$visual" $((SECONDS - start)) "$tag" | tee -a "$summary"
 }
@@ -99,6 +105,8 @@ fi
 # J16 also: revamped Pokemon's support moves and abilities in co-op doubles.
 if [ -n "${J16:-}" ]; then
 	run revamp_coop_support SAVE0="$J16/p0.sav" SAVE1="$J16/p1.sav"
+	# Second roster batch: Cramorant, Morpeko and Eiscue forms on both games.
+	run battleforms_coop SAVE0="$J16/p0.sav" SAVE1="$J16/p1.sav"
 fi
 
 # J43/J48=dir: checkpoints 43 (Rustboro, after Route 117) and 48 (Route
@@ -123,6 +131,13 @@ if [ -n "${J65:-}" ]; then
 	run coop_wally_vr_partner SAVE0="$J65/p0.sav" SAVE1="$J65/p1.sav"
 	# First roster batch: every distinct evolution method (player 1 at night).
 	run roster_b1_evolutions SAVE0="$J65/p0.sav" SAVE1="$J65/p1.sav" RTC_EPOCH0=1699923600 RTC_EPOCH1=1699963200
+	# Second roster batch: guests, fossils, every distinct evolution method,
+	# the stock-gap repairs and a Day Care egg.
+	run roster_b2_gifts SAVE0="$J65/p0.sav" SAVE1="$J65/p1.sav"
+	run roster_b2_evolutions SAVE0="$J65/p0.sav" SAVE1="$J65/p1.sav" RTC_EPOCH0=1699923600 RTC_EPOCH1=1699963200
+	run roster_repair SAVE0="$J65/p0.sav" SAVE1="$J65/p1.sav"
+	run roster_breeding SAVE0="$J65/p0.sav" SAVE1="$J65/p1.sav"
+	run fieldguide_probe SAVE0="$J65/p0.sav" SAVE1="$J65/p1.sav"
 fi
 
 # J52=dir with p0.sav/p1.sav from checkpoint 52 (Lilycove, linked): normal
@@ -145,6 +160,12 @@ if [ -n "${J68:-}" ]; then
 	run legend_ray_resume SAVE0="$out/legend_ray_full/p0.sav" SAVE1="$out/legend_ray_full/p1.sav"
 	run legend_ray_reconnect SAVE0="$out/legend_ray_interrupt/p0.sav" SAVE1="$out/legend_ray_interrupt/p1.sav"
 	run legend_ray_reconnect2 SAVE0="$out/legend_ray_lostack/p0.sav" SAVE1="$out/legend_ray_lostack/p1.sav"
+	# Pokedex reach and search; every optional quest started and finished
+	# on a save that has cleared the League.
+	run dex_probe SAVE0="$J68/p0.sav" SAVE1="$J68/p1.sav"
+	for s in shoal_solo caravan_solo coast_solo twins_solo beacon_solo pp_solo; do
+		run_as "${s}_j68" "$s" SAVE0="$J68/p0.sav" SAVE1="$J68/p1.sav"
+	done
 fi
 
 # SEG6=dir with p0.sav/p1.sav from story_seg6 (Rustboro, linked play): the
@@ -193,6 +214,18 @@ if [ -n "${SEG6:-}" ]; then
 	run revamp_owned_stats SAVE0="$SEG6/p0.sav" SAVE1="$SEG6/p1.sav"
 	run revamp_owned_stats_reload SAVE0="$out/revamp_owned_stats/p0.sav" SAVE1="$out/revamp_owned_stats/p1.sav"
 	run lighting_link SAVE0="$SEG6/p0.sav" SAVE1="$SEG6/p1.sav" RTC_EPOCH0=1699963200 RTC_EPOCH1=1699923600
+	# Second roster batch in play: catch, trade, store, reload.
+	run roster_b2_play SAVE0="$SEG6/p0.sav" SAVE1="$SEG6/p1.sav"
+	run roster_b2_reload SAVE0="$out/roster_b2_play/p0.sav" SAVE1="$out/roster_b2_play/p1.sav"
+	# Quests: Shoal Cave at both tides (and left half done across a reload),
+	# loss/retreat/retry, a busy partner and simultaneous interaction.
+	run_as shoal_solo_high shoal_solo SAVE0="$SEG6/p0.sav" SAVE1="$SEG6/p1.sav" RTC_EPOCH0=1699923600
+	run_as shoal_solo_low shoal_solo SAVE0="$SEG6/p0.sav" SAVE1="$SEG6/p1.sav" RTC_EPOCH0=1699938000
+	run shoal_vulpix_full_party SAVE0="$out/shoal_solo_high/p0.sav" SAVE1="$out/shoal_solo_high/p1.sav"
+	run shoal_tide_a SAVE0="$SEG6/p0.sav" SAVE1="$SEG6/p1.sav" RTC_EPOCH0=1699923600
+	run shoal_tide_b SAVE0="$out/shoal_tide_a/p0.sav" SAVE1="$out/shoal_tide_a/p1.sav" RTC_EPOCH0=1699938000
+	run quest_loss_retry SAVE0="$SEG6/p0.sav" SAVE1="$SEG6/p1.sav"
+	run quest_busy_partner SAVE0="$SEG6/p0.sav" SAVE1="$SEG6/p1.sav"
 	for s in shoal coast caravan twins beacon; do
 		run "${s}_reload" SAVE0="$out/${s}_solo/p0.sav" SAVE1="$out/${s}_solo/p1.sav"
 	done

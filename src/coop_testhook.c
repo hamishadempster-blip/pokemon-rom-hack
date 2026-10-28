@@ -111,6 +111,23 @@ void CoopTest_Poll(void)
         HealPlayerParty();
         ok = TRUE;
         break;
+    case COOP_TEST_SET_DATA:
+        // Friendship (and similar plain fields) for evolution tests.
+        if (gCoopTestMailbox.arg[0] >= PARTY_SIZE)
+            break;
+        if (gCoopTestMailbox.arg[2] == 1 && gCoopTestMailbox.arg[1] < ITEMS_COUNT)
+        {
+            u16 item = gCoopTestMailbox.arg[1];   // held item (test_held)
+            SetMonData(&gPlayerParty[gCoopTestMailbox.arg[0]], MON_DATA_HELD_ITEM, &item);
+            ok = TRUE;
+        }
+        else if (gCoopTestMailbox.arg[2] == 0 && gCoopTestMailbox.arg[1] <= MAX_FRIENDSHIP)
+        {
+            u8 v = gCoopTestMailbox.arg[1];       // friendship (test_friendship)
+            SetMonData(&gPlayerParty[gCoopTestMailbox.arg[0]], MON_DATA_FRIENDSHIP, &v);
+            ok = TRUE;
+        }
+        break;
     case COOP_TEST_GIVE_ITEM:
         ok = gCoopTestMailbox.arg[0] != ITEM_NONE && gCoopTestMailbox.arg[0] < ITEMS_COUNT
           && AddBagItem(gCoopTestMailbox.arg[0], gCoopTestMailbox.arg[1]);

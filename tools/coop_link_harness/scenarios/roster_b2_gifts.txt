@@ -1,0 +1,113 @@
+# Second roster batch: the three new partner-Pokemon guests and the fossils
+# (j65 saves: eight badges, not linked).
+# FIXTURES: fixture_warp next to each guest, the FOSSIL MANIAC and the DEVON
+# scientist (the walk there is ordinary story map; the gates are badges).
+# Player 0 (Kai): ALOLA guest in Slateport (2 badges) -> ROWLET; GALAR in
+# Petalburg (5) -> SCORBUNNY; PALDEA in Sootopolis (8) -> QUAXLY. Each sets
+# its daily flag; Pokedex caught set (party or PC).
+# Player 1 (Rosa): the FOSSIL MANIAC in the Route 114 tunnel offers a
+# fossil a day: she takes a HELIX FOSSIL; asking again the same day gets
+# the ordinary talk. DEVON's scientist lists her fossils and takes it;
+# after leaving the floor and coming back, OMANYTE is revived (Lv 20).
+include continue.inc
+b no_wild 1
+b mash_field 300 B
+# Kai: three guests
+0 fixture_warp 9 11 2 5
+0 until_field 3000
+0 press LEFT 2
+0 wait 20
+0 press A 2
+0 until_task Task_HandleScrollingMultichoiceInput 2500 A
+0 wait 30
+0 shot alola-menu
+0 press A 2
+0 until_task Task_HandleYesNoInput 1500 A
+0 wait 20
+0 press B 2
+0 mash_field 2500 B
+0 expect_flag 0x929 1
+0 expect_dex_caught 722 1
+0 fixture_warp 8 4 2 5
+0 until_field 3000
+0 press LEFT 2
+0 wait 20
+0 press A 2
+0 until_task Task_HandleScrollingMultichoiceInput 2500 A
+0 wait 30
+0 press DOWN 2
+0 wait 20
+0 press A 2
+0 until_task Task_HandleYesNoInput 1500 A
+0 wait 20
+0 press B 2
+0 mash_field 2500 B
+0 expect_flag 0x933 1
+0 expect_dex_caught 813 1
+0 fixture_warp 15 2 2 5
+0 until_field 3000
+0 press LEFT 2
+0 wait 20
+0 press A 2
+0 until_task Task_HandleScrollingMultichoiceInput 2500 A
+0 wait 30
+0 press DOWN 2
+0 wait 20
+0 press DOWN 2
+0 wait 20
+0 shot paldea-menu
+0 press A 2
+0 until_task Task_HandleYesNoInput 1500 A
+0 wait 20
+0 press B 2
+0 mash_field 2500 B
+0 expect_flag 0x935 1
+0 expect_dex_caught 912 1
+0 party
+# Rosa: fossil of the day, then revival
+1 fixture_warp 20 1 5 4
+1 until_field 3000
+1 press UP 2
+1 wait 20
+1 press A 2
+1 until_task Task_HandleYesNoInput 1500 A
+1 wait 20
+1 press A 2
+1 until_task Task_HandleScrollingMultichoiceInput 2500 A
+1 wait 30
+1 shot fossil-menu
+1 press A 2
+1 mash_field 2500 B
+1 expect_flag 0x936 1
+1 expect_item 0 165 1
+1 press A 2
+1 wait 200
+1 shot maniac-again
+1 mash_field 2500 B
+1 expect_item 0 165 1
+1 fixture_warp 11 1 14 9
+1 until_field 3000
+1 press UP 2
+1 wait 20
+1 press A 2
+1 until_task Task_HandleScrollingMultichoiceInput 2500 A
+1 wait 30
+1 shot scientist-menu
+1 press A 2
+1 mash_field 2500 B
+1 expect_item 0 165 0
+1 expect_var 0x40C4 1
+1 expect_var 0x40C5 3
+1 fixture_warp 11 1 14 9
+1 until_field 3000
+1 expect_var 0x40C4 2
+1 press UP 2
+1 wait 20
+1 press A 2
+1 until_task Task_HandleYesNoInput 2500 A
+1 wait 20
+1 press B 2
+1 mash_field 2500 B
+1 expect_var 0x40C4 0
+1 expect_dex_caught 138 1
+1 party

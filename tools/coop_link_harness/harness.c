@@ -23,7 +23,7 @@
 #define MAX_CMDS 4096
 #define MAX_SYMS 500000
 
-enum { C_PARTNER, C_GOTO, C_HEX, C_PRESS, C_WAIT, C_SHOT, C_DUMP, C_BARRIER, C_UNTIL_CB2, C_UNTIL_FIELD, C_EXPECT, C_UNTIL_MEM, C_BATTLE, C_MENU, C_PARTY, C_FIXTURE, C_WRITE, C_LEAD, C_MOVE, C_SIX, C_VAR, C_FLAG, C_VS, C_EXPECT_FLAG, C_EXPECT_VAR, C_NO_OBJECT, C_MAP, C_OBJECT, C_TEXT_SPEED, C_PACE, C_MUTE, C_PARTNER_AT, C_ITEM, C_EXPECT_ITEM, C_UNTIL_TEXT, C_WARP, C_PC_COUNT, C_MONS, C_NO_COPIES, C_NOTE_MONEY, C_MONEY_GAIN, C_FORCE_ENC, C_EXPECT_RANGE, C_WALK, C_NO_WILD, C_CROSS, C_WALK_BATTLE, C_SMART, C_STRONG, C_UNTIL_TASK, C_MIRROR, C_SPECIES, C_NOTE_PARTY, C_SAME_PARTY, C_PATCH_RET, C_SLOT, C_TXN, C_MONEY_SAME, C_DEX, C_SWAP, C_GENDER, C_FILL, C_UNFILL, C_WRITEP, C_TINT, C_UNTIL_FTEXT, C_NICK, C_GRIND, C_CATCH, C_HUNT, C_SWITCH_LEAD, C_PARTY_SLOT, C_HEAL_BELOW, C_TALK_OBJ, C_BOXES, C_TEST_HOOK, C_WATCH, C_EXPECT_WRITES, C_SURF, C_BAG_ITEM, C_FLY_MAP, C_STEP_TO, C_PARTY_ACTION, C_DIVE, C_RIDE, C_LEGEND, C_OWNED, C_PCFILL, C_TASKS, C_ALLOW_RESET, C_ROMWRITE, C_OBJBYTE, C_NPC_SYNC, C_BATTLE_ITEM, C_FIELD_ITEM, C_FISH, C_FORCE_MOVE };
+enum { C_PARTNER, C_GOTO, C_HEX, C_PRESS, C_WAIT, C_SHOT, C_DUMP, C_BARRIER, C_UNTIL_CB2, C_UNTIL_FIELD, C_EXPECT, C_UNTIL_MEM, C_BATTLE, C_MENU, C_PARTY, C_FIXTURE, C_WRITE, C_LEAD, C_MOVE, C_SIX, C_VAR, C_FLAG, C_VS, C_EXPECT_FLAG, C_EXPECT_VAR, C_NO_OBJECT, C_MAP, C_OBJECT, C_TEXT_SPEED, C_PACE, C_MUTE, C_PARTNER_AT, C_ITEM, C_EXPECT_ITEM, C_UNTIL_TEXT, C_WARP, C_PC_COUNT, C_MONS, C_NO_COPIES, C_NOTE_MONEY, C_MONEY_GAIN, C_FORCE_ENC, C_EXPECT_RANGE, C_WALK, C_NO_WILD, C_CROSS, C_WALK_BATTLE, C_SMART, C_STRONG, C_UNTIL_TASK, C_MIRROR, C_SPECIES, C_NOTE_PARTY, C_SAME_PARTY, C_PATCH_RET, C_SLOT, C_TXN, C_MONEY_SAME, C_DEX, C_SWAP, C_GENDER, C_FILL, C_UNFILL, C_WRITEP, C_TINT, C_UNTIL_FTEXT, C_NICK, C_GRIND, C_CATCH, C_HUNT, C_SWITCH_LEAD, C_PARTY_SLOT, C_HEAL_BELOW, C_TALK_OBJ, C_BOXES, C_TEST_HOOK, C_WATCH, C_EXPECT_WRITES, C_SURF, C_BAG_ITEM, C_FLY_MAP, C_STEP_TO, C_PARTY_ACTION, C_DIVE, C_RIDE, C_LEGEND, C_OWNED, C_PCFILL, C_TASKS, C_ALLOW_RESET, C_ROMWRITE, C_OBJBYTE, C_NPC_SYNC, C_BATTLE_ITEM, C_FIELD_ITEM, C_FISH, C_FORCE_MOVE, C_SCREEN_SAME };
 
 struct Cmd {
 	unsigned args[8];
@@ -1989,6 +1989,17 @@ static void frameCallback(struct mCoreThread* t) {
 			advance = true;
 			break;
 		}
+		case C_SCREEN_SAME: {
+			struct Player* o = &P[1 - p->id];
+			unsigned x0 = c->args[0], y0 = c->args[1], w = c->args[2], h = c->args[3], diff = 0;
+			for (unsigned y = y0; y < y0 + h && y < H; y++)
+				for (unsigned x = x0; x < x0 + w && x < W; x++)
+					if ((p->video[y * W + x] & 0xF8F8F8) != (o->video[y * W + x] & 0xF8F8F8)) diff++;
+			if (diff > w * h / 50) { out("[p%d] FAIL %s: %u of %u pixels differ\n", p->id, c->text, diff, w * h); sFailures++; writePng(p, "screen-diff"); }
+			else out("[p%d] ok %s (%u pixels differ)\n", p->id, c->text, diff);
+			advance = true;
+			break;
+		}
 		case C_FORCE_MOVE:
 			p->forceMove = (int)c->value; p->forceTarget = (int)c->addr;
 			out("[p%d] DRIVER force_move %d target %d\n", p->id, p->forceMove, p->forceTarget);
@@ -2466,6 +2477,19 @@ static void frameCallback(struct mCoreThread* t) {
         case C_PACE: {
             if ((rd32(p, sMain + 4) & ~1u) == (symAddr("BattleMainCB2") & ~1u)) { p->grindCount = 0; advance = true; break; }
             // pace_until_mem: stop when the value matches instead.
+            if (c->size == -1) {
+                if (((rd8(p, rd32(p, sSave1) + symValue("harness.saveFlagsOffset") + c->addr / 8) >> (c->addr % 8)) & 1) == c->value) {
+                    out("[p%d] pace: flag %x = %u after %d frames\n", p->id, c->addr, c->value, p->step);
+                    p->grindCount = 0; advance = true; break;
+                }
+            } else if (c->size == -2) {
+                if ((rd32(p, sMain + 4) & ~1u) == c->addr) { out("[p%d] pace: callback reached after %d frames\n", p->id, p->step); p->grindCount = 0; advance = true; break; }
+                if (!inField(p)) {   // the hatch scene starts from a script
+                    keys = (p->step % 16) == 0 ? 1 : 0;
+                    if (++p->step >= c->frames) { out("[p%d] FAIL pace: callback never reached (off the field)\n", p->id); dump(p, "fail"); writePng(p, "fail"); sFailures++; p->done = 1; }
+                    break;
+                }
+            } else
             if (c->addr && ((c->size == 1 ? rd8(p, c->addr) : c->size == 2 ? rd16(p, c->addr) : rd32(p, c->addr)) == c->value)) { p->grindCount = 0; advance = true; break; }
             keys = ((p->step / 24) & 1) ? (1u << 7) : (1u << 6);
             // A PokeNav Match Call holds the field until its text is read.
@@ -3085,12 +3109,13 @@ static void frameCallback(struct mCoreThread* t) {
                 got = (rd8(p, rd32(p, sSave1) + symValue("harness.dexCaughtOffset") + n / 8) >> (n % 8)) & 1;
                 if (got != c->value) { out("[p%d] FAIL dex caught %u = %u, expected %u\n", p->id, c->addr, got, c->value); sFailures++; }
                 else out("[p%d] ok dex caught %u = %u\n", p->id, c->addr, got);
-            } else if (c->size == 1) {
-                unsigned a = rd32(p, sSave1) + symValue("harness.dexCaughtOffset") + n / 8;
+            } else if (c->size == 1 || c->size == 3) {
+                // dex_seen NUM VALUE (size 3): the seen flag, a fixture.
+                unsigned a = rd32(p, sSave1) + symValue(c->size == 3 ? "harness.dexSeenOffset" : "harness.dexCaughtOffset") + n / 8;
                 unsigned v = rd8(p, a);
                 v = c->value ? (v | (1u << (n % 8))) : (v & ~(1u << (n % 8)));
                 p->core->busWrite8(p->core, a, v);
-                out("[p%d] fixture dex caught %u = %u\n", p->id, c->addr, c->value);
+                out("[p%d] fixture dex %s %u = %u\n", p->id, c->size == 3 ? "seen" : "caught", c->addr, c->value);
             } else {
                 unsigned base = rd32(p, symAddr("gSaveBlock3Ptr"));
                 got = (rd8(p, base + symValue("harness.partnerCaughtOffset") + n / 8) >> (n % 8)) & 1;
@@ -3765,13 +3790,14 @@ static void loadScript(const char* path, int depth) {
         } else if (!strcmp(cmd, "smart_moves")) {
         	c.kind = C_SMART;
         	c.value = strtoul(a, NULL, 0);
-        } else if (!strcmp(cmd, "test_mon") || !strcmp(cmd, "test_level") || !strcmp(cmd, "test_heal") || !strcmp(cmd, "test_item") || !strcmp(cmd, "test_send_reply")) {
+        } else if (!strcmp(cmd, "test_mon") || !strcmp(cmd, "test_level") || !strcmp(cmd, "test_heal") || !strcmp(cmd, "test_item") || !strcmp(cmd, "test_send_reply") || !strcmp(cmd, "test_friendship") || !strcmp(cmd, "test_held")) {
         	// TEST HELPER (combat assistance, recorded in the log): the ROM's
         	// harness-only mailbox, gCoopTestMailbox (src/coop_testhook.c).
         	c.kind = C_TEST_HOOK;
-        	c.value = !strcmp(cmd, "test_mon") ? 1 : !strcmp(cmd, "test_level") ? 2 : !strcmp(cmd, "test_heal") ? 3 : !strcmp(cmd, "test_item") ? 4 : 5;
+        	c.value = !strcmp(cmd, "test_mon") ? 1 : !strcmp(cmd, "test_level") ? 2 : !strcmp(cmd, "test_heal") ? 3 : !strcmp(cmd, "test_item") ? 4 : (!strcmp(cmd, "test_friendship") || !strcmp(cmd, "test_held")) ? 6 : 5;
         	memset(c.args, 0, sizeof(c.args));
         	sscanf(line, "%*s %*s %u %u %u %u %u %u %u %u", &c.args[0], &c.args[1], &c.args[2], &c.args[3], &c.args[4], &c.args[5], &c.args[6], &c.args[7]);
+        	if (!strcmp(cmd, "test_held")) c.args[2] = 1;
         	snprintf(c.text, sizeof(c.text), "%s", cmd);
         	c.frames = 600;
         } else if (!strcmp(cmd, "watch")) {
@@ -3818,6 +3844,12 @@ static void loadScript(const char* path, int depth) {
         	snprintf(c.text, sizeof(c.text), "fly_map %s", a);
         } else if (!strcmp(cmd, "boxes")) {
         	c.kind = C_BOXES;
+        } else if (!strcmp(cmd, "expect_screen_same")) {
+        	// expect_screen_same X Y W H: that rectangle shows the same pixels on
+        	// both screens (a battler picture both games should draw alike).
+        	c.kind = C_SCREEN_SAME;
+        	sscanf(line, "%*s %*s %u %u %u %u", &c.args[0], &c.args[1], &c.args[2], &c.args[3]);
+        	snprintf(c.text, sizeof(c.text), "expect_screen_same %s %s %s %s", a, b, d, e);
         } else if (!strcmp(cmd, "force_move")) {
         	c.kind = C_FORCE_MOVE;
         	c.value = (unsigned)atoi(a);
@@ -3901,6 +3933,21 @@ static void loadScript(const char* path, int depth) {
             c.size = size;
             c.value = strtoul(b, NULL, 0);
             c.frames = n >= 5 ? atoi(d) : 6000;
+        } else if (!strcmp(cmd, "pace_until_flag") || !strcmp(cmd, "pace_until_cb2")) {
+            // pace_until_flag FLAG VALUE [timeout]: walk in place until a save
+            // flag has VALUE (e.g. the Day Care's pending egg).
+            // pace_until_cb2 NAME [timeout]: until a callback runs (egg hatch).
+            c.kind = C_PACE;
+            if (!strcmp(cmd, "pace_until_flag")) {
+                c.size = -1;
+                c.addr = strtoul(a, NULL, 0);
+                c.value = strtoul(b, NULL, 0);
+                c.frames = n >= 5 ? atoi(d) : 6000;
+            } else {
+                c.size = -2;
+                c.addr = symAddr(a) & ~1u;
+                c.frames = n >= 4 ? atoi(b) : 6000;
+            }
         } else if (!strcmp(cmd, "hunt")) {
             // hunt THROWS SPECIES[,SPECIES...] [timeout] (species numbers)
             c.kind = C_HUNT;
@@ -4027,9 +4074,9 @@ static void loadScript(const char* path, int depth) {
             c.addr = strtoul(b, NULL, 0);
             c.value = strtoul(d, NULL, 0);
             c.frames = n >= 6 ? atoi(e) : -1;
-        } else if (!strcmp(cmd, "dex_caught") || !strcmp(cmd, "expect_partner_dex") || !strcmp(cmd, "expect_dex_caught")) {
+        } else if (!strcmp(cmd, "dex_caught") || !strcmp(cmd, "dex_seen") || !strcmp(cmd, "expect_partner_dex") || !strcmp(cmd, "expect_dex_caught")) {
             c.kind = C_DEX;
-            c.size = !strcmp(cmd, "dex_caught") ? 1 : !strcmp(cmd, "expect_dex_caught") ? 2 : 0;
+            c.size = !strcmp(cmd, "dex_caught") ? 1 : !strcmp(cmd, "expect_dex_caught") ? 2 : !strcmp(cmd, "dex_seen") ? 3 : 0;
             c.addr = strtoul(a, NULL, 0);
             c.value = strtoul(b, NULL, 0);
         } else if (!strcmp(cmd, "expect_txn")) {

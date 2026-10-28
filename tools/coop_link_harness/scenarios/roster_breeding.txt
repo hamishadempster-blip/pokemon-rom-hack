@@ -1,0 +1,98 @@
+# Day Care breeding (j65 save of Rosa, player 1; Kai idles).
+# TEST HELPERS (logged): a POLITOED (Lv 30) and a DITTO (Lv 30) made in
+# party slots 5 and 6 (test_mon); the egg's hatch counter set to 0
+# (test_friendship on the egg) so it hatches at the next egg cycle.
+# FIXTURE: fixture_warp into the Route 117 Day Care.
+# Checks: both are left at the Day Care (the PC/party chooser); walking
+# outside, the Day Care man has an egg (flag 0x86); it is a POLIWAG egg;
+# it hatches into POLIWAG (Pokedex caught #60).
+include continue.inc
+b no_wild 1
+b mash_field 300 B
+1 test_mon 4 186 30
+1 test_mon 5 132 30
+1 fixture_warp 22 0 2 3
+1 until_field 3000
+1 press UP 2
+1 wait 20
+1 press A 2
+1 until_task Task_HandleYesNoInput 1500 A
+1 wait 20
+1 press A 2
+1 wait 400
+1 press A 2
+1 wait 300
+1 shot chooser
+# PARTY POKeMON (two rows up from the box), then slot 5 (POLITOED)
+1 press UP 2
+1 wait 20
+1 press UP 2
+1 wait 20
+1 press A 2
+1 wait 60
+1 press RIGHT 2
+1 wait 15
+1 press DOWN 2
+1 wait 15
+1 press DOWN 2
+1 wait 15
+1 press DOWN 2
+1 wait 15
+1 shot choose-politoed
+1 press A 2
+1 wait 60
+1 press A 2
+1 until_task Task_HandleYesNoInput 3000 B
+1 wait 20
+1 press A 2
+1 wait 300
+1 press A 2
+1 wait 300
+1 press UP 2
+1 wait 20
+1 press UP 2
+1 wait 20
+1 press A 2
+1 wait 60
+1 press RIGHT 2
+1 wait 15
+1 press DOWN 2
+1 wait 15
+1 press DOWN 2
+1 wait 15
+1 press DOWN 2
+1 wait 15
+1 shot choose-ditto
+1 press A 2
+1 wait 60
+1 press A 2
+1 mash_field 3000 B
+1 party
+1 expect_species 4 0
+# outside, by the Day Care man
+1 fixture_warp 0 32 47 6
+1 until_field 3000
+1 pace_until_flag 0x86 1 200000
+# with an egg waiting the man stands at (47,6) (stock)
+1 fixture_warp 0 32 47 7
+1 until_field 3000
+1 press UP 2
+1 wait 20
+1 shot by-man
+1 press A 2
+1 until_task Task_HandleYesNoInput 3000 A
+1 wait 20
+1 shot egg-offer
+1 press A 2
+1 mash_field 3000 B
+1 expect_flag 0x86 0
+1 expect_species 4 60
+1 party
+1 test_friendship 4 0
+1 pace_until_cb2 CB2_EggHatch 40000
+1 wait 600
+1 shot hatch
+1 mash_field 4000 B
+1 expect_species 4 60
+1 expect_dex_caught 60 1
+1 party

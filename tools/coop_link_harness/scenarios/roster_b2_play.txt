@@ -1,0 +1,63 @@
+# Second roster batch in play (story_seg6 saves: Rustboro, linked; Beacon
+# off, so wild battles are solo).
+# FIXTURES: twenty POKe BALLs each (test_item); fixture_warp to Route 101's
+# grass, back to Rustboro, and into its POKeMON CENTER.
+# Checks:
+# - catching from the new placements on Route 101 (normal encounters): Kai a
+#   LILLIPUP, Rosa a SKWOVET (Pokedex caught flags set);
+# - trading them through the partner menu: each save ends with the other's
+#   catch, nothing copied or lost;
+# - storing and taking back: Kai deposits the traded SKWOVET in the Centre
+#   PC (party one shorter, box holds it), then withdraws it;
+# - the saves are written; roster_b2_reload continues them.
+include continue.inc
+include relink.inc
+b expect coop.sLinkState 2
+b no_wild 1
+b test_item 1 20
+b mash_field 300 B
+0 fixture_warp 0 16 13 5
+1 fixture_warp 0 16 14 9
+b until_field 3000
+b no_wild 0
+0 hunt 6 506 120000
+1 hunt 6 819 200000
+b no_wild 1
+b sync
+0 expect_dex_caught 506 1
+1 expect_dex_caught 819 1
+0 expect_species 1 506
+1 expect_species 1 819
+b fixture_warp 0 3 16 40
+b until_field 3000
+1 walk 17 41 4000
+1 walk 16 41 2000
+0 walk 14 41 4000
+0 walk 15 41 2000
+b sync
+b wait 30
+include deal_trade_offer.inc
+1 until_mem coop_deal.sDeal+13 1 900 A
+0 until_mem coop_deal.sDeal+13 1 900 A
+b mash_field 9000 B
+b expect_txn 0
+b expect_mons_intact
+b expect_no_copies
+0 expect_species 1 819
+1 expect_species 1 506
+0 expect_dex_caught 819 1
+1 expect_dex_caught 506 1
+b sync
+0 fixture_warp 11 5 7 6
+0 until_field 3000
+include pc_p0_deposit_slot1.inc
+0 expect_species 1 0
+0 expect_pc_count 1
+include pc_p0_withdraw_first.inc
+0 expect_species 1 819
+0 expect_pc_count 0
+0 expect_mons_intact
+b sync
+include save_again.inc
+b expect coop.sLinkState 2
+b party

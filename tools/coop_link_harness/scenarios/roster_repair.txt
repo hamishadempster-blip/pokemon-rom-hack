@@ -1,0 +1,49 @@
+# Pokedex access repairs (j65 saves: eight badges, not linked).
+# FIXTURES: fixture_warp next to the Fallarbor guest and into Route 102 and
+# Route 103 grass; twenty POKe BALLs each (test_item). Wild encounters are
+# on during the hunts (normal encounter tables, nothing forced).
+# Player 0 (Kai): the HOENN guest in the Fallarbor POKeMON CENTER (3 badges)
+# gives MUDKIP (daily flag 0x937, Pokedex caught #258); then catches a
+# SURSKIT (#283) in the Route 102 grass.
+# Player 1 (Rosa): catches a GALARIAN ZIGZAGOON (species 987, #263) and a
+# BUDEW (#406) in the Route 103 grass.
+include continue.inc
+b no_wild 1
+b test_item 1 20
+b mash_field 300 B
+0 fixture_warp 5 4 2 5
+0 until_field 3000
+0 press LEFT 2
+0 wait 20
+0 press A 2
+0 until_task Task_HandleScrollingMultichoiceInput 2500 A
+0 wait 30
+0 press DOWN 2
+0 wait 20
+0 press DOWN 2
+0 wait 20
+0 shot hoenn-menu
+0 press A 2
+0 until_task Task_HandleYesNoInput 1500 A
+0 wait 20
+0 press B 2
+0 mash_field 2500 B
+0 expect_flag 0x937 1
+0 expect_dex_caught 258 1
+0 press A 2
+0 wait 200
+0 shot hoenn-again
+0 mash_field 2500 B
+0 fixture_warp 0 17 9 4
+1 fixture_warp 0 18 14 4
+b until_field 3000
+b no_wild 0
+0 hunt 6 283 200000
+1 hunt 6 987 200000
+1 hunt 6 406 200000
+b no_wild 1
+b mash_field 600 B
+0 expect_dex_caught 283 1
+1 expect_dex_caught 263 1
+1 expect_dex_caught 406 1
+b party

@@ -1,0 +1,143 @@
+# The field researcher's guide with the second batch (j65 save of Kai,
+# player 0, not linked). FIXTURE: fixture_warp in front of the researcher in
+# the Lilycove POKeMON CENTER.
+# Checks (screenshots): NEWEST ARRIVALS scrolls to its last entry (FOSSILS,
+# 42 entries) and shows both pages; PARTNER POKeMON lists HOENN.
+include continue.inc
+0 no_wild 1
+0 mash_field 300 B
+0 fixture_warp 13 6 12 6
+0 until_field 3000
+0 press UP 2
+0 wait 20
+0 press A 2
+0 until_task Task_HandleScrollingMultichoiceInput 2500 A
+0 wait 30
+0 press DOWN 2
+0 wait 15
+0 press DOWN 2
+0 wait 15
+0 press A 2
+0 until_task Task_HandleScrollingMultichoiceInput 2500 A
+0 wait 30
+0 press DOWN 2
+0 wait 8
+0 press DOWN 2
+0 wait 8
+0 press DOWN 2
+0 wait 8
+0 press DOWN 2
+0 wait 8
+0 press DOWN 2
+0 wait 8
+0 press DOWN 2
+0 wait 8
+0 press DOWN 2
+0 wait 8
+0 press DOWN 2
+0 wait 8
+0 press DOWN 2
+0 wait 8
+0 press DOWN 2
+0 wait 8
+0 press DOWN 2
+0 wait 8
+0 press DOWN 2
+0 wait 8
+0 press DOWN 2
+0 wait 8
+0 press DOWN 2
+0 wait 8
+0 press DOWN 2
+0 wait 8
+0 press DOWN 2
+0 wait 8
+0 press DOWN 2
+0 wait 8
+0 press DOWN 2
+0 wait 8
+0 press DOWN 2
+0 wait 8
+0 press DOWN 2
+0 wait 8
+0 press DOWN 2
+0 wait 8
+0 press DOWN 2
+0 wait 8
+0 press DOWN 2
+0 wait 8
+0 press DOWN 2
+0 wait 8
+0 press DOWN 2
+0 wait 8
+0 press DOWN 2
+0 wait 8
+0 press DOWN 2
+0 wait 8
+0 press DOWN 2
+0 wait 8
+0 press DOWN 2
+0 wait 8
+0 press DOWN 2
+0 wait 8
+0 press DOWN 2
+0 wait 8
+0 press DOWN 2
+0 wait 8
+0 press DOWN 2
+0 wait 8
+0 press DOWN 2
+0 wait 8
+0 press DOWN 2
+0 wait 8
+0 press DOWN 2
+0 wait 8
+0 press DOWN 2
+0 wait 8
+0 press DOWN 2
+0 wait 8
+0 press DOWN 2
+0 wait 8
+0 press DOWN 2
+0 wait 8
+0 press DOWN 2
+0 wait 8
+0 shot newest-last
+0 press A 2
+0 wait 200
+0 shot eggs-where
+0 press A 2
+0 wait 200
+0 shot eggs-evo
+0 press A 2
+0 until_task Task_HandleScrollingMultichoiceInput 2500 A
+0 wait 30
+0 press B 2
+0 until_task Task_HandleScrollingMultichoiceInput 2500 A
+0 wait 30
+0 press DOWN 2
+0 wait 12
+0 press DOWN 2
+0 wait 12
+0 press DOWN 2
+0 wait 12
+0 press A 2
+0 until_task Task_HandleScrollingMultichoiceInput 2500 A
+0 wait 30
+0 press DOWN 2
+0 wait 10
+0 press DOWN 2
+0 wait 10
+0 press DOWN 2
+0 wait 10
+0 press DOWN 2
+0 wait 10
+0 press DOWN 2
+0 wait 10
+0 press DOWN 2
+0 wait 10
+0 shot partner-hoenn
+0 press A 2
+0 wait 200
+0 shot hoenn-where
+0 mash_field 4000 B

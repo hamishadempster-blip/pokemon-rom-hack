@@ -1,0 +1,178 @@
+# Pokedex reach and search with the expanded roster (j68 save of Kai,
+# player 0: post-League, not linked).
+# FIXTURES (logged): SIGILYPH (#561, Hoenn No 646, the last regional entry)
+# marked seen and caught; PECHARUNT (#1025, the last National entry) and
+# SYLVEON (#700) seen and caught (type search lists caught ones only,
+# as in stock Emerald).
+# Checks (screenshots and state): LIST BOTTOM in the Hoenn list lands on
+# No 646; its entry and AREA page open (an acquisition hint, no wild area);
+# search by type; the National list's bottom.
+include continue.inc
+0 no_wild 1
+0 dex_seen 561 1
+0 dex_caught 561 1
+0 dex_seen 1025 1
+0 dex_seen 700 1
+0 dex_caught 700 1
+0 press START 2
+0 wait 40
+0 menu_to POKEDEX
+0 press A 2
+0 wait 300
+0 shot dex-top
+0 press START 2
+0 wait 60
+0 press DOWN 2
+0 wait 10
+0 press DOWN 2
+0 wait 10
+0 press A 2
+0 wait 120
+0 shot dex-bottom
+0 press A 2
+0 wait 200
+0 shot dex-entry
+0 press RIGHT 2
+0 wait 120
+0 shot dex-page2
+0 press RIGHT 2
+0 wait 120
+0 shot dex-page3
+0 press B 2
+0 wait 200
+0 shot dex-back
+0 press SELECT 2
+0 wait 200
+0 shot search-1
+0 press A 2
+0 wait 60
+0 shot search-2
+0 press DOWN 2
+0 wait 15
+0 press DOWN 2
+0 wait 15
+0 press DOWN 2
+0 wait 15
+0 press DOWN 2
+0 wait 15
+0 shot search-mode
+0 press A 2
+0 wait 60
+0 shot search-mode-open
+0 press UP 2
+0 wait 15
+0 shot search-mode-hoenn
+0 press A 2
+0 wait 60
+0 press DOWN 2
+0 wait 15
+0 shot search-ok
+0 press A 2
+0 wait 300
+0 shot search-result
+0 press A 2
+0 wait 250
+0 shot results-list
+0 press START 2
+0 wait 60
+0 shot results-menu
+0 press DOWN 2
+0 wait 20
+0 press DOWN 2
+0 wait 20
+0 shot results-menu2
+0 press A 2
+0 wait 120
+0 shot hoenn-bottom
+0 press A 2
+0 wait 200
+0 shot hoenn-entry
+0 press LEFT 2
+0 wait 15
+0 press LEFT 2
+0 wait 15
+0 press LEFT 2
+0 wait 15
+0 press A 2
+0 wait 300
+0 shot hoenn-area
+0 press B 2
+0 wait 200
+0 press B 2
+0 wait 200
+0 shot back-list
+0 press SELECT 2
+0 wait 200
+0 press A 2
+0 wait 60
+0 press DOWN 2
+0 wait 15
+0 press DOWN 2
+0 wait 15
+0 press A 2
+0 wait 60
+0 shot type-open
+0 press DOWN 2
+0 wait 8
+0 press DOWN 2
+0 wait 8
+0 press DOWN 2
+0 wait 8
+0 press DOWN 2
+0 wait 8
+0 press DOWN 2
+0 wait 8
+0 press DOWN 2
+0 wait 8
+0 press DOWN 2
+0 wait 8
+0 press DOWN 2
+0 wait 8
+0 press DOWN 2
+0 wait 8
+0 press DOWN 2
+0 wait 8
+0 press DOWN 2
+0 wait 8
+0 press DOWN 2
+0 wait 8
+0 press DOWN 2
+0 wait 8
+0 press DOWN 2
+0 wait 8
+0 press DOWN 2
+0 wait 8
+0 press DOWN 2
+0 wait 8
+0 press DOWN 2
+0 wait 8
+0 press DOWN 2
+0 wait 8
+0 shot type-fairy
+0 press A 2
+0 wait 60
+0 press DOWN 2
+0 wait 15
+0 press A 2
+0 wait 60
+0 press DOWN 2
+0 wait 15
+0 shot order-open
+0 press A 2
+0 wait 60
+0 press DOWN 2
+0 wait 15
+0 press DOWN 2
+0 wait 15
+0 shot search-ready
+0 wait 30
+0 press A 2
+0 wait 300
+0 shot fairy-searched
+0 press A 2
+0 wait 250
+0 shot fairy-az
+0 press B 2
+0 wait 200
+0 press B 2
+0 mash_field 2000 B

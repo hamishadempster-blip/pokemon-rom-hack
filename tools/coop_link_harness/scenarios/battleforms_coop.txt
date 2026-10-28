@@ -1,0 +1,120 @@
+# Battle forms of the second roster batch in co-op doubles (Route 116, j16
+# saves, linked, Beacon ON).
+# TEST HELPERS (logged): leads made with test_mon (Lv 30; the SURF CRAMORANT
+# Lv 8 so the foes live past the first turn; the move under
+# test in slot 1); DRIVER: force_move picks it.
+# FIXTURES: Route 116 grass all LOTAD (it resists SURF, so the battle
+# lasts past the first turn), then all WURMPLE (TACKLE is physical); forced encounter steps; Karen's
+# sight hidden.
+# Both use their first move (MORPEKO and the second CRAMORANT: SPLASH).
+# 1. Kai's CRAMORANT uses SURF: GULP MISSILE turns it into its Gulping form
+#    (battle species on the host; the picture on both screens, which needs
+#    the species sent to the partner's game first, fixed in this build); Rosa's MORPEKO's
+#    HUNGER SWITCH turns it Hangry at the end of the turn (both games'
+#    battle data at the next turn).
+# 2. Kai's CRAMORANT TACKLEs Rosa's EISCUE (ICE FACE): the physical hit
+#    breaks its ice face (Noice form) on the host, then on the guest at the
+#    next turn, and on both screens.
+include continue.inc
+include relink.inc
+b expect coop.sLinkState 2
+b smart_moves 1
+include beacon_on.inc
+b mash_field 2000 B
+b expect coop.sBeacon+1:1 1
+b no_wild 1
+b fixture_rom16 gRoute116_LandMons+2 270
+b fixture_rom16 gRoute116_LandMons+6 270
+b fixture_rom16 gRoute116_LandMons+10 270
+b fixture_rom16 gRoute116_LandMons+14 270
+b fixture_rom16 gRoute116_LandMons+18 270
+b fixture_rom16 gRoute116_LandMons+22 270
+b fixture_rom16 gRoute116_LandMons+26 270
+b fixture_rom16 gRoute116_LandMons+30 270
+b fixture_rom16 gRoute116_LandMons+34 270
+b fixture_rom16 gRoute116_LandMons+38 270
+b fixture_rom16 gRoute116_LandMons+42 270
+b fixture_rom16 gRoute116_LandMons+46 270
+0 fixture_warp 0 31 23 17
+1 fixture_warp 0 31 25 17
+b until_field 3000
+b sync
+b fixture_obj 17 7 0
+0 test_mon 0 845 8 57 0 0 0 0
+1 test_mon 0 877 30 150 0 0 0 0
+b test_heal
+b force_move 0
+b sync
+0 no_wild 0
+0 press LEFT 3
+0 wait 20
+0 force_encounter 1
+0 write sWildEncounterImmunitySteps:1 4
+0 write sPrevMetatileBehavior:2 2
+0 press LEFT 10
+b until_cb2 BattleMainCB2 4000 A
+b until_battle_text used_Surf! 8000 auto
+0 until_mem gBattleMons:2 1211 1200
+b wait 60
+b sync
+b shot gulping
+0 expect_screen_same 8 56 56 48
+b until_battle_text What_will 8000 auto
+0 expect gBattleMons+280:2 1226
+b sync
+b shot hangry
+0 expect_screen_same 72 64 64 40
+b until_battle_text Waiting_for 3000 auto
+1 expect gBattleMons+280:2 1226
+b force_move -1
+b mash_field 20000
+b until_field 3000
+b sync
+0 no_wild 1
+0 fixture_warp 0 31 23 17
+1 fixture_warp 0 31 25 17
+b until_field 3000
+b sync
+b fixture_obj 17 7 0
+b fixture_rom16 gRoute116_LandMons+2 265
+b fixture_rom16 gRoute116_LandMons+6 265
+b fixture_rom16 gRoute116_LandMons+10 265
+b fixture_rom16 gRoute116_LandMons+14 265
+b fixture_rom16 gRoute116_LandMons+18 265
+b fixture_rom16 gRoute116_LandMons+22 265
+b fixture_rom16 gRoute116_LandMons+26 265
+b fixture_rom16 gRoute116_LandMons+30 265
+b fixture_rom16 gRoute116_LandMons+34 265
+b fixture_rom16 gRoute116_LandMons+38 265
+b fixture_rom16 gRoute116_LandMons+42 265
+b fixture_rom16 gRoute116_LandMons+46 265
+0 test_mon 0 845 30 33 0 0 0 0
+1 test_mon 0 875 30 150 0 0 0 0
+b test_heal
+0 force_move 0 ally
+1 force_move 0
+b sync
+0 no_wild 0
+0 press LEFT 3
+0 wait 20
+0 force_encounter 1
+0 write sWildEncounterImmunitySteps:1 4
+0 write sPrevMetatileBehavior:2 2
+0 press LEFT 10
+b until_cb2 BattleMainCB2 4000 A
+b until_battle_text used_Tackle! 8000 auto
+b until_battle_text transformed! 1500 auto
+0 expect gBattleMons+280:2 1224
+b wait 60
+b sync
+b shot noice
+0 expect_screen_same 72 64 64 40
+b until_battle_text Waiting_for 8000 auto
+1 expect gBattleMons+280:2 1224
+b force_move -1
+b mash_field 20000
+b until_field 3000
+b no_wild 1
+b sync
+b expect coop.sLinkState 2
+b expect_tasks MAX 2

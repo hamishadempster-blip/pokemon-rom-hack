@@ -1,0 +1,268 @@
+# Second roster batch: every distinct evolution method in play (j65 saves,
+# eight badges, not linked; level cap off from the CO-OP list).
+# TEST HELPERS (logged): each Pokemon made in the lead slot (test_mon at
+# the level shown), friendship set to 255 where the method needs it
+# (test_friendship), a STRAWBERRY SWEET held for MILCERY (test_held), the
+# items added (test_item). Player 0's clock is midday, player 1's 23:00.
+# Every evolution runs through the game: the Bag's USE, the party menu,
+# the evolution scene; MILCERY by turning on the spot in the field.
+# Player 0: EEVEE + WATER STONE -> VAPOREON; EEVEE + LEAF STONE -> LEAFEON;
+# EEVEE (friendly, no FAIRY move: TACKLE, TAIL WHIP, QUICK ATTACK, SAND
+# ATTACK) + RARE CANDY by day -> ESPEON; EEVEE (friendly, knows
+# BABY-DOLL EYES, a FAIRY move) + RARE CANDY -> SYLVEON; TOXEL Lv 29 + RARE
+# CANDY -> TOXTRICITY (AMPED or LOW KEY by nature); SINISTEA + CRACKED POT
+# -> POLTEAGEIST; ANTIQUE SINISTEA + CHIPPED POT -> ANTIQUE POLTEAGEIST;
+# MILCERY holding a STRAWBERRY SWEET, a short clockwise spin by day ->
+# ALCREMIE (vanilla cream).
+# Player 1 (night): EEVEE (friendly, no FAIRY move) + RARE CANDY -> UMBREON; EEVEE + ICE
+# STONE -> GLACEON; TOGEPI (friendly) -> TOGETIC, + SHINY STONE ->
+# TOGEKISS; CLEFFA (friendly) -> CLEFAIRY, + MOON STONE -> CLEFABLE; WOOBAT
+# (friendly) -> SWOOBAT; MUNNA + MOON STONE -> MUSHARNA; DEERLING Lv 33 +
+# RARE CANDY -> SAWSBUCK.
+include continue.inc
+b no_wild 1
+b press START 2
+b wait 40
+b menu_to COOP
+b press A 2
+b wait 60
+b press DOWN 2
+b wait 10
+b press DOWN 2
+b wait 10
+b press DOWN 2
+b wait 10
+b press A 2
+b wait 120
+b press A 2
+b wait 120
+b mash_field 1500
+b test_item 102 20
+0 test_item 212 1
+0 test_item 214 1
+0 test_item 223 1
+0 test_item 224 1
+1 test_item 215 1
+1 test_item 218 1
+1 test_item 217 2
+0 test_mon 0 133 20
+0 test_mon 0 133 20
+0 mash_field 300 B
+0 press START 2
+0 wait 40
+0 menu_to BAG
+0 press A 2
+0 until_cb2 CB2_BagMenuRun 2500
+0 wait 60
+0 field_item 212 0
+0 expect_species 0 134
+0 shot vaporeon
+0 test_mon 0 133 20
+0 test_mon 0 133 20
+0 mash_field 300 B
+0 press START 2
+0 wait 40
+0 menu_to BAG
+0 press A 2
+0 until_cb2 CB2_BagMenuRun 2500
+0 wait 60
+0 field_item 214 0
+0 expect_species 0 470
+0 shot leafeon
+0 test_mon 0 133 20 33 39 98 28
+0 test_friendship 0 255
+0 mash_field 300 B
+0 press START 2
+0 wait 40
+0 menu_to BAG
+0 press A 2
+0 until_cb2 CB2_BagMenuRun 2500
+0 wait 60
+0 field_item 102 0
+0 expect_species 0 196
+0 shot espeon
+0 test_mon 0 133 20 608 0 0 0
+0 test_friendship 0 255
+0 mash_field 300 B
+0 press START 2
+0 wait 40
+0 menu_to BAG
+0 press A 2
+0 until_cb2 CB2_BagMenuRun 2500
+0 wait 60
+0 field_item 102 0
+0 expect_species 0 700
+0 shot sylveon
+0 test_mon 0 848 29
+0 mash_field 300 B
+0 press START 2
+0 wait 40
+0 menu_to BAG
+0 press A 2
+0 until_cb2 CB2_BagMenuRun 2500
+0 wait 60
+0 field_item 102 0
+0 expect_dex_caught 849 1
+0 party
+0 shot toxtricity
+0 test_mon 0 854 30
+0 test_mon 0 854 30
+0 mash_field 300 B
+0 press START 2
+0 wait 40
+0 menu_to BAG
+0 press A 2
+0 until_cb2 CB2_BagMenuRun 2500
+0 wait 60
+0 field_item 223 0
+0 expect_species 0 855
+0 shot polteageist
+0 test_mon 0 1214 30
+0 test_mon 0 1214 30
+0 mash_field 300 B
+0 press START 2
+0 wait 40
+0 menu_to BAG
+0 press A 2
+0 until_cb2 CB2_BagMenuRun 2500
+0 wait 60
+0 field_item 224 0
+0 expect_species 0 1215
+0 shot polteageist-antique
+0 test_mon 0 868 30
+0 test_held 0 238
+0 mash_field 300 B
+0 press RIGHT 3
+0 wait 12
+0 press DOWN 3
+0 wait 12
+0 press LEFT 3
+0 wait 12
+0 press UP 3
+0 wait 12
+0 press RIGHT 3
+0 wait 120
+0 mash_field 3000 B
+0 expect_species 0 869
+0 shot alcremie
+1 test_mon 0 133 20 33 39 98 28
+1 test_friendship 0 255
+1 mash_field 300 B
+1 press START 2
+1 wait 40
+1 menu_to BAG
+1 press A 2
+1 until_cb2 CB2_BagMenuRun 2500
+1 wait 60
+1 field_item 102 0
+1 expect_species 0 197
+1 shot umbreon
+1 test_mon 0 133 20
+1 test_mon 0 133 20
+1 mash_field 300 B
+1 press START 2
+1 wait 40
+1 menu_to BAG
+1 press A 2
+1 until_cb2 CB2_BagMenuRun 2500
+1 wait 60
+1 field_item 215 0
+1 expect_species 0 471
+1 shot glaceon
+1 test_mon 0 175 20 
+1 test_friendship 0 255
+1 mash_field 300 B
+1 press START 2
+1 wait 40
+1 menu_to BAG
+1 press A 2
+1 until_cb2 CB2_BagMenuRun 2500
+1 wait 60
+1 field_item 102 0
+1 expect_species 0 176
+1 shot togetic
+1 mash_field 300 B
+1 mash_field 300 B
+1 press START 2
+1 wait 40
+1 menu_to BAG
+1 press A 2
+1 until_cb2 CB2_BagMenuRun 2500
+1 wait 60
+1 field_item 218 0
+1 expect_species 0 468
+1 shot togekiss
+1 test_mon 0 173 20 
+1 test_friendship 0 255
+1 mash_field 300 B
+1 press START 2
+1 wait 40
+1 menu_to BAG
+1 press A 2
+1 until_cb2 CB2_BagMenuRun 2500
+1 wait 60
+1 field_item 102 0
+1 expect_species 0 35
+1 shot clefairy
+1 mash_field 300 B
+1 mash_field 300 B
+1 press START 2
+1 wait 40
+1 menu_to BAG
+1 press A 2
+1 until_cb2 CB2_BagMenuRun 2500
+1 wait 60
+1 field_item 217 0
+1 expect_species 0 36
+1 test_mon 0 527 20 
+1 test_friendship 0 255
+1 mash_field 300 B
+1 press START 2
+1 wait 40
+1 menu_to BAG
+1 press A 2
+1 until_cb2 CB2_BagMenuRun 2500
+1 wait 60
+1 field_item 102 0
+1 expect_species 0 528
+1 shot swoobat
+1 test_mon 0 517 20
+1 test_mon 0 517 20
+1 mash_field 300 B
+1 press START 2
+1 wait 40
+1 menu_to BAG
+1 press A 2
+1 until_cb2 CB2_BagMenuRun 2500
+1 wait 60
+1 field_item 217 0
+1 expect_species 0 518
+1 shot musharna
+1 test_mon 0 585 33 
+1 mash_field 300 B
+1 press START 2
+1 wait 40
+1 menu_to BAG
+1 press A 2
+1 until_cb2 CB2_BagMenuRun 2500
+1 wait 60
+1 field_item 102 0
+1 expect_species 0 586
+1 shot sawsbuck
+b party
+0 expect_dex_caught 134 1
+0 expect_dex_caught 470 1
+0 expect_dex_caught 196 1
+0 expect_dex_caught 700 1
+0 expect_dex_caught 849 1
+0 expect_dex_caught 855 1
+0 expect_dex_caught 869 1
+1 expect_dex_caught 197 1
+1 expect_dex_caught 471 1
+1 expect_dex_caught 176 1
+1 expect_dex_caught 468 1
+1 expect_dex_caught 35 1
+1 expect_dex_caught 36 1
+1 expect_dex_caught 528 1
+1 expect_dex_caught 518 1
+1 expect_dex_caught 586 1

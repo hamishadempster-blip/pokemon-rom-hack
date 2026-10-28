@@ -28,4 +28,5 @@ const u32 harnessSaveLayout[] = {
     offsetof(struct SaveBlock3, coop) + offsetof(struct CoopSave, legendOwed),
     // Moves smart_moves never picks: they fail unless a condition holds.
     MOVE_BELCH, MOVE_DREAM_EATER, MOVE_SNORE, MOVE_LAST_RESORT, MOVE_STEEL_ROLLER,
+    offsetof(struct SaveBlock1, dexSeen),
 };

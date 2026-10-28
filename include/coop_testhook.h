@@ -11,6 +11,7 @@ enum {
     COOP_TEST_HEAL,
     COOP_TEST_GIVE_ITEM,  // item, count
     COOP_TEST_SEND_REPLY, // kind, seq: a co-op reply block on the link (also in battle)
+    COOP_TEST_SET_DATA,   // slot, friendship (test_friendship)
 };
 
 struct CoopTestMailbox
