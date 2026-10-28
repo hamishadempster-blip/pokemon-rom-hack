@@ -117,12 +117,16 @@ static bool8 IsSyncMovementType(u8 type)
     return type == MOVEMENT_TYPE_WANDER_AROUND_SLOWER;
 }
 
+// People and Pokemon that wander: their steps are shared. Things (Strength
+// boulders, rocks, trees, item balls) are each save's own puzzle state: a
+// boulder pushed on one save used to move on the other save too.
 static bool8 IsSyncObject(const struct ObjectEvent *obj)
 {
     return obj->active && !obj->isPlayer && obj->localId != 0
         && obj->localId < OBJ_EVENT_ID_DYNAMIC_BASE
         && obj->trainerType == TRAINER_TYPE_NONE
-        && IsSyncMovementType(obj->movementType);
+        && IsSyncMovementType(obj->movementType)
+        && !GetObjectEventGraphicsInfo(obj->graphicsId)->inanimate;
 }
 
 // Face and one-tile walk actions only: what the synced movement types use.
