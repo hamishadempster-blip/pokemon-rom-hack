@@ -5860,6 +5860,8 @@ static void UNUSED DisplayExpPoints(u8 taskId, TaskFunc task, u8 holdEffectParam
     gTasks[taskId].func = task;
 }
 
+static EWRAM_DATA u32 sCandyStartExp = 0;   // the candy's message checks what was gained
+
 void ItemUseCB_RareCandy(u8 taskId, TaskFunc task)
 {
     struct Pokemon *mon = &gParties[B_TRAINER_PLAYER][gPartyMenu.slotId];
@@ -5870,6 +5872,7 @@ void ItemUseCB_RareCandy(u8 taskId, TaskFunc task)
     u8 holdEffectParam = GetItemHoldEffectParam(*itemPtr);
 
     sInitialLevel = GetMonData(mon, MON_DATA_LEVEL);
+    sCandyStartExp = GetMonData(mon, MON_DATA_EXP);
     if (!(B_RARE_CANDY_CAP && sInitialLevel >= GetCurrentLevelCap()))
     {
         BufferMonStatsToTaskData(mon, arrayPtr);
@@ -5929,6 +5932,13 @@ void ItemUseCB_RareCandy(u8 taskId, TaskFunc task)
             {
                 ConvertIntToDecimalStringN(gStringVar2, sFinalLevel, STR_CONV_MODE_LEFT_ALIGN, 3);
                 StringExpandPlaceholders(gStringVar4, gText_PkmnElevatedToLvVar2);
+            }
+            else if (B_RARE_CANDY_CAP && sFinalLevel >= GetCurrentLevelCap()
+                  && GetMonData(mon, MON_DATA_EXP) - sCandyStartExp < sExpCandyExperienceTable[holdEffectParam - 1])
+            {
+                // The candy stopped at the level cap: say so (the rest is lost).
+                ConvertIntToDecimalStringN(gStringVar3, sFinalLevel, STR_CONV_MODE_LEFT_ALIGN, 3);
+                StringExpandPlaceholders(gStringVar4, COMPOUND_STRING("{STR_VAR_1} reached Lv. {STR_VAR_3}, the\nlevel cap. The rest of the EXP. was lost."));
             }
             else // Exp Candies
             {
