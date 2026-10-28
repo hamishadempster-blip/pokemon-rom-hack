@@ -8929,6 +8929,12 @@ bool32 CanBattlerGetOrLoseItem(enum BattlerId fromBattler, enum BattlerId battle
 
     enum HoldEffect holdEffect = GetItemHoldEffect(itemId); // Raw hold effect
 
+    // Co-op and other link multi battles: the two players' Pokemon never take,
+    // give or swap items with each other (Trick, Switcheroo, Bestow, Thief):
+    // each save would end the battle holding the other's item.
+    if ((gBattleTypeFlags & (BATTLE_TYPE_LINK | BATTLE_TYPE_MULTI)) == (BATTLE_TYPE_LINK | BATTLE_TYPE_MULTI)
+     && fromBattler != battler && IsOnPlayerSide(fromBattler) && IsOnPlayerSide(battler))
+        return FALSE;
     if (ItemIsMail(itemId))
         return FALSE;
     else if (itemId == ITEM_ENIGMA_BERRY_E_READER)
