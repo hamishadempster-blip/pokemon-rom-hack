@@ -260,10 +260,10 @@ Coop_EventScript_MenuLinked::
 	specialvar VAR_RESULT, Coop_BufferMenuExplain
 	messageinstant gStringVar4
 	goto_if_eq VAR_RESULT, TRUE, Coop_EventScript_MenuLinkedBeaconOn
-	dynmultichoice 18, 1, FALSE, 6, 0, DYN_MULTICHOICE_CB_NONE, Coop_Text_OptBeaconOn, Coop_Text_OptUnlink, Coop_Text_OptPartnerDex, Coop_Text_OptJournal, Coop_Text_OptNameTag, Coop_Text_OptBack
+	dynmultichoice 18, 1, FALSE, 7, 0, DYN_MULTICHOICE_CB_NONE, Coop_Text_OptBeaconOn, Coop_Text_OptUnlink, Coop_Text_OptPartnerDex, Coop_Text_OptJournal, Coop_Text_OptNameTag, Coop_Text_OptPing, Coop_Text_OptBack
 	goto Coop_EventScript_MenuLinkedChoice
 Coop_EventScript_MenuLinkedBeaconOn::
-	dynmultichoice 18, 1, FALSE, 6, 0, DYN_MULTICHOICE_CB_NONE, Coop_Text_OptBeaconOff, Coop_Text_OptUnlink, Coop_Text_OptPartnerDex, Coop_Text_OptJournal, Coop_Text_OptNameTag, Coop_Text_OptBack
+	dynmultichoice 18, 1, FALSE, 7, 0, DYN_MULTICHOICE_CB_NONE, Coop_Text_OptBeaconOff, Coop_Text_OptUnlink, Coop_Text_OptPartnerDex, Coop_Text_OptJournal, Coop_Text_OptNameTag, Coop_Text_OptPing, Coop_Text_OptBack
 Coop_EventScript_MenuLinkedChoice::
 	switch VAR_RESULT
 	case 0, Coop_EventScript_MenuBeacon
@@ -271,6 +271,20 @@ Coop_EventScript_MenuLinkedChoice::
 	case 2, Coop_EventScript_MenuPartnerDex
 	case 3, Coop_EventScript_MenuJournal
 	case 4, Coop_EventScript_MenuNameTag
+	case 5, Coop_EventScript_MenuPing
+	goto Coop_EventScript_MenuBack
+
+@ PING from anywhere (the partner menu has it too): a sound, a note and the
+@ marker or edge arrow on the partner's screen.
+Coop_EventScript_MenuPing::
+	specialvar VAR_RESULT, CoopPartner_Ping
+	goto_if_eq VAR_RESULT, FALSE, Coop_EventScript_MenuPingWait
+	msgbox CoopDeal_Text_Pinged, MSGBOX_DEFAULT
+	releaseall
+	end
+
+Coop_EventScript_MenuPingWait::
+	msgbox CoopDeal_Text_PingWait, MSGBOX_DEFAULT
 	goto Coop_EventScript_MenuBack
 
 @ INDICATOR, NAME, OFF in turn: how the partner is marked on the field.
@@ -455,6 +469,8 @@ Coop_Text_OptJournal:
 
 Coop_Text_OptNameTag:
 	.string "PARTNER MARK$"
+Coop_Text_OptPing:
+	.string "PING$"
 
 Coop_Text_OptLevelCap:
 	.string "LEVEL CAP$"

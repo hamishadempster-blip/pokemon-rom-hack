@@ -44,6 +44,8 @@
 #include "pokedex.h"
 #include "pokemon.h"
 #include "pokemon_storage_system.h"
+#include "pokemon_summary_screen.h"
+#include "malloc.h"
 #include "random.h"
 #include "rtc.h"
 #include "save.h"
@@ -1063,6 +1065,14 @@ static bool8 Deal_WaitCancellable(void)
     return sDeal.waitKind == WAIT_ANSWER || sDeal.waitKind == WAIT_CONFIRM || sDeal.waitKind == WAIT_TEAM;
 }
 
+// This game is waiting for the partner's answer or readiness (the field is
+// locked by the wait message, but the partner's marker stays visible).
+bool8 CoopDeal_WaitingForPartner(void)
+{
+    return sDeal.waitKind == WAIT_ANSWER || sDeal.waitKind == WAIT_CONFIRM
+        || sDeal.waitKind == WAIT_READY || sDeal.waitKind == WAIT_TEAM;
+}
+
 static void Deal_PollWait(void)
 {
     u16 limit = 0;
@@ -1282,6 +1292,8 @@ static EWRAM_DATA struct BoxPokemon sTeamMons[PARTY_SIZE] = {0};
 static EWRAM_DATA u8 sPartnerTeamCount = 0;
 static EWRAM_DATA u8 sTeamGot = 0;      // bit per index received
 static EWRAM_DATA bool8 sTeamAsked = FALSE;
+static EWRAM_DATA u16 sTeamHp[PARTY_SIZE] = {0};
+static EWRAM_DATA u16 sTeamStatus[PARTY_SIZE] = {0};
 
 static void Team_HandleMsg(const struct CoopDealMsg *msg)
 {
@@ -1302,6 +1314,10 @@ static void Team_HandleMsg(const struct CoopDealMsg *msg)
         {
             struct CoopDealMsg *out = Deal_Push(DMSG_PARTY_MON, i, 0xFFFF, COOP_DEAL_NONE);
             out->arg2 = n;
+            // VIEW TEAM shows the party as it is now: current HP and the
+            // main status ride along (the practice copy ignores them).
+            out->item = GetMonData(&gParties[B_TRAINER_PLAYER][order[i]], MON_DATA_HP);
+            out->qty = (u16)GetMonData(&gParties[B_TRAINER_PLAYER][order[i]], MON_DATA_STATUS);
             memcpy(out->mon, &gParties[B_TRAINER_PLAYER][order[i]].box, sizeof(struct BoxPokemon));
         }
         return;
@@ -1309,6 +1325,8 @@ static void Team_HandleMsg(const struct CoopDealMsg *msg)
     if (!sTeamAsked || msg->arg >= PARTY_SIZE || msg->arg2 == 0 || msg->arg2 > PARTY_SIZE)
         return;
     memcpy(&sTeamMons[msg->arg], msg->mon, sizeof(struct BoxPokemon));
+    sTeamHp[msg->arg] = msg->item;
+    sTeamStatus[msg->arg] = msg->qty;
     sPartnerTeamCount = msg->arg2;
     sTeamGot |= 1 << msg->arg;
 }
@@ -1338,6 +1356,137 @@ u8 CoopDeal_PartnerTeamReady(void)
 void CoopDeal_CopyPartnerTeamMon(u8 index, struct Pokemon *dest)
 {
     BoxMonToMon(&sTeamMons[index], dest);
+}
+
+// ---------------------------------------------------------------- VIEW TEAM
+
+// The last whole team received for VIEW TEAM, kept so a later look can show
+// it (marked with its age) when the partner cannot answer. Read only: it is
+// shown from a temporary copy and never reaches either save.
+#define TEAM_VIEW_WAIT  180
+static EWRAM_DATA struct BoxPokemon sSnapMons[PARTY_SIZE] = {0};
+static EWRAM_DATA u16 sSnapHp[PARTY_SIZE] = {0};
+static EWRAM_DATA u16 sSnapStatus[PARTY_SIZE] = {0};
+static EWRAM_DATA u8 sSnapCount = 0;
+static EWRAM_DATA bool8 sSnapFresh = FALSE;
+static EWRAM_DATA u32 sSnapOtId = 0;
+static EWRAM_DATA u32 sSnapMinute = 0;
+static EWRAM_DATA struct Pokemon *sViewMons = NULL;
+EWRAM_DATA bool8 gCoopViewingPartnerTeam = FALSE;
+
+static u32 PlayMinutes(void)
+{
+    return gSaveBlock2Ptr->playTimeHours * 60 + gSaveBlock2Ptr->playTimeMinutes;
+}
+
+// Special. VAR_RESULT: COOP_DEAL_OK (asking), or LOST (no link to ask on).
+u16 CoopTeam_Ask(void)
+{
+    sSnapFresh = FALSE;
+    return CoopDeal_RequestPartnerTeam();
+}
+
+static void Task_WaitViewTeam(u8 taskId)
+{
+    u8 n = CoopDeal_PartnerTeamReady();
+
+    if (n != 0)
+    {
+        memcpy(sSnapMons, sTeamMons, sizeof(sSnapMons));
+        memcpy(sSnapHp, sTeamHp, sizeof(sSnapHp));
+        memcpy(sSnapStatus, sTeamStatus, sizeof(sSnapStatus));
+        sSnapCount = n;
+        sSnapFresh = TRUE;
+        sSnapOtId = Deal_PartnerOtId();
+        sSnapMinute = PlayMinutes();
+        sTeamAsked = FALSE;
+        gSpecialVar_Result = TRUE;
+    }
+    else if (++gTasks[taskId].data[0] >= TEAM_VIEW_WAIT || !Coop_SessionActive())
+    {
+        sTeamAsked = FALSE;
+        gSpecialVar_Result = FALSE;
+    }
+    else
+    {
+        return;
+    }
+    DestroyTask(taskId);
+    ScriptContext_Enable();
+}
+
+// `waitstate` follows. VAR_RESULT: TRUE when a whole new team arrived.
+void CoopTeam_Wait(void)
+{
+    CreateTask(Task_WaitViewTeam, 80);
+}
+
+// VAR_RESULT: TRUE when a team from this same partner can be shown.
+u16 CoopTeam_HaveSnapshot(void)
+{
+    CoopDeal_BufferPartnerName();
+    return sSnapCount != 0 && sSnapOtId == Deal_PartnerOtId();
+}
+
+// gStringVar4: what is about to be shown, and how old it is.
+u16 CoopTeam_BufferNote(void)
+{
+    u32 age = PlayMinutes() - sSnapMinute;
+    u8 *str = gStringVar4;
+
+    CoopDeal_BufferPartnerName();
+    str = StringCopy(str, gStringVar1);
+    if (sSnapFresh)
+    {
+        StringCopy(str, COMPOUND_STRING("'s team, sent just now.\nYou can look, but not change it."));
+        return TRUE;
+    }
+    str = StringCopy(str, COMPOUND_STRING(" can't answer right now.\pThis is their team as it was\n"));
+    if (age == 0)
+    {
+        StringCopy(str, COMPOUND_STRING("less than a minute ago."));
+    }
+    else
+    {
+        str = ConvertIntToDecimalStringN(str, age > 999 ? 999 : age, STR_CONV_MODE_LEFT_ALIGN, 3);
+        StringCopy(str, age == 1 ? COMPOUND_STRING(" minute ago (may be outdated).") : COMPOUND_STRING(" minutes ago (may be outdated)."));
+    }
+    return FALSE;
+}
+
+static void CB2_ReturnFromTeamView(void)
+{
+    TRY_FREE_AND_SET_NULL(sViewMons);
+    gCoopViewingPartnerTeam = FALSE;
+    SetMainCallback2(CB2_ReturnToFieldContinueScriptPlayMapMusic);
+}
+
+// `waitstate` follows: the snapshot in the summary screen, moves locked (no
+// reordering, relearning or renaming), from a temporary copy.
+void CoopTeam_Show(void)
+{
+    u8 i;
+    u16 hp;
+
+    if (sSnapCount == 0 || (sViewMons = AllocZeroed(sizeof(struct Pokemon) * PARTY_SIZE)) == NULL)
+    {
+        ScriptContext_Enable();
+        return;
+    }
+    for (i = 0; i < sSnapCount; i++)
+    {
+        BoxMonToMon(&sSnapMons[i], &sViewMons[i]);
+        hp = sSnapHp[i];
+        if (hp > GetMonData(&sViewMons[i], MON_DATA_MAX_HP))
+            hp = GetMonData(&sViewMons[i], MON_DATA_MAX_HP);
+        SetMonData(&sViewMons[i], MON_DATA_HP, &hp);
+        {
+            u32 status = sSnapStatus[i];
+            SetMonData(&sViewMons[i], MON_DATA_STATUS, &status);
+        }
+    }
+    gCoopViewingPartnerTeam = TRUE;
+    ShowPokemonSummaryScreen(SUMMARY_MODE_LOCK_MOVES, sViewMons, 0, sSnapCount - 1, CB2_ReturnFromTeamView);
 }
 
 // ---------------------------------------------------------------- Pokedex

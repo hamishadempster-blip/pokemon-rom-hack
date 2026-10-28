@@ -54,6 +54,13 @@
 #define COOP_DEAL_INVALID     7   // the offer is no longer valid
 #define COOP_DEAL_TIMEOUT     8
 
+// FOLLOW (partner menu) results, VAR_RESULT.
+#define COOP_FOLLOW_OK            0
+#define COOP_FOLLOW_LOOP          1   // the partner is following this player
+#define COOP_FOLLOW_NOT_ON_FOOT   2
+#define COOP_FOLLOW_PARTNER_MODE  3   // the partner is on a bike or surfing
+#define COOP_FOLLOW_GONE          4
+
 // Friendly battle rules, packed in one byte: format bit 0, level bits 1-2,
 // team size bits 3-4, unrestricted bit 5.
 #define COOP_RULE_DOUBLES     (1 << 0)

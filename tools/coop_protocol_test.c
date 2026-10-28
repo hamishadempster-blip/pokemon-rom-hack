@@ -36,9 +36,7 @@ static void Fill(struct CoopFrame *frame)
     frame->badges = 0x15;
     frame->rivalStage = 2;
     frame->seq = 9;
-    frame->legend[0] = COOP_OWNER_LOCAL;
-    frame->legend[1] = COOP_OWNER_PARTNER;
-    frame->legend[2] = COOP_OWNER_NONE;
+    frame->ext = COOP_EXT_WAITING | COOP_EXT_JOINABLE | (2 << COOP_EXT_PING_SHIFT);
     frame->activity = COOP_ACT_MENU;
 }
 
@@ -56,9 +54,14 @@ int main(void)
     Expect(CoopProtocol_Unpack(words, &out, COOP_BUILD_XOR) == COOP_UNPACK_OK, "roundtrip");
     Expect(out.x == 10 && out.y == 12 && out.acro == 1 && out.capOn == 1, "position and cap");
     Expect(out.request == COOP_REQ_CASE && out.slot == 3 && out.badges == 0x15, "request and badges");
-    Expect(out.legend[0] == COOP_OWNER_LOCAL && out.legend[1] == COOP_OWNER_PARTNER, "legend owners");
+    Expect(out.ext == (COOP_EXT_WAITING | COOP_EXT_JOINABLE | (2 << COOP_EXT_PING_SHIFT)), "activity extension bits");
     Expect(out.rivalStage == 2 && out.gender == 1 && out.bike == 1 && out.surf == 0, "rival and movement");
-    Expect(out.activity == COOP_ACT_MENU && out.legend[2] == COOP_OWNER_NONE, "activity beside the legend owners");
+    Expect(out.activity == COOP_ACT_MENU, "activity beside the extension bits");
+    frame.ext = 0xFF;
+    CoopProtocol_Pack(words, &frame, 0);
+    Expect(CoopProtocol_Unpack(words, &out, COOP_BUILD_XOR) == COOP_UNPACK_OK && out.ext == COOP_EXT_MASK && out.activity == COOP_ACT_MENU,
+           "extension bits never spill into the activity");
+    frame.ext = COOP_EXT_WAITING | COOP_EXT_JOINABLE | (2 << COOP_EXT_PING_SHIFT);
 
     frame.request = COOP_REQ_UNLINK;
     CoopProtocol_Pack(words, &frame, 0);

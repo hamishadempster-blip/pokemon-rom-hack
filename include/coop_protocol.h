@@ -15,8 +15,9 @@
 // Word 5: joint badges in the low byte, rival stage in bits 8-11,
 //         sequence in bits 12-15.
 // Word 6: the NPC being talked to in the low byte (0xFF means the Birch bag
-//         screen), three 2-bit legendary owners in bits 8-13, and what the
-//         player is doing (COOP_ACT_*) in bits 14-15.
+//         screen), six COOP_EXT_* activity bits in bits 8-13 (until build
+//         0xC0170139 three legendary owners, unused since layout 3), and
+//         what the player is doing (COOP_ACT_*) in bits 14-15.
 // Word 7: checksum of words 1-6.
 
 #ifdef COOP_HOST_TEST
@@ -79,6 +80,15 @@ typedef uint32_t u32;
 #define COOP_ACT_MENU      2
 #define COOP_ACT_BUSY      3
 
+// More of what a player is doing (CoopFrame.ext), for the partner's marker.
+#define COOP_EXT_WAITING    0x01   // waiting for the partner at a shared checkpoint
+#define COOP_EXT_FOLLOWING  0x02   // following the partner (FOLLOW)
+#define COOP_EXT_INVITE     0x04   // a question between the two players is open
+#define COOP_EXT_PING_SHIFT 3      // 2-bit counter: a change is one PING
+#define COOP_EXT_PING_MASK  0x18
+#define COOP_EXT_JOINABLE   0x20   // the conversation in progress can be joined
+#define COOP_EXT_MASK       0x3F
+
 #define COOP_OWNER_NONE    0
 #define COOP_OWNER_LOCAL   1
 #define COOP_OWNER_PARTNER 2
@@ -102,7 +112,7 @@ struct CoopFrame
     u8 rivalStage;
     u8 seq;
     u8 talkLocalId;
-    u8 legend[3];
+    u8 ext;
     u8 activity;
 };
 
@@ -160,9 +170,7 @@ static inline void CoopProtocol_Pack(u16 out[8], const struct CoopFrame *frame, 
     flags |= (u16)(frame->surf & 1) << 11;
     flags |= (u16)(frame->slot & 0xF) << 12;
 
-    legend |= (u16)(frame->legend[0] & 3);
-    legend |= (u16)(frame->legend[1] & 3) << 2;
-    legend |= (u16)(frame->legend[2] & 3) << 4;
+    legend |= (u16)(frame->ext & COOP_EXT_MASK);
     legend |= (u16)(frame->activity & 3) << 6;
 
     out[0] = asHeldKeys ? COOP_HELD_KEYS_CMD : COOP_LINKCMD;
@@ -212,9 +220,7 @@ static inline int CoopProtocol_Unpack(const u16 in[8], struct CoopFrame *frame, 
     frame->seq = (u8)((in[5] >> 12) & 0xF);
     frame->talkLocalId = (u8)(in[6] & 0xFF);
     legend = (u16)(in[6] >> 8);
-    frame->legend[0] = (u8)(legend & 3);
-    frame->legend[1] = (u8)((legend >> 2) & 3);
-    frame->legend[2] = (u8)((legend >> 4) & 3);
+    frame->ext = (u8)(legend & COOP_EXT_MASK);
     frame->activity = (u8)((legend >> 6) & 3);
 
     if (!CoopProtocol_MapOk(frame->mapGroup, frame->mapNum))

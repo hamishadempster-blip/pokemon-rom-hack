@@ -777,3 +777,11 @@ gSpecials::
 	def_special CoopQuest_TrialHeal
 	def_special CoopQuest_TrialSoloBattle, 0, 1
 	def_special CoopQuest_ShareGates
+	def_special CoopPartner_BufferBusyReason
+	def_special CoopTeam_Ask
+	def_special CoopTeam_Wait
+	def_special CoopTeam_HaveSnapshot
+	def_special CoopTeam_BufferNote
+	def_special CoopTeam_Show
+	def_special CoopPartner_Ping
+	def_special CoopFollow_Start

@@ -1704,6 +1704,10 @@ static void DoCB1_Overworld(u16 newKeys, u16 heldKeys)
     struct FieldInput inputStruct;
 
     UpdatePlayerAvatarTransitionState();
+    // FOLLOW (src/coop_partner.c): any real button ends it; otherwise the
+    // next step of the partner's path is held as a player would hold it.
+    if (CoopFollow_Active())
+        CoopFollow_FieldInput(&newKeys, &heldKeys);
     FieldClearPlayerInput(&inputStruct);
     FieldGetPlayerInput(&inputStruct, newKeys, heldKeys);
     CancelSignPostMessageBox(&inputStruct);

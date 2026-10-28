@@ -1,4 +1,6 @@
-@ Pressing A on the co-op partner: BATTLE, TRADE, GIVE ITEM, GIVE POKéMON.
+@ Pressing A on the co-op partner: BATTLE, TRADE, GIVE ITEM, GIVE POKéMON,
+@ VIEW TEAM, PING, FOLLOW (the last three in src/coop_partner.c and the
+@ VIEW TEAM snapshot in src/coop_deal.c).
 @ The protocol, the escrow and the recovery rules are in src/coop_deal.c.
 @ Every wait below ends: on an answer, on B (where the text says so), on a
 @ timeout, or when the partner leaves the link or the map.
@@ -17,19 +19,89 @@ CoopDeal_EventScript_PartnerMenu::
 	goto_if_ne VAR_RESULT, COOP_DEAL_OK, CoopDeal_EventScript_PartnerBusy
 	message CoopDeal_Text_WhatToDo
 	waitmessage
-	dynmultichoice 18, 1, FALSE, 5, 0, DYN_MULTICHOICE_CB_NONE, CoopDeal_Text_OptBattle, CoopDeal_Text_OptTrade, CoopDeal_Text_OptGiveItem, CoopDeal_Text_OptGiveMon, CoopDeal_Text_OptCancel
+	dynmultichoice 17, 1, FALSE, 6, 0, DYN_MULTICHOICE_CB_NONE, CoopDeal_Text_OptBattle, CoopDeal_Text_OptTrade, CoopDeal_Text_OptGiveItem, CoopDeal_Text_OptGiveMon, CoopDeal_Text_OptViewTeam, CoopDeal_Text_OptPing, CoopDeal_Text_OptFollow, CoopDeal_Text_OptCancel
 	closemessage
 	switch VAR_RESULT
 	case 0, CoopDeal_EventScript_AskBattle
 	case 1, CoopDeal_EventScript_AskTrade
 	case 2, CoopDeal_EventScript_AskGiveItem
 	case 3, CoopDeal_EventScript_AskGiveMon
+	case 4, CoopDeal_EventScript_ViewTeam
+	case 5, CoopDeal_EventScript_Ping
+	case 6, CoopDeal_EventScript_Follow
 	goto CoopDeal_EventScript_End
 
+@ The partner's real state: a battle, a conversation, a menu, a question,
+@ the link reconnecting (src/coop_partner.c).
 CoopDeal_EventScript_PartnerBusy::
-	special Coop_BufferPartnerLocation
-	special CoopDeal_BufferPartnerName
-	msgbox CoopDeal_Text_PartnerBusy, MSGBOX_DEFAULT
+	special CoopPartner_BufferBusyReason
+	msgbox gStringVar4, MSGBOX_DEFAULT
+	goto CoopDeal_EventScript_End
+
+@ A read-only look at the partner's party. The partner's game answers by
+@ itself (nothing opens on their screen); with no answer, the last team
+@ they sent is shown with its age, or the reason it can't be shown.
+CoopDeal_EventScript_ViewTeam::
+	specialvar VAR_RESULT, CoopTeam_Ask
+	goto_if_ne VAR_RESULT, COOP_DEAL_OK, CoopDeal_EventScript_ViewTeamOld
+	message CoopDeal_Text_AskingTeam
+	waitmessage
+	special CoopTeam_Wait
+	waitstate
+	goto_if_eq VAR_RESULT, FALSE, CoopDeal_EventScript_ViewTeamOld
+CoopDeal_EventScript_ViewTeamShow::
+	special CoopTeam_BufferNote
+	msgbox gStringVar4, MSGBOX_DEFAULT
+	closemessage
+	fadescreen FADE_TO_BLACK
+	special CoopTeam_Show
+	waitstate
+	goto CoopDeal_EventScript_End
+
+CoopDeal_EventScript_ViewTeamOld::
+	specialvar VAR_RESULT, CoopTeam_HaveSnapshot
+	goto_if_eq VAR_RESULT, TRUE, CoopDeal_EventScript_ViewTeamShow
+	msgbox CoopDeal_Text_TeamUnavailable, MSGBOX_DEFAULT
+	goto CoopDeal_EventScript_End
+
+@ A sound and a note on the partner's screen, and their marker hops (or
+@ its edge arrow shows) for a few seconds. One every five seconds.
+CoopDeal_EventScript_Ping::
+	specialvar VAR_RESULT, CoopPartner_Ping
+	goto_if_eq VAR_RESULT, FALSE, CoopDeal_EventScript_PingWait
+	msgbox CoopDeal_Text_Pinged, MSGBOX_DEFAULT
+	goto CoopDeal_EventScript_End
+
+CoopDeal_EventScript_PingWait::
+	msgbox CoopDeal_Text_PingWait, MSGBOX_DEFAULT
+	goto CoopDeal_EventScript_End
+
+@ Walk the partner's path on foot until a button is pressed or something
+@ needs this player's own decision (src/coop_partner.c).
+CoopDeal_EventScript_Follow::
+	specialvar VAR_RESULT, CoopFollow_Start
+	switch VAR_RESULT
+	case COOP_FOLLOW_OK, CoopDeal_EventScript_FollowOn
+	case COOP_FOLLOW_LOOP, CoopDeal_EventScript_FollowLoop
+	case COOP_FOLLOW_NOT_ON_FOOT, CoopDeal_EventScript_FollowNotOnFoot
+	case COOP_FOLLOW_PARTNER_MODE, CoopDeal_EventScript_FollowPartnerMode
+	msgbox CoopDeal_Text_FollowGone, MSGBOX_DEFAULT
+	goto CoopDeal_EventScript_End
+
+CoopDeal_EventScript_FollowOn::
+	msgbox CoopDeal_Text_FollowOn, MSGBOX_DEFAULT
+	goto CoopDeal_EventScript_End
+
+CoopDeal_EventScript_FollowLoop::
+	msgbox CoopDeal_Text_FollowLoop, MSGBOX_DEFAULT
+	goto CoopDeal_EventScript_End
+
+CoopDeal_EventScript_FollowNotOnFoot::
+	msgbox CoopDeal_Text_FollowNotOnFoot, MSGBOX_DEFAULT
+	goto CoopDeal_EventScript_End
+
+CoopDeal_EventScript_FollowPartnerMode::
+	msgbox CoopDeal_Text_FollowPartnerMode, MSGBOX_DEFAULT
 	goto CoopDeal_EventScript_End
 
 CoopDeal_EventScript_PendingNotice::
@@ -475,6 +547,46 @@ CoopDeal_Text_OptGiveMon:
 	.string "GIVE POKéMON$"
 CoopDeal_Text_OptCancel:
 	.string "CANCEL$"
+CoopDeal_Text_OptViewTeam:
+	.string "VIEW TEAM$"
+CoopDeal_Text_OptPing:
+	.string "PING$"
+CoopDeal_Text_OptFollow:
+	.string "FOLLOW$"
+
+CoopDeal_Text_AskingTeam:
+	.string "Asking {STR_VAR_1} for a look\n"
+	.string "at their team…$"
+
+CoopDeal_Text_TeamUnavailable:
+	.string "{STR_VAR_1}'s team can't be seen\n"
+	.string "right now. Try again in a moment.$"
+
+CoopDeal_Text_Pinged:
+	.string "You pinged {STR_VAR_1}.$"
+
+CoopDeal_Text_PingWait:
+	.string "You pinged a moment ago.\n"
+	.string "Wait {STR_VAR_2} more seconds.$"
+
+CoopDeal_Text_FollowOn:
+	.string "Following {STR_VAR_1}.\n"
+	.string "Press any button to stop.$"
+
+CoopDeal_Text_FollowLoop:
+	.string "{STR_VAR_1} is following you\n"
+	.string "already.$"
+
+CoopDeal_Text_FollowNotOnFoot:
+	.string "You can only follow on foot.$"
+
+CoopDeal_Text_FollowPartnerMode:
+	.string "{STR_VAR_1} isn't on foot.\n"
+	.string "You can only follow on foot.$"
+
+CoopDeal_Text_FollowGone:
+	.string "{STR_VAR_1} can't be followed\n"
+	.string "from here.$"
 CoopDeal_Text_OptSingles:
 	.string "SINGLES$"
 CoopDeal_Text_OptDoubles:

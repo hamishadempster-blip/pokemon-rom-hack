@@ -74,13 +74,13 @@ static EWRAM_DATA u8 sShownLocal = 0;         // outfit
 static EWRAM_DATA u8 sShownPartner = 0;       // (gender << 4) | outfit
 // Checked against its template before use, so 0 at boot is safe.
 static EWRAM_DATA u8 sMarkerSpriteId = 0;
-static EWRAM_DATA u8 sMarkerTimer = 0;
 EWRAM_DATA bool8 gCoopMarkerShown = FALSE;
 EWRAM_DATA bool8 gCoopCompassShown = FALSE;  // the edge compass is on screen (read by tests)
 // The partner's name tag: its sprite (checked against the template like the
 // marker), and the name its tiles hold.
 static EWRAM_DATA u8 sTagSpriteId = 0;
 static EWRAM_DATA u8 sTagName[PLAYER_NAME_LENGTH + 1] = {0};
+static EWRAM_DATA u8 sTagWidth = 0;          // the drawn name's width in pixels
 EWRAM_DATA bool8 gCoopNameTagShown = FALSE;  // the name tag is on screen (read by tests)
 
 static u8 Base(u8 gender)
@@ -234,29 +234,9 @@ void CoopOutfit_SendLook(void)
 // them (they exist only in the field). With the shrine's compass, a diamond
 // at the screen edge points to a partner on this map who is out of sight.
 
-static const u32 sMarkerTiles[] = {
-    // Tile 0, 8x8 4bpp: the indicator, a small rounded marker pointing down
-    // (13 highlight, 14 fill, 15 outline).
-    0x00FFFFF0,
-    0x0FDDEEEF,
-    0x0FDEEEEF,
-    0x00FEEEF0,
-    0x000FEF00,
-    0x0000F000,
-    0x00000000,
-    0x00000000,
-    // Tile 1: a diamond, the compass at the screen edge.
-    0x0000F000,
-    0x000FEF00,
-    0x00FEDEF0,
-    0x0FEDDDEF,
-    0x00FEDEF0,
-    0x000FEF00,
-    0x0000F000,
-    0x00000000,
-};
+#include "data/coop_marker_icons.h"
 
-static const struct SpriteSheet sMarkerSheet = {sMarkerTiles, sizeof(sMarkerTiles), TAG_MARKER_TILES};
+static const struct SpriteSheet sMarkerSheet = {sCoopMarkerIconTiles, sizeof(sCoopMarkerIconTiles), TAG_MARKER_TILES};
 
 // Player colours: highlight, fill, outline. The outline is dark in every
 // colour so the marker reads on light and dark ground alike.
@@ -339,8 +319,8 @@ static u8 ShowMode(void)
 }
 
 static const struct OamData sMarkerOam = {
-    .shape = SPRITE_SHAPE(8x8),
-    .size = SPRITE_SIZE(8x8),
+    .shape = SPRITE_SHAPE(16x16),
+    .size = SPRITE_SIZE(16x16),
     .priority = 1,
 };
 
@@ -362,6 +342,7 @@ static u8 MarkerPaletteSlot(void)
     struct SpritePalette pal;
     u8 colour = PartnerColour(), slot;
 
+    colours[12] = RGB_(248, 248, 248);
     colours[13] = sPlayerColours[colour][0];
     colours[14] = sPlayerColours[colour][1];
     colours[15] = sPlayerColours[colour][2];
@@ -493,6 +474,7 @@ static void DrawTag(const u8 *name)
 
     if (width > TAG_W - 4)
         width = TAG_W - 4;
+    sTagWidth = width;
     CpuFill32(0, tiles, TAG_TILES * TILE_SIZE_4BPP);
     AddSpriteTextPrinterParameterized6(sTagSpriteId, FONT_SMALL, (TAG_W - width) / 2, 1, 0, 0, sColor, TEXT_SKIP_DRAW, name);
     // The outline: every clear pixel next to a letter pixel.
@@ -565,43 +547,123 @@ static bool8 DrawName(struct Sprite *partner)
     return TRUE;
 }
 
-static bool8 DrawIndicator(struct Sprite *partner)
+EWRAM_DATA u8 gCoopMarkerIcon = 0;        // the icon on screen (COOP_MARK_*, arrows +16), read by tests
+
+static u16 IconTile(u8 icon)
+{
+    return GetSpriteTileStartByTag(TAG_MARKER_TILES) + icon * 4;
+}
+
+// A received PING makes the marker hop for a moment (src/coop.c).
+static s16 PingHop(void)
+{
+    return gCoopPingCue != 0 && ((gCoopPingCue >> 3) & 1) ? -2 : 0;
+}
+
+static bool8 DrawIndicator(struct Sprite *partner, u8 icon, s16 dx)
 {
     struct Sprite *marker = EnsureMarker();
 
     if (marker == NULL)
         return FALSE;
-    marker->oam.tileNum = GetSpriteTileStartByTag(TAG_MARKER_TILES);
+    marker->oam.tileNum = IconTile(icon);
     marker->coordOffsetEnabled = partner->coordOffsetEnabled;
-    // Centred just over the head: an object event's sprite y sits 6 pixels
-    // below the top of its head, and the marker's six drawn rows end 1 above
-    // the 8x8 sprite's centre.
-    marker->x = partner->x + partner->x2;
-    marker->y = partner->y + partner->y2 - 10;
+    // The icon's drawn rows end just above the head: an object event's
+    // sprite y sits 6 pixels below the top of its head, and the 16x16
+    // icons rest on the square's second-to-last row.
+    marker->x = partner->x + partner->x2 + dx;
+    marker->y = partner->y + partner->y2 - 15 + PingHop();
     marker->oam.priority = partner->oam.priority;
     marker->subpriority = 0;
     marker->invisible = FALSE;
     gCoopMarkerShown = TRUE;
+    gCoopMarkerIcon = icon;
     return TRUE;
 }
 
-static void DrawCompass(s16 dx, s16 dy)
+// The broken-link icon over the tile the partner was last drawn on, while
+// the link recovers (no sprite is drawn there meanwhile).
+static bool8 DrawBrokenAt(s16 mapX, s16 mapY)
+{
+    struct Sprite *marker;
+    s16 x = mapX, y = mapY;
+
+    // Placed like an object sprite (32 tall: its y is the tile's top); the
+    // camera offset is applied by the sprite system, so test it here too.
+    SetSpritePosToOffsetMapCoords(&x, &y, 8, 0);
+    if (x + gSpriteCoordOffsetX < 8 || x + gSpriteCoordOffsetX > DISPLAY_WIDTH - 8
+     || y + gSpriteCoordOffsetY < 16 || y + gSpriteCoordOffsetY > DISPLAY_HEIGHT)
+        return FALSE;
+    marker = EnsureMarker();
+    if (marker == NULL)
+        return FALSE;
+    marker->oam.tileNum = IconTile(COOP_MARK_BROKEN);
+    marker->coordOffsetEnabled = TRUE;
+    marker->x = x;
+    marker->y = y - 15;
+    marker->oam.priority = 1;
+    marker->subpriority = 0;
+    marker->invisible = FALSE;
+    gCoopMarkerShown = TRUE;
+    gCoopMarkerIcon = COOP_MARK_BROKEN;
+    return TRUE;
+}
+
+// Recovering with no known spot on screen: the same icon, steady, in the
+// top-right corner (the field's own windows never use that spot).
+static void DrawBrokenCorner(void)
 {
     struct Sprite *marker = EnsureMarker();
 
     if (marker == NULL)
         return;
-    marker->oam.tileNum = GetSpriteTileStartByTag(TAG_MARKER_TILES) + 1;
+    marker->oam.tileNum = IconTile(COOP_MARK_BROKEN);
+    marker->coordOffsetEnabled = FALSE;
+    marker->x = DISPLAY_WIDTH - 12;
+    marker->y = 12;
+    marker->oam.priority = 1;
+    marker->subpriority = 0;
+    marker->invisible = FALSE;
+    gCoopMarkerShown = TRUE;
+    gCoopMarkerIcon = COOP_MARK_BROKEN;
+}
+
+// The edge arrow: points from the middle of the screen toward a partner
+// who is off it, on this map or a connected one. Steady (no blinking).
+static void DrawCompass(s16 dx, s16 dy)
+{
+    static const u8 sArrowFor[3][3] = {
+        // [dy + 1][dx + 1] for the signs of dx and dy
+        { COOP_ICON_ARROW_NW, COOP_ICON_ARROW_N, COOP_ICON_ARROW_NE },
+        { COOP_ICON_ARROW_W,  COOP_ICON_ARROW_E, COOP_ICON_ARROW_E  },
+        { COOP_ICON_ARROW_SW, COOP_ICON_ARROW_S, COOP_ICON_ARROW_SE },
+    };
+    struct Sprite *marker = EnsureMarker();
+    s16 adx = dx < 0 ? -dx : dx, ady = dy < 0 ? -dy : dy;
+    s8 sx = dx < 0 ? -1 : dx > 0 ? 1 : 0, sy = dy < 0 ? -1 : dy > 0 ? 1 : 0;
+    u8 icon;
+
+    if (marker == NULL)
+        return;
+    // Mostly along one axis: a straight arrow.
+    if (adx > 2 * ady)
+        sy = 0;
+    else if (ady > 2 * adx)
+        sx = 0;
+    icon = sArrowFor[sy + 1][sx + 1];
+    marker->oam.tileNum = IconTile(icon);
     marker->coordOffsetEnabled = FALSE;
     marker->oam.priority = 1;
     marker->x = 120 + dx * 16;
     marker->y = 80 + dy * 16;
-    if (marker->x < 6) marker->x = 6;
-    if (marker->x > DISPLAY_WIDTH - 6) marker->x = DISPLAY_WIDTH - 6;
-    if (marker->y < 6) marker->y = 6;
-    if (marker->y > DISPLAY_HEIGHT - 6) marker->y = DISPLAY_HEIGHT - 6;
-    marker->invisible = ((++sMarkerTimer >> 4) & 3) == 0;
+    if (marker->x < 10) marker->x = 10;
+    if (marker->x > DISPLAY_WIDTH - 10) marker->x = DISPLAY_WIDTH - 10;
+    if (marker->y < 10) marker->y = 10;
+    if (marker->y > DISPLAY_HEIGHT - 10) marker->y = DISPLAY_HEIGHT - 10;
+    marker->y += PingHop();
+    marker->invisible = FALSE;
     gCoopCompassShown = TRUE;
+    gCoopMarkerIcon = 16 + (icon - COOP_ICON_ARROW_E);
 }
 
 // Special: PARTNER MARK in the CO-OP menu (and the dresser's line):
@@ -641,10 +703,52 @@ static void HideAll(void)
     gCoopNameTagShown = FALSE;
 }
 
+// How far off screen the edge arrow still points (tiles); a PING shows it
+// at any distance for a moment.
+#define ARROW_RANGE 32
+
+// The partner's activity changes for a frame or two at every warp fade and
+// script start; an icon follows it only once it has held for a moment, so
+// the marker never flickers between icons. Battle and the broken link show
+// at once (they last).
+#define KIND_SETTLE_FRAMES 10
+static EWRAM_DATA u8 sStableKind = 0;
+static EWRAM_DATA u8 sPendingKind = 0;
+static EWRAM_DATA u8 sPendingFrames = 0;
+
+static u8 StableKind(u8 kind)
+{
+    if (kind == sStableKind)
+    {
+        sPendingFrames = 0;
+        return kind;
+    }
+    if (kind == COOP_MARK_NONE || kind == COOP_MARK_BROKEN || kind == COOP_MARK_BATTLE)
+    {
+        sStableKind = kind;
+        sPendingFrames = 0;
+        return kind;
+    }
+    if (kind != sPendingKind)
+    {
+        sPendingKind = kind;
+        sPendingFrames = 0;
+    }
+    if (++sPendingFrames >= KIND_SETTLE_FRAMES)
+    {
+        sStableKind = kind;
+        sPendingFrames = 0;
+    }
+    // From nothing, show the new kind at once.
+    if (sStableKind == COOP_MARK_NONE)
+        return kind;
+    return sStableKind;
+}
+
 void CoopOutfit_FieldFrame(void)
 {
     u8 gender, mode = ShowMode();
-    u8 partnerSprite;
+    u8 partnerSprite, kind;
     u8 shown;
     struct Sprite *partner;
     s16 px, py, dx, dy;
@@ -660,45 +764,74 @@ void CoopOutfit_FieldFrame(void)
     gCoopMarkerShown = FALSE;
     gCoopCompassShown = FALSE;
     gCoopNameTagShown = FALSE;
-    havePos = Coop_PartnerMapPos(&px, &py);
-    if (mode == COOP_SHOW_OFF || !havePos)
+    gCoopMarkerIcon = 0xFF;
+    // This player busy: a message, a menu, a scene, a warp or a fade.
+    // Waiting on the partner's answer or readiness is not busy: the marker
+    // (their '?' or tick) is what this player is watching.
+    busy = (ArePlayerFieldControlsLocked() || ScriptContext_IsEnabled() || gPaletteFade.active)
+        && !(Coop_LocalAwaitingPartner() && !gPaletteFade.active);
+    kind = StableKind(Coop_PartnerMarkKind());
+    if (mode == COOP_SHOW_OFF || kind == COOP_MARK_NONE || busy)
     {
         HideMarker();
         RemoveTag();
         return;
     }
-    // This player busy: a message, a menu, a scene, a warp or a fade.
-    busy = ArePlayerFieldControlsLocked() || ScriptContext_IsEnabled() || gPaletteFade.active;
+    if (kind == COOP_MARK_BROKEN)
+    {
+        // Recovering: nothing is known about the partner but where they
+        // were; mark that spot if it is on screen.
+        RemoveTag();
+        if (!Coop_PartnerLastSeen(&px, &py) || !DrawBrokenAt(px, py))
+            DrawBrokenCorner();
+        return;
+    }
+    havePos = Coop_PartnerViewCoords(&px, &py);
+    if (!havePos)
+    {
+        HideMarker();
+        RemoveTag();
+        return;
+    }
     dx = px - gObjectEvents[gPlayerAvatar.objectEventId].currentCoords.x;
     dy = py - gObjectEvents[gPlayerAvatar.objectEventId].currentCoords.y;
     if (partnerSprite >= MAX_SPRITES || dx < -7 || dx > 7 || dy < -5 || dy > 4)
     {
-        // Out of sight on this map: the compass, if the shrine taught it.
+        // Out of sight: the edge arrow, while the partner is near (or has
+        // just pinged).
         if (TagAlive())
             gSprites[sTagSpriteId].invisible = TRUE;
-        if (busy || !FlagGet(FLAG_SHRINE_LORE_READ))
+        if ((dx < -ARROW_RANGE || dx > ARROW_RANGE || dy < -ARROW_RANGE || dy > ARROW_RANGE) && gCoopPingCue == 0)
             HideMarker();
         else
             DrawCompass(dx, dy);
         return;
     }
     partner = &gSprites[partnerSprite];
-    if (busy || partner->invisible)
+    if (partner->invisible)
     {
         HideAll();
         return;
     }
     if (mode == COOP_SHOW_NAME)
     {
-        HideMarker();
         if (!DrawName(partner))
+        {
             RemoveTag();
+            HideMarker();
+        }
+        // The name, and what they are doing to its left (walking needs no
+        // icon beside a name).
+        else if (kind == COOP_MARK_WALK || !DrawIndicator(partner, kind, -(sTagWidth / 2) - 8))
+            HideMarker();
+        else
+            gSprites[sMarkerSpriteId].y += 1;
     }
     else
     {
         if (TagAlive())
             RemoveTag();
-        if (!DrawIndicator(partner))
+        if (!DrawIndicator(partner, kind, 0))
             HideMarker();
     }
 }

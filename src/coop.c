@@ -61,6 +61,8 @@
 #include "constants/field_effects.h"
 #include "field_effect.h"
 #include "coop_deal.h"
+#include "sound.h"
+#include "constants/songs.h"
 #include "coop_legend.h"
 #include "coop_outfit.h"
 #include "coop_quest.h"
@@ -209,6 +211,21 @@ EWRAM_DATA u16 gCoopStaleInvites = 0; // test visibility: old or unknown request
 static EWRAM_DATA u16 sSceneJoinAge = 0; // frames a coord-scene join has waited
 static EWRAM_DATA u8 sSceneJoinGroup = 0;
 static EWRAM_DATA u8 sSceneJoinNum = 0;
+
+// The partner marker's activity (CoopFrame.ext), PING and the last place the
+// partner was drawn (for the broken-link icon while the link recovers).
+static EWRAM_DATA u8 sPingCount = 0;            // this game's PING counter (2 bits)
+static EWRAM_DATA u16 sPingCooldown = 0;        // frames before another PING
+static EWRAM_DATA u8 sPartnerPingSeen = 0;
+static EWRAM_DATA bool8 sPartnerPingKnown = FALSE;
+EWRAM_DATA u16 gCoopPingCue = 0;                // frames left of a received PING's cue
+EWRAM_DATA u16 gCoopPingsReceived = 0;          // test visibility
+EWRAM_DATA bool8 gCoopLocalWaiting = FALSE;     // waiting for the partner at a shared checkpoint
+static EWRAM_DATA s16 sLastSeenX = 0;
+static EWRAM_DATA s16 sLastSeenY = 0;
+static EWRAM_DATA u8 sLastSeenGroup = 0;
+static EWRAM_DATA u8 sLastSeenNum = 0;
+static EWRAM_DATA bool8 sLastSeenValid = FALSE;
 
 struct CoopNickTarget
 {
@@ -560,44 +577,51 @@ static void Coop_RemoveSprite(void)
 // shown only inside the strip of it this game has loaded around the edge,
 // which is all the screen can reach. Interiors, warps, and maps further away
 // have no position here. Drawing only; battles still need the same map.
-static bool8 Coop_PartnerLocalCoords(s16 *x, s16 *y)
+// A tile of map (group, num) in this map's coordinates: the same map, or a
+// map joined to it by a connection (whose tiles are loaded around this one).
+bool8 Coop_MapCoordsToLocal(u8 group, u8 num, s16 x, s16 y, s16 *outX, s16 *outY)
 {
     const struct MapConnections *connections = gMapHeader.connections;
-    const struct MapHeader *partnerMap;
+    const struct MapHeader *otherMap;
     int i, lx, ly;
 
-    if (!Coop_SessionActive() || !sPartnerValid)
-        return FALSE;
-    if (CoopProtocol_SameMap(sPartner.mapGroup, sPartner.mapNum,
+    if (CoopProtocol_SameMap(group, num,
         gSaveBlock1Ptr->location.mapGroup, gSaveBlock1Ptr->location.mapNum))
     {
-        *x = sPartner.x;
-        *y = sPartner.y;
+        *outX = x;
+        *outY = y;
         return TRUE;
     }
     if (connections == NULL || connections->connections == NULL)
         return FALSE;
-    partnerMap = Overworld_GetMapHeaderByGroupAndId(sPartner.mapGroup, sPartner.mapNum);
-    if (partnerMap == NULL || partnerMap->mapLayout == NULL)
+    otherMap = Overworld_GetMapHeaderByGroupAndId(group, num);
+    if (otherMap == NULL || otherMap->mapLayout == NULL)
         return FALSE;
     for (i = 0; i < connections->count; i++)
     {
         const struct MapConnection *c = &connections->connections[i];
 
-        if (c->mapGroup != sPartner.mapGroup || c->mapNum != sPartner.mapNum)
+        if (c->mapGroup != group || c->mapNum != num)
             continue;
         if (!CoopProtocol_ConnectionToLocal(c->direction, c->offset,
                 gMapHeader.mapLayout->width, gMapHeader.mapLayout->height,
-                partnerMap->mapLayout->width, partnerMap->mapLayout->height,
-                sPartner.x, sPartner.y, &lx, &ly))
+                otherMap->mapLayout->width, otherMap->mapLayout->height,
+                x, y, &lx, &ly))
             continue;
         if (lx < 0 || ly < 0 || lx >= gBackupMapLayout.width || ly >= gBackupMapLayout.height)
             return FALSE;
-        *x = lx;
-        *y = ly;
+        *outX = lx;
+        *outY = ly;
         return TRUE;
     }
     return FALSE;
+}
+
+static bool8 Coop_PartnerLocalCoords(s16 *x, s16 *y)
+{
+    if (!Coop_SessionActive() || !sPartnerValid)
+        return FALSE;
+    return Coop_MapCoordsToLocal(sPartner.mapGroup, sPartner.mapNum, sPartner.x, sPartner.y, x, y);
 }
 
 // A north, south, east, or west connection joins the two maps.
@@ -796,6 +820,11 @@ static void Coop_UpdateSprite(void)
     sPartnerDrawn = TRUE;
     sPartnerDrawnGroup = sPartner.mapGroup;
     sPartnerDrawnNum = sPartner.mapNum;
+    sLastSeenX = tx;
+    sLastSeenY = ty;
+    sLastSeenGroup = gSaveBlock1Ptr->location.mapGroup;
+    sLastSeenNum = gSaveBlock1Ptr->location.mapNum;
+    sLastSeenValid = TRUE;
 
     gfx = Coop_PartnerGfx(&sPartner);
     objectId = Coop_FindPartnerObject();
@@ -986,6 +1015,41 @@ static u8 Coop_LocalActivity(void)
     return COOP_ACT_EXPLORING;
 }
 
+// A question between the two players is open on this game: an invitation
+// sent or being answered, a partner-menu request, a Beacon change.
+static bool8 Coop_LocalInvitePending(void)
+{
+    return sWaitingAck || sGuestPairPending || sSameTrainerPending
+        || sBeacon.phase != COOP_BEACON_IDLE || CoopDeal_Busy();
+}
+
+// This game is held at a shared checkpoint until the partner is ready.
+static bool8 Coop_LocalWaitingForPartner(void)
+{
+    return sWaitKind != 0 || sRequest == COOP_REQ_RESCUE || gCoopLocalWaiting;
+}
+
+// The local field is locked only because this game waits on the partner.
+bool8 Coop_LocalAwaitingPartner(void)
+{
+    return sWaitingAck || Coop_LocalWaitingForPartner() || CoopDeal_WaitingForPartner();
+}
+
+static u8 Coop_LocalExt(void)
+{
+    u8 ext = (u8)((sPingCount & 3) << COOP_EXT_PING_SHIFT);
+
+    if (Coop_LocalWaitingForPartner())
+        ext |= COOP_EXT_WAITING;
+    if (CoopFollow_Active())
+        ext |= COOP_EXT_FOLLOWING;
+    if (Coop_LocalInvitePending())
+        ext |= COOP_EXT_INVITE;
+    if (CoopTalk_LocalJoinable())
+        ext |= COOP_EXT_JOINABLE;
+    return ext;
+}
+
 static void Coop_FillFrame(struct CoopFrame *frame)
 {
     s16 x, y;
@@ -1019,14 +1083,12 @@ static void Coop_FillFrame(struct CoopFrame *frame)
     {
         frame->badges = save->jointBadges;
         frame->rivalStage = save->rivalStage;
-        // Legend records are each save's own since layout 3 (src/coop_legend.c).
-        for (i = 0; i < 3; i++)
-            frame->legend[i] = COOP_OWNER_NONE;
     }
     // In a solo battle (frames keep coming, see Coop_LinkCallback).
     if (gMain.inBattle)
         frame->talkLocalId = COOP_TALK_IN_BATTLE;
     frame->activity = Coop_LocalActivity();
+    frame->ext = Coop_LocalExt();
 }
 
 // What the partner's state means for an ordinary fight right now, from this
@@ -1232,6 +1294,8 @@ void Coop_LinkCallback(void)
     // there used to run the partner's quiet limit out, so a long solo fight
     // read as "the link is recovering" on the other screen, and the
     // partner's sprite vanished until the fight ended.
+    if (gMain.inBattle)
+        CoopFollow_NoteBattle();
     if (!gReceivedRemoteLinkPlayers || gLinkTransferringData
      || (gMain.inBattle && (gBattleTypeFlags & BATTLE_TYPE_LINK)))
         return;
@@ -1265,6 +1329,45 @@ static void Coop_ApplyProgress(const struct CoopProgress *progress)
 }
 
 static const u16 sLegendSpecies[] = { SPECIES_GROUDON, SPECIES_KYOGRE, SPECIES_RAYQUAZA };
+
+// PING: the partner's counter moved. A short sound, a line in the map-name
+// window and a pulse on the partner's marker or edge arrow. The first frame
+// of a session only learns the counter.
+static void Coop_NotePartnerPing(const struct CoopFrame *frame)
+{
+    u8 count = (frame->ext & COOP_EXT_PING_MASK) >> COOP_EXT_PING_SHIFT;
+    const struct MapHeader *header;
+    u8 *end;
+
+    if (!sPartnerPingKnown)
+    {
+        sPartnerPingKnown = TRUE;
+        sPartnerPingSeen = count;
+        return;
+    }
+    if (count == sPartnerPingSeen)
+        return;
+    sPartnerPingSeen = count;
+    if (gCoopPingsReceived < 0xFFFF)
+        gCoopPingsReceived++;
+    gCoopPingCue = COOP_PING_CUE_FRAMES;
+    if (gMain.inBattle)
+        return;
+    PlaySE(SE_PIN);
+    end = StringCopy(gCoopPopupText, gLinkPlayers[GetMultiplayerId() ^ 1].name);
+    header = Overworld_GetMapHeaderByGroupAndId(frame->mapGroup, frame->mapNum);
+    if (Coop_PartnerOnSameMap() || header == NULL)
+    {
+        StringCopy(end, COMPOUND_STRING(" pinged you!"));
+    }
+    else
+    {
+        // Elsewhere: where they are (the popup holds about 20 characters).
+        end = StringCopy(gCoopPopupText, COMPOUND_STRING("Ping: "));
+        GetMapName(end, header->regionMapSectionId, 0);
+    }
+    ShowCoopPopup();
+}
 
 static void Coop_AcceptPartner(const struct CoopFrame *frame)
 {
@@ -1300,6 +1403,7 @@ static void Coop_AcceptPartner(const struct CoopFrame *frame)
     sPartner = *frame;
     sPartnerValid = TRUE;
     Coop_NoteGoodFrame();
+    Coop_NotePartnerPing(frame);
     if (sMerged)
         return;
 
@@ -1317,7 +1421,7 @@ static void Coop_AcceptPartner(const struct CoopFrame *frame)
     for (i = 0; i < 3; i++)
     {
         local.legend[i] = save->legendaryOwner[i];
-        remote.legend[i] = frame->legend[i];
+        remote.legend[i] = COOP_OWNER_NONE;   // each save's own (src/coop_legend.c)
     }
     merge = CoopProtocol_Merge(&local, &remote, &merged);
     if (merge == 1)
@@ -2341,6 +2445,7 @@ static void Coop_NoteLinkHealth(void)
         if (sPartnerValid)
             Coop_RemoveSprite();
         sPartnerValid = FALSE;
+        sPartnerPingKnown = FALSE;
         // A late YES must not start a battle after its peer went away.
         if (sGuestPairPending)
             sGuestPairTimer = 0xFFFF;
@@ -2373,6 +2478,8 @@ static void Coop_Drop(const u8 *message)
     sHandshakeSaved = FALSE;
     sMerged = FALSE;
     sPartnerValid = FALSE;
+    sPartnerPingKnown = FALSE;
+    sLastSeenValid = FALSE;
     sWaitingAck = FALSE;
     sResumeScript = FALSE;
     sRequest = COOP_REQ_NONE;
@@ -2604,6 +2711,112 @@ bool8 Coop_PartnerMapPos(s16 *x, s16 *y)
     return TRUE;
 }
 
+// Where the partner stands in this map's grid, on this map or on a map
+// joined to it by a connection (inside the strip loaded here), for the edge
+// arrow. FALSE for other maps, interiors and anything not loaded.
+bool8 Coop_PartnerViewCoords(s16 *x, s16 *y)
+{
+    return Coop_PartnerLocalCoords(x, y);
+}
+
+// While the link recovers: the last tile the partner was drawn on, if that
+// was on this map.
+bool8 Coop_PartnerLastSeen(s16 *x, s16 *y)
+{
+    if (!sLastSeenValid || sLastSeenGroup != gSaveBlock1Ptr->location.mapGroup
+     || sLastSeenNum != gSaveBlock1Ptr->location.mapNum)
+        return FALSE;
+    *x = sLastSeenX;
+    *y = sLastSeenY;
+    return TRUE;
+}
+
+// The partner marker's icon (COOP_MARK_*): what the partner is doing, from
+// their latest frame, so nothing outlives the state it shows. COOP_MARK_NONE
+// when there is no partner to mark.
+u8 Coop_PartnerMarkKind(void)
+{
+    if (sLinkState != COOP_LINK_UP)
+        return COOP_MARK_NONE;
+    if (!Coop_SessionActive())
+        return COOP_MARK_BROKEN;
+    if (!sPartnerValid)
+        return COOP_MARK_NONE;
+    if (sPartner.talkLocalId == COOP_TALK_IN_BATTLE)
+        return COOP_MARK_BATTLE;
+    if (sPartner.ext & COOP_EXT_INVITE)
+        return COOP_MARK_INVITE;
+    if (sPartner.ext & COOP_EXT_WAITING)
+        return COOP_MARK_WAIT;
+    switch (sPartner.activity & 3)
+    {
+    case COOP_ACT_TALKING:
+        return COOP_MARK_TALK;
+    case COOP_ACT_MENU:
+    case COOP_ACT_BUSY:
+        return COOP_MARK_MENU;
+    }
+    return COOP_MARK_WALK;
+}
+
+// The partner's own frame says they are following this player.
+bool8 Coop_PartnerIsFollowing(void)
+{
+    return sPartnerValid && Coop_SessionActive() && (sPartner.ext & COOP_EXT_FOLLOWING);
+}
+
+// PING (partner menu): a cue on the partner's screen. FALSE while the
+// cooldown runs.
+bool8 Coop_SendPing(void)
+{
+    if (sPingCooldown != 0 || !Coop_SessionActive())
+        return FALSE;
+    sPingCount = (sPingCount + 1) & 3;
+    sPingCooldown = COOP_PING_COOLDOWN;
+    return TRUE;
+}
+
+u16 Coop_PingCooldownSeconds(void)
+{
+    return (sPingCooldown + 59) / 60;
+}
+
+// The partner's frame: whether their conversation can be joined, which NPC,
+// and their map.
+bool8 Coop_PartnerTalkInfo(u8 *localId, bool8 *joinable)
+{
+    if (!Coop_PartnerOnSameMap() || (sPartner.activity & 3) != COOP_ACT_TALKING
+     || sPartner.talkLocalId == 0 || sPartner.talkLocalId == 0xFF || sPartner.talkLocalId == COOP_TALK_IN_BATTLE)
+        return FALSE;
+    *localId = sPartner.talkLocalId;
+    *joinable = (sPartner.ext & COOP_EXT_JOINABLE) != 0;
+    return TRUE;
+}
+
+bool8 Coop_PartnerWaiting(void)
+{
+    return sPartnerValid && Coop_SessionActive() && (sPartner.ext & COOP_EXT_WAITING);
+}
+
+// The partner's map, tile and movement mode (0 on foot, 1 bike, 2 surf) from
+// their latest live frame (follow mode's history).
+bool8 Coop_PartnerMoveInfo(u8 *group, u8 *num, s16 *x, s16 *y, u8 *mode)
+{
+    if (!sPartnerValid || !Coop_SessionActive())
+        return FALSE;
+    *group = sPartner.mapGroup;
+    *num = sPartner.mapNum;
+    *x = sPartner.x;
+    *y = sPartner.y;
+    *mode = sPartner.surf ? 2 : sPartner.bike ? 1 : 0;
+    return TRUE;
+}
+
+u8 Coop_PartnerActivity(void)
+{
+    return sPartnerValid ? (sPartner.activity & 3) : COOP_ACT_BUSY;
+}
+
 // The partner's sprite on this map (and gender), or MAX_SPRITES.
 u8 Coop_PartnerSpriteId(u8 *gender)
 {
@@ -2627,6 +2840,10 @@ void Coop_OverworldFrame(void)
 {
     if (sPartnerPopupCooldown != 0)
         sPartnerPopupCooldown--;
+    if (sPingCooldown != 0)
+        sPingCooldown--;
+    if (gCoopPingCue != 0)
+        gCoopPingCue--;
     if (sPartnerValid && sPartner.activity == COOP_ACT_BUSY)
     {
         if (sPartnerBusyFrames < 0xFFFF)
@@ -2647,6 +2864,7 @@ void Coop_OverworldFrame(void)
         sFieldFreeFrames++;
     }
     CoopDeal_FieldFrame();
+    CoopFollow_FieldFrame();
     CoopOutfit_FieldFrame();
     CoopNpc_FieldFrame();
     Coop_PollCoordJoin();
@@ -2697,6 +2915,8 @@ u16 Coop_BeginLink(void)
     sHandshakeSaved = FALSE;
     sMerged = FALSE;
     sPartnerValid = FALSE;
+    sPartnerPingKnown = FALSE;
+    sLastSeenValid = FALSE;
     memset(&sBeacon, 0, sizeof(sBeacon));
     sBeaconQueued = 0;
     sBeaconPrompted = 0;

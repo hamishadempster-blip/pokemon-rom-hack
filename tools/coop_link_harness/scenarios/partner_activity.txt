@@ -1,0 +1,101 @@
+# Partner activity icons and the edge arrow (src/coop_outfit.c), from
+# story_seg6 (Rustboro, linked, Beacon off). Each icon is read from
+# gCoopMarkerIcon on the watching game (0 walk, 1 talk, 2 menu, 3 battle,
+# 4 invitation, 5 waiting, 6 link recovering, 16+ the edge arrows) and shot.
+# FIXTURES: no random wild battles; Rosa's one encounter on Route 116
+# comes from walking in its grass; the co-op heartbeat is muted for 10 s.
+include deal_setup.inc
+b wait 30
+0 expect gCoopMarkerIcon 0
+1 expect gCoopMarkerIcon 0
+b shot walk
+# Rosa opens the start menu: Kai sees the menu icon; it clears on B.
+1 press START 2
+b sync
+0 wait 40
+0 expect gCoopMarkerIcon 2
+b shot menu
+1 press B 2
+b sync
+0 wait 40
+0 expect gCoopMarkerIcon 0
+# Rosa faces Kai and presses A (the partner menu is a script): talk icon.
+1 wait 30
+1 press A 2
+b sync
+0 wait 40
+0 expect gCoopMarkerIcon 1
+b shot talk
+# BATTLE asked by Rosa (the defaults): while Kai is asked, Rosa waits and
+# sees Kai's question mark (Kai's game holds an open question).
+1 until_mem coop_deal.sDeal 1 900 A
+0 until_mem coop_deal.sDeal 2 4000
+b sync
+1 wait 40
+1 expect gCoopMarkerIcon 4
+1 expect gCoopMarkerShown 1
+b shot invite
+# Kai says no: both icons back to walking once the fields are free.
+0 press B 2
+b mash_field 1500 B
+b sync
+b wait 40
+0 expect gCoopMarkerIcon 0
+1 expect gCoopMarkerIcon 0
+b expect coop_deal.sDeal 0
+# Rosa walks off east along the road: off Kai's screen, an arrow at the
+# right edge pointing east (16 = ARROW_E); back in view, the dot again.
+1 walk 28 41 3000
+b sync
+0 wait 40
+0 expect gCoopCompassShown 1
+0 expect gCoopMarkerIcon 16
+b shot arrow-east
+1 walk 16 41 3000
+b sync
+0 wait 40
+0 expect gCoopCompassShown 0
+0 expect gCoopMarkerIcon 0
+# The link goes quiet (Rosa's heartbeat muted): Kai sees the broken-link
+# icon where Rosa stood; it clears when the link mends.
+1 mute_coop 600
+b sync
+0 wait 420
+0 expect gCoopMarkerIcon 6
+0 shot recovering
+b until_mem coop.sPartnerValid 1 3000
+b sync
+b wait 60
+0 expect gCoopMarkerIcon 0
+# A solo battle: Rosa on Route 116 grass, Kai beside the grass.
+0 fixture_warp 0 31 20 13
+1 fixture_warp 0 31 23 13
+b until_field 3000
+b sync
+b wait 60
+0 expect gCoopMarkerIcon 0
+1 no_wild 0
+1 walk_battle 27 13 600
+1 walk_battle 24 13 600
+1 walk_battle 27 13 600
+1 walk_battle 24 13 600
+1 walk_battle 27 13 600
+1 walk_battle 24 13 600
+1 walk_battle 27 13 600
+1 walk_battle 24 13 600
+1 walk_battle 27 13 600
+1 walk_battle 24 13 600
+1 walk_battle 27 13 600
+1 walk_battle 24 13 600
+1 until_cb2 BattleMainCB2 1200
+1 no_wild 1
+b sync
+0 wait 60
+0 expect gCoopMarkerIcon 3
+0 shot battle
+1 smart_moves 1
+1 mash_field 9000
+b sync
+b wait 60
+0 expect gCoopMarkerIcon 0
+b expect coop.sLinkState 2

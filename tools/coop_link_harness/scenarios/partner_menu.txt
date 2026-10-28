@@ -1,0 +1,219 @@
+# Partner menu VIEW TEAM, PING and FOLLOW (story_seg6 saves, Rustboro,
+# linked, Beacon off). Kai opens the menu on Rosa.
+# - VIEW TEAM: Rosa's party in the summary screen, read only; nothing opens
+#   on Rosa's screen. With Rosa's game not answering (its deal messages
+#   dropped for a while), the last team is shown with its age.
+# - PING: a sound and note on Rosa's screen; a second one waits.
+# - FOLLOW: Kai walks Rosa's path; stops when Rosa goes through a door
+#   (Kai stays outside), on Kai's own button, before wild grass; Rosa can't
+#   follow Kai while Kai follows her (no loop).
+# FIXTURES: no random wild battles; Rosa's deal messages dropped for 400
+# frames (patch_ret CoopDeal_HandleBlock); warps to Route 101.
+include deal_setup.inc
+b note_party
+# --- VIEW TEAM (DOWN x4).
+0 wait 40
+0 press A 2
+0 wait 40
+0 press DOWN 2
+0 press DOWN 2
+0 press DOWN 2
+0 press DOWN 2
+0 wait 10
+0 shot menu
+0 press A 2
+0 until_field_text sent_just_now 900
+0 wait 30
+0 shot team-note
+0 until_mem coop_deal.gCoopViewingPartnerTeam 1 900 A
+0 wait 120
+0 shot team-summary
+0 press RIGHT 2
+0 wait 60
+0 shot team-skills
+0 press DOWN 2
+0 wait 60
+0 shot team-second
+b sync
+1 shot partner-while-viewing
+0 press B 2
+0 until_mem coop_deal.gCoopViewingPartnerTeam 0 900
+0 mash_field 900 B
+b expect_party_same
+# --- VIEW TEAM while Rosa's game can't answer: the old team, with its age.
+1 patch_ret CoopDeal_HandleBlock 400
+0 wait 40
+0 press A 2
+0 wait 40
+0 press DOWN 2
+0 press DOWN 2
+0 press DOWN 2
+0 press DOWN 2
+0 press A 2
+0 until_field_text as_it_was 900
+0 wait 30
+0 shot team-outdated
+0 until_mem coop_deal.gCoopViewingPartnerTeam 1 900 A
+0 wait 150
+0 shot team-outdated-summary
+0 press B 2
+0 until_mem coop_deal.gCoopViewingPartnerTeam 0 900
+0 mash_field 900 B
+b sync
+b wait 400
+# --- PING (DOWN x5): Rosa hears it; a second one waits for the cooldown.
+1 expect gCoopPingsReceived 0
+0 wait 40
+0 press A 2
+0 wait 40
+0 press DOWN 2
+0 press DOWN 2
+0 press DOWN 2
+0 press DOWN 2
+0 press DOWN 2
+0 press A 2
+0 wait 40
+b sync
+1 until_mem gCoopPingsReceived 1 300
+1 wait 20
+1 shot ping-received
+1 expect_nz gCoopPingCue
+0 mash_field 600 B
+0 wait 40
+0 press A 2
+0 wait 40
+0 press DOWN 2
+0 press DOWN 2
+0 press DOWN 2
+0 press DOWN 2
+0 press DOWN 2
+0 press A 2
+0 until_field_text more_seconds 300
+0 shot ping-cooldown
+0 mash_field 600 B
+b sync
+b wait 30
+1 expect gCoopPingsReceived 1
+# --- FOLLOW (DOWN x6): Kai follows Rosa east, north and back west.
+b sync
+0 wait 300
+0 dump before-follow
+0 shot before-follow
+0 press A 2
+0 wait 40
+0 shot follow-menu
+0 press DOWN 2
+0 press DOWN 2
+0 press DOWN 2
+0 press DOWN 2
+0 press DOWN 2
+0 press DOWN 2
+0 press A 2
+0 until_field_text Press_any_button 300
+0 shot follow-on
+0 mash_field 300 B
+0 wait 20
+0 expect coop_partner.sFollow 2
+b sync
+1 walk 22 41 3000
+1 walk 22 39 3000
+1 wait 60
+b sync
+0 wait 90
+0 shot follow-east
+0 expect coop_partner.sFollow 2
+0 expect_nz gCoopFollowSteps
+# Rosa tries FOLLOW on Kai while Kai follows her: refused, no loop.
+1 press DOWN 2
+1 wait 20
+b sync
+0 dump follow-before-loop
+1 wait 40
+1 press A 2
+1 wait 40
+1 press DOWN 2
+1 press DOWN 2
+1 press DOWN 2
+1 press DOWN 2
+1 press DOWN 2
+1 press DOWN 2
+1 press A 2
+1 until_field_text following_you 300
+1 shot follow-loop
+1 mash_field 600 B
+1 expect coop_partner.sFollow 0
+b sync
+0 expect coop_partner.sFollow 2
+# Rosa goes into the Pokemon Centre: Kai stops outside.
+1 walk 16 39 3000
+1 walk 16 38 3000
+1 until_map 11 5 3000
+b sync
+0 wait 120
+0 shot follow-door
+0 expect coop_partner.sFollow 0
+0 expect gCoopFollowLastStop 10
+0 expect_map 0 3
+1 wait 60
+1 cross DOWN 0 3 3000
+b sync
+b wait 60
+b sync
+# FOLLOW again, then Kai presses a direction: following ends at once.
+0 dump before-manual
+1 walk 18 40 3000
+0 walk 16 40 3000
+0 walk 17 40 3000
+b sync
+0 wait 40
+0 dump manual-before-a
+0 press A 2
+0 wait 40
+0 shot manual-menu
+0 press DOWN 2
+0 press DOWN 2
+0 press DOWN 2
+0 press DOWN 2
+0 press DOWN 2
+0 press DOWN 2
+0 press A 2
+0 until_field_text Press_any_button 300
+0 mash_field 300 B
+0 wait 20
+0 expect coop_partner.sFollow 2
+0 press DOWN 2
+0 wait 30
+0 expect coop_partner.sFollow 0
+0 expect gCoopFollowLastStop 1
+0 shot follow-manual
+b sync
+# Route 101: Kai follows Rosa to the grass and stops before it.
+0 fixture_warp 0 16 6 10
+1 fixture_warp 0 16 8 10
+b until_field 3000
+b sync
+b wait 60
+0 walk 7 10 3000
+0 wait 40
+0 press A 2
+0 wait 40
+0 press DOWN 2
+0 press DOWN 2
+0 press DOWN 2
+0 press DOWN 2
+0 press DOWN 2
+0 press DOWN 2
+0 press A 2
+0 until_field_text Press_any_button 300
+0 mash_field 300 B
+0 wait 20
+0 expect coop_partner.sFollow 2
+b sync
+1 walk 13 10 3000
+b sync
+0 wait 200
+0 shot follow-grass
+0 expect coop_partner.sFollow 0
+0 expect gCoopFollowLastStop 5
+b expect coop.sLinkState 2
+b expect_party_same

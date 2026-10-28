@@ -24,6 +24,7 @@ void CoopDeal_SendLegend(u8 sub, u8 enc, u16 ball, u16 result);
 void CoopDeal_SaveInBackground(u8 enc, u16 result);
 bool8 CoopDeal_SaveBusy(void);
 bool8 CoopDeal_Busy(void);
+bool8 CoopDeal_WaitingForPartner(void);
 bool8 CoopDeal_SharedClock(s32 *hours, s32 *minutes);
 bool8 CoopDeal_ItemGiftable(u16 item);
 void CoopDeal_AbortFriendlyBattle(void);
@@ -37,6 +38,12 @@ u8 Coop_BattleSpeed(void);
 u16 CoopDeal_RequestPartnerTeam(void);
 u8 CoopDeal_PartnerTeamReady(void);
 void CoopDeal_CopyPartnerTeamMon(u8 index, struct Pokemon *dest);
+u16 CoopTeam_Ask(void);
+void CoopTeam_Wait(void);
+u16 CoopTeam_HaveSnapshot(void);
+u16 CoopTeam_BufferNote(void);
+void CoopTeam_Show(void);
+extern bool8 gCoopViewingPartnerTeam;
 
 // Practice battles (src/coop_practice.c).
 u16 CoopPractice_AskPartnerTeam(void);

@@ -159,6 +159,47 @@ bool8 Coop_IsRivalGraphics(u16 gfx);
 u8 Coop_PartnerSpriteId(u8 *gender);
 bool8 Coop_PartnerMapPos(s16 *x, s16 *y);
 bool8 Coop_PartnerFrameInfo(u8 *mapGroup, u8 *mapNum, u8 *activity);
+bool8 Coop_PartnerViewCoords(s16 *x, s16 *y);
+bool8 Coop_PartnerLastSeen(s16 *x, s16 *y);
+bool8 Coop_PartnerIsFollowing(void);
+bool8 Coop_SendPing(void);
+u16 Coop_PingCooldownSeconds(void);
+bool8 Coop_PartnerTalkInfo(u8 *localId, bool8 *joinable);
+bool8 Coop_PartnerWaiting(void);
+bool8 Coop_PartnerMoveInfo(u8 *group, u8 *num, s16 *x, s16 *y, u8 *mode);
+bool8 Coop_MapCoordsToLocal(u8 group, u8 num, s16 x, s16 y, s16 *outX, s16 *outY);
+u8 Coop_PartnerActivity(void);
+// The partner marker's icon: what the partner is doing (src/coop.c).
+enum
+{
+    COOP_MARK_WALK,     // the order of the icons in src/data/coop_marker_icons.h
+    COOP_MARK_TALK,
+    COOP_MARK_MENU,
+    COOP_MARK_BATTLE,
+    COOP_MARK_INVITE,
+    COOP_MARK_WAIT,
+    COOP_MARK_BROKEN,
+    COOP_MARK_NONE = 0xFF,
+};
+u8 Coop_PartnerMarkKind(void);
+bool8 Coop_LocalAwaitingPartner(void);
+#define COOP_PING_COOLDOWN 300   // five seconds between PINGs
+#define COOP_PING_CUE_FRAMES 180 // a received PING's cue lasts three seconds
+extern u16 gCoopPingCue;
+extern u16 gCoopPingsReceived;
+extern bool8 gCoopLocalWaiting;
+// Follow mode and joined conversations (src/coop_partner.c, src/coop_talk.c).
+bool8 CoopFollow_Active(void);
+void CoopFollow_Stop(u8 reason);
+u16 CoopFollow_Start(void);
+void CoopFollow_FieldFrame(void);
+void CoopFollow_FieldInput(u16 *newKeys, u16 *heldKeys);
+void CoopFollow_NoteBattle(void);
+u16 CoopPartner_Ping(void);
+u16 CoopPartner_BufferBusyReason(void);
+extern u8 gCoopFollowLastStop;
+extern u16 gCoopFollowSteps;
+bool8 CoopTalk_LocalJoinable(void);
 void Coop_NoteCoordScene(s16 x, s16 y);
 u16 Coop_WarpToCoordScene(void);
 const u8 *GetCoordEventScriptAt(s16 x, s16 y, u8 elevation);
