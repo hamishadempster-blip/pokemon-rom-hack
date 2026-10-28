@@ -16,6 +16,8 @@
 # Part 5: Dewford Hall: Kai talks to a man whose script runs special code
 # (can't be shared); Rosa's A on him gives a short corner note, no box,
 # not repeated; her field stays free.
+# Part 6: Kai shops at the Petalburg Mart; Rosa's A on Kai: "Kai is
+# shopping".
 # FIXTURES: warps; text speeds (player options); the heartbeat muted.
 include continue.inc
 include relink.inc
@@ -219,4 +221,30 @@ b sync
 0 mash_field 3000 B
 b sync
 b wait 30
+b expect coop.sLinkState 2
+# ---- Part 6: Kai at the Petalburg Mart counter (a shop: not shared).
+# Rosa presses A on Kai: the note says what he is doing.
+0 fixture_warp 8 6 4 4
+1 fixture_warp 8 6 5 4
+b mash_field 3000 B
+b sync
+b wait 200
+0 walk 4 3 3000
+0 walk 3 3 3000
+1 walk 5 3 3000
+1 walk 4 3 3000
+b sync
+b wait 30
+0 press A 2
+0 wait 60
+b sync
+0 expect gCoopTalkStats+1:1 2
+1 press A 2
+1 wait 40
+1 expect gCoopTalkStats+30:1 2
+1 expect_text gCoopPopupText Kai_is_shopping
+1 shot shop-note
+0 mash_field 3000 B
+1 mash_field 600 B
+b sync
 b expect coop.sLinkState 2

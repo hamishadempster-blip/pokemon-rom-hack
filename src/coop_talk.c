@@ -408,7 +408,13 @@ enum {
     TALK_OP_READY,          // joiner -> host, serial: checkpoint
     TALK_OP_END,            // host -> joiner, arg: reason
     TALK_OP_LEAVE,          // joiner -> host
+    TALK_OP_CLASS,          // host -> partner, arg: why it can't be joined (CLASS_*), arg2: the NPC
 };
+
+// Why the partner's conversation can't be shared (TALK_OP_CLASS) and with
+// whom: the corner note says what they are doing.
+static EWRAM_DATA u8 sPartnerClass = 0;
+static EWRAM_DATA u8 sPartnerClassNpc = 0;
 
 enum {
     END_DONE,
@@ -652,6 +658,9 @@ const u8 *CoopTalk_OnInteract(u8 objectEventId, const u8 *script)
     sHost.npcLocalId = obj->localId;
     sHost.class = Talk_Classify(script);
     sHost.joinable = (sHost.class == CLASS_OK);
+    // Tell the partner why this one can't be shared, for their note.
+    if (!sHost.joinable)
+        CoopDeal_SendTalk(TALK_OP_CLASS, sHost.class, obj->localId, 0, 0, NULL, 0);
     if (gCoopTalkStats.hosted < 0xFF)
         gCoopTalkStats.hosted++;
     gCoopTalkStats.lastClass = sHost.class;
@@ -807,6 +816,10 @@ void CoopTalk_HandleMsg(u8 op, u8 arg, u8 arg2, u16 serial, u16 total, const u8 
     case TALK_OP_LEAVE:
         sHost.joiner = FALSE;
         sHost.outCount = 0;
+        return;
+    case TALK_OP_CLASS:
+        sPartnerClass = arg;
+        sPartnerClassNpc = arg2;
         return;
     }
     if (sJoin.state == JOIN_NONE)
@@ -1092,9 +1105,33 @@ static bool8 ShowBusyNoteNow(void)
 
     // The popup shows 68 pixels of text (src/map_name_popup.c): the longest
     // wording that fits the partner's name.
+    u8 npc;
+    bool8 joinable;
+    u8 class = CLASS_SCENE;
+
+    if (Coop_PartnerTalkInfo(&npc, &joinable) && npc == sPartnerClassNpc)
+        class = sPartnerClass;
+    gCoopTalkStats.busyClass = class;
+    if (class == CLASS_GIFT)
+    {
+        str = StringCopy(str, COMPOUND_STRING("A gift for "));
+        PartnerName(str);
+        if (PopupFits())
+            return ShowCoopPopup();
+        str = gCoopPopupText;
+    }
     PartnerName(str);
     str += StringLength(str);
-    StringCopy(str, COMPOUND_STRING(" is talking to them"));
+    if (class == CLASS_SHOP)
+        StringCopy(str, COMPOUND_STRING(" is shopping"));
+    else if (class == CLASS_BATTLE)
+        StringCopy(str, COMPOUND_STRING(" is battling"));
+    else if (class == CLASS_WARP)
+        StringCopy(str, COMPOUND_STRING(" is moving on"));
+    else
+        StringCopy(str, COMPOUND_STRING(" is talking to them"));
+    if (PopupFits() || class != CLASS_SCENE)
+        return ShowCoopPopup();
     if (!PopupFits())
         StringCopy(str, COMPOUND_STRING("'s talking to them"));
     if (!PopupFits())

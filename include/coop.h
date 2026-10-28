@@ -220,6 +220,7 @@ struct CoopTalkStats
     u8 rxOps[8];
     u8 txCount;         // talk messages sent (the last eight ops below)
     u8 txOps[8];
+    u8 busyClass;       // why the partner's last unshareable conversation was (CLASS_* in src/coop_talk.c: 1 gift, 2 shop, 3 battle, 4 warp, 5 other)
 };
 extern struct CoopTalkStats gCoopTalkStats;
 const u8 *CoopTalk_OnInteract(u8 objectEventId, const u8 *script);
