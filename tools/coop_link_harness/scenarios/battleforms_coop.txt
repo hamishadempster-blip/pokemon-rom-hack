@@ -61,6 +61,10 @@ b shot gulping
 0 expect_screen_same 8 56 56 48
 b until_battle_text What_will 8000 auto
 0 expect gBattleMons+280:2 1226
+# Compared once Rosa has chosen: a battler at its own action menu bobs, so
+# the two screens would differ by the bob alone.
+1 until_battle_text Waiting_for 3000 auto
+1 wait 60
 b sync
 b shot hangry
 0 expect_screen_same 72 64 64 40
