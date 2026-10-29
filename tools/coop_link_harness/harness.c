@@ -3296,6 +3296,11 @@ static void frameCallback(struct mCoreThread* t) {
                 dump(p, "fail");
                 sFailures++;
                 advance = true;
+            } else if (rd8(p, sMain + 0x439) & 2) {
+                // In a battle on the way: the battle driver's keys (it also
+                // picks a Pokemon able to fight in a forced replacement,
+                // where tapping A held the cursor on a fainted one).
+                keys = autoKeys(p, p->step);
             } else if ((p->step % 24) == 0) {
                 keys = 1; // A
             }

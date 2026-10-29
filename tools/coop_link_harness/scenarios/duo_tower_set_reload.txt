@@ -18,11 +18,11 @@ b sync
 include duo_desk_continue.inc
 b until_cb2 BattleMainCB2 6000 A
 0 strong_battlers 1
-b mash_field 40000
+b until_field_text DUO_run_ends 40000
 0 strong_battlers 0
-# (B: Kai faces the desk; A would talk to it again once his script ends.)
-0 mash_field 3000 B
-1 mash_field 3000
+# (B only from here: Kai faces the desk, and an A after his script ends
+# would talk to it again and start a new attempt.)
+b mash_field 3000 B
 b sync
 b wait 60
 b expect gCoopDuoLastOutcome 2
