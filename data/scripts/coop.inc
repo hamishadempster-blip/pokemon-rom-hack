@@ -1469,3 +1469,52 @@ Coop_Text_JoinAskWild:
 Coop_Text_JoinAskTrainer:
 	.string "{STR_VAR_1} challenged your partner.\n"
 	.string "Join the battle? (25 seconds)$"
+
+@ The field kit (0xC017013E): once per save, from the first nurse talked to
+@ after getting a POKéMON. A full KEY ITEMS pocket leaves it for next time.
+Coop_EventScript_NurseKit::
+	specialvar VAR_RESULT, CoopKit_NeedsBoxLink
+	goto_if_eq VAR_RESULT, TRUE, Coop_EventScript_NurseKitGive
+	specialvar VAR_RESULT, CoopKit_NeedsVial
+	goto_if_eq VAR_RESULT, TRUE, Coop_EventScript_NurseKitGive
+	return
+
+Coop_EventScript_NurseKitGive::
+	msgbox Coop_Text_NurseKit, MSGBOX_DEFAULT
+	specialvar VAR_RESULT, CoopKit_NeedsBoxLink
+	call_if_eq VAR_RESULT, TRUE, Coop_EventScript_NurseKitBoxLink
+	specialvar VAR_RESULT, CoopKit_NeedsVial
+	call_if_eq VAR_RESULT, TRUE, Coop_EventScript_NurseKitVial
+	msgbox Coop_Text_NurseKitExplain, MSGBOX_DEFAULT
+	return
+
+Coop_EventScript_NurseKitBoxLink::
+	giveitem ITEM_POKEMON_BOX_LINK
+	call_if_eq VAR_RESULT, TRUE, Coop_EventScript_NurseKitMarkBoxLink
+	return
+
+Coop_EventScript_NurseKitMarkBoxLink::
+	special CoopKit_MarkBoxLink
+	return
+
+Coop_EventScript_NurseKitVial::
+	giveitem ITEM_HEALING_VIAL
+	call_if_eq VAR_RESULT, TRUE, Coop_EventScript_NurseKitMarkVial
+	return
+
+Coop_EventScript_NurseKitMarkVial::
+	special CoopKit_MarkVial
+	return
+
+Coop_Text_NurseKit:
+	.string "Before you rest: every trainer on a\n"
+	.string "long journey gets these from us.$"
+
+Coop_Text_NurseKitExplain:
+	.string "The BOX LINK opens your POKéMON\n"
+	.string "STORAGE from the field.\p"
+	.string "The HEALING VIAL heals one POKéMON's\n"
+	.string "HP and status outside battle.\p"
+	.string "It holds one charge, one more for\n"
+	.string "every two BADGES, and any CENTER\l"
+	.string "refills it. It can't revive.$"

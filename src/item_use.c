@@ -745,10 +745,44 @@ static void Task_OpenRegisteredPokeblockCase(u8 taskId)
     }
 }
 
+// Not in the Battle Frontier, the Safari Zone or Trainer Hill, and not
+// while a co-op trade or gift is open (src/coop.c CoopKit_FieldUseBlocked).
+static void ItemUse_SayBlocked(u8 taskId, const u8 *message)
+{
+    if (!gTasks[taskId].data[2])
+        DisplayItemMessageOnField(taskId, message, Task_CloseCantUseKeyItemMessage);
+    else
+        DisplayItemMessage(taskId, FONT_NORMAL, message, CloseItemMessage);
+}
+
 void ItemUseOutOfBattle_PokemonBoxLink(u8 taskId)
 {
+    const u8 *blocked = CoopKit_FieldUseBlocked();
+
+    if (blocked != NULL)
+    {
+        ItemUse_SayBlocked(taskId, blocked);
+        return;
+    }
     sItemUseOnFieldCB = Task_AccessPokemonBoxLink;
     SetUpItemUseOnFieldCallback(taskId);
+}
+
+// HEALING VIAL (0xC017013E): one Pokemon's HP and status, outside battle,
+// one charge each (src/party_menu.c ItemUseCB_HealingVial).
+void ItemUseOutOfBattle_HealingVial(u8 taskId)
+{
+    const u8 *blocked = CoopKit_FieldUseBlocked();
+
+    if (blocked == NULL && CoopKit_VialCharges() == 0)
+        blocked = COMPOUND_STRING("The HEALING VIAL is empty.\nA POKéMON CENTER refills it.");
+    if (blocked != NULL)
+    {
+        ItemUse_SayBlocked(taskId, blocked);
+        return;
+    }
+    gItemUseCB = ItemUseCB_HealingVial;
+    SetUpItemUseCallback(taskId);
 }
 
 static void Task_AccessPokemonBoxLink(u8 taskId)

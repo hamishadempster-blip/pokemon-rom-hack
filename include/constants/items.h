@@ -1053,6 +1053,7 @@ enum __attribute__((packed)) Item
     ITEM_GLIMMORANITE = 873,
 
     ITEM_TWIN_BEACON = 874,
+    ITEM_HEALING_VIAL = 875,
 
     ITEMS_COUNT,
     ITEM_FIELD_ARROW = ITEMS_COUNT,

@@ -316,6 +316,19 @@ struct CoopSave
     u32 legendOwedOtId;            // the partner owed
     u8 legendOwedBall[COOP_LEGEND_SLOTS];    // the ball the shared catch used
     u32 legendFromOtId[COOP_LEGEND_SLOTS];   // whose shared catch earned this save's reward
+    // Layout 4 (build 0xC017013E): the field kit (src/coop.c CoopKit_*) and
+    // duo Battle Frontier records (src/coop_frontier.c).
+    u8 fieldKit;                   // COOP_KIT_* bits: given once each
+    u8 vialCharges;                // HEALING VIAL charges left
+    u16 duoRunId;                  // the duo challenge in progress (0: none)
+    u8 duoFacility;                // its FRONTIER_FACILITY_*
+    u8 duoMode;                    // its lvl mode (and rules bits)
+    u16 duoRound;                  // its completed rounds
+    u16 duoSeed;                   // its shared seed
+    u8 duoState;                   // COOP_DUO_* (none, active, paid)
+    u8 duoPaidRound;               // rounds already paid in BP
+    u32 duoPartnerOtId;            // whose run it is with
+    u16 duoBest[7];                // best duo streak per facility
 };
 
 struct SaveBlock3

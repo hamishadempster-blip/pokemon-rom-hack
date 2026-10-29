@@ -16116,6 +16116,23 @@ const struct ItemInfo gItemsInfo[] =
         .iconPic = gItemIcon_DevonScope,
         .iconPalette = gItemIconPalette_DevonScope,
     },
+
+    [ITEM_HEALING_VIAL] =
+    {
+        .name = ITEM_NAME("Healing Vial"),
+        .price = 0,
+        .description = COMPOUND_STRING(
+            "Heals one {PKMN}'s\n"
+            "HP and status, not\n"
+            "in battle. Refillable."),
+        .importance = 1,
+        .pocket = POCKET_KEY_ITEMS,
+        .sortType = ITEM_TYPE_FIELD_USE,
+        .type = ITEM_USE_PARTY_MENU,
+        .fieldUseFunc = ItemUseOutOfBattle_HealingVial,
+        .iconPic = gItemIcon_FreshWater,
+        .iconPalette = gItemIconPalette_FreshWater,
+    },
 };
 
 #undef ITEM_NAME

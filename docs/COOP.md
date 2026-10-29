@@ -93,6 +93,14 @@ Since build 0xC017013E a shared story fight (gym leaders, the Elite Four, the ch
 - In the battle your chosen Pokémon take the places of your first three. Afterwards every Pokémon is back in its own party slot with what happened to it (HP, PP, items, EXP, EVs, new moves, evolution); the order of your party does not change.
 - **Unlinked**, a gym leader, Elite Four member or the champion offers the lead only (**Lead vs …**, READY / CHANGE LEAD / CANCEL) when two or more of your Pokémon can fight; the whole party fights, and the lead you choose moves to the front of your party for good, as if you had switched it in the party menu. Solo rivals and villains start as before.
 
+## Field kit: BOX LINK and HEALING VIAL
+
+Since build 0xC017013E the first POKéMON CENTER nurse you talk to after getting your first Pokémon gives each save two KEY ITEMS (once; a full pocket leaves them for next time):
+
+- **POKéMON BOX LINK** opens the POKéMON STORAGE SYSTEM from the field (BAG, KEY ITEMS, USE). Storing a Pokémon does not heal it: it comes back with the HP and status it went in with.
+- **HEALING VIAL** restores one Pokémon's HP to full and cures its status, outside battle only. It does not revive a fainted Pokémon and does not restore PP. It holds 1 charge, plus 1 for every two badges (5 with eight), and every Center heal refills it.
+- Neither works in the Battle Frontier (including the Pyramid and the Pike), the Safari Zone or Trainer Hill, nor while a trade, gift, shared-battle question or team preparation with your partner is open.
+
 ## Move information in battle
 
 In the move menu, **L** opens a compact panel over the top of the battlefield (L again, A or B closes it; cursor moves update it): the category icon, **PWR** (**var.** when the power depends on the battle, with what decides it, such as "Power: foe's weight."), **ACC** (**sure** for a move that never misses), who the move hits ("One target.", "Both foes.", "All others.", "Self."...), "No PP left." or "Disabled." when that applies (Disabled is shown on the game that runs the battle; the other player's game does not know it), then the move's description. The move menu's own box still shows PP and type.

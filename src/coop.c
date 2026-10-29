@@ -9,6 +9,7 @@
 #include "battle_main.h"
 #include "battle_setup.h"
 #include "trainer_see.h"
+#include "battle_pike.h"
 #include "battle_pyramid.h"
 #include "constants/region_map_sections.h"
 #include "constants/battle_pyramid.h"
@@ -93,7 +94,7 @@
 // need time to say yes. 30 seconds at 60 frames.
 #define COOP_LINK_WAIT_LIMIT 1800
 #define COOP_CASE_NONE    0xFF
-#define COOP_SAVE_LAYOUT  3
+#define COOP_SAVE_LAYOUT  4
 // A ledger is re-sent this often while linked, so a dropped block heals.
 #define COOP_STORY_RESEND 300
 
@@ -434,6 +435,22 @@ static struct CoopSave *CoopSave(void)
             save->legendaryOwner[i] = COOP_OWNER_NONE;
         }
         save->pendingLegendary = 0;
+    }
+    // Layout 4: field kit, duo Frontier records.
+    if (save->layout < 4)
+    {
+        save->layout = 4;
+        save->fieldKit = 0;
+        save->vialCharges = 0;
+        save->duoRunId = 0;
+        save->duoFacility = 0;
+        save->duoMode = 0;
+        save->duoRound = 0;
+        save->duoSeed = 0;
+        save->duoState = 0;
+        save->duoPaidRound = 0;
+        save->duoPartnerOtId = 0;
+        memset(save->duoBest, 0, sizeof(save->duoBest));
     }
     return save;
 }
@@ -6052,4 +6069,111 @@ void Coop_BufferPrepOpponents(u8 *dst, bool8 host)
         dst = StringCopy(dst, COMPOUND_STRING(" & "));
         StringCopy(dst, GetTrainerNameFromId(b));
     }
+}
+
+// --- Field kit (build 0xC017013E) ----------------------------------------
+// Each save gets a POKéMON BOX LINK (the storage system from the field) and
+// a HEALING VIAL from the first POKéMON CENTER nurse it talks to once it has
+// a Pokemon. The vial holds 1 charge plus 1 for every two badges, heals one
+// Pokemon's HP and status outside battle (no revive, no PP), and is
+// refilled by a Center's heal. Deposits do not heal (OW_PC_HEAL), so the
+// BOX LINK is not a free Center.
+
+#define COOP_KIT_BOX_LINK 1
+#define COOP_KIT_VIAL     2
+
+// Test visibility: the charges after the last change or read.
+EWRAM_DATA u8 gCoopVialCharges = 0;
+
+u8 CoopKit_VialMax(void)
+{
+    u32 i, badges = 0;
+
+    for (i = 0; i < 8; i++)
+    {
+        if (FlagGet(FLAG_BADGE01_GET + i))
+            badges++;
+    }
+    return 1 + badges / 2;
+}
+
+u8 CoopKit_VialCharges(void)
+{
+    struct CoopSave *save = CoopSave();
+
+    if (save == NULL)
+        return 0;
+    if (save->vialCharges > CoopKit_VialMax())
+        save->vialCharges = CoopKit_VialMax();
+    gCoopVialCharges = save->vialCharges;
+    return save->vialCharges;
+}
+
+bool8 CoopKit_UseVialCharge(void)
+{
+    struct CoopSave *save = CoopSave();
+
+    if (save == NULL || CoopKit_VialCharges() == 0)
+        return FALSE;
+    save->vialCharges--;
+    gCoopVialCharges = save->vialCharges;
+    return TRUE;
+}
+
+// After a Center's heal.
+void CoopKit_RefillVial(void)
+{
+    struct CoopSave *save = CoopSave();
+
+    if (save != NULL && CheckBagHasItem(ITEM_HEALING_VIAL, 1))
+        save->vialCharges = CoopKit_VialMax();
+    if (save != NULL)
+        gCoopVialCharges = save->vialCharges;
+}
+
+u16 CoopKit_NeedsBoxLink(void)
+{
+    struct CoopSave *save = CoopSave();
+
+    return save != NULL && FlagGet(FLAG_SYS_POKEMON_GET) && !(save->fieldKit & COOP_KIT_BOX_LINK)
+        && !CheckBagHasItem(ITEM_POKEMON_BOX_LINK, 1);
+}
+
+u16 CoopKit_NeedsVial(void)
+{
+    struct CoopSave *save = CoopSave();
+
+    return save != NULL && FlagGet(FLAG_SYS_POKEMON_GET) && !(save->fieldKit & COOP_KIT_VIAL)
+        && !CheckBagHasItem(ITEM_HEALING_VIAL, 1);
+}
+
+void CoopKit_MarkBoxLink(void)
+{
+    struct CoopSave *save = CoopSave();
+
+    if (save != NULL)
+        save->fieldKit |= COOP_KIT_BOX_LINK;
+}
+
+void CoopKit_MarkVial(void)
+{
+    struct CoopSave *save = CoopSave();
+
+    if (save != NULL)
+    {
+        save->fieldKit |= COOP_KIT_VIAL;
+        save->vialCharges = CoopKit_VialMax();
+        gCoopVialCharges = save->vialCharges;
+    }
+}
+
+// NULL when the BOX LINK and the HEALING VIAL may be used here.
+const u8 *CoopKit_FieldUseBlocked(void)
+{
+    if (Coop_PlaceStaysSolo() || gMapHeader.regionMapSectionId == MAPSEC_BATTLE_FRONTIER
+     || CurrentBattlePyramidLocation() != PYRAMID_LOCATION_NONE || InBattlePike())
+        return COMPOUND_STRING("It can't be used here.");
+    if (CoopDeal_Busy() || CoopPrep_Active() || sWaitingAck || sGuestPairPending)
+        return COMPOUND_STRING("Finish with your partner first.");
+    return NULL;
 }

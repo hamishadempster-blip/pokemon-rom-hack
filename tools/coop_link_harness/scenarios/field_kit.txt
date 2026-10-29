@@ -1,0 +1,190 @@
+# Field kit (0xC017013E): BOX LINK and HEALING VIAL. Checkpoint 13 saves
+# (no badge, five Pokemon), Kai not linked. FIXTURES: fixture_warp; TEST HELPER
+# test_data sets the lead's HP (SetMonData) and a raw write its status; the
+# lead's HP and status written down to test healing; a Battle Frontier warp
+# for the "not here" rule.
+# 1. The Oldale nurse gives both once (and heals); the vial has 1 charge.
+# 2. Lead at 5 HP and poisoned: the vial (BAG, KEY ITEMS) heals HP and
+#    status; 0 charges; a second use says it is empty.
+# 3. BOX LINK: deposit the lead at 5 HP and take it back: still 5 HP (no
+#    free healing; OW_PC_HEAL).
+# 4. A Center heal refills the vial; the nurse gives nothing new.
+# 5. In the Battle Frontier both say they can't be used there.
+include continue.inc
+b mash_field 300 B
+0 expect coop.sLinkState 0
+0 fixture_warp 2 2 7 5
+0 until_field 3000
+0 walk 7 4 2000
+0 press UP 2
+0 wait 10
+0 note_text every_trainer_on_a
+0 press A 2
+0 mash_field 4000 A
+0 expect_noted
+0 expect_item 4 717 1
+0 expect_item 4 875 1
+0 expect gCoopVialCharges 1
+0 shot kit-given
+# 2. the vial
+0 test_data 0 hp 5
+0 write gParties+80:4 8
+0 expect_mon 0 hp 5
+0 press START 2
+0 wait 40
+0 menu_to BAG
+0 press A 2
+0 until_cb2 CB2_BagMenuRun 2500
+0 wait 30
+0 bag_item 875
+0 press A 2
+0 wait 40
+0 shot vial-menu
+0 press A 2
+0 until_cb2 CB2_UpdatePartyMenu 600
+0 wait 60
+0 press A 2
+0 wait 150
+0 shot vial-used
+0 expect_equal gParties+86:2 gParties+88
+0 expect gParties+80:4 0
+0 expect gCoopVialCharges 0
+0 press A 2
+0 wait 60
+0 mash_field 2000 B
+# second use: empty
+0 note_text is_empty
+0 press START 2
+0 wait 40
+0 menu_to BAG
+0 press A 2
+0 until_cb2 CB2_BagMenuRun 2500
+0 wait 30
+0 bag_item 875
+0 press A 2
+0 wait 40
+0 press A 2
+0 wait 90
+0 shot vial-empty
+0 mash_field 3000 B
+0 expect_noted
+# 3. BOX LINK: deposit at 5 HP, withdraw
+0 test_data 0 hp 5
+0 expect_mon 0 personality @2
+0 press START 2
+0 wait 40
+0 menu_to BAG
+0 press A 2
+0 until_cb2 CB2_BagMenuRun 2500
+0 wait 30
+0 bag_item 717
+0 press A 2
+0 wait 40
+0 press A 2
+0 wait 120
+0 shot boxlink-opened
+0 press A 2
+0 wait 60
+0 shot pc-menu
+# DEPOSIT POKéMON: the lead, into the current box
+0 press DOWN 2
+0 wait 10
+0 press A 2
+0 wait 120
+0 shot deposit-screen
+0 press A 2
+0 wait 30
+0 press A 2
+0 wait 60
+0 shot deposit-box
+0 press A 2
+0 wait 120
+0 shot deposited
+0 press B 2
+0 wait 90
+0 shot after-deposit
+# "Continue BOX operations?" NO, then WITHDRAW POKéMON: the box's first
+# slot (the Pokemon just stored) back to the party (slot 5)
+0 press DOWN 2
+0 wait 10
+0 press A 2
+0 wait 90
+0 press UP 2
+0 wait 10
+0 press UP 2
+0 wait 10
+0 press UP 2
+0 wait 10
+0 press DOWN 2
+0 wait 10
+0 press DOWN 2
+0 wait 10
+0 shot pc-withdraw
+0 press A 2
+0 wait 150
+0 shot withdraw-screen
+0 press A 2
+0 wait 40
+0 shot withdraw-menu
+0 press DOWN 2
+0 wait 10
+0 press DOWN 2
+0 wait 10
+0 press A 2
+0 wait 240
+0 shot withdrawn
+0 press B 2
+0 wait 60
+0 press DOWN 2
+0 wait 10
+0 press A 2
+0 wait 60
+0 mash_field 3000 B
+0 expect_mon 4 personality @2
+0 expect_mon 4 hp 5
+# 4. A Center heal refills the vial; nothing new from the nurse
+0 fixture_warp 2 2 7 5
+0 until_field 3000
+0 walk 7 4 2000
+0 press UP 2
+0 wait 10
+0 press A 2
+0 mash_field 4000 A
+0 expect gCoopVialCharges 1
+0 expect_item 4 875 1
+0 expect_equal gParties+486:2 gParties+488
+# 5. Battle Frontier: not here
+0 fixture_warp 26 5 6 8
+0 until_field 3000
+0 note_text can't_be_used_here
+0 press START 2
+0 wait 40
+0 menu_to BAG
+0 press A 2
+0 until_cb2 CB2_BagMenuRun 2500
+0 wait 30
+0 bag_item 875
+0 press A 2
+0 wait 40
+0 press A 2
+0 wait 90
+0 shot frontier-vial
+0 mash_field 3000 B
+0 expect_noted
+0 expect gCoopVialCharges 1
+0 note_text can't_be_used_here
+0 press START 2
+0 wait 40
+0 menu_to BAG
+0 press A 2
+0 until_cb2 CB2_BagMenuRun 2500
+0 wait 30
+0 bag_item 717
+0 press A 2
+0 wait 40
+0 press A 2
+0 wait 90
+0 shot frontier-boxlink
+0 mash_field 3000 B
+0 expect_noted
+0 expect_cb2 CB2_Overworld

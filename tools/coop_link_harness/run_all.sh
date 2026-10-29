@@ -148,6 +148,7 @@ if [ -n "${J13:-}" ]; then
 	run prep_win_j13 SAVE0="$J13/p0.sav" SAVE1="$J13/p1.sav"
 	run prep_win_j13_reload SAVE0="$out/prep_win_j13/p0.sav" SAVE1="$out/prep_win_j13/p1.sav"
 	run prep_solo_lead SAVE0="$J13/p0.sav" SAVE1="$J13/p1.sav"
+	run field_kit SAVE0="$J13/p0.sav" SAVE1="$J13/p1.sav"
 fi
 if [ -n "${J44:-}" ]; then
 	run mandatory_busy_menu SAVE0="$J44/p0.sav" SAVE1="$J44/p1.sav"

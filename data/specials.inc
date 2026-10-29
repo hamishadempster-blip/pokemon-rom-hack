@@ -678,6 +678,11 @@ gSpecials::
 	def_special Coop_TakeRefusal
 	def_special Coop_BufferStoryAsk
 	def_special CoopPrep_TakeEndReason
+	def_special CoopKit_RefillVial
+	def_special CoopKit_NeedsBoxLink
+	def_special CoopKit_NeedsVial
+	def_special CoopKit_MarkBoxLink
+	def_special CoopKit_MarkVial
 	def_special Coop_TakeGuestFollowup
 	def_special Coop_NextCaughtNickname
 	def_special Coop_NextPartnerCatch

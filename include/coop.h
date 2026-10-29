@@ -284,6 +284,15 @@ u16 Coop_TakeGuestFollowup(void);
 u16 Coop_TakeRefusal(void);
 bool8 Coop_HasBattleReadyLead(void);
 bool8 Coop_HasBattleReadyMon(void);
+u8 CoopKit_VialMax(void);
+u8 CoopKit_VialCharges(void);
+bool8 CoopKit_UseVialCharge(void);
+void CoopKit_RefillVial(void);
+u16 CoopKit_NeedsBoxLink(void);
+u16 CoopKit_NeedsVial(void);
+void CoopKit_MarkBoxLink(void);
+void CoopKit_MarkVial(void);
+const u8 *CoopKit_FieldUseBlocked(void);
 
 // Battle start timing stages (gCoopStartTimes, frames).
 enum

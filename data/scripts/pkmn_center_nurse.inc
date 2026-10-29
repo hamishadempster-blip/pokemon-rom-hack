@@ -1,6 +1,7 @@
 Common_EventScript_PkmnCenterNurse::
 	lock
 	faceplayer
+	call Coop_EventScript_NurseKit
 	setvar VAR_0x8004, 0
 .if !IS_FRLG
 	specialvar VAR_RESULT, CountPlayerTrainerStars
@@ -65,6 +66,7 @@ EventScript_PkmnCenterNurse_TakeAndHealPkmn::
 	applymovement VAR_0x800B, Common_Movement_WalkInPlaceFasterDown
 	waitmovement 0
 	special HealPlayerParty
+	special CoopKit_RefillVial
 	special Nurse_NoteHeal
 	callnative UpdateFollowingPokemon
 	return
