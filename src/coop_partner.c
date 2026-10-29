@@ -5,12 +5,21 @@
 // movement code still decides every step (collision, elevation, NPCs), so
 // following can never pass through anything a player could not. It stops,
 // with a short note, on any button press, before a tile that could start
-// something (a warp, a scene trigger, a ledge, water, a forced-movement or
-// cracking floor, grass or a cave floor with wild Pokemon), when this
-// player's field is taken by a message, a menu or a battle, when the
+// something (a scene trigger, a ledge, water, a forced-movement or cracking
+// floor, grass or a cave floor with wild Pokemon, a special warp), when
+// this player's field is taken by a message, a menu or a battle, when the
 // partner leaves or the link goes quiet, and when either player is not on
 // foot. Two players never follow each other: the menu refuses, and if both
 // start on the same frame the link guest stops.
+//
+// Since 0xC017013E it also goes through an ordinary door, door mat, stairs
+// or ladder the partner used: only when that warp's own destination is the
+// map the partner went to (the next step of their path), never a hole, a
+// gym puzzle warp, a Secret Base or a map chosen at run time. The player's
+// game does the warp itself (no teleport); while it loads, following waits
+// (WAITING AT EXIT) and carries on from the exit once the partner's path
+// is in reach, or stops with "trail lost". Each game counts only its own
+// steps (Repel, eggs, friendship), as when walking by hand.
 #include "global.h"
 #include "coop.h"
 #include "coop_deal.h"
@@ -53,6 +62,7 @@ enum {
     STOP_LOOP,
     STOP_BLOCKED,
     STOP_LOST,
+    STOP_DOOR,          // a warp this follower may not take (or not to the partner's map)
 };
 
 #define TRAIL_SIZE      24
@@ -74,6 +84,15 @@ static EWRAM_DATA u8 sStopNote = STOP_NONE;    // shown when the field is free
 static EWRAM_DATA u16 sStuckFrames = 0;
 static EWRAM_DATA s16 sLastX = 0;
 static EWRAM_DATA s16 sLastY = 0;
+// Going through a door with the partner: the map it was taken from, and how
+// long the warp has taken (bounded).
+static EWRAM_DATA bool8 sThroughDoor = FALSE;
+static EWRAM_DATA u8 sDoorGroup = 0;
+static EWRAM_DATA u8 sDoorNum = 0;
+static EWRAM_DATA u16 sDoorFrames = 0;
+static EWRAM_DATA u16 sDoorKey = 0;            // held until the warp starts
+EWRAM_DATA u8 gCoopFollowDoors = 0;             // doors gone through while following (tests)
+#define DOOR_FRAMES_MAX 600
 EWRAM_DATA u8 gCoopFollowLastStop = 0;          // the harness reads why it stopped
 EWRAM_DATA u16 gCoopFollowSteps = 0;            // tiles walked while following
 
@@ -125,6 +144,7 @@ void CoopFollow_Stop(u8 reason)
         return;
     sFollow = FOLLOW_OFF;
     sTrailCount = 0;
+    sThroughDoor = FALSE;
     gCoopFollowLastStop = reason;
     sStopNote = reason;
 }
@@ -157,6 +177,8 @@ u16 CoopFollow_Start(void)
     sStopNote = STOP_NONE;
     gCoopFollowLastStop = STOP_NONE;
     gCoopFollowSteps = 0;
+    gCoopFollowDoors = 0;
+    sThroughDoor = FALSE;
     sLastX = gObjectEvents[gPlayerAvatar.objectEventId].currentCoords.x;
     sLastY = gObjectEvents[gPlayerAvatar.objectEventId].currentCoords.y;
     return COOP_FOLLOW_OK;
@@ -180,8 +202,99 @@ static const u8 *StopText(u8 reason)
     case STOP_LOOP:         return COMPOUND_STRING("Follow: no loops");
     case STOP_BLOCKED:      return COMPOUND_STRING("Follow: way blocked");
     case STOP_LOST:         return COMPOUND_STRING("Follow: trail lost");
+    case STOP_DOOR:         return COMPOUND_STRING("Follow: not that door");
     }
     return NULL;
+}
+
+// A warp event on this map at (x, y) (map coordinates with the offset).
+static const struct WarpEvent *WarpAt(s16 x, s16 y)
+{
+    const struct MapEvents *events = gMapHeader.events;
+    s16 ex = x - MAP_OFFSET, ey = y - MAP_OFFSET;
+    u32 i;
+
+    if (events == NULL)
+        return NULL;
+    for (i = 0; i < events->warpCount; i++)
+    {
+        if (events->warps[i].x == ex && events->warps[i].y == ey)
+            return &events->warps[i];
+    }
+    return NULL;
+}
+
+// An ordinary way in or out a player takes by walking: a door, a door mat
+// (arrow warp), stairs, a ladder, an escalator.
+static bool8 IsWalkInWarp(u32 behavior)
+{
+    return MetatileBehavior_IsWarpDoor(behavior) || MetatileBehavior_IsNonAnimDoor(behavior)
+        || MetatileBehavior_IsLadder(behavior) || MetatileBehavior_IsEscalator(behavior)
+        || MetatileBehavior_IsDirectionalStairWarp(behavior)
+        || MetatileBehavior_IsEastArrowWarp(behavior) || MetatileBehavior_IsWestArrowWarp(behavior)
+        || MetatileBehavior_IsNorthArrowWarp(behavior) || MetatileBehavior_IsSouthArrowWarp(behavior);
+}
+
+// The warp at (x, y) may be followed into (group, num): a walk-in warp
+// whose own destination is that map, which is not chosen at run time and
+// is not somewhere each save keeps for itself or a challenge.
+static bool8 DoorLeadsTo(s16 x, s16 y, u8 group, u8 num)
+{
+    const struct WarpEvent *warp = WarpAt(x, y);
+    u16 dest;
+
+    if (warp == NULL || !IsWalkInWarp(MapGridGetMetatileBehaviorAt(x, y)))
+        return FALSE;
+    dest = warp->mapNum | (warp->mapGroup << 8);
+    if (dest == MAP_DYNAMIC || warp->mapGroup != group || warp->mapNum != num)
+        return FALSE;
+    if (group == MAP_GROUP(MAP_SECRET_BASE_RED_CAVE1) || group == MAP_GROUP(MAP_BATTLE_FRONTIER_OUTSIDE_WEST))
+        return FALSE;
+    return TRUE;
+}
+
+// The key that takes a door mat or stairs from where it stands (the walk
+// into a door tile is the step itself).
+static u16 WarpKeyHere(u32 behavior)
+{
+    if (MetatileBehavior_IsSouthArrowWarp(behavior))
+        return DPAD_DOWN;
+    if (MetatileBehavior_IsNorthArrowWarp(behavior))
+        return DPAD_UP;
+    if (MetatileBehavior_IsEastArrowWarp(behavior))
+        return DPAD_RIGHT;
+    if (MetatileBehavior_IsWestArrowWarp(behavior))
+        return DPAD_LEFT;
+    return 0;
+}
+
+// The recorded path leaves this map through a door that may be followed
+// (the partner's new position, group/num, is not yet in the path).
+static bool8 TrailHasDoorFromHere(u8 group, u8 num)
+{
+    s16 tx, ty;
+    u32 i;
+
+    for (i = 0; i < sTrailCount; i++)
+    {
+        u8 ng = i + 1 < sTrailCount ? sTrail[i + 1].group : group;
+        u8 nn = i + 1 < sTrailCount ? sTrail[i + 1].num : num;
+
+        if (!Coop_MapCoordsToLocal(sTrail[i].group, sTrail[i].num, sTrail[i].x, sTrail[i].y, &tx, &ty))
+            continue;
+        if ((ng != sTrail[i].group || nn != sTrail[i].num) && DoorLeadsTo(tx, ty, ng, nn))
+            return TRUE;
+    }
+    return FALSE;
+}
+
+static void StartDoor(u16 key)
+{
+    sDoorKey = key;
+    sThroughDoor = TRUE;
+    sDoorGroup = gSaveBlock1Ptr->location.mapGroup;
+    sDoorNum = gSaveBlock1Ptr->location.mapNum;
+    sDoorFrames = 0;
 }
 
 // The notes fit the map-name popup (about 20 characters).
@@ -261,8 +374,15 @@ void CoopFollow_FieldFrame(void)
         }
         return;
     }
-    if (!Coop_PartnerMoveInfo(&group, &num, &x, &y, &mode)
-     || !Coop_MapCoordsToLocal(group, num, x, y, &lx, &ly))
+    if (!Coop_PartnerMoveInfo(&group, &num, &x, &y, &mode))
+    {
+        CoopFollow_Stop(STOP_PARTNER_GONE);
+        return;
+    }
+    // The partner is on a map not connected to this one: still following
+    // only if their path goes there through a door this player can take
+    // (or this player is already on the way through it).
+    if (!Coop_MapCoordsToLocal(group, num, x, y, &lx, &ly) && !sThroughDoor && !TrailHasDoorFromHere(group, num))
     {
         CoopFollow_Stop(STOP_PARTNER_GONE);
         return;
@@ -280,6 +400,30 @@ void CoopFollow_FieldFrame(void)
         // or it would read as the player taking over at once.
         if (!fieldBusy && !(gMain.heldKeys & (A_BUTTON | B_BUTTON | DPAD_ANY | START_BUTTON | SELECT_BUTTON)))
             sFollow = FOLLOW_ON;
+        return;
+    }
+    if (sThroughDoor)
+    {
+        // The warp, the new map loading, its fade: wait (bounded), then go on
+        // from the exit; a warp that never happened stops here.
+        bool8 moved = gSaveBlock1Ptr->location.mapGroup != sDoorGroup || gSaveBlock1Ptr->location.mapNum != sDoorNum;
+
+        if (++sDoorFrames > DOOR_FRAMES_MAX)
+        {
+            CoopFollow_Stop(moved ? STOP_LOST : STOP_BLOCKED);
+            return;
+        }
+        if (fieldBusy || gMain.callback2 != CB2_Overworld)
+            return;
+        if (moved)
+        {
+            sThroughDoor = FALSE;
+            sStuckFrames = 0;
+            sLastX = gObjectEvents[gPlayerAvatar.objectEventId].currentCoords.x;
+            sLastY = gObjectEvents[gPlayerAvatar.objectEventId].currentCoords.y;
+            if (gCoopFollowDoors < 0xFF)
+                gCoopFollowDoors++;
+        }
         return;
     }
     if (fieldBusy)
@@ -327,6 +471,14 @@ void CoopFollow_FieldInput(u16 *newKeys, u16 *heldKeys)
 
     if (sFollow != FOLLOW_ON)
         return;
+    if (sThroughDoor)
+    {
+        // Keep walking into the door (or along the mat) until the warp
+        // starts; the field locks then.
+        if (gSaveBlock1Ptr->location.mapGroup == sDoorGroup && gSaveBlock1Ptr->location.mapNum == sDoorNum)
+            *heldKeys |= sDoorKey;
+        return;
+    }
     if ((*newKeys | *heldKeys) & (A_BUTTON | B_BUTTON | SELECT_BUTTON | START_BUTTON
                                   | DPAD_ANY | L_BUTTON | R_BUTTON))
     {
@@ -379,6 +531,16 @@ void CoopFollow_FieldInput(u16 *newKeys, u16 *heldKeys)
     }
     if (!Coop_MapCoordsToLocal(sTrail[i].group, sTrail[i].num, sTrail[i].x, sTrail[i].y, &tx, &ty))
     {
+        // The partner's next step is on a map that is not connected to this
+        // one: they took a warp. Standing on a door mat or stairs that lead
+        // there, take it the same way.
+        key = WarpKeyHere(player->currentMetatileBehavior);
+        if (key != 0 && DoorLeadsTo(cx, cy, sTrail[i].group, sTrail[i].num))
+        {
+            StartDoor(key);
+            *heldKeys |= key;
+            return;
+        }
         CoopFollow_Stop(STOP_LOST);
         return;
     }
@@ -397,6 +559,25 @@ void CoopFollow_FieldInput(u16 *newKeys, u16 *heldKeys)
         return;
     }
     stop = TileStop(tx, ty);
+    if (stop == STOP_WARP)
+    {
+        // A door (or mat, stairs) the partner went through: only if it leads
+        // to the map of the partner's next step.
+        if (i + 1 < sTrailCount && (sTrail[i + 1].group != sTrail[i].group || sTrail[i + 1].num != sTrail[i].num)
+         && DoorLeadsTo(tx, ty, sTrail[i + 1].group, sTrail[i + 1].num))
+        {
+            if (MetatileBehavior_IsWarpDoor(MapGridGetMetatileBehaviorAt(tx, ty))
+             || MetatileBehavior_IsNonAnimDoor(MapGridGetMetatileBehaviorAt(tx, ty))
+             || MetatileBehavior_IsLadder(MapGridGetMetatileBehaviorAt(tx, ty))
+             || MetatileBehavior_IsEscalator(MapGridGetMetatileBehaviorAt(tx, ty)))
+                StartDoor(key);   // stepping in is the warp
+            stop = STOP_NONE;
+        }
+        else if (WarpAt(tx, ty) != NULL || IsWalkInWarp(MapGridGetMetatileBehaviorAt(tx, ty)))
+        {
+            stop = (i + 1 < sTrailCount) ? STOP_DOOR : STOP_WARP;
+        }
+    }
     if (stop != STOP_NONE)
     {
         CoopFollow_Stop(stop);

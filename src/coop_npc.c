@@ -323,8 +323,44 @@ static s8 DirectionToward(s16 fromX, s16 fromY, s16 toX, s16 toY)
     return 0;
 }
 
-static void PlaceAt(struct ObjectEvent *obj, const struct NpcMsg *msg)
+// A correction may only put an object where a walker could stand: not on
+// either player, another object, a wall or a warp (0xC017013E). Otherwise
+// it stays where it is and the authority's next refresh says again.
+static bool8 PlaceTileFree(const struct ObjectEvent *obj, s16 x, s16 y)
 {
+    const struct MapEvents *events = gMapHeader.events;
+    s16 px, py;
+    u8 other;
+    u32 i;
+
+    if (LocalPlayerAt(x, y))
+        return FALSE;
+    if (Coop_PartnerViewCoords(&px, &py) && px == x && py == y)
+        return FALSE;
+    other = GetObjectEventIdByXY(x, y);
+    if (other < OBJECT_EVENTS_COUNT && &gObjectEvents[other] != obj)
+        return FALSE;
+    if (MapGridGetCollisionAt(x, y) != 0)
+        return FALSE;
+    if (events != NULL)
+    {
+        for (i = 0; i < events->warpCount; i++)
+        {
+            if (events->warps[i].x == x - MAP_OFFSET && events->warps[i].y == y - MAP_OFFSET)
+                return FALSE;
+        }
+    }
+    return TRUE;
+}
+
+static bool8 PlaceAt(struct ObjectEvent *obj, const struct NpcMsg *msg)
+{
+    if (!PlaceTileFree(obj, msg->x, msg->y))
+    {
+        if (gCoopNpcStats.refusedPlace < 0xFFFF)
+            gCoopNpcStats.refusedPlace++;
+        return FALSE;
+    }
     if (obj->heldMovementActive)
         ObjectEventClearHeldMovementIfFinished(obj);
     MoveObjectEventToMapCoords(obj, msg->x, msg->y);
@@ -332,6 +368,7 @@ static void PlaceAt(struct ObjectEvent *obj, const struct NpcMsg *msg)
         ObjectEventTurn(obj, msg->facing);
     if (gCoopNpcStats.snapped < 0xFFFF)
         gCoopNpcStats.snapped++;
+    return TRUE;
 }
 
 // One step of replay for one object. Returns when it started something or
@@ -382,7 +419,8 @@ static void ReplayObject(u32 slot)
                 if (++r->wait < NPC_BLOCK_WAIT)
                     return;
                 r->wait = 0;
-                PlaceAt(obj, msg);
+                if (!PlaceAt(obj, msg))
+                    PopPending(r);
                 return;
             }
             r->wait = 0;
@@ -390,8 +428,9 @@ static void ReplayObject(u32 slot)
                 gCoopNpcStats.corrected++;
             return;
         }
-        PlaceAt(obj, msg);
-        if (msg->type == NPC_MSG_POS)
+        // A blocked or invalid tile: drop this correction (the refresh repeats
+        // it), never stack the object on someone or something.
+        if (!PlaceAt(obj, msg) || msg->type == NPC_MSG_POS)
             PopPending(r);
         return;
     }

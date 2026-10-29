@@ -512,6 +512,7 @@ Build 0xC017013E scenarios:
 | `prep_win_j13` (+`_reload`) | j13 | Both choose from slots 3–5 in their own order; ASSISTED win; everyone back in their own slot on both saves; EXP to the chosen; badge; power-on reload |
 | `prep_slots456` | j44 | Kai picks 6, 4, 5 in the party screen; those three fight; order restored afterwards (the fight is lost: unassisted) |
 | `field_kit` | j13 | The first nurse gives the BOX LINK and HEALING VIAL; the vial heals HP and status, 1 charge, empty message; a deposit at 5 HP comes back at 5 HP; a Center refills; neither works in the Battle Frontier |
+| `partner_menu` (updated) | seg6 | FOLLOW now goes with the partner into the Pokémon Centre and back out (2 doors); each save's Repel goes down by its own 8 steps |
 | `prep_solo_lead` | j13 | Unlinked gym: lead screen, CANCEL starts nothing, CHANGE LEAD to slot 5, the battle starts with it |
 
 New verbs: `expect_mon SLOT hp VALUE`, `expect_mon ... >@K` (more than note

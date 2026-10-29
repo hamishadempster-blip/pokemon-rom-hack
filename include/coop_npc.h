@@ -24,6 +24,7 @@ struct CoopNpcStats
     u16 roleChanges;
     u16 busyAnswers; // "busy" replies shown to this player
     u16 seqGaps;
+    u16 refusedPlace; // corrections not made: the tile was a player, an object, a wall or a warp
     u16 deferred;    // frames a replay waited (local player in the way, a script)
 };
 extern struct CoopNpcStats gCoopNpcStats;

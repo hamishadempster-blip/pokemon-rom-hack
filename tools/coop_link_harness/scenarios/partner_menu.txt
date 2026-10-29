@@ -4,8 +4,8 @@
 #   on Rosa's screen. With Rosa's game not answering (its deal messages
 #   dropped for a while), the last team is shown with its age.
 # - PING: a sound and note on Rosa's screen; a second one waits.
-# - FOLLOW: Kai walks Rosa's path; stops when Rosa goes through a door
-#   (Kai stays outside), on Kai's own button, before wild grass; Rosa can't
+# - FOLLOW: Kai walks Rosa's path, through the Pokemon Centre's door and
+#   back out (0xC017013E); stops on Kai's own button, before wild grass; Rosa can't
 #   follow Kai while Kai follows her (no loop).
 # FIXTURES: no random wild battles; Rosa's deal messages dropped for 400
 # frames (patch_ret CoopDeal_HandleBlock); warps to Route 101.
@@ -104,6 +104,9 @@ b sync
 b wait 30
 1 expect gCoopPingsReceived 1
 # --- FOLLOW (DOWN x6): Kai follows Rosa east, north and back west.
+# FIXTURE: a Repel running on both saves (200 steps), to check that each
+# game counts only its own steps while following.
+b fixture_var 0x4021 200
 b sync
 0 wait 300
 0 dump before-follow
@@ -132,6 +135,10 @@ b sync
 0 shot follow-east
 0 expect coop_partner.sFollow 2
 0 expect_nz gCoopFollowSteps
+0 expect gCoopFollowSteps:2 8
+# Each Repel went down by that player's own 8 steps, once.
+0 expect_var 0x4021 192
+1 expect_var 0x4021 192
 # Rosa tries FOLLOW on Kai while Kai follows her: refused, no loop.
 1 press DOWN 2
 1 wait 20
@@ -153,18 +160,27 @@ b sync
 1 expect coop_partner.sFollow 0
 b sync
 0 expect coop_partner.sFollow 2
-# Rosa goes into the Pokemon Centre: Kai stops outside.
+# Rosa goes into the Pokemon Centre: Kai follows her in through the door
+# and back out over the mat (0xC017013E; before, he stopped outside).
 1 walk 16 39 3000
 1 walk 16 38 3000
 1 until_map 11 5 3000
-b sync
-0 wait 120
+0 until_map 11 5 3000
+0 wait 60
 0 shot follow-door
-0 expect coop_partner.sFollow 0
-0 expect gCoopFollowLastStop 10
-0 expect_map 0 3
-1 wait 60
+0 expect coop_partner.sFollow 2
+0 expect gCoopFollowDoors 1
+1 wait 120
 1 cross DOWN 0 3 3000
+0 until_map 0 3 3000
+0 wait 60
+0 shot follow-door-out
+0 expect gCoopFollowDoors 2
+0 expect coop_partner.sFollow 2
+0 press LEFT 2
+0 wait 30
+0 expect coop_partner.sFollow 0
+0 expect gCoopFollowLastStop 1
 b sync
 b wait 60
 b sync
