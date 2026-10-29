@@ -504,6 +504,8 @@ Build 0xC017013E scenarios:
 | `invite_expiry_clock` (+`_wall`) | lab | A wild invitation expires after ~30 s of the cartridge clock: ~1,800 frames with the emulated RTC; many more frames with `RTC_WALL0/1=1` at harness speed |
 | `battle_visual_wild_double` | lab | Co-op wild double: all four battlers' displayed palettes equal their loaded colours at the first action menu (the left wild Pokémon used to stay dark) |
 | `startup_timing_wild` / `_gym` | lab | MEASUREMENT: frames from the request to the first action menu by stage (`gCoopStartTimes`); team-screen time separate |
+| `appearance_menu` | lab | CO-OP menu APPEARANCE opens the outfit list, unlinked and linked; the partner sees the change |
+| `move_inspector` | lab | L in the move menu: category, PWR ("var." when it depends), ACC ("sure"), who the move hits, then the description (screens) |
 | `prep_cancel` | lab | Team screen: READY then B, partner READY: nothing starts; CANCEL tells both; asking again works |
 | `prep_timeout` | lab | Nobody finishes the team screen: closes after ~2 min of clock, nothing starts |
 | `prep_link_stall` | lab | The partner's heartbeat stops during the team screen: nothing starts until it is back, then one fight |

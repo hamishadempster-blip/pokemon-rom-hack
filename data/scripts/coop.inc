@@ -283,13 +283,24 @@ Coop_EventScript_Menu::
 	@ Not linked: LINK UP first, so A, A still links as it always has.
 	special Coop_BufferUnlinkedMenu
 	messageinstant gStringVar4
-	dynmultichoice 18, 1, FALSE, 5, 0, DYN_MULTICHOICE_CB_NONE, Coop_Text_OptLinkUp, Coop_Text_OptJournal, Coop_Text_OptPartnerDex, Coop_Text_OptLevelCap, Coop_Text_OptBack
+	dynmultichoice 18, 1, FALSE, 6, 0, DYN_MULTICHOICE_CB_NONE, Coop_Text_OptLinkUp, Coop_Text_OptJournal, Coop_Text_OptPartnerDex, Coop_Text_OptLevelCap, Coop_Text_OptAppearance, Coop_Text_OptBack
 	switch VAR_RESULT
 	case 0, Coop_EventScript_MenuLinkUp
 	case 1, Coop_EventScript_MenuJournal
 	case 2, Coop_EventScript_MenuOfflineDex
 	case 3, Coop_EventScript_AskToggleCap
+	case 4, Coop_EventScript_MenuAppearance
 	goto Coop_EventScript_MenuBack
+
+@ APPEARANCE: the bedroom wardrobe's outfit list, from anywhere (0xC017013E).
+Coop_EventScript_MenuAppearance::
+	closemessage
+	special CoopOutfit_OpenMenu
+	waitstate
+	goto_if_eq VAR_RESULT, FALSE, Coop_EventScript_MenuBack
+	msgbox Coop_Text_WardrobeDone, MSGBOX_DEFAULT
+	releaseall
+	end
 
 Coop_EventScript_MenuLinkUp::
 	special Coop_BeginLink
@@ -372,10 +383,10 @@ Coop_EventScript_MenuLinked::
 	specialvar VAR_RESULT, Coop_BufferMenuExplain
 	messageinstant gStringVar4
 	goto_if_eq VAR_RESULT, TRUE, Coop_EventScript_MenuLinkedBeaconOn
-	dynmultichoice 18, 1, FALSE, 7, 0, DYN_MULTICHOICE_CB_NONE, Coop_Text_OptBeaconOn, Coop_Text_OptUnlink, Coop_Text_OptPartnerDex, Coop_Text_OptJournal, Coop_Text_OptNameTag, Coop_Text_OptPing, Coop_Text_OptBack
+	dynmultichoice 18, 1, FALSE, 8, 0, DYN_MULTICHOICE_CB_NONE, Coop_Text_OptBeaconOn, Coop_Text_OptUnlink, Coop_Text_OptPartnerDex, Coop_Text_OptJournal, Coop_Text_OptNameTag, Coop_Text_OptPing, Coop_Text_OptAppearance, Coop_Text_OptBack
 	goto Coop_EventScript_MenuLinkedChoice
 Coop_EventScript_MenuLinkedBeaconOn::
-	dynmultichoice 18, 1, FALSE, 7, 0, DYN_MULTICHOICE_CB_NONE, Coop_Text_OptBeaconOff, Coop_Text_OptUnlink, Coop_Text_OptPartnerDex, Coop_Text_OptJournal, Coop_Text_OptNameTag, Coop_Text_OptPing, Coop_Text_OptBack
+	dynmultichoice 18, 1, FALSE, 8, 0, DYN_MULTICHOICE_CB_NONE, Coop_Text_OptBeaconOff, Coop_Text_OptUnlink, Coop_Text_OptPartnerDex, Coop_Text_OptJournal, Coop_Text_OptNameTag, Coop_Text_OptPing, Coop_Text_OptAppearance, Coop_Text_OptBack
 Coop_EventScript_MenuLinkedChoice::
 	switch VAR_RESULT
 	case 0, Coop_EventScript_MenuBeacon
@@ -384,6 +395,7 @@ Coop_EventScript_MenuLinkedChoice::
 	case 3, Coop_EventScript_MenuJournal
 	case 4, Coop_EventScript_MenuNameTag
 	case 5, Coop_EventScript_MenuPing
+	case 6, Coop_EventScript_MenuAppearance
 	goto Coop_EventScript_MenuBack
 
 @ PING from anywhere (the partner menu has it too): a sound, a note and the
@@ -589,6 +601,9 @@ Coop_Text_OptPing:
 
 Coop_Text_OptLevelCap:
 	.string "LEVEL CAP$"
+
+Coop_Text_OptAppearance:
+	.string "APPEARANCE$"
 
 Coop_Text_NoOfflineDex:
 	.string "No partner catches are saved yet.\n"

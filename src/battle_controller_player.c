@@ -1884,6 +1884,65 @@ static void TryMoveSelectionDisplayMoveDescription(enum BattlerId battler)
         MoveSelectionDisplayMoveDescription(battler);
 }
 
+static const u8 *MoveInspectorTarget(enum MoveTarget target)
+{
+    switch (target)
+    {
+    case TARGET_SELECTED:
+    case TARGET_SMART:
+    case TARGET_OPPONENT:     return COMPOUND_STRING("One target. ");
+    case TARGET_RANDOM:       return COMPOUND_STRING("A random foe. ");
+    case TARGET_BOTH:         return COMPOUND_STRING("Both foes. ");
+    case TARGET_USER:         return COMPOUND_STRING("Self. ");
+    case TARGET_ALLY:         return COMPOUND_STRING("Ally. ");
+    case TARGET_USER_AND_ALLY: return COMPOUND_STRING("Self and ally. ");
+    case TARGET_USER_OR_ALLY: return COMPOUND_STRING("Self or ally. ");
+    case TARGET_FOES_AND_ALLY: return COMPOUND_STRING("All others. ");
+    case TARGET_FIELD:        return COMPOUND_STRING("The field. ");
+    case TARGET_OPPONENTS_FIELD: return COMPOUND_STRING("Foes' side. ");
+    case TARGET_ALL_BATTLERS: return COMPOUND_STRING("Everyone. ");
+    case TARGET_DEPENDS:      return COMPOUND_STRING("Target varies. ");
+    default:                  return COMPOUND_STRING("");
+    }
+}
+
+// What decides a power the move data leaves at 0 or 1.
+static const u8 *MoveInspectorPowerNote(enum Move move)
+{
+    if (GetMovePower(move) >= 2 || GetBattleMoveCategory(move) == DAMAGE_CATEGORY_STATUS)
+        return COMPOUND_STRING("");
+    switch (GetMoveEffect(move))
+    {
+    case EFFECT_LOW_KICK:          return COMPOUND_STRING("Power: foe's weight. ");
+    case EFFECT_HEAT_CRASH:        return COMPOUND_STRING("Power: weight ratio. ");
+    case EFFECT_GYRO_BALL:         return COMPOUND_STRING("Power: slower is stronger. ");
+    case EFFECT_ELECTRO_BALL:      return COMPOUND_STRING("Power: faster is stronger. ");
+    case EFFECT_FLAIL:             return COMPOUND_STRING("Power: less HP, stronger. ");
+    case EFFECT_RETURN:
+    case EFFECT_FRUSTRATION:       return COMPOUND_STRING("Power: friendship. ");
+    case EFFECT_LEVEL_DAMAGE:      return COMPOUND_STRING("Damage = user's level. ");
+    case EFFECT_FIXED_HP_DAMAGE:   return COMPOUND_STRING("Fixed damage. ");
+    case EFFECT_FIXED_PERCENT_DAMAGE: return COMPOUND_STRING("Cuts foe's HP by a share. ");
+    case EFFECT_OHKO:              return COMPOUND_STRING("One-hit KO if it lands. ");
+    case EFFECT_PSYWAVE:           return COMPOUND_STRING("Damage: random, by level. ");
+    case EFFECT_ENDEAVOR:          return COMPOUND_STRING("Foe's HP down to yours. ");
+    case EFFECT_REFLECT_DAMAGE:
+    case EFFECT_BIDE:              return COMPOUND_STRING("Returns damage taken. ");
+    case EFFECT_PRESENT:
+    case EFFECT_MAGNITUDE:         return COMPOUND_STRING("Power: random. ");
+    case EFFECT_NATURAL_GIFT:      return COMPOUND_STRING("Power: held Berry. ");
+    case EFFECT_FLING:             return COMPOUND_STRING("Power: held item. ");
+    case EFFECT_TRUMP_CARD:        return COMPOUND_STRING("Power: PP left. ");
+    case EFFECT_SPIT_UP:           return COMPOUND_STRING("Power: Stockpile. ");
+    case EFFECT_PUNISHMENT:
+    case EFFECT_STORED_POWER:      return COMPOUND_STRING("Power: stat boosts. ");
+    case EFFECT_BEAT_UP:           return COMPOUND_STRING("Power: party members. ");
+    case EFFECT_POWER_BASED_ON_USER_HP: return COMPOUND_STRING("Power: user's HP. ");
+    case EFFECT_POWER_BASED_ON_TARGET_HP: return COMPOUND_STRING("Power: foe's HP. ");
+    default:                       return COMPOUND_STRING("Power varies. ");
+    }
+}
+
 static void MoveSelectionDisplayMoveDescription(enum BattlerId battler)
 {
     struct ChooseMoveStruct *moveInfo = (struct ChooseMoveStruct*)(&gBattleResources->bufferA[battler][4]);
@@ -1899,7 +1958,7 @@ static void MoveSelectionDisplayMoveDescription(enum BattlerId battler)
         acc = 0;
     }
 
-    u8 pwr_num[3], acc_num[3];
+    u8 pwr_num[6], acc_num[6];
     u8 cat_desc[7] = _("CAT: ");
     u8 pwr_desc[7] = _("PWR: ");
     u8 acc_desc[7] = _("ACC: ");
@@ -1908,12 +1967,14 @@ static void MoveSelectionDisplayMoveDescription(enum BattlerId battler)
     u8 acc_start[] = _("{CLEAR_TO 108}");
     LoadMessageBoxAndBorderGfx();
     DrawStdWindowFrame(B_WIN_MOVE_DESCRIPTION, FALSE);
+    // Power that depends on the battle reads "var." (explained below), not
+    // a dash or a misleading number; a move that never misses reads "sure".
     if (pwr < 2)
-        StringCopy(pwr_num, gText_BattleSwitchWhich5);
+        StringCopy(pwr_num, (GetBattleMoveCategory(move) == DAMAGE_CATEGORY_STATUS) ? gText_BattleSwitchWhich5 : COMPOUND_STRING("var."));
     else
         ConvertIntToDecimalStringN(pwr_num, pwr, STR_CONV_MODE_LEFT_ALIGN, 3);
     if (acc < 2)
-        StringCopy(acc_num, gText_BattleSwitchWhich5);
+        StringCopy(acc_num, COMPOUND_STRING("sure"));
     else
         ConvertIntToDecimalStringN(acc_num, acc, STR_CONV_MODE_LEFT_ALIGN, 3);
     StringCopy(gDisplayedStringBattle, cat_start);
@@ -1925,7 +1986,17 @@ static void MoveSelectionDisplayMoveDescription(enum BattlerId battler)
     StringAppend(gDisplayedStringBattle, acc_desc);
     StringAppend(gDisplayedStringBattle, acc_num);
     u8 *descStart = StringAppend(gDisplayedStringBattle, gText_NewLine);
-    u8 *descEnd = StringAppend(gDisplayedStringBattle, GetMoveDescription(move));
+    u8 *descEnd = descStart;
+    // Compact inspector (0xC017013E): why it can't be used, who it hits and
+    // what decides a variable power, then the move's own description.
+    if (moveInfo->currentPP[gMoveSelectionCursor[battler]] == 0)
+        descEnd = StringAppend(gDisplayedStringBattle, COMPOUND_STRING("No PP left. "));
+    else if (!(gBattleTypeFlags & BATTLE_TYPE_COOP && Coop_BattleGuest())
+          && gBattleMons[battler].volatiles.disabledMove == move && move != MOVE_NONE)
+        descEnd = StringAppend(gDisplayedStringBattle, COMPOUND_STRING("Disabled. "));
+    descEnd = StringAppend(gDisplayedStringBattle, MoveInspectorTarget(GetMoveTarget(move)));
+    descEnd = StringAppend(gDisplayedStringBattle, MoveInspectorPowerNote(move));
+    descEnd = StringAppend(gDisplayedStringBattle, GetMoveDescription(move));
     WrapFontIdToFit(descStart, descEnd, FONT_NORMAL, WindowWidthPx(B_WIN_MOVE_DESCRIPTION));
     BattlePutTextOnWindow(gDisplayedStringBattle, B_WIN_MOVE_DESCRIPTION);
 

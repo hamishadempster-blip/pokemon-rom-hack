@@ -1,0 +1,68 @@
+# APPEARANCE in the CO-OP menu (0xC017013E): the wardrobe's outfit list
+# from anywhere. Lab saves; Kai not linked, then linked.
+# 1. Unlinked: START, CO-OP, APPEARANCE (5th): the outfit list opens over
+#    the field; the second outfit; "Looking sharp!"; the field sprite shows
+#    it.
+# 2. Linked: APPEARANCE (7th) again, the first outfit back; Rosa's game
+#    shows Kai's new colours.
+include continue.inc
+b mash_field 300 B
+0 expect coop.sLinkState 0
+0 press START 2
+0 wait 50
+0 menu_to COOP
+0 press A 2
+0 wait 60
+0 press DOWN 2
+0 wait 10
+0 press DOWN 2
+0 wait 10
+0 press DOWN 2
+0 wait 10
+0 press DOWN 2
+0 wait 10
+0 shot coop-menu-appearance
+0 note_text Looking_sharp
+0 press A 2
+0 wait 60
+0 shot outfit-list
+0 press DOWN 2
+0 wait 30
+0 press A 2
+0 wait 60
+0 mash_field 2000 B
+0 expect_noted
+0 expect coop_outfit.sShownLocal 1
+0 shot outfit-changed
+include relink.inc
+b expect coop.sLinkState 2
+b mash_field 1000 B
+0 press START 2
+0 wait 50
+0 menu_to COOP
+0 press A 2
+0 wait 60
+0 press DOWN 2
+0 wait 10
+0 press DOWN 2
+0 wait 10
+0 press DOWN 2
+0 wait 10
+0 press DOWN 2
+0 wait 10
+0 press DOWN 2
+0 wait 10
+0 press DOWN 2
+0 wait 10
+0 shot coop-menu-linked
+0 press A 2
+0 wait 60
+0 press UP 2
+0 wait 30
+0 press A 2
+0 wait 60
+0 mash_field 2000 B
+b sync
+b wait 120
+0 expect coop_outfit.sShownLocal 0
+1 expect coop_outfit.sPartnerOutfit 0
