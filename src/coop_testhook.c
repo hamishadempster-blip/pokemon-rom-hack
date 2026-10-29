@@ -11,6 +11,8 @@
 #include "coop.h"
 #include "coop_teams.h"
 #include "battle.h"
+#include "battle_message.h"
+#include "string_util.h"
 #include "item.h"
 #include "main.h"
 #include "random.h"
@@ -215,6 +217,21 @@ void CoopTest_Poll(void)
         if (!Coop_TestSendReply(gCoopTestMailbox.arg[0], gCoopTestMailbox.arg[1]))
             return;
         gCoopTestMailbox.result = 1;
+        gCoopTestMailbox.magic = 0;
+        return;
+    }
+    // The trainer name a battle message gives a battler (read-only).
+    if (gCoopTestMailbox.cmd == COOP_TEST_BATTLE_NAME)
+    {
+        if (gMain.inBattle && gCoopTestMailbox.arg[0] < gBattlersCount)
+        {
+            u8 saved = gBattlerAttacker;
+            gBattlerAttacker = gCoopTestMailbox.arg[0];
+            BattleStringExpandPlaceholders(COMPOUND_STRING("{B_ATK_TRAINER_NAME}"), gStringVar4, 64);
+            gBattlerAttacker = saved;
+            ok = TRUE;
+        }
+        gCoopTestMailbox.result = ok ? 1 : 2;
         gCoopTestMailbox.magic = 0;
         return;
     }

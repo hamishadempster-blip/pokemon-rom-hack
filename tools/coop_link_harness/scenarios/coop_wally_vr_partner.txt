@@ -34,6 +34,15 @@ b sync
 0 press UP 2
 b until_cb2 BattleMainCB2 9000 A
 b shot wally-start
+# A co-op fight against one trainer: both opposing battlers are Wally's, so
+# a message about either names WALLY (0xC017013E: the right one was named by
+# the empty second-trainer slot; "...reacting to 's Mega Bracelet!" on the
+# battle engine's game and an "Opponent needs a valid name" assert screen
+# on the partner's, seen once in the final-suite run).
+b test_battle_name 1
+b expect_text gStringVar4 WALLY
+b test_battle_name 3
+b expect_text gStringVar4 WALLY
 b mash_field 200000 B
 b mash_field 6000 B
 0 expect_var 0x40C3 1

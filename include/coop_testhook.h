@@ -14,6 +14,7 @@ enum {
     COOP_TEST_SET_DATA,   // slot, friendship (test_friendship)
     COOP_TEST_GET_DATA,   // slot, field (COOP_TEST_FIELD_*), arg, source (0 party, 1 Day Care, 2/3 the opposing trainers' parties): value
     COOP_TEST_TEAM_FOR,   // trainer id, team key: the party id Coop_TeamPartyIdForKey picks (read-only)
+    COOP_TEST_BATTLE_NAME, // battler: "{B_ATK_TRAINER_NAME}" for that battler into gStringVar4 (in battle, read-only)
 };
 
 struct CoopTestMailbox

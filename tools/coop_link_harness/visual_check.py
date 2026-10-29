@@ -163,8 +163,9 @@ def main():
     # battle sets up; the empty box of a genuinely absent battler (a
     # trainer with one Pokemon in a 2-on-1 fight) has no name. A blank in
     # such a redraw is accepted only when that battler is absent at the
-    # screen's next "What will ... do?" prompt; a blank anywhere else, or a
-    # blank whose battler is present there, still fails.
+    # screen's next "What will ... do?" prompt (or, with no prompt left in
+    # the battle, when the same line shows that slot empty and absent); a
+    # blank anywhere else, or a blank whose battler is present, still fails.
     blank, absent_ok = [], 0
     for p in (0, 1):
         seq = msgs[p]
@@ -185,6 +186,12 @@ def main():
                 k += 1
             nxt = next((s2 for g, u, s2 in seq[i + 1:] if u.startswith('What will')), None)
             if k >= 1 and nxt is not None and k in nxt and nxt[k][3]:
+                absent_ok += 1
+                continue
+            # No prompt follows (the redraw after a move-learning screen at
+            # the battle's end): the same line's battler table must show
+            # that slot empty (no species) and flagged absent.
+            if k >= 1 and k in st and st[k][0] == 0 and st[k][3]:
                 absent_ok += 1
                 continue
             if opened:

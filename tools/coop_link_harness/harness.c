@@ -1773,6 +1773,12 @@ static void frameCallback(struct mCoreThread* t) {
 				    rd8(p, o + 8), rd16(p, o + 4), rd8(p, o + 6), rd8(p, o + 7), rd8(p, o + 0x1D), (int16_t)rd16(p, o + 0x10) - 7, (int16_t)rd16(p, o + 0x12) - 7,
 				    rd8(p, o + 0x18) & 15, rd8(p, o + 10), rd8(p, o + 9), (rd8(p, o + 2) & 1));
 			}
+			if (rd8(p, sMain + 0x439) & 2) {
+				unsigned pos = symAddr("gBattlerPositions");
+				out("[f%06d p%d] assert battle: attacker=%u target=%u positions=%u %u %u %u r0=%08x r1=%08x r2=%08x r3=%08x\n", p->frame, p->id,
+				    rd8(p, symAddr("gBattlerAttacker")), rd8(p, symAddr("gBattlerTarget")), rd8(p, pos), rd8(p, pos + 1), rd8(p, pos + 2), rd8(p, pos + 3),
+				    cpu->gprs[0], cpu->gprs[1], cpu->gprs[2], cpu->gprs[3]);
+			}
 			dump(p, "assert");
 			battleDump(p);
 			writePng(p, "assert");
@@ -3496,7 +3502,7 @@ static void frameCallback(struct mCoreThread* t) {
 				p->core->busWrite16(p->core, mb + 4, c->value);
 				p->core->busWrite16(p->core, mb + 22, 0);
 				p->core->busWrite32(p->core, mb, 0x7E57C0DEu);
-				if (c->value != 7 && c->value != 8) out(c->value == 5 ? "[f%06d p%d FIXTURE] %s %u %u %u %u %u %u %u\n" : "[f%06d p%d TEST HELPER] %s %u %u %u %u %u %u %u\n", p->frame, p->id, c->text,
+				if (c->value != 7 && c->value != 8 && c->value != 9) out(c->value == 5 ? "[f%06d p%d FIXTURE] %s %u %u %u %u %u %u %u\n" : "[f%06d p%d TEST HELPER] %s %u %u %u %u %u %u %u\n", p->frame, p->id, c->text,
 				    c->args[0], c->args[1], c->args[2], c->args[3], c->args[4], c->args[5], c->args[6]);
 			}
 			if (rd32(p, mb) == 0) {
@@ -4086,6 +4092,16 @@ static void loadScript(const char* path, int depth) {
         		c.args[0] = slot; c.args[1] = val; c.args[2] = 2;
         		c.args[3] = !strcmp(field, "hp") ? 1 : !strcmp(field, "tracker") ? 2 : !strcmp(field, "evs") ? 3 : !strcmp(field, "ivs") ? 4 : !strcmp(field, "clear") ? 5 : !strcmp(field, "dcsteps") ? 6 : !strcmp(field, "hyper") ? 7 : 0;
         	}
+        	snprintf(c.text, sizeof(c.text), "%s", cmd);
+        	c.frames = 600;
+        } else if (!strcmp(cmd, "test_battle_name")) {
+        	// test_battle_name BATTLER: the ROM writes the trainer name a
+        	// battle message gives that battler ({B_ATK_TRAINER_NAME}) into
+        	// gStringVar4 (read-only; check it with expect_text).
+        	c.kind = C_TEST_HOOK;
+        	c.value = 9;
+        	memset(c.args, 0, sizeof(c.args));
+        	c.args[0] = (unsigned)atoi(a);
         	snprintf(c.text, sizeof(c.text), "%s", cmd);
         	c.frames = 600;
         } else if (!strcmp(cmd, "expect_mon")) {
