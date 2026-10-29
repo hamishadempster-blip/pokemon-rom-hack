@@ -71,6 +71,7 @@ struct Player {
     unsigned smartMoves;
     int forceMove, forceTarget; // force_move: -1 off; target 4 = the ally
     int megaPress, megaPhase, megaLeave; // mega_next: START presses left on a move menu
+    int paceSettle;                      // pace: frames the player has stood still since the stop condition
     int learnPhase, learnTarget; unsigned learnStart, partyBackFrame;
     int lastSent; unsigned lastSentFrame;   // the last replacement chosen (both battlers down)
     unsigned strongBattlers;
@@ -2558,12 +2559,22 @@ static void frameCallback(struct mCoreThread* t) {
             break;
         }
         case C_PACE: {
-            if ((rd32(p, sMain + 4) & ~1u) == (symAddr("BattleMainCB2") & ~1u)) { p->grindCount = 0; advance = true; break; }
+            if ((rd32(p, sMain + 4) & ~1u) == (symAddr("BattleMainCB2") & ~1u)) { p->grindCount = 0; p->paceSettle = 0; advance = true; break; }
+            // The stop condition was met mid-step: keys off until the player
+            // stands still, so the next command (a START press) isn't lost
+            // to the step still in progress.
+            if (p->paceSettle) {
+                unsigned av = symAddr("gPlayerAvatar");
+                if (rd8(p, av + 2) == 0 && rd8(p, av + 3) != 1) p->paceSettle++;
+                else p->paceSettle = 1;
+                if (p->paceSettle > 8 || !inField(p)) { p->paceSettle = 0; advance = true; }
+                break;
+            }
             // pace_until_mem: stop when the value matches instead.
             if (c->size == -1) {
                 if (((rd8(p, rd32(p, sSave1) + symValue("harness.saveFlagsOffset") + c->addr / 8) >> (c->addr % 8)) & 1) == c->value) {
                     out("[p%d] pace: flag %x = %u after %d frames\n", p->id, c->addr, c->value, p->step);
-                    p->grindCount = 0; advance = true; break;
+                    p->grindCount = 0; p->paceSettle = 1; break;
                 }
             } else if (c->size == -2) {
                 if ((rd32(p, sMain + 4) & ~1u) == c->addr) { out("[p%d] pace: callback reached after %d frames\n", p->id, p->step); p->grindCount = 0; advance = true; break; }
@@ -2573,7 +2584,7 @@ static void frameCallback(struct mCoreThread* t) {
                     break;
                 }
             } else
-            if (c->addr && ((c->size == 1 ? rd8(p, c->addr) : c->size == 2 ? rd16(p, c->addr) : rd32(p, c->addr)) == c->value)) { p->grindCount = 0; advance = true; break; }
+            if (c->addr && ((c->size == 1 ? rd8(p, c->addr) : c->size == 2 ? rd16(p, c->addr) : rd32(p, c->addr)) == c->value)) { p->grindCount = 0; p->paceSettle = 1; break; }
             keys = ((p->step / 24) & 1) ? (1u << 7) : (1u << 6);
             // A PokeNav Match Call holds the field until its text is read.
             if (taskActive(p, "ExecuteMatchCall")) {

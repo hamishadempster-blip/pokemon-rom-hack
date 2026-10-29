@@ -183,7 +183,8 @@ if [ -n "${J65:-}" ]; then
 	# Trainer Exchange training counter and candies at the cap; the Day
 	# Care with both players, the breeding rules, and their power-on.
 	run exchange_training SAVE0="$J65/p0.sav" SAVE1="$J65/p1.sav"
-	run breeding_coop SAVE0="$J65/p0.sav" SAVE1="$J65/p1.sav"
+	# Egg rolls are random (one try per 256 steps): room beyond the default budget.
+	run breeding_coop SAVE0="$J65/p0.sav" SAVE1="$J65/p1.sav" MAX_FRAMES=400000
 	run breeding_rules SAVE0="$J65/p0.sav" SAVE1="$J65/p1.sav"
 	run breeding_rules_reload SAVE0="$out/breeding_rules/p0.sav" SAVE1="$out/breeding_rules/p1.sav"
 fi
