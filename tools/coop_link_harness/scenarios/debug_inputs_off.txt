@@ -1,0 +1,40 @@
+# Developer inputs do nothing in play (build 0xC017013F). Lab saves, linked,
+# Route 101, Beacon ON. Before: SELECT at the action menu of a co-op battle
+# opened the battle debug menu on that game alone and the game crashed
+# (Rosa's game, pc 0x1a8); R+START on the field opened the developer menu
+# (flags, variables, Pokemon). Now:
+# 1. a co-op wild double: Rosa presses SELECT at her action menu, then Kai at
+#    his: both games stay in the battle, which is then played to its end;
+# 2. on the field, R+START opens the ordinary START menu.
+include wild_route101_start.inc
+1 until_mem coop.sGuestPairPending 1 12000
+1 wait 2
+1 press A 2
+1 wait 2
+1 until_cb2 BattleMainCB2 12000 A
+0 write sWildEncountersDisabled 0
+0 pace_until_battle 9000
+0 write sWildEncountersDisabled 1
+0 until_cb2 BattleMainCB2 12000
+0 until_mem gBattlerControllerFuncs:4 HandleInputChooseAction 9000 A
+1 until_mem gBattlerControllerFuncs+8:4 HandleInputChooseAction 9000 A
+b wait 30
+1 press SELECT 2
+b wait 120
+b expect_cb2 BattleMainCB2
+1 expect gBattlerControllerFuncs+8:4 HandleInputChooseAction
+0 press SELECT 2
+b wait 120
+b expect_cb2 BattleMainCB2
+0 expect gBattlerControllerFuncs:4 HandleInputChooseAction
+b shot after-select
+b mash_field 20000
+b sync
+b wait 60
+0 press R+START 4
+0 wait 60
+0 shot r-start
+0 expect_tasks DebugTask_HandleMenuInput_General 0
+0 expect gMenuCallback:4 HandleStartMenuInput
+0 press B 2
+0 mash_field 600 B

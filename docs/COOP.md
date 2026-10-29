@@ -8,7 +8,7 @@ Based off RHH's pokeemerald-expansion 1.17.1
 https://github.com/rh-hideout/pokeemerald-expansion/
 Pinned commit `bb1093a7c72d3961d9a37d8e02ad2abc2c866682`.
 
-Build id baked into the link handshake: `0xC017013E` (also shown on CONTINUE and in the SAVE window). Both games must run this build. Explicit unlink is signalled separately from temporary missing heartbeats.
+Build id baked into the link handshake: `0xC017013F` (also shown on CONTINUE and in the SAVE window). Both games must run this build. Explicit unlink is signalled separately from temporary missing heartbeats.
 
 ## Clean ROM
 
