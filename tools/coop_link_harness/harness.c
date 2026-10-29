@@ -2227,6 +2227,23 @@ static void frameCallback(struct mCoreThread* t) {
         }
         case C_WRITEP: {
             unsigned addr = rd32(p, c->addr) + c->frames;
+            if (c->args[1] == 2) {
+                // expectp: a value read through the pointer.
+                unsigned v = rdN(p, addr, c->size);
+                if (v != c->value) { out("[p%d] FAIL *%s+%u = %u, expected %u\n", p->id, c->text, c->frames, v, c->value); sFailures++; }
+                else out("[p%d] ok *%s+%u == %u\n", p->id, c->text, c->frames, v);
+                advance = true;
+                break;
+            }
+            if (c->args[1] == 1) {
+                // writep_other: the value comes from the other game.
+                struct Player* o = &P[1 - p->id];
+                // Byte reads: the source may be unaligned (the trainer id
+                // sits at SaveBlock2+10, where a 32-bit bus read rotates).
+                unsigned src = rd32(o, c->args[2]) + c->args[3];
+                c->value = 0;
+                for (int k = c->size - 1; k >= 0; k--) c->value = (c->value << 8) | rd8(o, src + k);
+            }
             if (c->size == 1) p->core->busWrite8(p->core, addr, c->value);
             else if (c->size == 2) p->core->busWrite16(p->core, addr, c->value);
             else p->core->busWrite32(p->core, addr, c->value);
@@ -4450,6 +4467,26 @@ static void loadScript(const char* path, int depth) {
 			// differ from the unfaded ones, i.e. carry the time-of-day tint.
 			c.kind = C_TINT; c.value = strtoul(a, NULL, 0);
 			strncpy(c.text, n >= 3 ? b : "", sizeof(c.text) - 1);
+		} else if (!strcmp(cmd, "writep_other") || !strcmp(cmd, "expectp")) {
+			// FIXTURE writep_other PTRSYM+off:size SRCPTRSYM+off: write through
+			// a pointer a value read through a pointer on the OTHER game
+			// (e.g. the partner's trainer id). expectp PTRSYM+off:size VALUE:
+			// check a value read through a pointer.
+			char sym[96], src[96]; unsigned off = 0, soff = 0; int size = 1;
+			strncpy(sym, a, sizeof(sym) - 1); sym[sizeof(sym) - 1] = 0;
+			char* colon = strchr(sym, ':');
+			if (colon) { size = atoi(colon + 1); *colon = 0; }
+			char* plus = strchr(sym, '+');
+			if (plus) { off = strtoul(plus + 1, NULL, 0); *plus = 0; }
+			c.kind = C_WRITEP; c.addr = symAddr(sym); c.frames = off; c.size = size;
+			if (!strcmp(cmd, "expectp")) {
+				c.args[1] = 2; c.value = symValue(b);
+			} else {
+				strncpy(src, b, sizeof(src) - 1); src[sizeof(src) - 1] = 0;
+				if ((plus = strchr(src, '+'))) { soff = strtoul(plus + 1, NULL, 0); *plus = 0; }
+				c.args[1] = 1; c.args[2] = symAddr(src); c.args[3] = soff;
+			}
+			strncpy(c.text, sym, sizeof(c.text) - 1);
 		} else if (!strcmp(cmd, "writep")) {
 			// FIXTURE writep PTRSYM+off:size value: write through a pointer
 			// variable (gSaveBlock1Ptr, gSaveBlock2Ptr), resolved when run.

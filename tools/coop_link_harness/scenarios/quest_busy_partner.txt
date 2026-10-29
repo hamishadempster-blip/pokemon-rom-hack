@@ -103,6 +103,9 @@ b sync
 1 shot p1-still-in-battle
 1 no_wild 1
 1 mash_field 30000
+# The crate message waits while this game is in battle and is resent every
+# 45 frames: it lands within a resend of the field coming back.
+1 wait 60
 1 expect_var 0x409B 7
 1 expect_no_object 3
 b sync

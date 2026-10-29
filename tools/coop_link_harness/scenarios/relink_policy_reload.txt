@@ -1,0 +1,19 @@
+# Relink policy (build 0xC017013E), part 3 of 3: relink_policy's saves after
+# a power cycle, then linked again. What was restored is still there, and a
+# second link restores nothing more (gCoopJointRestored 0 on both) and
+# hands over nothing new.
+include continue.inc
+0 expect_flag 0x86A 1
+0 expect_flag 0x86B 0
+0 expect_var 0x409B 3
+0 expectp gSaveBlock3Ptr+7:1 5
+1 expect_flag 0x869 0
+1 expect_var 0x409B 2
+include relink.inc
+b expect coop.sLinkState 2
+b wait 300
+b expect gCoopJointRestored 0
+0 expect_flag 0x86B 0
+0 expect_var 0x409B 3
+1 expect_flag 0x869 0
+1 expect_var 0x409B 2

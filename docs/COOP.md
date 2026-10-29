@@ -82,6 +82,17 @@ Since build 0xC017013E every request to the other player (a shared wild or train
 - **Cancelling.** B on the countdown: for an optional fight "battle alone" now; for a story fight "stop waiting" (nothing starts, nothing is used up). The partner's open question then closes as too late ("Your partner stopped waiting. Nothing started."), and a late YES starts nothing.
 - **UNLINK** stays available from the CO-OP menu at all times. Legendaries keep their own clearly labelled question (see [Shared legendaries](#shared-legendaries)).
 
+## Playing apart and relinking
+
+Since build 0xC017013E one ownership rule decides what a link carries.
+
+- **Always personal:** party, PC, money, bag, caught Pokémon, purchases and item pickups. A link never copies them (trades and gifts go through the partner menu, with your consent).
+- **Earned alone stays alone:** a badge, a trainer or rival win, a quest step or a finished quest (Power Problems, the Desert Caravan, Coastal Cleanup, the shrine, a rival introduction) that one save earned while not linked stays on that save. Linking later does not hand it to the partner: they still play it on their own save. This is not a desync; it is each save's own story.
+- **Earned together counts for both:** a gym, rival or story fight won together, and quest progress made while linked, are recorded on both saves. Each save notes who it earned them with (by trainer id, never by name). If one game lost power before saving such a win, the next link **with the same partner** restores it (once). A joint win recorded with someone else is never given to a new partner.
+- A link never copies whole flag or variable tables and never moves a save backward. Pending trades, gifts and legendary rewards belong to the partner they were made with (see [With your partner](#with-your-partner) and [Shared legendaries](#shared-legendaries)).
+- Saves from before 0xC017013E keep everything they have; their earlier joint wins have no partner on record, so they are never handed on again.
+- Changed in 0xC017013E: before, a quest finished alone (and the rival introduction met alone) reached the partner at the next link, Power Problems breakers took the higher count, and joint badges and the rival stage were merged with any partner.
+
 ## Team preparation
 
 Since build 0xC017013E a shared story fight (gym leaders, the Elite Four, the champion, Soren and Mira, Wally, the Aqua and Magma bosses, quest bosses) starts with both players choosing their team. Wild Pokémon and ordinary trainers do not use it: they still send your first three.

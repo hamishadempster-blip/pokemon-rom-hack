@@ -1,0 +1,54 @@
+# Relink policy (build 0xC017013E), part 1 of 3: story_seg6 saves, NOT
+# linked. Each save makes progress on its own, then both save.
+# Real play: player 0 takes ZAHRA's briefing and the first ruins crate alone
+# (Desert Caravan crate bit 1). Player 1 does nothing of the quest.
+# FIXTURES (stand-ins for progress too long to replay here, written into the
+# running game, then saved; offsets are struct CoopSave in SaveBlock3):
+#  - player 0: BADGE 3 set (a gym won alone); rival stage 4 (+7, a rival
+#    fight won alone).
+#  - player 1: BADGES 4 and 5 recorded as joint wins (jointBadges +6 bits 3
+#    and 4, flags set): BADGE 4 won together with player 0 (jointBadgeOtId[3]
+#    +460 = player 0's trainer id: player 0's game lost power before saving
+#    that win), BADGE 5 won with someone else (jointBadgeOtId[4] +464 =
+#    0x12345678). Rival stage 5 won together with player 0 (jointRivalStage
+#    +484, jointRivalOtId +480). Caravan crate 2 found while linked with
+#    player 0, its message lost (VAR 0x409B bit 2; questPartnerOtId +520 =
+#    player 0, questJoint[1] +525 = 2).
+include continue.inc
+0 no_wild 1
+0 fixture_warp 0 26 30 92
+0 until_field 3000
+0 press RIGHT 2
+0 wait 20
+0 press A 2
+0 mash_field 5000
+0 expect_var 0x4091 1
+0 fixture_warp 24 108 5 28
+0 until_field 3000
+0 press UP 2
+0 wait 20
+0 press A 2
+0 mash_field 2000
+0 expect_var 0x409B 1
+0 shot p0-crate-alone
+1 expect_var 0x409B 0
+b expect_flag 0x869 0
+b expect_flag 0x86A 0
+b expect_flag 0x86B 0
+# Both games running their saves before one reads the other's trainer id.
+b sync
+0 fixture_flag 0x869 1
+0 writep gSaveBlock3Ptr+7:1 4
+1 fixture_flag 0x86A 1
+1 fixture_flag 0x86B 1
+1 writep gSaveBlock3Ptr+6:1 0x19
+1 writep_other gSaveBlock3Ptr+460:4 gSaveBlock2Ptr+10
+1 writep gSaveBlock3Ptr+464:4 0x12345678
+1 writep gSaveBlock3Ptr+7:1 5
+1 writep gSaveBlock3Ptr+484:1 5
+1 writep_other gSaveBlock3Ptr+480:4 gSaveBlock2Ptr+10
+1 fixture_var 0x409B 2
+1 writep_other gSaveBlock3Ptr+520:4 gSaveBlock2Ptr+10
+1 writep gSaveBlock3Ptr+525:1 2
+b sync
+include save_again.inc

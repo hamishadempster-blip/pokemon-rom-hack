@@ -158,17 +158,39 @@ def main():
     # Healthbox names are drawn for all four slots while a battle sets up,
     # an empty slot included; only a nameless Pokemon announced after the
     # opening line counts (the 0xC0170132 Lv0 box).
-    blank = []
+    # The healthboxes are also all redrawn together (one name per frame,
+    # battler 0..3) when the bag or party screen closes and when the next
+    # battle sets up; the empty box of a genuinely absent battler (a
+    # trainer with one Pokemon in a 2-on-1 fight) has no name. A blank in
+    # such a redraw is accepted only when that battler is absent at the
+    # screen's next "What will ... do?" prompt; a blank anywhere else, or a
+    # blank whose battler is present there, still fails.
+    blank, absent_ok = [], 0
     for p in (0, 1):
+        seq = msgs[p]
         opened = False
-        for f, t, st in msgs[p]:
+        for i, (f, t, st) in enumerate(seq):
             if re.search(r'challenged by|appeared!|wants to battle', t):
                 opened = True
             elif re.search(r'won|defeated|lost|got away|out of the fight|blacked out', t, re.I):
                 opened = False
-            if (opened and t.startswith('<no name>')) or re.search(r'sent out\s*!|Go[,!]\s*!', t):
+            if re.search(r'sent out\s*!|Go[,!]\s*!', t):
                 blank.append((p, f, t))
-    report('no-blank-name', not blank, '; '.join('p%d f%d "%s"' % b for b in blank[:3]))
+                continue
+            if not t.startswith('<no name>'):
+                continue
+            # Position in a one-name-per-frame burst = the battler redrawn.
+            k = 0
+            while i - k - 1 >= 0 and seq[i - k - 1][0] == f - k - 1:
+                k += 1
+            nxt = next((s2 for g, u, s2 in seq[i + 1:] if u.startswith('What will')), None)
+            if k >= 1 and nxt is not None and k in nxt and nxt[k][3]:
+                absent_ok += 1
+                continue
+            if opened:
+                blank.append((p, f, t))
+    report('no-blank-name', not blank, '; '.join('p%d f%d "%s"' % b for b in blank[:3])
+           or ('%d empty box(es) of an absent battler redrawn' % absent_ok if absent_ok else ''))
 
     overlap = [(p, f, t) for p in (0, 1) for f, t, _ in msgs[p] if 'choosing' in t and 'What will' in t]
     report('prompt-overlap', not overlap, '; '.join('p%d f%d "%s"' % b for b in overlap[:3]))

@@ -1,0 +1,49 @@
+# Relink policy (build 0xC017013E), part 2 of 3: relink_policy_setup's saves
+# (reloaded before any reconciliation), then LINK UP.
+# The policy: party, PC, money, bag, catches, purchases and pickups are
+# personal; what a save earned alone (badges, trainer and rival wins, quest
+# progress) stays on that save; a relink restores only joint outcomes earned
+# with this same partner, identified by trainer id, never by name.
+# Checks after linking (and again after a map change on both):
+#  - player 0 gets BADGE 4 and rival stage 5 (won together with player 1,
+#    lost on player 0's side) and caravan crate 2 (found while linked with
+#    player 0); gCoopJointRestored counts 2 (badge, rival stage);
+#  - player 0 does NOT get BADGE 5 (player 1 won it with someone else);
+#  - player 1 does NOT get player 0's BADGE 3 or crate 1 (found alone), and
+#    player 0's solo rival stage does not reach player 1's record;
+# then both save for relink_policy_reload.
+include continue.inc
+0 expect_var 0x409B 1
+1 expect_var 0x409B 2
+0 expect_flag 0x869 1
+0 expect_flag 0x86A 0
+1 expect_flag 0x86A 1
+1 expect_flag 0x869 0
+0 expectp gSaveBlock3Ptr+7:1 4
+include relink.inc
+b expect coop.sLinkState 2
+b no_wild 1
+b wait 300
+0 expect_flag 0x86A 1
+0 expect_flag 0x86B 0
+0 expectp gSaveBlock3Ptr+7:1 5
+0 expect gCoopJointRestored 2
+0 expect_var 0x409B 3
+1 expect_flag 0x869 0
+1 expect_var 0x409B 2
+1 expect gCoopJointRestored 0
+1 expectp gSaveBlock3Ptr+7:1 5
+# A map change on both: the story ledger and quest values land at map loads.
+0 fixture_warp 0 26 30 92
+1 fixture_warp 0 26 31 93
+b until_field 3000
+b sync
+b wait 120
+0 expect_flag 0x86A 1
+0 expect_flag 0x86B 0
+0 expect_var 0x409B 3
+1 expect_flag 0x869 0
+1 expect_var 0x409B 2
+1 expect_var 0x4091 0
+b shot after-relink
+include save_again.inc

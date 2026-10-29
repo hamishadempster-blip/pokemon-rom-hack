@@ -329,6 +329,18 @@ struct CoopSave
     u8 duoPaidRound;               // rounds already paid in BP
     u32 duoPartnerOtId;            // whose run it is with
     u16 duoBest[7];                // best duo streak per facility
+    // Joint outcomes and the partner they were earned with (trainer id;
+    // 0: unknown, older saves). Only these travel on a relink, and only to
+    // that same partner.
+    u32 jointBadgeOtId[8];         // per jointBadges bit
+    u32 jointRivalOtId;            // whose rival win set jointRivalStage
+    u8 jointRivalStage;            // rival stage reached in a joint win
+    u32 storyOtId[8];              // per storyDone bit: the partner it was
+                                   // shared with (0: done alone or unknown)
+    u32 questPartnerOtId;          // the partner the quest masks below refer to
+    u8 questJoint[4];              // quest bits found while linked with them
+    u8 questJointGates;            // shrine gates opened while linked with them
+    u8 questJointBreakers;         // breaker count last shared with them
 };
 
 struct SaveBlock3

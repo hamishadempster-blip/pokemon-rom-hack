@@ -106,11 +106,11 @@ b wait 60
 0 wait 120
 0 shot volt-ask
 0 press A 2
-1 until_mem sGlobalScriptContextStatus:1 1 3000
+1 until_mem coop.sGuestPairPending 1 3000
 1 wait 120
 1 shot p1-join-ask
 1 press A 2
-b until_cb2 BattleMainCB2 3000 A
+b until_cb2 BattleMainCB2 6000 A
 b shot duo-battle
 b mash_field 40000
 b mash_field 4000

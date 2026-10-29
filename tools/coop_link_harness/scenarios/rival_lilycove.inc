@@ -4,6 +4,11 @@
 include continue.inc
 include relink.inc
 b expect coop.sLinkState 2
+# 0xC017013E: shared story fights need the Twin Beacon ON (the partner's
+# YES and both READY on the team screen are answered by the A mash).
+include beacon_on.inc
+b mash_field 2000 B
+b expect coop.sBeacon+1:1 1
 b no_wild 1
 b mash_field 2000 B
 0 fixture_warp 0 5 27 8

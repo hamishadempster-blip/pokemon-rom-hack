@@ -67,6 +67,7 @@ static u8 CountBits(u16 v);
 void CoopQuest_ApplyFoundObjects(void);
 
 static EWRAM_DATA bool8 sReportPending = FALSE;
+static void NoteBreakersShared(u8 n);
 static EWRAM_DATA bool8 sRedraw = FALSE;
 static EWRAM_DATA u8 sPartnerNote = 0; // 1 + breakers, or 0xFF for a trip
 static EWRAM_DATA u8 sPartnerNoteQuest = 0; // a quest value the partner added to
@@ -117,7 +118,10 @@ static void SetBreakers(u8 value, bool8 tell)
 {
     VarSet(VAR_PP_BREAKERS, value);
     if (tell && Coop_SessionActive())
+    {
+        NoteBreakersShared(value);
         CoopDeal_SendQuest(COOP_QUEST_PP_BREAKERS, value, TRUE);
+    }
 }
 
 // VAR_0x8004: PP_BREAKER_*. VAR_RESULT: PP_PRESS_*. The log's order is
@@ -192,6 +196,102 @@ static u16 SharedBits(u8 quest, u16 value)
     return value & 0xFF;
 }
 
+// ---------------------------------------------------------------- ownership
+// Quest progress found while linked is shared with that partner (live, and
+// again on a later link with the same partner if a message was lost).
+// Progress found alone, before linking or with someone else, stays on the
+// save that found it: a link never hands it over.
+static EWRAM_DATA bool8 sJointReady = FALSE;
+static EWRAM_DATA u8 sSoloBits[4];      // per sOrValues entry
+static EWRAM_DATA u8 sSoloGates = 0;
+
+static u32 QuestPartnerOt(void)
+{
+    if (!Coop_SessionActive())
+        return 0;
+    return gLinkPlayers[GetMultiplayerId() ^ 1].trainerId;
+}
+
+static u8 ShrineGates(void);
+
+// Once per session, with the partner known: what this save holds that it
+// did not share with this partner is solo.
+static bool8 EnsureJoint(void)
+{
+    struct CoopSave *save = Coop_GetSave();
+    u32 ot = QuestPartnerOt();
+    u8 i;
+
+    if (sJointReady)
+        return TRUE;
+    if (save == NULL || ot == 0)
+        return FALSE;
+    if (save->questPartnerOtId != ot)
+    {
+        save->questPartnerOtId = ot;
+        memset(save->questJoint, 0, sizeof(save->questJoint));
+        save->questJointGates = 0;
+        save->questJointBreakers = 0;
+    }
+    for (i = 0; i < ARRAY_COUNT(sOrValues); i++)
+        sSoloBits[i] = SharedBits(sOrValues[i].quest, VarGet(sOrValues[i].var)) & ~save->questJoint[i];
+    sSoloGates = ShrineGates() & ~save->questJointGates;
+    sJointReady = TRUE;
+    return TRUE;
+}
+
+// The bits of value i this save may share with the partner now.
+static u8 ShareableBits(u8 i)
+{
+    struct CoopSave *save = Coop_GetSave();
+    u8 bits;
+
+    if (save == NULL || !EnsureJoint())
+        return 0;
+    bits = SharedBits(sOrValues[i].quest, VarGet(sOrValues[i].var)) & ~sSoloBits[i];
+    save->questJoint[i] |= bits;
+    return bits;
+}
+
+static u8 ShareableGates(void)
+{
+    struct CoopSave *save = Coop_GetSave();
+    u8 gates;
+
+    if (save == NULL || !EnsureJoint())
+        return 0;
+    gates = ShrineGates() & ~sSoloGates;
+    save->questJointGates |= gates;
+    return gates;
+}
+
+static void NoteBreakersShared(u8 n)
+{
+    struct CoopSave *save = Coop_GetSave();
+
+    if (save != NULL && EnsureJoint())
+        save->questJointBreakers = n;
+}
+
+// The breaker count n is what this save last shared with this partner.
+static bool8 BreakersShared(u8 n)
+{
+    struct CoopSave *save = Coop_GetSave();
+
+    return save != NULL && EnsureJoint() && save->questJointBreakers == n;
+}
+
+static u8 ShareableBitsOf(u8 quest)
+{
+    u8 i;
+
+    for (i = 0; i < ARRAY_COUNT(sOrValues); i++)
+        if (sOrValues[i].quest == quest)
+            return ShareableBits(i);
+    return 0;
+}
+
+
 static bool8 InShrine(void);
 #define LANTERN_WINDOW  (60 * 12)   // frames: about 12 seconds
 static EWRAM_DATA u8 sMyLantern = 0;           // 1 or 2: the lantern this player lit last
@@ -207,6 +307,13 @@ static void ApplyOrValue(u8 quest, u16 var, u8 value)
 
     if (add == 0)
         return;
+    if (EnsureJoint())
+    {
+        u8 i;
+        for (i = 0; i < ARRAY_COUNT(sOrValues); i++)
+            if (sOrValues[i].var == var)
+                Coop_GetSave()->questJoint[i] |= add;
+    }
     VarSet(var, now | add);
     CoopQuest_ApplyFoundObjects();
     sPartnerNoteQuest = quest;
@@ -238,7 +345,7 @@ static void OpenSanctumNow(void)
 u16 CoopQuest_ShareGates(void)
 {
     if (Coop_SessionActive())
-        CoopDeal_SendQuest(COOP_QUEST_SHRINE_GATES, ShrineGates(), TRUE);
+        CoopDeal_SendQuest(COOP_QUEST_SHRINE_GATES, ShareableGates(), TRUE);
     return 0;
 }
 
@@ -251,7 +358,7 @@ void CoopQuest_HandleSync(u8 quest, u8 value, bool8 live)
         if (sOrValues[i].quest == quest)
         {
             ApplyOrValue(quest, sOrValues[i].var, value);
-            if (!live && (SharedBits(quest, VarGet(sOrValues[i].var)) & ~value) != 0)
+            if (!live && (ShareableBits(i) & ~value) != 0)
                 sReportPending = TRUE;
             return;
         }
@@ -280,7 +387,9 @@ void CoopQuest_HandleSync(u8 quest, u8 value, bool8 live)
             FlagSet(FLAG_SHRINE_SOLVED);
             OpenSanctumNow();
         }
-        if (!live && (ShrineGates() & ~value) != 0)
+        if (EnsureJoint())
+            Coop_GetSave()->questJointGates |= value & 7;
+        if (!live && (ShareableGates() & ~value) != 0)
             sReportPending = TRUE;
         return;
     }
@@ -297,7 +406,7 @@ void CoopQuest_HandleSync(u8 quest, u8 value, bool8 live)
              && gMain.vblankCounter1 - sMyLanternTime <= LANTERN_WINDOW)
             {
                 FlagSet(FLAG_SHRINE_GATE_LANTERNS);
-                CoopDeal_SendQuest(COOP_QUEST_SHRINE_GATES, ShrineGates(), TRUE);
+                CoopDeal_SendQuest(COOP_QUEST_SHRINE_GATES, ShareableGates(), TRUE);
                 sLanternNote = TRUE;
             }
         }
@@ -310,9 +419,14 @@ void CoopQuest_HandleSync(u8 quest, u8 value, bool8 live)
     if (PowerIsOff())
         return;
     now = Breakers();
+    // On a relink, a count this save reached alone is not raised by, and
+    // not offered to, the partner.
+    if (!live && !BreakersShared(now))
+        return;
     next = live ? value : (value > now ? value : now);
     if (!live && now > value)
         sReportPending = TRUE;
+    NoteBreakersShared(next);
     if (next == now)
         return;
     VarSet(VAR_PP_BREAKERS, next);
@@ -322,6 +436,7 @@ void CoopQuest_HandleSync(u8 quest, u8 value, bool8 live)
 
 void CoopQuest_OnSessionStart(void)
 {
+    sJointReady = FALSE;
     sReportPending = TRUE;
     sPartnerNote = 0;
 }
@@ -359,23 +474,25 @@ static void HidePartnerFoundObjects(void)
 // Every frame while linked (src/coop_deal.c).
 void CoopQuest_Poll(void)
 {
-    if (sReportPending)
+    if (sReportPending && EnsureJoint())
     {
         u8 i;
 
         sReportPending = FALSE;
-        if (!PowerIsOff() && Breakers() != 0)
+        if (!PowerIsOff() && Breakers() != 0 && BreakersShared(Breakers()))
             CoopDeal_SendQuest(COOP_QUEST_PP_BREAKERS, Breakers(), FALSE);
         for (i = 0; i < ARRAY_COUNT(sOrValues); i++)
         {
-            u16 v = SharedBits(sOrValues[i].quest, VarGet(sOrValues[i].var));
+            u16 v = ShareableBits(i);
             if (v != 0)
                 CoopDeal_SendQuest(sOrValues[i].quest, v, FALSE);
         }
+        // What this save played of the twin arcs (the partner's "heard"
+        // notes, never their progress).
         if ((VarGet(VAR_TWIN_ARC) & 0xFF) != 0)
             CoopDeal_SendQuest(COOP_QUEST_TWIN_HEARD, VarGet(VAR_TWIN_ARC) & 0xFF, FALSE);
-        if (ShrineGates() != 0)
-            CoopDeal_SendQuest(COOP_QUEST_SHRINE_GATES, ShrineGates(), FALSE);
+        if (ShareableGates() != 0)
+            CoopDeal_SendQuest(COOP_QUEST_SHRINE_GATES, ShareableGates(), FALSE);
     }
     if (sLanternNote && gMain.callback2 == CB2_Overworld && !gMain.inBattle && !gPaletteFade.active
      && !ScriptContext_IsEnabled())
@@ -841,7 +958,7 @@ u16 CoopQuest_SetBits(void)
     CoopQuest_ApplyFoundObjects();
     ConvertIntToDecimalStringN(gStringVar1, CountBits(SharedBits(quest, VarGet(var))), STR_CONV_MODE_LEFT_ALIGN, 1);
     if (add != 0 && Coop_SessionActive())
-        CoopDeal_SendQuest(quest, SharedBits(quest, VarGet(var)), TRUE);
+        CoopDeal_SendQuest(quest, SharedBits(quest, VarGet(var)) & ShareableBitsOf(quest), TRUE);
     return add != 0;
 }
 

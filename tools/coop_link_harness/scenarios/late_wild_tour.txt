@@ -43,9 +43,13 @@ b no_wild 0
 0 smart_moves 0
 0 test_mon 0 63 30 100
 0 mash_field 300 B
+# TELEPORT moves last (priority -6): the Lv30 ABRA must survive the wild
+# Pokemon's first hit (a Stufful's STRENGTH knocked it out once).
+0 strong_battlers 600
 0 pace_until_battle 12000
 0 until_battle_text Abra_used_Teleport! 12000 auto
 0 until_battle_text Go! 3000 auto
+0 strong_battlers 0
 0 mash_field 25000
 0 expect gBattleOutcome 1
 0 expect_mons_intact

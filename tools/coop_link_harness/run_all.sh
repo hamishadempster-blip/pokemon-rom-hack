@@ -250,6 +250,10 @@ if [ -n "${SEG6:-}" ]; then
 	run deal_dex_offline SAVE0="$out/deal_dex/p0.sav" SAVE1="$out/deal_dex/p1.sav"
 	run pp_stagger SAVE0="$out/pp_solo/p0.sav" SAVE1="$SEG6/p1.sav"
 	run pp_stagger_reload SAVE0="$out/pp_solo/p0.sav" SAVE1="$out/pp_stagger/p1.sav"
+	# Relink ownership policy (0xC017013E): setup unlinked, link, power cycle.
+	run relink_policy_setup SAVE0="$SEG6/p0.sav" SAVE1="$SEG6/p1.sav"
+	run relink_policy SAVE0="$out/relink_policy_setup/p0.sav" SAVE1="$out/relink_policy_setup/p1.sav"
+	run relink_policy_reload SAVE0="$out/relink_policy/p0.sav" SAVE1="$out/relink_policy/p1.sav"
 	# Outfits on the seg6 pair, and the optional quests (solo and linked),
 	# each followed by a power-cycle reload of the save it made.
 	for s in outfit_bases shoal_solo shoal_coop coast_solo coast_coop caravan_solo caravan_coop \

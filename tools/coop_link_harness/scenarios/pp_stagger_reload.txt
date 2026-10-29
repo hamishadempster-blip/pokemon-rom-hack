@@ -1,19 +1,17 @@
-# Power Problems after a reload, player 1 (pp_stagger.txt's save): the
-# catch-up state and the reward stay, and nothing new is paid. Player 1's
-# own ROTOM is in the appliance room; VOLT and FUSE are gone. Not linked.
+# Power Problems after a reload, player 1 (pp_stagger.txt's save). Build
+# 0xC017013E policy: player 0 finished the quest alone, so after linking and
+# a reload player 1's save still has none of it (no generator-off state, no
+# reward); player 0's finished quest is untouched. Not linked.
 include continue.inc
 1 no_wild 1
-1 expect_var 0x40ba 2
-1 expect_flag 0x295 1
-1 expect_flag 0xd1 1
-1 expect_item 2 605 1
-1 fixture_warp 24 53 34 27
-1 until_field 3000
-1 expect_object 16 34 25
-1 expect_no_object 11
-1 expect_no_object 13
-1 shot p1-appliance-room
+1 expect_flag 0x295 0
+1 expect_flag 0xd1 0
+1 expect_item 2 605 0
+1 expect_var 0x40f7 0
+0 expect_var 0x40ba 2
+0 expect_flag 0x293 1
+0 expect_flag 0xd1 1
+0 expect_item 2 605 1
 1 fixture_warp 24 53 34 8
 1 until_field 3000
-1 expect_no_object 11
 1 shot p1-generator-room

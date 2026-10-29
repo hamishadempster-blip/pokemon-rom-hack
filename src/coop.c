@@ -155,6 +155,7 @@ static EWRAM_DATA u8 sTalkNpcFacing = 0;
 static EWRAM_DATA u8 sTalkNpcMapGroup = 0;
 static EWRAM_DATA u8 sTalkNpcMapNum = 0;
 static EWRAM_DATA u8 sMerged = FALSE;
+static EWRAM_DATA u32 sSessionPartnerOt = 0;  // trainer id of this session's partner
 static EWRAM_DATA u8 sSeq = 0;
 static EWRAM_DATA u8 sRequest = 0;
 static EWRAM_DATA u8 sSlot = 0;
@@ -451,6 +452,16 @@ static struct CoopSave *CoopSave(void)
         save->duoPaidRound = 0;
         save->duoPartnerOtId = 0;
         memset(save->duoBest, 0, sizeof(save->duoBest));
+        // Joint wins of older builds have no partner on record: they stay
+        // on this save and are never handed to anyone on a relink.
+        memset(save->jointBadgeOtId, 0, sizeof(save->jointBadgeOtId));
+        save->jointRivalOtId = 0;
+        save->jointRivalStage = 0;
+        memset(save->storyOtId, 0, sizeof(save->storyOtId));
+        save->questPartnerOtId = 0;
+        memset(save->questJoint, 0, sizeof(save->questJoint));
+        save->questJointGates = 0;
+        save->questJointBreakers = 0;
     }
     return save;
 }
@@ -1127,6 +1138,43 @@ static u8 Coop_LocalExt(void)
     return ext;
 }
 
+EWRAM_DATA u8 gCoopJointRestored = 0;   // joint outcomes restored on relinks (tests)
+
+static void Coop_RefreshLocalStoryWith(u32 partnerOt);
+
+static u32 Coop_PartnerOtId(void)
+{
+    if (sLinkState != COOP_LINK_UP || !gReceivedRemoteLinkPlayers)
+        return 0;
+    return gLinkPlayers[GetMultiplayerId() ^ 1].trainerId;
+}
+
+// What this save offers the partner on a link: only the joint wins it
+// earned with that same partner.
+static u8 Coop_JointBadgesWithPartner(const struct CoopSave *save)
+{
+    u32 partnerOt = Coop_PartnerOtId();
+    u8 i, bits = 0;
+
+    if (partnerOt == 0)
+        return 0;
+    for (i = 0; i < 8; i++)
+    {
+        if ((save->jointBadges & (1 << i)) && save->jointBadgeOtId[i] == partnerOt)
+            bits |= 1 << i;
+    }
+    return bits;
+}
+
+static u8 Coop_JointRivalWithPartner(const struct CoopSave *save)
+{
+    u32 partnerOt = Coop_PartnerOtId();
+
+    if (partnerOt == 0 || save->jointRivalOtId != partnerOt)
+        return 0;
+    return save->jointRivalStage;
+}
+
 static void Coop_FillFrame(struct CoopFrame *frame)
 {
     s16 x, y;
@@ -1160,8 +1208,8 @@ static void Coop_FillFrame(struct CoopFrame *frame)
         frame->talkLocalId = gSpecialVar_LastTalked;
     if (save != NULL)
     {
-        frame->badges = save->jointBadges;
-        frame->rivalStage = save->rivalStage;
+        frame->badges = Coop_JointBadgesWithPartner(save);
+        frame->rivalStage = Coop_JointRivalWithPartner(save);
     }
     // In a solo battle (frames keep coming, see Coop_LinkCallback).
     if (gMain.inBattle)
@@ -1390,20 +1438,44 @@ void Coop_LinkCallback(void)
     memcpy(gSendCmd, words, sizeof(words));
 }
 
+// A relink restores only joint outcomes earned with this same partner (by
+// trainer id, never by name): the badges of gyms won together and the rival
+// stage of a rival fight won together. A badge, rival win or anything else
+// the partner earned alone, or with someone else, stays on their save.
 static void Coop_ApplyProgress(const struct CoopProgress *progress)
 {
     struct CoopSave *save = CoopSave();
-    u8 i;
+    u32 partnerOt = Coop_PartnerOtId();
+    u8 i, add;
 
-    if (save == NULL)
+    if (save == NULL || partnerOt == 0)
         return;
-    save->jointBadges |= progress->badges;
-    if (progress->rivalStage > save->rivalStage)
-        save->rivalStage = progress->rivalStage;
+    add = progress->badges & ~save->jointBadges;
     for (i = 0; i < 8; i++)
     {
-        if (save->jointBadges & (1 << i))
+        if (add & (1 << i))
+        {
+            save->jointBadges |= 1 << i;
+            save->jointBadgeOtId[i] = partnerOt;
             FlagSet(FLAG_BADGE01_GET + i);
+            if (gCoopJointRestored < 0xFF)
+                gCoopJointRestored++;
+        }
+    }
+    if (progress->rivalStage != 0)
+    {
+        if (progress->rivalStage > save->rivalStage)
+        {
+            save->rivalStage = progress->rivalStage;
+            if (gCoopJointRestored < 0xFF)
+                gCoopJointRestored++;
+        }
+        if (save->jointRivalOtId == partnerOt || progress->rivalStage >= save->jointRivalStage)
+        {
+            if (save->jointRivalOtId != partnerOt || progress->rivalStage > save->jointRivalStage)
+                save->jointRivalStage = progress->rivalStage;
+            save->jointRivalOtId = partnerOt;
+        }
     }
 }
 
@@ -1489,6 +1561,8 @@ static void Coop_AcceptPartner(const struct CoopFrame *frame)
     save = CoopSave();
     if (save == NULL)
         return;
+    // Whatever this save finished before the link came up was done alone.
+    Coop_RefreshLocalStoryWith(0);
     memset(&local, 0, sizeof(local));
     memset(&remote, 0, sizeof(remote));
     local.badges = save->jointBadges;
@@ -1522,7 +1596,9 @@ static void Coop_AcceptPartner(const struct CoopFrame *frame)
         Coop_Drop(Coop_EventScript_LegendConflict);
         return;
     }
-    Coop_ApplyProgress(&merged);
+    // Only what the partner's save offers as won together with this save.
+    Coop_ApplyProgress(&remote);
+    sSessionPartnerOt = Coop_PartnerOtId();
     sMerged = TRUE;
 }
 
@@ -2731,6 +2807,10 @@ static void Coop_NoteLinkHealth(void)
 
 static void Coop_Drop(const u8 *message)
 {
+    // Milestones finished during the session (not yet read back at a map
+    // change) were shared with this partner.
+    if (sMerged && sSessionPartnerOt != 0)
+        Coop_RefreshLocalStoryWith(sSessionPartnerOt);
     // A pending invite would otherwise leave the field frozen or the
     // trainer script waiting on an answer that can't arrive.
     gCoopHoldLink = FALSE;
@@ -4375,7 +4455,10 @@ static void Coop_GiveJointWin(void)
     {
         FlagSet(FLAG_BADGE01_GET + sBattleBadge - 1);
         if (save != NULL)
+        {
             save->jointBadges |= (u8)(1 << (sBattleBadge - 1));
+            save->jointBadgeOtId[sBattleBadge - 1] = Coop_PartnerOtId();
+        }
     }
     if (sBattleFlag != 0 && Coop_SharedWinFlag(sBattleFlag))
         FlagSet(sBattleFlag);
@@ -4405,8 +4488,13 @@ static void Coop_GiveJointWin(void)
     }
     if (sBattleKind == COOP_KIND_CHAMPION)
         FlagSet(FLAG_IS_CHAMPION);
-    if (sBattleKind == COOP_KIND_RIVAL && save != NULL && sRivalFightStage != 0xFF && save->rivalStage <= sRivalFightStage)
-        save->rivalStage = sRivalFightStage + 1;
+    if (sBattleKind == COOP_KIND_RIVAL && save != NULL && sRivalFightStage != 0xFF)
+    {
+        if (save->rivalStage <= sRivalFightStage)
+            save->rivalStage = sRivalFightStage + 1;
+        save->jointRivalStage = sRivalFightStage + 1;
+        save->jointRivalOtId = Coop_PartnerOtId();
+    }
 }
 
 static void Coop_QueueGuestFollowup(void)
@@ -4509,16 +4597,43 @@ static u16 Coop_LocalStory(void)
     return done;
 }
 
-static void Coop_RefreshLocalStory(void)
+// New local milestones are recorded as shared with partnerOt (0: done
+// alone). Only shared ones travel to that same partner later.
+static void Coop_RefreshLocalStoryWith(u32 partnerOt)
 {
     struct CoopSave *save = CoopSave();
-    u16 local;
+    u16 local, add;
+    u8 i;
 
     if (save == NULL)
         return;
     local = Coop_LocalStory();
+    add = local & ~save->storyDone & COOP_STORY_KNOWN_MASK;
+    for (i = 0; i < COOP_STORY_COUNT; i++)
+        if (add & (1 << i))
+            save->storyOtId[i] = partnerOt;
     save->storyDone |= local;
     save->storyApplied |= local;
+}
+
+static void Coop_RefreshLocalStory(void)
+{
+    Coop_RefreshLocalStoryWith(Coop_PartnerOtId());
+}
+
+// The milestones this save offers the partner: those shared with them.
+static u16 Coop_StoryForPartner(const struct CoopSave *save)
+{
+    u32 partnerOt = Coop_PartnerOtId();
+    u16 bits = 0;
+    u8 i;
+
+    if (partnerOt == 0)
+        return 0;
+    for (i = 0; i < COOP_STORY_COUNT; i++)
+        if ((save->storyDone & (1 << i)) && save->storyOtId[i] == partnerOt)
+            bits |= 1 << i;
+    return bits;
 }
 
 // The bedroom introduction, written without playing it. The rival stays in
@@ -4591,7 +4706,7 @@ static bool8 Coop_SendStory(u8 kind, u8 scene)
     msg.magic = COOP_STORY_MAGIC;
     msg.kind = kind;
     msg.scene = scene;
-    msg.ledger = save != NULL ? (save->storyDone & COOP_STORY_KNOWN_MASK) : 0;
+    msg.ledger = save != NULL ? Coop_StoryForPartner(save) : 0;
     msg.mapGroup = gSaveBlock1Ptr->location.mapGroup;
     msg.mapNum = gSaveBlock1Ptr->location.mapNum;
     msg.seq = ++sStorySeq;
@@ -4739,7 +4854,15 @@ static void Coop_HandleStoryMsg(u32 playerId, const struct CoopStoryMsg *msg)
     sStoryLastSeq = msg->seq;
     sStoryPartner = msg->ledger;
     if (save != NULL)
+    {
+        u16 add = msg->ledger & ~save->storyDone & COOP_STORY_KNOWN_MASK;
+        u8 i;
+
+        for (i = 0; i < COOP_STORY_COUNT; i++)
+            if (add & (1 << i))
+                save->storyOtId[i] = Coop_PartnerOtId();
         save->storyDone = CoopProtocol_MergeStory(save->storyDone, msg->ledger);
+    }
     if (msg->kind == COOP_STORY_MSG_SCENE && Coop_CanJoinScene(msg->scene, msg->mapGroup, msg->mapNum))
     {
         sSceneJoin = msg->scene;
@@ -4805,8 +4928,8 @@ static void Coop_PollStory(void)
     }
     // Send when the ledger changed; otherwise repeat slowly, and only while
     // the partner is not yet known to hold everything this save has.
-    if (!sStorySentValid || (save->storyDone & COOP_STORY_KNOWN_MASK) != sStorySent
-     || (++sStoryTimer >= COOP_STORY_RESEND && (save->storyDone & ~sStoryPartner & COOP_STORY_KNOWN_MASK) != 0))
+    if (!sStorySentValid || Coop_StoryForPartner(save) != sStorySent
+     || (++sStoryTimer >= COOP_STORY_RESEND && (Coop_StoryForPartner(save) & ~sStoryPartner) != 0))
     {
         sStoryTimer = 0;
         Coop_SendStory(COOP_STORY_MSG_LEDGER, COOP_SCENE_NONE);

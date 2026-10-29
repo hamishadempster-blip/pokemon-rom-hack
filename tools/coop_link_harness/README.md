@@ -175,7 +175,7 @@ folder for the recovery check).
 | `rival_latejoin.txt` | Player 1 has the start menu open during player 0's introduction; nothing interrupts it, and player 1 joins when the menu closes. |
 | `rival_pending.txt` | Player 1 is downstairs; on entering the bedroom the finished introduction is applied at the transition: rival at the PC, short line, no replay. |
 | `rival_simultaneous.txt` | Both press A on the Poké Ball on the same frame; each save plays its own introduction once, no join, no lock, both leave by the stairs. |
-| `rival_reconnect.txt` | Player 0 meets the rival while unlinked; after relinking the ledger reaches player 1, who does not replay the introduction. |
+| `rival_reconnect.txt` | Player 0 meets the rival while unlinked; after relinking player 1 does NOT receive it (0xC017013E policy: unlinked progress is personal) and meets May on their own save. |
 | `rival_story.txt` | (extended) Both twins stand on Route 103 on both screens before the fight; the second twin leaves with the rival; the guest also gets lab state 4 and the lab rival. |
 | `invite_refuse.txt` | Nearby wild invitation answered NO: the inviter fights alone, the link stays up. |
 | `invite_busy.txt` | Wild invitation while the partner has the start menu open: no prompt, the menu stays usable, the inviter fights alone. |
@@ -315,8 +315,8 @@ the saves they wrote.
 | `save_identity` | Screenshots of CONTINUE and SAVE with the build id (visual check only) |
 | `pp_solo` | Power Problems alone, unlinked: log, trip, ROLYCOLY/JOLTIK, VOLT, switch, appliance room, pages, chamber, WATTSON once, POWER SHOP, journal; saves |
 | `pp_coop` | Linked: breaker changes and a trip seen live on the other save, split tasks, VOLT + FUSE duo (co-op multi), switch by player 1, catch-up for player 0 at a map change, both paid once, linked journal |
-| `pp_reconnect` | Breakers reset while unlinked are kept by the higher count on relink; a live trip resets both |
-| `pp_stagger` (+`_reload`) | Player 0 finished alone earlier (pp_solo's save); player 1 gets the generator-off state after linking and a map change, WATTSON pays once, survives reload |
+| `pp_reconnect` | Breakers reset while unlinked stay on that save after relinking (0xC017013E policy); a live trip resets both |
+| `pp_stagger` (+`_reload`) | Player 0 finished alone earlier (pp_solo's save); after linking and a map change player 1's New Mauville is untouched and WATTSON pays player 1 nothing (0xC017013E policy); player 0 not paid again; survives reload |
 | `roster_g` | Unlinked LEVEL CAP toggle; the Lavaridge female SALANDIT evolves into SALAZZLE at 33; a BUIZEL evolves into FLOATZEL at 26 |
 
 New verbs: `fixture_swap A B` (exchange two party slots, keeping each
@@ -350,6 +350,8 @@ details in `<name>.visual.txt`).
 | `RTC_WALL0/1=1` | That core's clock is the host's wall clock instead, as in an emulator running faster than real time (tests of real-time waits). |
 | `expect_tint 1\|0 LABEL` | The outdoor time-of-day tint is (1) or is not (0) applied: BG palettes 2–6 of `gPlttBufferFaded` against `gPlttBufferUnfaded`. |
 | `writep PTRSYM+off:size VALUE` | Write through a pointer. |
+| `writep_other PTRSYM+off:size SRCPTRSYM+off` | FIXTURE: write through a pointer a value read (byte by byte) through a pointer on the OTHER game, e.g. the partner's trainer id at `gSaveBlock2Ptr+10`. |
+| `expectp PTRSYM+off:size VALUE` | Check a value read through a pointer (e.g. a `struct CoopSave` field in SaveBlock3). |
 | `fixture_nick SLOT NAME` | FIXTURE: a nickname for this player's party slot (letters, digits, `_` for a space, 9 at most). Names only; stats untouched. |
 | `until_field_text WORDS [timeout]` | Tap A every 24 frames until a field message containing WORDS (`_` for spaces) is expanded into `gStringVar4`. |
 
@@ -505,6 +507,8 @@ Build 0xC017013E scenarios:
 | `battle_visual_wild_double` | lab | Co-op wild double: all four battlers' displayed palettes equal their loaded colours at the first action menu (the left wild Pokémon used to stay dark) |
 | `startup_timing_wild` / `_gym` | lab | MEASUREMENT: frames from the request to the first action menu by stage (`gCoopStartTimes`); team-screen time separate |
 | `appearance_menu` | lab | CO-OP menu APPEARANCE opens the outfit list, unlinked and linked; the partner sees the change |
+| `relink_policy_setup` → `relink_policy` → `relink_policy_reload` | seg6 | Relink ownership policy: progress made unlinked (a crate found alone; FIXTURE: a solo badge and rival stage) stays on its save; joint outcomes recorded with this same partner by trainer id (FIXTURE: a joint badge, rival stage and crate whose message was lost) come back once; a joint badge recorded with another partner does not; checked after linking, after a map change, after a power cycle and a second link (nothing restored twice) |
+| `continue_quiet.inc` | — | CONTINUE without tapping A in the field (continue.inc's A mash can talk to whoever the save faces) |
 | `move_inspector` | lab | L in the move menu: category, PWR ("var." when it depends), ACC ("sure"), who the move hits, then the description (screens) |
 | `prep_cancel` | lab | Team screen: READY then B, partner READY: nothing starts; CANCEL tells both; asking again works |
 | `prep_timeout` | lab | Nobody finishes the team screen: closes after ~2 min of clock, nothing starts |
