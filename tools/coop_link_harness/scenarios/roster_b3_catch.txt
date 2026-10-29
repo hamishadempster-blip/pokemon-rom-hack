@@ -2,7 +2,8 @@
 # batch uses, in ordinary wild battles (j68 saves: after the League, not
 # linked; random encounters on while hunting, nothing forced).
 # FIXTURES: fixture_warp onto each spot (the walk there is ordinary story
-# map); twenty ULTRA BALLs each (test_item); a SUPER ROD registered for
+# map); forty ULTRA BALLs each (test_item; twenty ran out before the
+# last hunt in one run); a SUPER ROD registered for
 # player 1 (neither save has a rod: they are optional in the story); a
 # POKeBLOCK CASE for player 0 if missing; inside the Safari Zone a
 # fixture_warp from the South area to the post-game North-East area (the
@@ -17,7 +18,7 @@
 # the Sandburied Ruins; HISUIAN ZORUA (form 1002, #570) on Mt. Pyre 6F.
 include continue.inc
 b no_wild 1
-b test_item 3 20
+b test_item 3 40
 1 fixture_item 4 711 1
 1 writep gSaveBlock1Ptr+0x496:2 711
 0 fixture_item 4 722 1

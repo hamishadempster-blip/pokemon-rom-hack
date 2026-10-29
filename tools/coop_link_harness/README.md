@@ -440,7 +440,7 @@ New or extended verbs: `hunt THROWS LIST T fish` (the registered rod) and
 Smash; the map load brings the rock back); `hunt` throws Safari Balls in the
 Safari Zone, fights trainers who spot the player and wild Pokémon that RUN
 cannot leave; `hunt` and `catch` press A, never B, in an evolution scene at
-a battle's end (B stopped Sirfetch'd's evolution in the first runs);
+a battle's end (B stopped Sirfetch'd's evolution in the first runs); `hunt`'s pacing stays within a tile of where it began (0xC0170140: over many battles it used to drift out of the grass, once into two trainers' sight and then boxed in between a beaten trainer and the trees);
 `test_mon ... ARG7` (low nibble an ability slot + 1; bits 4-5: 1 male, 2
 female, 3 a personality divisible by 100; bits 8-12: a nature + 1);
 `test_data SLOT hp|tracker VALUE` (current HP; the evolution tracker, e.g.

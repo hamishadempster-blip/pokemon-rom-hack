@@ -2535,7 +2535,8 @@ static void frameCallback(struct mCoreThread* t) {
             // with the registered rod (SELECT); 2 Rock Smash: warp to the
             // tile in front of a rock (map reload brings the rock back), face
             // it, A and YES; again after a smash with no encounter.
-            static int huntSub[2], huntIdle[2], huntBattle[2];
+            static int huntSub[2], huntIdle[2], huntBattle[2], huntAnchorY[2] = {-1, -1};
+            if (p->step == 1) huntAnchorY[p->id] = -1;
             if (!battling && cb2 != bagCb) {
                 if (p->grindInBattle) {
                     if (!inField(p)) { keys = (p->step % 24) < 2 ? 2 : 0; break; }
@@ -2584,7 +2585,19 @@ static void frameCallback(struct mCoreThread* t) {
                     if (huntIdle[p->id] > 90) huntSub[p->id] = 0;
                     break;
                 }
-                keys = ((p->step / 24) & 1) ? (1u << 7) : (1u << 6);
+                {
+                    // Pace up and down, but stay within a tile of where the
+                    // hunt began: a battle that starts mid-step shifts the
+                    // pacing, and over many battles the walk used to drift
+                    // out of the grass (roster_b3_catch: from Route 117's
+                    // grass into two trainers' sight, then boxed in between
+                    // the beaten trainer and the trees, no encounters).
+                    int y = (int16_t)rd16(p, sObjEvents + rd8(p, sAvatar + 5) * 0x24 + 0x12);
+                    if (huntAnchorY[p->id] < 0) huntAnchorY[p->id] = y;
+                    if (y - huntAnchorY[p->id] >= 2) keys = 1u << 6;
+                    else if (huntAnchorY[p->id] - y >= 2) keys = 1u << 7;
+                    else keys = ((p->step / 24) & 1) ? (1u << 7) : (1u << 6);
+                }
                 break;
             }
             if (!p->grindInBattle) {

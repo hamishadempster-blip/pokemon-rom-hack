@@ -150,6 +150,10 @@ def main():
             # player's own in battle (battler 0 is empty by design).
             if t.startswith('What will Kai do') or t.startswith('What will Rosa do'):
                 continue
+            # A frame caught while the prompt is still printing ("What will "
+            # and no name yet): the whole line follows and is checked.
+            if t.strip() == 'What will':
+                continue
             for b, (sp, hp, mx, ab) in st.items():
                 if sp == 0 and not ab:
                     phantom.append('p%d f%d battler %d' % (p, f, b))
