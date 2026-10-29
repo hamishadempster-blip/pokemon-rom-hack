@@ -32,9 +32,16 @@ enum {
     COOP_TEST_FIELD_FRIENDSHIP, COOP_TEST_FIELD_GENDER, COOP_TEST_FIELD_EV, COOP_TEST_FIELD_OTID,
     COOP_TEST_FIELD_PERFECT_IVS, COOP_TEST_FIELD_EXP, COOP_TEST_FIELD_HAS_MOVE, COOP_TEST_FIELD_STAT,
     COOP_TEST_FIELD_DAYCARE_STEPS, // daycare: slot 0/1 that Pokemon's steps, 2 the egg step counter, 3 eggs waiting (offspring personality != 0)
+    COOP_TEST_FIELD_DEX_CAUGHT,    // this save's Pokedex caught flag for that Pokemon's species
 };
 
 extern struct CoopTestMailbox gCoopTestMailbox;
+
+// The developer start (skip to the clock in your room) is offered on NEW
+// GAME only while the harness has written this value here. A release
+// player never sees it: nothing in the game writes it.
+#define COOP_TEST_START_ARMED 0x57A27ED0
+extern u32 gCoopTestStartArmed;
 
 void CoopTest_Poll(void);
 

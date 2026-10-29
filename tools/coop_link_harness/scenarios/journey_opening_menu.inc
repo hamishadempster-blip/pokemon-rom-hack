@@ -1,4 +1,5 @@
-# Title -> OPTION (text speed FAST) -> NEW GAME -> "Skip to the clock?" NO.
+# Title -> OPTION (text speed FAST) -> NEW GAME (the release path: the
+# developer start is not armed, so Birch's speech starts at once).
 b wait 1100
 b press START 2
 b wait 200
@@ -18,7 +19,4 @@ b press UP 2
 b wait 30
 b press A 2
 b wait 200
-b press DOWN 2
-b wait 30
-b press A 2
 b wait 300

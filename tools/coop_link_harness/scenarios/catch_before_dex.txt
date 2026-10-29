@@ -1,0 +1,34 @@
+# Release opening: Poke Balls before the first rival fight, and a catch
+# before the Pokedex. Lab saves (starters received, no Pokedex yet), NOT
+# linked, both players the same steps. FIXTURE: fixture_warp into the
+# Oldale Mart and onto Route 101 (the walk is ordinary story map), then a
+# walk into the grass east of the path.
+# Checked: the Oldale clerk sells POKe BALLs now (first row, one bought,
+# money -200); a wild Pokemon caught with one on Route 101 joins the party
+# and its species is recorded as caught in this save's Pokedex data while
+# the Pokedex itself has not been given yet.
+b wait 1100
+b press START 2
+b wait 200
+b until_cb2 CB2_Overworld 8000 A
+b until_field 3000
+b expect coop.sLinkState 0
+b expect_flag 0x861 0
+b expect_item 1 1 0
+b note_money
+b fixture_warp 2 4 3 6
+b until_field 3000
+include journey_buy_balls5.inc
+b expect_item 1 1 1
+b expect_money_change -200
+b fixture_warp 0 16 3 4
+b until_field 3000
+b walk 13 11 2000
+b pace_until_battle 20000
+b until_cb2 BattleMainCB2 6000
+b catch 5
+b until_field 3000
+b expect_mon 1 species -
+b expect_mon 1 dexcaught 1
+b expect_flag 0x861 0
+b shot caught

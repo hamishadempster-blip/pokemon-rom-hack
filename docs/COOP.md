@@ -8,7 +8,7 @@ Based off RHH's pokeemerald-expansion 1.17.1
 https://github.com/rh-hideout/pokeemerald-expansion/
 Pinned commit `bb1093a7c72d3961d9a37d8e02ad2abc2c866682`.
 
-Build id baked into the link handshake: `0xC017012D`. Both games must run this build. Explicit unlink is signalled separately from temporary missing heartbeats.
+Build id baked into the link handshake: `0xC017013E` (also shown on CONTINUE and in the SAVE window). Both games must run this build. Explicit unlink is signalled separately from temporary missing heartbeats.
 
 ## Clean ROM
 
@@ -52,9 +52,9 @@ No custom server, and no relay is built into this ROM. gpSP has to be set to **L
 
 gpSP drops a peer after four seconds with no cable packet. The game uses that same wait before it decides the cable is gone, so a short hitch does not end the session and a pulled cable still does.
 
-## Test start
+## New game
 
-On the title screen, choose **NEW GAME**. The game asks whether to skip to the clock in your room. Yes puts you in the bedroom, in front of the clock, with a random name. The next question is boy or girl. No plays the normal intro. Text speed is fast on a test start. You still set the clock yourself, then go downstairs for Mum's television scene.
+**NEW GAME** plays the normal opening: Birch's speech, boy or girl, your name, the moving van and your room. (Builds before 0xC017013E asked whether to skip to the clock in your room; that developer start is now only offered when the test harness arms it, never in play.)
 
 ## How a session works
 

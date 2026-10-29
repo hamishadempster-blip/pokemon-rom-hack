@@ -1,5 +1,7 @@
 # Title, test start, clock, Mum's bedroom visit. Both players pick the boy.
 b wait 1100
+# Arm the developer start (harness only; release NEW GAME never offers it).
+b write gCoopTestStartArmed:4 0x57A27ED0
 b press START 2
 b wait 200
 b press START 2

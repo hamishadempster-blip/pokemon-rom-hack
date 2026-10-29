@@ -3982,7 +3982,7 @@ static void loadScript(const char* path, int depth) {
         	// (or Day Care) Pokemon read by the ROM's test hook; VALUE "-" only
         	// prints it. Read-only.
         	static const char *const fields[] = { "species", "level", "nature", "mint", "ability", "evtotal", "hyper", "iv",
-        	    "held", "egg", "personality", "move", "friendship", "gender", "ev", "otid", "perfect", "exp", "hasmove", "stat", "dcsteps" };
+        	    "held", "egg", "personality", "move", "friendship", "gender", "ev", "otid", "perfect", "exp", "hasmove", "stat", "dcsteps", "dexcaught" };
         	char slot[16] = "", field[24] = "", val[24] = "", arg[24] = "", src[24] = "";
         	sscanf(line, "%*s %*s %15s %23s %23s %23s %23s", slot, field, val, arg, src);
         	c.kind = C_TEST_HOOK;

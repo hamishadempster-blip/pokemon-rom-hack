@@ -16,6 +16,7 @@
 #include "link.h"
 #include "main.h"
 #include "main_menu.h"
+#include "coop_testhook.h"
 #include "menu.h"
 #include "list_menu.h"
 #include "mystery_event_menu.h"
@@ -1096,7 +1097,12 @@ static void Task_HandleMainMenuAPressed(u8 taskId)
 
             gPlttBufferUnfaded[0] = RGB_BLACK;
             gPlttBufferFaded[0] = RGB_BLACK;
-            gTasks[taskId].func = Task_CoopAskTestStart;
+            // Release NEW GAME runs the real opening; the developer start
+            // only when the test harness has armed it.
+            if (gCoopTestStartArmed == COOP_TEST_START_ARMED)
+                gTasks[taskId].func = Task_CoopAskTestStart;
+            else
+                gTasks[taskId].func = Task_NewGameBirchSpeech_Init;
             break;
         case ACTION_CONTINUE:
             gPlttBufferUnfaded[0] = RGB_BLACK;

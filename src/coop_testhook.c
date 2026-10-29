@@ -15,12 +15,14 @@
 #include "main.h"
 #include "random.h"
 #include "pokemon.h"
+#include "pokedex.h"
 #include "script_pokemon_util.h"
 #include "daycare.h"
 #include "pokemon_storage_system.h"
 #include "constants/items.h"
 
 EWRAM_DATA struct CoopTestMailbox gCoopTestMailbox = {0};
+EWRAM_DATA u32 gCoopTestStartArmed = 0;
 
 #define TEST_HOOK_MET_LEVEL 5
 
@@ -189,6 +191,9 @@ static bool8 TestHook_GetData(void)
                 v = 1;
         break;
     case COOP_TEST_FIELD_STAT:        v = (mon != NULL && arg < NUM_STATS) ? GetMonData(mon, MON_DATA_MAX_HP + arg) : 0; break;
+    case COOP_TEST_FIELD_DEX_CAUGHT:
+        v = GetSetPokedexFlag(SpeciesToNationalPokedexNum(GetBoxMonData(box, MON_DATA_SPECIES)), FLAG_GET_CAUGHT) ? 1 : 0;
+        break;
     default:
         return FALSE;
     }

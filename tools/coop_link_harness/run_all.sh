@@ -67,6 +67,10 @@ if [ -n "${ONLY:-}" ]; then
 fi
 
 for s in $fresh; do run "$s"; done
+# Release NEW GAME (no developer start): two boys and two girls, with the
+# two games' clocks set apart.
+run release_newgame_boys RTC_EPOCH0=1793250000 RTC_EPOCH1=1793290000
+run release_newgame_girls RTC_EPOCH0=1793300000 RTC_EPOCH1=1793251000
 
 lab0="$out/save_lab/p0.sav"; lab1="$out/save_lab/p1.sav"
 for s in reconnect route102_reconnect solo_six trainer_reconnect trainer_p1 coop_six coop_fainted_lead rival_story rival_p1 invite_refuse invite_busy coop_menu center_beacon link_recovery wild_route101 wild_route101_p1 battle_abort_recovery invite_timeout_recovery \
@@ -303,6 +307,7 @@ fi
 # Center, J66 League 1F before the guards; OLD13C_COAST: coast_solo_j68's
 # saves from a 0xC017013C suite, a quest finished before Mega Stones).
 run guide_team_select SAVE0="$lab0" SAVE1="$lab1"
+run catch_before_dex SAVE0="$lab0" SAVE1="$lab1"
 for s in boss_pair_solo boss_pair_coop rival_case_grass rival_case_fire rival_case_water; do
 	run "$s" SAVE0="$lab0" SAVE1="$lab1"
 done
