@@ -33,6 +33,7 @@ enum {
     COOP_TEST_FIELD_PERFECT_IVS, COOP_TEST_FIELD_EXP, COOP_TEST_FIELD_HAS_MOVE, COOP_TEST_FIELD_STAT,
     COOP_TEST_FIELD_DAYCARE_STEPS, // daycare: slot 0/1 that Pokemon's steps, 2 the egg step counter, 3 eggs waiting (offspring personality != 0)
     COOP_TEST_FIELD_DEX_CAUGHT,    // this save's Pokedex caught flag for that Pokemon's species
+    COOP_TEST_FIELD_HP,            // current HP (party Pokemon)
 };
 
 extern struct CoopTestMailbox gCoopTestMailbox;

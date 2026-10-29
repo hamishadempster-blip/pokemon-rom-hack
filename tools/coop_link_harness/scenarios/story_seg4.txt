@@ -5,7 +5,10 @@
 # in-battle stats (gBattleMons only, nothing saved), so the run tests the gym
 # flow rather than grinding (not a balance check); fixture_nick names the
 # first three Pokemon on each save. With the Beacon off after reload, gym trainers
-# who spot one player are that player's solo fights; Roxanne is co-op. smart_moves only steers the driver's move choice.
+# who spot one player are that player's solo fights; Roxanne is co-op (since
+# 0xC017013E the Beacon is turned on in front of her first: shared story
+# fights need it; Rosa's YES and both READYs are answered by A).
+# smart_moves only steers the driver's move choice.
 include continue.inc
 include relink.inc
 b expect coop.sLinkState 2
@@ -32,6 +35,10 @@ b dump gym
 1 walk 4 3 6000
 b sync
 b dump before-roxanne
+include beacon_on.inc
+b mash_field 2000 B
+b expect coop.sBeacon+1:1 1
+b sync
 0 press UP 2
 0 wait 20
 0 press A 2

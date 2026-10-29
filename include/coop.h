@@ -61,6 +61,10 @@ extern const u8 Coop_EventScript_TalkPartner[];
 #define COOP_REFUSE_PARTNER_DECLINED 5  // the partner answered NO to the shared fight
 #define COOP_REFUSE_NO_ANSWER       6   // the partner did not answer in time
 #define COOP_REFUSE_CANCELLED       7   // this player stopped waiting (B)
+#define COOP_REFUSE_PREP_SELF       8   // this player stepped back during team preparation
+#define COOP_REFUSE_PREP_PARTNER    9   // the partner stepped back (or stopped waiting)
+#define COOP_REFUSE_PREP_TIMEOUT    10  // team preparation ran out of time
+#define COOP_REFUSE_PREP_STOPPED    11  // interrupted (link, a changed party)
 
 // Invitations: how long the inviter waits for an answer and how long the
 // partner's question stays open (shorter, so a YES arrives in time). Real
@@ -279,6 +283,26 @@ u16 Coop_BeaconAnswer(void);
 u16 Coop_TakeGuestFollowup(void);
 u16 Coop_TakeRefusal(void);
 bool8 Coop_HasBattleReadyLead(void);
+bool8 Coop_HasBattleReadyMon(void);
+
+struct CoopWaitClock
+{
+    u32 startSecs;
+    u16 frames;
+    u8 rtc;        // 0 not known yet, 1 running, 2 not usable
+    u8 secs;       // seconds from the clock
+};
+void Coop_WaitClockStart(struct CoopWaitClock *clock);
+u8 Coop_WaitClockTick(struct CoopWaitClock *clock);
+bool8 Coop_PrepHostCanStart(u16 session);
+void Coop_PrepHostStarted(void);
+void Coop_PrepHostEnd(u8 refusal);
+void Coop_PrepGuestCommit(void);
+void Coop_PrepSoloEnd(u8 refusal);
+bool8 Coop_PrepIsHostSide(void);
+bool8 Coop_PrepPartnerHere(void);
+void Coop_BufferPrepOpponents(u8 *dst, bool8 host);
+extern const u8 Coop_EventScript_PrepEnded[];
 const u8 *Coop_UseTwinBeacon(void);
 bool8 Coop_BeaconActive(void);
 
@@ -304,6 +328,7 @@ bool8 Coop_TryParseHeldKeys(u32 playerId);
 bool8 Coop_FieldLinkCatchUp(void);
 bool8 Coop_ShouldRefuseSolo(u16 trainerId);
 bool8 Coop_BlockUnreadyMandatory(u16 trainerId);
+bool8 Coop_BlockMandatoryBeaconOff(u16 trainerId);
 bool8 Coop_InterceptRival(u16 trainerId);
 bool8 Coop_TryQueueOrdinaryDouble(void);
 void Coop_OnBattleLaunched(void);

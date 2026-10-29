@@ -1,0 +1,30 @@
+# Beacon OFF and a fight meant for both that starts from a trainer's own
+# battle (Wally at Victory Road, class RIVAL, not a rival stage) (0xC017013E).
+# Checkpoint 65 saves (eight badges), linked, the Beacon left OFF. FIXTURES:
+# warped to Victory Road 1F below Wally's line; healed. Kai steps on the
+# line: Wally's scene plays, then the message names the Beacon and UNLINK;
+# no battle starts; Rosa is never asked; the line's state stays 0.
+include continue.inc
+include relink.inc
+b expect coop.sLinkState 2
+b expect coop.sBeacon+1:1 0
+b test_heal
+b no_wild 1
+0 fixture_warp 24 43 2 26
+1 fixture_warp 24 43 3 26
+b until_field 3000
+b sync
+b expect_var 0x40C3 0
+0 walk 2 24 3000
+1 walk 3 25 3000
+b sync
+0 note_text TWIN_BEACON_is_OFF
+0 press UP 2
+0 wait 30
+0 mash_field 6000 A
+0 expect_noted
+0 shot beacon-off-wally
+b expect coop.sInBattle 0
+1 expect coop.sGuestPairPending 0
+b expect gMain+0x439:1 0
+0 expect_var 0x40C3 0

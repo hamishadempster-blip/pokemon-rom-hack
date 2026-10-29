@@ -1,0 +1,80 @@
+# Team preparation: changing your mind and stepping back (0xC017013E). Lab
+# saves, linked, Beacon ON, Rustboro Gym. FIXTURES: fixture_warp; strong
+# cached stats.
+# 1. Kai talks to Roxanne, Rosa says YES: both on the team screen.
+# 2. Rosa READY, then B (not ready after all); Kai READY: nothing starts
+#    while Rosa is not ready (a READY seen earlier does not count).
+# 3. Rosa CANCEL: both screens close; Kai reads that Rosa stepped back,
+#    Rosa that she did; nothing started, no badge, still linked.
+# 4. Kai asks again; Rosa YES; both READY: the battle starts.
+include beacon_battle.txt
+b mash_field 2000 B
+b write sWildEncountersDisabled 1
+0 fixture_lead 255 70 344960
+1 fixture_lead 228 70 428750
+0 fixture_warp 11 3 5 3
+1 fixture_warp 11 3 3 4
+b until_field 3000
+b sync
+b wait 40
+b sync
+0 press UP 2
+0 wait 20
+0 press A 2
+0 until_mem coop.sWaitingAck 1 3000 A
+1 until_mem coop.sGuestPairPending 1 6000
+1 wait 90
+1 press A 2
+1 wait 120
+1 press A 2
+0 until_mem gCoopPrepPhase 1 3000
+1 until_mem gCoopPrepPhase 1 600
+b wait 60
+# Rosa READY, then not ready
+1 press A 2
+1 until_mem gCoopPrepPhase 3 120
+1 wait 30
+1 press B 2
+1 until_mem gCoopPrepPhase 1 120
+0 wait 60
+0 press A 2
+0 until_mem gCoopPrepPhase 3 120
+b wait 300
+b expect coop.sInBattle 0
+0 expect gCoopPrepPhase 3
+1 expect gCoopPrepPhase 1
+b shot kai-ready-rosa-not
+# Rosa CANCEL
+0 note_text stepped_back_from_the
+1 note_text You_stepped_back
+1 press DOWN 2
+1 wait 10
+1 press DOWN 2
+1 wait 10
+1 press A 2
+b until_mem gCoopPrepPhase 0 600
+b wait 90
+b shot stepped-back
+b mash_field 3000 B
+0 expect_noted
+1 expect_noted
+b expect coop.sInBattle 0
+b expect_flag 0x867 0
+b expect coop.sLinkState 2
+b expect coop.sWaitingAck 0
+b sync
+# Again, both READY
+0 press A 2
+0 until_mem coop.sWaitingAck 1 3000 A
+1 until_mem coop.sGuestPairPending 1 6000
+1 wait 90
+1 press A 2
+1 wait 120
+1 press A 2
+0 until_mem gCoopPrepPhase 1 3000
+1 until_mem gCoopPrepPhase 1 600
+b wait 30
+b press A 2
+b until_cb2 BattleMainCB2 3000
+b expect coop.sInBattle 1
+b expect gBattlersCount 4

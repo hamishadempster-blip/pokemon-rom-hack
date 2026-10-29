@@ -488,3 +488,27 @@ New verbs: `expect_team TRAINER KEY PARTY` (read-only: the party id the
 ROM picks for a trainer and team key), `expect_mon ... enemyA|enemyB` (the
 opponent parties, in battle), `mega_next N` (DRIVER: press START once at
 the next N move menus, the game's own Mega trigger).
+
+Build 0xC017013E scenarios:
+
+| Scenario | Saves | Checks |
+|---|---|---|
+| `release_newgame_boys` / `_girls` | fresh | Release NEW GAME without the dev shortcut: real opening, default names, the van, the clock; different RTC start times per player |
+| `catch_before_dex` | lab | Poké Balls sold in Oldale before Route 103; a catch before the Pokédex counts as caught |
+| `story_consent` | lab | A gym fight asks the partner; NO starts nothing (said why); YES starts it |
+| `story_beacon_off` | lab | Beacon OFF: a gym fight says so and starts nothing; the partner is never asked |
+| `story_cancel` | lab | The inviter stops waiting (B); the partner's late YES starts nothing |
+| `story_unanswered` | lab | Nobody answers: the question closes on its own (~26 s), the inviter is told (~30 s) |
+| `story_beacon_off_wally` | j65 | Beacon OFF: Wally (a trainer's own battle meant for both) says so and starts nothing |
+| `story_simultaneous` | lab | Both talk to the leaders at once: player 0's request wins, one fight |
+| `invite_expiry_clock` (+`_wall`) | lab | A wild invitation expires after ~30 s of the cartridge clock: ~1,800 frames with the emulated RTC; many more frames with `RTC_WALL0/1=1` at harness speed |
+| `prep_cancel` | lab | Team screen: READY then B, partner READY: nothing starts; CANCEL tells both; asking again works |
+| `prep_timeout` | lab | Nobody finishes the team screen: closes after ~2 min of clock, nothing starts |
+| `prep_link_stall` | lab | The partner's heartbeat stops during the team screen: nothing starts until it is back, then one fight |
+| `prep_win_j13` (+`_reload`) | j13 | Both choose from slots 3–5 in their own order; ASSISTED win; everyone back in their own slot on both saves; EXP to the chosen; badge; power-on reload |
+| `prep_slots456` | j44 | Kai picks 6, 4, 5 in the party screen; those three fight; order restored afterwards (the fight is lost: unassisted) |
+| `prep_solo_lead` | j13 | Unlinked gym: lead screen, CANCEL starts nothing, CHANGE LEAD to slot 5, the battle starts with it |
+
+New verbs: `expect_mon SLOT hp VALUE`, `expect_mon ... >@K` (more than note
+K). New harness variables: `RTC_EPOCH<i>` (start time) and `RTC_WALL<i>=1`
+(the host's wall clock instead of emulated time).

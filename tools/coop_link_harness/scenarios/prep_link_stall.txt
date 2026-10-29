@@ -1,0 +1,48 @@
+# Team preparation across a link stall (0xC017013E). Lab saves, linked,
+# Beacon ON, Rustboro Gym. FIXTURES: fixture_warp; strong cached stats.
+# KIND: recovery (a fault is induced on purpose). Both on the team screen,
+# then Rosa's overworld heartbeat stops for 25 seconds (mute_coop: her link
+# callback is silenced; block messages such as the team states still pass,
+# which is all this driver can do: a cable pull that also loses blocks is
+# not simulated). Both press READY during the stall: nothing starts while
+# Kai's game cannot see her; once her frames are back the fight starts
+# once, for both, with four battlers.
+include beacon_battle.txt
+b mash_field 2000 B
+b write sWildEncountersDisabled 1
+0 fixture_lead 255 70 344960
+1 fixture_lead 228 70 428750
+0 fixture_warp 11 3 5 3
+1 fixture_warp 11 3 3 4
+b until_field 3000
+b sync
+b wait 40
+b sync
+0 press UP 2
+0 wait 20
+0 press A 2
+0 until_mem coop.sWaitingAck 1 3000 A
+1 until_mem coop.sGuestPairPending 1 6000
+1 wait 90
+1 press A 2
+1 wait 120
+1 press A 2
+0 until_mem gCoopPrepPhase 1 3000
+1 until_mem gCoopPrepPhase 1 600
+b wait 90
+1 mute_coop 1500
+1 wait 120
+b shot during-stall
+1 press A 2
+0 wait 200
+0 press A 2
+b wait 600
+b expect coop.sInBattle 0
+0 expect gCoopPrepPhase 3
+b shot ready-during-stall
+b until_cb2 BattleMainCB2 4000
+b expect coop.sInBattle 1
+b expect gBattlersCount 4
+b expect gCoopPrepApplied 1
+b wait 120
+b shot battle-after-stall

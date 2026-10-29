@@ -143,10 +143,16 @@ fi
 # boulders are each save's own.
 if [ -n "${J13:-}" ]; then
 	run mandatory_busy_talk SAVE0="$J13/p0.sav" SAVE1="$J13/p1.sav"
+	# Team preparation (0xC017013E): both players choose from any slot; a
+	# won fight returns everyone to their own slot; reload; solo lead.
+	run prep_win_j13 SAVE0="$J13/p0.sav" SAVE1="$J13/p1.sav"
+	run prep_win_j13_reload SAVE0="$out/prep_win_j13/p0.sav" SAVE1="$out/prep_win_j13/p1.sav"
+	run prep_solo_lead SAVE0="$J13/p0.sav" SAVE1="$J13/p1.sav"
 fi
 if [ -n "${J44:-}" ]; then
 	run mandatory_busy_menu SAVE0="$J44/p0.sav" SAVE1="$J44/p1.sav"
 	run mandatory_busy_timeout SAVE0="$J44/p0.sav" SAVE1="$J44/p1.sav"
+	run prep_slots456 SAVE0="$J44/p0.sav" SAVE1="$J44/p1.sav"
 fi
 if [ -n "${J59:-}" ]; then
 	run coop_boulder_personal SAVE0="$J59/p0.sav" SAVE1="$J59/p1.sav"
@@ -169,6 +175,7 @@ fi
 # Grande, eight badges): late-game co-op regressions.
 if [ -n "${J65:-}" ]; then
 	run coop_wally_vr_partner SAVE0="$J65/p0.sav" SAVE1="$J65/p1.sav"
+	run story_beacon_off_wally SAVE0="$J65/p0.sav" SAVE1="$J65/p1.sav"
 	# First roster batch: every distinct evolution method (player 1 at night).
 	run roster_b1_evolutions SAVE0="$J65/p0.sav" SAVE1="$J65/p1.sav" RTC_EPOCH0=1699923600 RTC_EPOCH1=1699963200
 	# Second roster batch: guests, fossils, every distinct evolution method,
@@ -308,7 +315,8 @@ fi
 # saves from a 0xC017013C suite, a quest finished before Mega Stones).
 run guide_team_select SAVE0="$lab0" SAVE1="$lab1"
 run catch_before_dex SAVE0="$lab0" SAVE1="$lab1"
-for s in story_consent story_beacon_off story_cancel story_unanswered story_simultaneous invite_expiry_clock; do
+for s in story_consent story_beacon_off story_cancel story_unanswered story_simultaneous invite_expiry_clock \
+         prep_cancel prep_timeout prep_link_stall; do
 	run "$s" SAVE0="$lab0" SAVE1="$lab1"
 done
 # The same expiry by the wall clock while the harness runs faster than real

@@ -1,0 +1,72 @@
+# Unlinked gym fight: choose the lead (0xC017013E). Checkpoint 13 saves,
+# not linked. FIXTURE: warp into the Rustboro Gym. The battle itself is
+# not played out (the check is the order it starts with).
+# 1. Kai talks to Roxanne: "Lead vs ROXANNE & HEATH", READY / CHANGE LEAD
+#    / CANCEL. CANCEL: "You stepped back from the battle. Nothing started."
+# 2. Kai talks again; CHANGE LEAD: the party screen with one choice; slot
+#    5; READY: the battle starts with that Pokemon in front, the whole
+#    party behind it; it stays the lead afterwards.
+include continue.inc
+b mash_field 300 B
+b expect coop.sLinkState 0
+b no_wild 1
+b smart_moves 1
+0 fixture_warp 11 3 5 3
+0 until_field 3000
+0 expect_mon 0 personality @0
+0 expect_mon 4 personality @4
+0 press UP 2
+0 wait 20
+0 press A 2
+0 until_mem gCoopPrepPhase 1 3000 A
+0 wait 60
+0 expect gCoopPrepOrder 1
+0 shot solo-lead-screen
+0 note_text You_stepped_back
+0 press B 2
+0 until_mem gCoopPrepPhase 0 300
+0 wait 90
+0 mash_field 2000 B
+0 expect_noted
+0 expect_cb2 CB2_Overworld
+0 expect_flag 0x867 0
+0 expect_mon 0 personality @0
+# again: CHANGE LEAD to slot 5
+0 press A 2
+0 until_mem gCoopPrepPhase 1 3000 A
+0 wait 60
+0 press DOWN 2
+0 wait 10
+0 press A 2
+0 until_cb2 CB2_UpdatePartyMenu 600
+0 wait 90
+0 press A 2
+0 wait 20
+0 press A 2
+0 wait 20
+0 press DOWN 2
+0 wait 10
+0 press DOWN 2
+0 wait 10
+0 press DOWN 2
+0 wait 10
+0 press DOWN 2
+0 wait 10
+0 press A 2
+0 wait 20
+0 press A 2
+0 wait 30
+0 shot solo-picker
+0 press A 2
+0 until_cb2 CB2_Overworld 600
+0 until_mem gCoopPrepPhase 1 600
+# (the team screen is back once the field has faded in)
+0 wait 150
+0 expect gCoopPrepOrder 5
+0 shot solo-lead-5
+0 press A 2
+0 until_cb2 BattleMainCB2 3000
+0 expect_mon 0 personality @4
+0 expect_mon 4 personality @0
+0 wait 200
+0 shot solo-battle

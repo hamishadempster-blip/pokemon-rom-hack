@@ -1,0 +1,38 @@
+# Team preparation that nobody finishes (0xC017013E). Lab saves, linked,
+# Beacon ON, Rustboro Gym. FIXTURES: fixture_warp. Kai talks to Roxanne,
+# Rosa says YES, then neither presses anything on the team screen: after
+# about two minutes of game clock both screens close with "Choosing teams
+# took too long. Nothing started."; no battle (nobody is confirmed on a
+# timeout), no badge, still linked.
+include beacon_battle.txt
+b mash_field 2000 B
+b write sWildEncountersDisabled 1
+0 fixture_warp 11 3 5 3
+1 fixture_warp 11 3 3 4
+b until_field 3000
+b sync
+b wait 40
+b sync
+0 press UP 2
+0 wait 20
+0 press A 2
+0 until_mem coop.sWaitingAck 1 3000 A
+1 until_mem coop.sGuestPairPending 1 6000
+1 wait 90
+1 press A 2
+1 wait 120
+1 press A 2
+0 until_mem gCoopPrepPhase 1 3000
+1 until_mem gCoopPrepPhase 1 600
+b note_text took_too_long
+b wait 6600
+b expect gCoopPrepPhase 1
+b expect coop.sInBattle 0
+b until_mem gCoopPrepPhase 0 1200
+b wait 120
+b shot timed-out
+b mash_field 3000 B
+b expect_noted
+b expect coop.sInBattle 0
+b expect_flag 0x867 0
+b expect coop.sLinkState 2

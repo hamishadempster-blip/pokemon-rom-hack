@@ -9,6 +9,11 @@
 include continue.inc
 include relink.inc
 b expect coop.sLinkState 2
+# 0xC017013E: shared story fights need the Twin Beacon ON (and the
+# partner's YES and both READY on the team screen, answered by A).
+include beacon_on.inc
+b mash_field 2000 B
+b expect coop.sBeacon+1:1 1
 b no_wild 1
 # Out of the lab; Mom stops each player in Littleroot with Running Shoes.
 b walk 6 11 1500

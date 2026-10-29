@@ -191,6 +191,7 @@ static bool8 TestHook_GetData(void)
                 v = 1;
         break;
     case COOP_TEST_FIELD_STAT:        v = (mon != NULL && arg < NUM_STATS) ? GetMonData(mon, MON_DATA_MAX_HP + arg) : 0; break;
+    case COOP_TEST_FIELD_HP:          v = mon != NULL ? GetMonData(mon, MON_DATA_HP) : 0; break;
     case COOP_TEST_FIELD_DEX_CAUGHT:
         v = GetSetPokedexFlag(SpeciesToNationalPokedexNum(GetBoxMonData(box, MON_DATA_SPECIES)), FLAG_GET_CAUGHT) ? 1 : 0;
         break;

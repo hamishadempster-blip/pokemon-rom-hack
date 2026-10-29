@@ -1536,6 +1536,8 @@ void BattleSetup_StartTrainerBattle(void)
         }
         if (Coop_BlockUnreadyMandatory(TRAINER_BATTLE_PARAM.opponentA))
             return;
+        if (Coop_BlockMandatoryBeaconOff(TRAINER_BATTLE_PARAM.opponentA))
+            return;
     }
 
     if (gNoOfApproachingTrainers == 2)

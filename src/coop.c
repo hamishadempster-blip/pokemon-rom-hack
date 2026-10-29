@@ -1,5 +1,6 @@
 #include "global.h"
 #include "coop.h"
+#include "coop_prep.h"
 #include "coop_teams.h"
 #include "coop_npc.h"
 #include "coop_protocol.h"
@@ -276,13 +277,6 @@ static EWRAM_DATA u16 sGuestPairTimer = 0;   // seconds the question has been op
 // player who speeds the emulator up still gets the full time; 60 frames a
 // second when there is no clock (or it stands still). Frames alone also end
 // it after ten times the limit, so a stuck clock can never hold it open.
-struct CoopWaitClock
-{
-    u32 startSecs;
-    u16 frames;
-    u8 rtc;        // 0 not known yet, 1 running, 2 not usable
-    u8 secs;       // seconds from the clock
-};
 static EWRAM_DATA struct CoopWaitClock sInviteClock = {0};
 static EWRAM_DATA struct CoopWaitClock sGuestClock = {0};
 static EWRAM_DATA struct CoopWaitClock sBusyClock = {0};
@@ -336,6 +330,7 @@ static u8 Coop_SoloReasonHere(void);
 static void Coop_PollStory(void);
 static void Coop_PollCoordJoin(void);
 static bool8 Coop_GuestBusy(void);
+static bool8 Coop_PlaceStaysSolo(void);
 static void Coop_AcceptMandatory(const struct CoopInvite *invite);
 static void Coop_ClockStart(struct CoopWaitClock *clock);
 static u8 Coop_ClockTick(struct CoopWaitClock *clock);
@@ -1702,6 +1697,8 @@ static void Coop_LaunchBattle(bool8 isGuest)
     gCoopPartnerHasBracelet = (sRemoteTeamKey & COOP_TEAMKEY_VALID) && (sRemoteTeamKey & COOP_TEAMKEY_BRACELET);
     if (!isGuest)
         Coop_HideCallingMessage();
+    // The teams chosen before the fight move to the front (undone after).
+    CoopPrep_OnLaunch();
     sWaitingAck = FALSE;
     sIsGuest = isGuest;
     sInBattle = TRUE;
@@ -1864,7 +1861,11 @@ static void Coop_HandleInvite(u32 playerId, const struct CoopInvite *invite)
 
     if (invite->kind == COOP_KIND_ACK)
     {
-        if (sWaitingAck && invite->seq == sInvite.seq && Coop_SessionActive() && sPartnerValid)
+        // A team preparation's start (CoopPrep: the host asked, the partner
+        // answered with this ACK and is launching): the block itself shows
+        // the partner is there, even while its overworld heartbeat lags.
+        if (sWaitingAck && invite->seq == sInvite.seq && Coop_SessionActive()
+         && (sPartnerValid || CoopPrep_HostCommitted()))
         {
             sRemoteTeamKey = invite->teamKey;
             Coop_LaunchBattle(FALSE);
@@ -1879,6 +1880,7 @@ static void Coop_HandleInvite(u32 playerId, const struct CoopInvite *invite)
         // The inviter stopped waiting; the open question becomes too late.
         if (sGuestPairPending && invite->seq == sGuestPairInvite.seq)
             sGuestPairTimer = 0xFFFF;
+        CoopPrep_PartnerWithdrew(invite->seq);
         // A YES that crossed the withdrawal: the inviter is fighting alone.
         if (sJoinLaunchPending && invite->seq == sGuestPairInvite.seq)
         {
@@ -2096,7 +2098,9 @@ static void Coop_HandleInvite(u32 playerId, const struct CoopInvite *invite)
         return;
     }
 
-    if (!Coop_HasBattleReadyLead())
+    // Story fights pick their team first (src/coop_prep.c): any one
+    // Pokemon able to fight is enough to be asked.
+    if (!Coop_HasBattleReadyMon())
     {
         Coop_SendReplyWhy(COOP_KIND_NACK, invite->seq, COOP_SOLO_PARTNER_NOT_READY);
         sPendingMessage = Coop_EventScript_NotReady;
@@ -2116,14 +2120,14 @@ static void Coop_HandleInvite(u32 playerId, const struct CoopInvite *invite)
         ScriptContext_SetupScript(Coop_EventScript_StoryAskGuest);
         return;
     }
-    if (sWaitingAck)
-    {
-        // Both asked for the same fight: this game joins the partner's.
-        Coop_HideCallingMessage();
-        sWaitingAck = FALSE;
-        sResumeScript = FALSE;
-    }
-    Coop_AcceptMandatory(invite);
+    // Both asked for the same fight: this game joins the partner's (link
+    // player 0's request won, CoopProtocol_KeepOwnInvite), and both go on
+    // to choose their teams.
+    Coop_HideCallingMessage();
+    sWaitingAck = FALSE;
+    sResumeScript = FALSE;
+    sGuestPairInvite = *invite;
+    CoopPrep_BeginGuest(invite->seq, playerId);
 }
 
 // The partner's shared story fight, accepted: the same battle on this game.
@@ -2167,6 +2171,8 @@ static bool8 Coop_IsCoopBlock(const u16 *words)
     case COOP_DEAL_MAGIC:
     case COOP_DEX_MAGIC:
         return CoopDeal_IsLinkBlock(words);
+    case COOP_PREP_MAGIC:
+        return CoopPrep_IsLinkBlock(words);
     }
     return FALSE;
 }
@@ -2251,6 +2257,8 @@ static void Coop_PollBlocks(void)
                 CoopDeal_HandleBlock(i, gBlockRecvBuffer[i]);
             else if (magic == COOP_DEX_MAGIC)
                 CoopDex_HandleBlock(i, gBlockRecvBuffer[i]);
+            else if (magic == COOP_PREP_MAGIC)
+                CoopPrep_HandleBlock(i, gBlockRecvBuffer[i]);
             else if (magic == COOP_STORY_MAGIC)
                 Coop_HandleStoryMsg(i, (const struct CoopStoryMsg *)gBlockRecvBuffer[i]);
             else
@@ -2328,7 +2336,7 @@ static void Coop_PollInviteTimeout(void)
 {
     u8 secs;
 
-    if (!sWaitingAck)
+    if (!sWaitingAck || CoopPrep_Active())
         return;
     // B leaves the rescue wait so a partner stuck in a menu does not
     // freeze the person who opened the bag. For an optional fight it means
@@ -2710,6 +2718,7 @@ static void Coop_Drop(const u8 *message)
     sRescueGuestFollow = FALSE;
     sLinkErrorStreak = 0;
     sBadFrameStreak = 0;
+    CoopPrep_LinkDown();
     if ((sWaitingAck || sWaitKind == COOP_REQ_RESCUE) && !gMain.inBattle)
         Coop_FailWait();
     sRescueEcho = 0;
@@ -2809,6 +2818,7 @@ static void Task_CoopSession(u8 taskId)
         Coop_PollRescue();
         Coop_PollScriptWaits();
         CoopDeal_Poll();
+        CoopPrep_Poll();
         Coop_PollBeacon();
         Coop_PollInviteTimeout();
         Coop_PollStory();
@@ -3695,13 +3705,27 @@ bool8 Coop_ShouldRefuseSolo(u16 trainerId)
     return Coop_ClassRequiresPartner(trainerId) || Coop_RivalStageFromId(trainerId) != 0xFF;
 }
 
+// A fight meant for both (leader, Elite Four, champion, Wally, villain
+// bosses and admins) met while linked and together with the Twin Beacon
+// OFF: say so and start nothing (turn it on, or UNLINK to face it alone).
+bool8 Coop_BlockMandatoryBeaconOff(u16 trainerId)
+{
+    if (!Coop_SessionActive() || !Coop_PartnerOnSameMap() || sBeacon.on)
+        return FALSE;
+    if (!Coop_ClassRequiresPartner(trainerId) || Coop_PlaceStaysSolo())
+        return FALSE;
+    sRefusal = COOP_REFUSE_BEACON_OFF;
+    ScriptContext_SetupScript(Coop_EventScript_NeedPartner);
+    return TRUE;
+}
+
 bool8 Coop_BlockUnreadyMandatory(u16 trainerId)
 {
     if (!Coop_PartnerOnSameMap())
         return FALSE;
     if (!Coop_ClassRequiresPartner(trainerId))
         return FALSE;
-    if (Coop_HasBattleReadyLead())
+    if (Coop_HasBattleReadyMon())
         return FALSE;
     ScriptContext_SetupScript(Coop_EventScript_NotReady);
     return TRUE;
@@ -3813,8 +3837,9 @@ bool8 Coop_TryQueueOrdinaryDouble(void)
     if (!CoopProtocol_QueuesCoop(category, sBeacon.on, TRUE))
         return FALSE;
     // Optional fights stay solo when the front three are down. Mandatory ones
-    // already stopped in Coop_BlockUnreadyMandatory.
-    if (!Coop_HasBattleReadyLead())
+    // already stopped in Coop_BlockUnreadyMandatory when nothing can fight
+    // (their team is chosen first, src/coop_prep.c).
+    if (category == COOP_CAT_MANDATORY ? !Coop_HasBattleReadyMon() : !Coop_HasBattleReadyLead())
         return FALSE;
     // The partner, spotted by this same trainer, already asked: join it.
     if (sSameTrainerPending)
@@ -3888,7 +3913,7 @@ static bool8 Coop_RefuseMandatory(void)
 {
     if (!Coop_PartnerOnSameMap())
         sRefusal = COOP_REFUSE_NONE;
-    else if (!Coop_HasBattleReadyLead())
+    else if (!Coop_HasBattleReadyMon())
         sRefusal = COOP_REFUSE_SELF_NOT_READY;
     // Linked and together, but the Beacon is OFF: a shared fight is asked
     // for with the Beacon on (the opening rescue is the one exception).
@@ -3905,9 +3930,13 @@ u16 Coop_StartGymBattle(void)
 {
     if (!Coop_SessionActive())
     {
-        // Gym, Elite Four, champion, alone: both trainers, whole party.
+        // Gym, Elite Four, champion, alone: both trainers, whole party. The
+        // player may first choose the lead (src/coop_prep.c), which then
+        // starts the battle, or step back.
         sSoloRivalStage = 0;
         gSpecialVar_Result = TRUE;
+        if (CoopPrep_BeginSolo(VarGet(VAR_0x8004), VarGet(VAR_0x8005)))
+            return TRUE;
         BattleSetup_StartSoloPairBattle(VarGet(VAR_0x8004), VarGet(VAR_0x8005));
         return TRUE;
     }
@@ -4121,6 +4150,23 @@ bool8 Coop_HasBattleReadyLead(void)
     return CoopProtocol_LeadReady(party);
 }
 
+// Any Pokemon in the party that could fight (story fights choose their
+// three before the battle, src/coop_prep.c).
+bool8 Coop_HasBattleReadyMon(void)
+{
+    u32 i;
+
+    for (i = 0; i < PARTY_SIZE; i++)
+    {
+        struct Pokemon *mon = &gParties[B_TRAINER_PLAYER][i];
+
+        if (GetMonData(mon, MON_DATA_SPECIES) != SPECIES_NONE && !GetMonData(mon, MON_DATA_IS_EGG)
+         && GetMonData(mon, MON_DATA_HP) != 0)
+            return TRUE;
+    }
+    return FALSE;
+}
+
 u16 Coop_TakeRefusal(void)
 {
     u16 refusal = sRefusal;
@@ -4254,6 +4300,8 @@ static void Coop_RestoreParty(bool8 aborted)
         if (CoopProtocol_RestoreFromSnapshot(i, aborted))
             gParties[B_TRAINER_PLAYER][i] = sPartySnap[i];
     }
+    // Everyone back in their own slot (a team chosen from slots 4-6).
+    CoopPrep_UndoTeam();
     CompactPartySlots();
     for (i = 0; i < count; i++)
     {
@@ -5642,7 +5690,7 @@ u16 Coop_PairGuestAnswer(void)
         return sGuestPairTimer != 0xFFFF && sGuestPairTimer >= COOP_ANSWER_SECONDS
             && Coop_SessionActive() && Coop_PartnerOnSameMap() ? 5 : 4;
     }
-    if (!accepted || !Coop_HasBattleReadyLead()
+    if (!accepted || !(Coop_IsMandatoryKind(kind) ? Coop_HasBattleReadyMon() : Coop_HasBattleReadyLead())
      || (kind == COOP_KIND_PAIR && Coop_PairPlanFromHere(TRUE, accepted) != COOP_PAIR_JOINT))
     {
         Coop_SendReplyWhy(COOP_KIND_NACK, seq, !accepted ? COOP_SOLO_DECLINED : COOP_SOLO_PARTNER_NOT_READY);
@@ -5650,7 +5698,9 @@ u16 Coop_PairGuestAnswer(void)
     }
     if (Coop_IsMandatoryKind(kind))
     {
-        Coop_AcceptMandatory(&sGuestPairInvite);
+        // Agreed: both players now choose their team (src/coop_prep.c); the
+        // fight starts when both are READY. This script waits meanwhile.
+        CoopPrep_BeginGuest(seq, GetMultiplayerId() ^ 1);
         return 1;
     }
     if (kind == COOP_KIND_LEGEND && !CoopLegend_Eligible((u8)sGuestPairInvite.aux))
@@ -5754,7 +5804,7 @@ bool8 Coop_InterceptRival(u16 trainerId)
         ScriptContext_SetupScript(Coop_EventScript_RivalWaits);
         return TRUE;
     }
-    if (!Coop_HasBattleReadyLead())
+    if (!Coop_HasBattleReadyMon())
     {
         sRefusal = COOP_REFUSE_SELF_NOT_READY;
         ScriptContext_SetupScript(Coop_EventScript_RivalWaits);
@@ -5818,7 +5868,7 @@ u16 Coop_NextProgression(void)
 {
     for (; sProgressSlot < COOP_BATTLE_SLOTS; sProgressSlot++)
     {
-        struct Pokemon *mon = &gParties[B_TRAINER_PLAYER][sProgressSlot];
+        struct Pokemon *mon = &gParties[B_TRAINER_PLAYER][CoopPrep_PartySlotForBattleSlot(sProgressSlot)];
         u32 oldLevel = sProgressLevels[sProgressSlot];
         if (oldLevel == 0)
             continue;
@@ -5836,7 +5886,7 @@ u16 Coop_NextProgression(void)
                             break;
                     if (i < MAX_MON_MOVES)
                         continue;
-                    gSpecialVar_0x8004 = sProgressSlot;
+                    gSpecialVar_0x8004 = CoopPrep_PartySlotForBattleSlot(sProgressSlot);
                     gSpecialVar_0x8005 = entry->move;
                     return 1;
                 }
@@ -5855,11 +5905,12 @@ u16 Coop_NextProgression(void)
 
 void Coop_StartProgressionEvolution(void)
 {
-    struct Pokemon *mon = &gParties[B_TRAINER_PLAYER][sProgressSlot];
+    u8 slot = CoopPrep_PartySlotForBattleSlot(sProgressSlot);
+    struct Pokemon *mon = &gParties[B_TRAINER_PLAYER][slot];
     bool32 canStop = sProgressCanStop;
     GetEvolutionTargetSpecies(mon, EVO_MODE_BATTLE_ONLY, 0, NULL, &canStop, DO_EVO);
     gCB2_AfterEvolution = CB2_ReturnToFieldContinueScript;
-    BeginEvolutionScene(mon, sProgressEvolution, canStop, sProgressSlot);
+    BeginEvolutionScene(mon, sProgressEvolution, canStop, slot);
 }
 
 // Pokemon Center nurse: TRUE when the last heal this session was at this same
@@ -5897,3 +5948,82 @@ u16 Coop_StartSoloRescueBattle(void)
 
 // Terra/Marine Cave scripts: a co-op duo fight settles both legends; a solo
 // fight settles only the one in this cave, so the other cave stays open.
+
+// --- Team preparation (src/coop_prep.c) ----------------------------------
+
+void Coop_WaitClockStart(struct CoopWaitClock *clock)
+{
+    Coop_ClockStart(clock);
+}
+
+u8 Coop_WaitClockTick(struct CoopWaitClock *clock)
+{
+    return Coop_ClockTick(clock);
+}
+
+// The host's own story invite is waiting for this session's answer.
+bool8 Coop_PrepHostCanStart(u16 session)
+{
+    return sWaitingAck && sInviteSent && Coop_IsMandatoryKind(sBattleKind) && sInvite.seq == session
+        && Coop_SessionActive() && !gMain.inBattle && !sInBattle;
+}
+
+// The partner agreed and is choosing: the waiting note and the trainer's
+// line give way to the team screen.
+void Coop_PrepHostStarted(void)
+{
+    Coop_HideCallingMessage();
+    HideFieldMessageBox();
+    gCoopWaitSecondsLeft = 0;
+}
+
+// The preparation ended without a fight: the host's story script resumes
+// with "nothing started" and why.
+void Coop_PrepHostEnd(u8 refusal)
+{
+    if (!sWaitingAck)
+        return;
+    sRefusal = refusal;
+    Coop_FailWait();
+}
+
+// Unlinked lead choice stepped back from: the gym script resumes with
+// "nothing started".
+void Coop_PrepSoloEnd(u8 refusal)
+{
+    sRefusal = refusal;
+    gSpecialVar_Result = FALSE;
+    ScriptContext_Enable();
+}
+
+// Both READY and the host asked to start: the partner's fight, on this game.
+void Coop_PrepGuestCommit(void)
+{
+    Coop_AcceptMandatory(&sGuestPairInvite);
+}
+
+bool8 Coop_PrepPartnerHere(void)
+{
+    return sPartnerValid && Coop_SessionActive();
+}
+
+bool8 Coop_PrepIsHostSide(void)
+{
+    return sWaitingAck && Coop_IsMandatoryKind(sBattleKind);
+}
+
+// "ROXANNE & HEATH": who the prepared fight is against.
+void Coop_BufferPrepOpponents(u8 *dst, bool8 host)
+{
+    u16 a = host ? sInvite.trainerA : sGuestPairInvite.trainerA;
+    u16 b = host ? sInvite.trainerB : sGuestPairInvite.trainerB;
+
+    *dst = EOS;
+    if (a != TRAINER_NONE && a < TRAINERS_COUNT)
+        dst = StringCopy(dst, GetTrainerNameFromId(a));
+    if (b != TRAINER_NONE && b < TRAINERS_COUNT)
+    {
+        dst = StringCopy(dst, COMPOUND_STRING(" & "));
+        StringCopy(dst, GetTrainerNameFromId(b));
+    }
+}

@@ -148,6 +148,12 @@ b sync
 b expect_flag 0xBC 1
 b dump rustboro-after-devon
 b shot seg5-pokenav
+# 0xC017013E: the Beacon is turned on for the rival (shared story fights
+# need it; the partner's YES and both READYs are pressed through with A).
+include beacon_on.inc
+b mash_field 2000 B
+b expect coop.sBeacon+1:1 1
+b sync
 # South through Rustboro: the rival waits by the south exit (state 7).
 # Player 0 steps on the trigger; player 1 joins from the invite on the way.
 0 walk_battle 15 53 5000

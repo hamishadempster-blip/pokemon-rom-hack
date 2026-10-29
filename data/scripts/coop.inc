@@ -104,8 +104,50 @@ Coop_EventScript_RefusalNote::
 	goto_if_eq VAR_RESULT, 5, Coop_EventScript_RefusalDeclined
 	goto_if_eq VAR_RESULT, 6, Coop_EventScript_RefusalNoAnswer
 	goto_if_eq VAR_RESULT, 7, Coop_EventScript_RefusalCancelled
+	goto_if_eq VAR_RESULT, 8, Coop_EventScript_RefusalPrepSelf
+	goto_if_eq VAR_RESULT, 9, Coop_EventScript_RefusalPrepPartner
+	goto_if_eq VAR_RESULT, 10, Coop_EventScript_RefusalPrepTimeout
+	goto_if_eq VAR_RESULT, 11, Coop_EventScript_RefusalPrepStopped
 	msgbox Coop_Text_NeedPartner, MSGBOX_DEFAULT
 	return
+Coop_EventScript_RefusalPrepSelf::
+	msgbox Coop_Text_PrepSelf, MSGBOX_DEFAULT
+	return
+Coop_EventScript_RefusalPrepPartner::
+	specialvar VAR_RESULT, CoopDeal_BufferPartnerName
+	msgbox Coop_Text_PrepPartner, MSGBOX_DEFAULT
+	return
+Coop_EventScript_RefusalPrepTimeout::
+	msgbox Coop_Text_PrepTimeout, MSGBOX_DEFAULT
+	return
+Coop_EventScript_RefusalPrepStopped::
+	msgbox Coop_Text_PrepStopped, MSGBOX_DEFAULT
+	return
+
+Coop_Text_PrepSelf:
+	.string "You stepped back from the battle.\n"
+	.string "Nothing started.$"
+
+Coop_Text_PrepPartner:
+	.string "{STR_VAR_1} stepped back from the\n"
+	.string "battle. Nothing started.$"
+
+Coop_Text_PrepTimeout:
+	.string "Choosing teams took too long.\n"
+	.string "Nothing started.$"
+
+Coop_Text_PrepStopped:
+	.string "The team choice was interrupted.\n"
+	.string "Nothing started.$"
+
+@ The partner's side of a team preparation that ended without a fight
+@ (src/coop_prep.c): says why, then frees the field.
+Coop_EventScript_PrepEnded::
+	lockall
+	specialvar VAR_RESULT, CoopPrep_TakeEndReason
+	call Coop_EventScript_RefusalNote
+	releaseall
+	end
 Coop_EventScript_RefusalNotReady::
 	msgbox Coop_Text_NotReady, MSGBOX_DEFAULT
 	return
@@ -502,10 +544,8 @@ Coop_Text_PartnerDeclined:
 	.string "Nothing was won or lost.$"
 
 Coop_Text_NotReady:
-	.string "Only your first three POKéMON\n"
-	.string "go into a co-op battle.\p"
-	.string "None of them can fight right now.\n"
-	.string "Heal one or move one up.$"
+	.string "None of your POKéMON can fight\n"
+	.string "right now. Heal one first.$"
 
 Coop_Text_PartnerBusy:
 	.string "{STR_VAR_1} stayed busy in a menu or\n"
@@ -513,8 +553,8 @@ Coop_Text_PartnerBusy:
 	.string "Try again once {STR_VAR_1} is free.$"
 
 Coop_Text_PartnerNotReady:
-	.string "Your partner's first three\n"
-	.string "POKéMON can't battle right now.\p"
+	.string "Your partner has no POKéMON\n"
+	.string "that can battle right now.\p"
 	.string "Nothing started.\n"
 	.string "Try again once they've healed.$"
 

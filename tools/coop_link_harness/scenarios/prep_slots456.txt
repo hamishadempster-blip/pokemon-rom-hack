@@ -1,0 +1,141 @@
+# Pre-battle team preparation (0xC017013E): Kai picks his team from party
+# slots 4-6 for Norman; party integrity afterwards. Checkpoint 44 (four
+# badges each, linked, Petalburg). FIXTURE: both warped into Norman's room.
+# The Beacon is turned on (shared story fights need it). Battle driver:
+# each battler's most effective move (no stat or level changes).
+# 1. Kai talks to Norman, Rosa says YES; both see their team screen (the
+#    default: the first three able to fight).
+# 2. Kai: CHANGE TEAM; in the party screen clears 1-3 and picks 6, 4, 5
+#    (LEAD, SECOND, THIRD); back on the team screen; Rosa sees him
+#    changing, then both READY.
+# 3. In the battle Kai's fielded Pokemon are those three, in that order.
+# 4. Afterwards every Pokemon is back in its own slot: slots 1-3 untouched
+#    (same EXP and HP), slots 4-6 carry the battle's result (EXP gained).
+include continue.inc
+include relink.inc
+b expect coop.sLinkState 2
+include beacon_on.inc
+b mash_field 2000 B
+b expect coop.sBeacon+1:1 1
+b no_wild 1
+b smart_moves 1
+b fixture_warp 8 1 4 4
+b until_field 3000
+1 walk 6 5 2000
+0 walk 4 3 2000
+0 press UP 2
+b sync
+0 expect_mon 0 personality @0
+0 expect_mon 1 personality @1
+0 expect_mon 2 personality @2
+0 expect_mon 3 personality @3
+0 expect_mon 4 personality @4
+0 expect_mon 5 personality @5
+0 expect_mon 0 exp @6
+0 expect_mon 1 hp @7
+0 expect_mon 3 exp -
+0 expect_mon 4 exp -
+0 expect_mon 5 exp -
+0 press A 2
+0 until_mem coop.sWaitingAck 1 3000 A
+1 until_mem coop.sGuestPairPending 1 6000
+1 wait 90
+1 press A 2
+1 wait 120
+1 press A 2
+0 until_mem gCoopPrepPhase 1 3000
+1 until_mem gCoopPrepPhase 1 600
+b wait 60
+b expect gCoopPrepOrder 1
+b expect gCoopPrepOrder+1 2
+b expect gCoopPrepOrder+2 3
+b shot review-default
+# Kai: CHANGE TEAM
+0 press DOWN 2
+0 wait 10
+0 press A 2
+0 until_cb2 CB2_UpdatePartyMenu 600
+0 wait 90
+0 shot picker-open
+1 until_mem gCoopPrepPartnerPhase 2 300
+1 wait 20
+1 shot rosa-sees-changing
+# clear 1-3 (each: A, then NO ENTRY)
+0 press A 2
+0 wait 20
+0 press A 2
+0 wait 20
+0 press DOWN 2
+0 wait 10
+0 press A 2
+0 wait 20
+0 press A 2
+0 wait 20
+0 press DOWN 2
+0 wait 10
+0 press A 2
+0 wait 20
+0 press A 2
+0 wait 20
+# 6 (LEAD), then 4 (SECOND), 5 (THIRD)
+0 press DOWN 2
+0 wait 10
+0 press DOWN 2
+0 wait 10
+0 press DOWN 2
+0 wait 10
+0 press A 2
+0 wait 20
+0 press A 2
+0 wait 20
+0 press UP 2
+0 wait 10
+0 press UP 2
+0 wait 10
+0 press A 2
+0 wait 20
+0 press A 2
+0 wait 20
+0 press DOWN 2
+0 wait 10
+0 press A 2
+0 wait 20
+0 press A 2
+0 wait 20
+0 shot picker-chosen
+# (the third choice moves the cursor to CONFIRM)
+0 press A 2
+0 until_cb2 CB2_Overworld 600
+0 until_mem gCoopPrepPhase 1 600
+# (the team screen is back once the field has faded in)
+0 wait 150
+0 expect gCoopPrepOrder 6
+0 expect gCoopPrepOrder+1 4
+0 expect gCoopPrepOrder+2 5
+0 shot review-456
+# Both READY
+1 press A 2
+1 until_mem gCoopPrepPhase 3 300
+0 press A 2
+b until_cb2 BattleMainCB2 3000
+0 expect gCoopPrepApplied 3
+0 expect_mon 0 personality @5
+0 expect_mon 1 personality @3
+0 expect_mon 2 personality @4
+b wait 200
+b shot battle
+b mash_field 40000
+b expect coop.sInBattle 0
+b shot after
+0 expect_mon 0 personality @0
+0 expect_mon 1 personality @1
+0 expect_mon 2 personality @2
+0 expect_mon 3 personality @3
+0 expect_mon 4 personality @4
+0 expect_mon 5 personality @5
+0 expect_mon 0 exp @6
+0 expect_mon 1 hp @7
+0 expect_mon 3 exp -
+0 expect_mon 4 exp -
+0 expect_mon 5 exp -
+b hex gBattleOutcome 1

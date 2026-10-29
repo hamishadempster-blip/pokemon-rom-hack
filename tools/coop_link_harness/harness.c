@@ -3406,6 +3406,11 @@ static void frameCallback(struct mCoreThread* t) {
 						else if (p->monNote[k] == v) out("[p%d] ok %s = %u, as @%u\n", p->id, c->text, v, k);
 						else { out("[p%d] FAIL %s = %u, @%u was %u\n", p->id, c->text, v, k, p->monNote[k]); sFailures++; }
 					}
+					else if (c->size == 4) {
+						unsigned k = c->addr;
+						if (p->monNoteSet[k] && v > p->monNote[k]) out("[p%d] ok %s = %u, more than @%u (%u)\n", p->id, c->text, v, k, p->monNote[k]);
+						else { out("[p%d] FAIL %s = %u, not more than @%u (%u)\n", p->id, c->text, v, k, p->monNoteSet[k] ? p->monNote[k] : 0); sFailures++; }
+					}
 					else if (c->size == 2) {
 						if (v >= c->args[6] && v <= c->args[7]) out("[p%d] ok %s = %u (in %u..%u)\n", p->id, c->text, v, c->args[6], c->args[7]);
 						else { out("[p%d] FAIL %s = %u, expected %u..%u\n", p->id, c->text, v, c->args[6], c->args[7]); sFailures++; }
@@ -3982,7 +3987,7 @@ static void loadScript(const char* path, int depth) {
         	// (or Day Care) Pokemon read by the ROM's test hook; VALUE "-" only
         	// prints it. Read-only.
         	static const char *const fields[] = { "species", "level", "nature", "mint", "ability", "evtotal", "hyper", "iv",
-        	    "held", "egg", "personality", "move", "friendship", "gender", "ev", "otid", "perfect", "exp", "hasmove", "stat", "dcsteps", "dexcaught" };
+        	    "held", "egg", "personality", "move", "friendship", "gender", "ev", "otid", "perfect", "exp", "hasmove", "stat", "dcsteps", "dexcaught", "hp" };
         	char slot[16] = "", field[24] = "", val[24] = "", arg[24] = "", src[24] = "";
         	sscanf(line, "%*s %*s %15s %23s %23s %23s %23s", slot, field, val, arg, src);
         	c.kind = C_TEST_HOOK;
@@ -4004,6 +4009,8 @@ static void loadScript(const char* path, int depth) {
         	// VALUE @K: the first time, remember it as note K; later, the same
         	// value is expected (identity kept through a deposit, a reload).
         	if (val[0] == '@') { c.size = 3; c.addr = atoi(val + 1) & 7; }
+        	// VALUE >@K: more than note K (EXP gained by a Pokemon that fought).
+        	if (val[0] == '>' && val[1] == '@') { c.size = 4; c.addr = atoi(val + 2) & 7; }
         	snprintf(c.text, sizeof(c.text), "expect_mon %s %s%s", slot, field, c.args[3] == 1 ? " daycare" : c.args[3] == 2 ? " enemyA" : c.args[3] == 3 ? " enemyB" : "");
         	c.frames = 600;
         } else if (!strcmp(cmd, "expect_team")) {

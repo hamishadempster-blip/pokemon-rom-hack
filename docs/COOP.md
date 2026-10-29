@@ -82,6 +82,17 @@ Since build 0xC017013E every request to the other player (a shared wild or train
 - **Cancelling.** B on the countdown: for an optional fight "battle alone" now; for a story fight "stop waiting" (nothing starts, nothing is used up). The partner's open question then closes as too late ("Your partner stopped waiting. Nothing started."), and a late YES starts nothing.
 - **UNLINK** stays available from the CO-OP menu at all times. Legendaries keep their own clearly labelled question (see [Shared legendaries](#shared-legendaries)).
 
+## Team preparation
+
+Since build 0xC017013E a shared story fight (gym leaders, the Elite Four, the champion, Soren and Mira, Wally, the Aqua and Magma bosses, quest bosses) starts with both players choosing their team. Wild Pokémon and ordinary trainers do not use it: they still send your first three.
+
+- After your partner says YES, both screens show **Team vs <opponents>** with up to three of your Pokémon in order (LEAD, SECOND, THIRD), each with level, HP and ITEM or MEGA for a held item or Mega Stone, the time left, and what your partner is doing ("choosing", "changing team", "READY").
+- The first offer is the team you chose last time if all of them can still fight, otherwise the first three Pokémon able to fight.
+- **READY** waits for your partner ("READY. Waiting for <partner>… B: change"); B takes it back. **CHANGE TEAM** opens the party screen's team picker: choose up to three from any slot (slots 4–6 included) in the order you want, then CONFIRM; fainted Pokémon and eggs cannot be chosen. **CANCEL** (or B on the menu) steps back: both players are told, nothing starts.
+- The fight starts only when both are READY at the same moment. If either changes their mind first, nothing starts until both are READY again. Nothing is healed, and nobody is confirmed automatically: after about two minutes of game clock with no start the choice closes on both games ("Choosing teams took too long. Nothing started.").
+- In the battle your chosen Pokémon take the places of your first three. Afterwards every Pokémon is back in its own party slot with what happened to it (HP, PP, items, EXP, EVs, new moves, evolution); the order of your party does not change.
+- **Unlinked**, a gym leader, Elite Four member or the champion offers the lead only (**Lead vs …**, READY / CHANGE LEAD / CANCEL) when two or more of your Pokémon can fight; the whole party fights, and the lead you choose moves to the front of your party for good, as if you had switched it in the party menu. Solo rivals and villains start as before.
+
 ## Story rules
 
 - Both players' rescue saves get the same story state. Whoever opens Birch's bag and whoever waits on the route both run `Route101_EventScript_ApplyRescueState`. (Before build `0xC017012C`, the waiting player's save kept the rival visible in their bedroom, standing on the stair warp; see [Fixes](#fixes-in-build-0xc017012c).)
