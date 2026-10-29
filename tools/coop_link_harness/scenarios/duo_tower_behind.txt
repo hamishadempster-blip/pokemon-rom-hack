@@ -40,7 +40,8 @@ b until_cb2 BattleMainCB2 6000 A
 0 strong_battlers 400
 0 until_field_text Go_on_to_battle_2 40000
 1 mash_field 40000
-0 wait 60
+0 until_task Task_HandleYesNoInput 600
+0 wait 20
 0 press DOWN 2
 0 wait 10
 0 press A 2
@@ -59,7 +60,8 @@ b until_cb2 BattleMainCB2 6000 A
 1 expectp gSaveBlock3Ptr+422:2 0
 0 until_field_text Go_on_to_battle_2 40000
 1 mash_field 40000
-0 wait 60
+0 until_task Task_HandleYesNoInput 600
+0 wait 20
 0 press DOWN 2
 0 wait 10
 0 press A 2

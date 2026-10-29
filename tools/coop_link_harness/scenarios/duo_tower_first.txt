@@ -97,7 +97,8 @@ b wait 600
 b shot duo-battle
 0 until_field_text Go_on_to_battle 40000
 1 mash_field 40000
-0 wait 60
+0 until_task Task_HandleYesNoInput 600
+0 wait 20
 0 shot ask-next
 0 press DOWN 2
 0 wait 10
