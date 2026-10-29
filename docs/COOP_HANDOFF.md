@@ -1,4 +1,90 @@
-# Hoenn Co-op Battle Guide v2: build 0xC017013D
+# Co-op stability, team preparation and Duo Tower: build 0xC017013E
+
+Branch `coop-doorway-scenes-rivals` (continued from 0xC017013D), pushed, not merged. Both players need this build: 0xC017013D and older refuse to link with it. Older saves load: the co-op save block grows (layout 4); the new fields start empty and nothing already saved moves. Test log: [COOP_TESTLOG_C017013E.md](COOP_TESTLOG_C017013E.md). Player-facing rules: [COOP.md](COOP.md) (Asking each other, Playing apart and relinking, Team preparation, Duo Frontier, Field kit).
+
+- ROM `emerald-coop-C017013E.gba` from source `60aee4f6` (no game-code change after it; a clean clone of it builds the same SHA-1): SHA-1 `096ffa376ca81c35b12cfc4636f7956814ffbb86`, SHA-256 `e1a43599a03bebc7a6ec4ef512933ded00dffcf0e3244b8471ed3639a408b52f`.
+- Commits, oldest first: release NEW GAME and early Poké Balls `328b1320`; availability, Beacon rules, clock-based invite timing (S2) `2f7c26f6`; team preparation (S3) `ccd71c3c`; wild double palettes and startup timing (S4) `3db87847`; APPEARANCE and move inspector (S5) `a674b770`; field kit and save layout 4 (S6) `5d7f3f35`; FOLLOW through doors, safer NPC corrections (S7) `41faccec`; relink ownership policy (S8) `e9421e14`; DUO TOWER (S9) `69662143`; sustained-session checks, outfit preview and duo result fixes (S10) `e3c63803`; harness timing fixes `d0852b53`, `c8a17759`; right-hand opponent's trainer name in one-trainer co-op fights `60aee4f6`; test and driver fixes after the earlier full runs `1f5291f7`, `5e5ecef9`, `95b57eff` (the final suite's harness) and after it `94dba5fe`; docs after them.
+- Final suite: 281 scenarios, 279 PASS on the first run at harness `95b57eff`; the 2 failures were driver problems (a wandering NPC blocking a step; the catch driver pressing B on the co-op waiting note), fixed in the harness (`94dba5fe`); the 29 scenarios that change touches were rerun: 26 PASS, 3 FAIL (two rare-slot hunts and a reload that depends on one), all PASS on rerun. Details and revision coverage in the test log.
+
+## Release instructions
+
+1. Both players use the same file, `emerald-coop-C017013E.gba` (SHA-1 above), each with their own copy and their own `.sav`. A game on 0xC017013D or older will not link with it.
+2. Back up both `.sav` files first. Older saves load (the co-op block gains new fields, empty at first); nothing in the party, PC or bag changes on loading.
+3. mGBA: open one copy, File → New Multiplayer Window, open the other copy there; CO-OP → LINK UP on both. Two-PC netplay (RetroArch gpSP, Link Cable – Pokémon Gen3) was not tested for this build.
+4. What to expect, in plain words: COOP.md, sections *Asking each other* (Beacon and consent), *Playing apart and relinking* (what stays personal), *Team preparation* (choosing three before story fights) and *Duo Frontier* (DUO TOWER rules, BP, records).
+
+## What changed, by stage of the request
+
+- **§9 Opening.** NEW GAME runs the real opening (Birch, boy/girl, name, van, room). The developer "skip to the clock" start is offered only when the harness arms it. The Oldale Mart sells Poké Balls from the start; catches before the Pokédex are recorded (`catch_before_dex`). Fresh paired saves with different clocks: `release_newgame_boys/_girls`.
+- **§4 Availability and Beacon.** One availability check (`Coop_LocalAvailability`): battle, screen, message, question, transaction, scene or locked script (with or without text). Shared story fights need the Twin Beacon ON, the partner on the map, and the partner's YES; Beacon OFF says so and starts nothing; the opening rescue is the exception. A busy partner is never interrupted: the inviter asks again for up to 30 s. Simultaneous requests: link player 0 wins, the other joins. Invite and answer windows are about 30 s / 25 s of cartridge-clock time (frame fallback), with a countdown; B stops waiting; late answers start nothing.
+- **§13 Team preparation.** Shared story fights (gyms, Elite Four, champion, rivals, Wally, villain bosses, quest bosses) open a team screen on both games after the YES: up to three from any slot (4–6 included), LEAD/SECOND/THIRD, READY / CHANGE TEAM / CANCEL; a revisioned, idempotent ready/commit exchange; no auto-confirm, no healing; every Pokémon returns to its own slot afterwards with its battle results. Unlinked gym/E4/champion: lead choice only.
+- **§7 Battle visuals.** The persistent dark left wild Pokémon in co-op wild doubles was two overlapping intro fades (a link wild double was not treated as a wild double); fixed. Startup timing probe `gCoopStartTimes`; the join question is one page again. Measurements below.
+- **§8 Menus.** CO-OP menu explains the current state in one line and has APPEARANCE (the wardrobe from anywhere). Move inspector (L in the move menu): category, PWR (var. with what decides it), ACC (sure), target, No PP / Disabled, description. Rival-name audit: no stale names in script text; the "DAWN" seen in testing came from the old developer start's name list.
+- **§10 Field kit.** POKéMON BOX LINK (storage from the field, no healing) and HEALING VIAL (one Pokémon's HP and status, no revive, no PP; 1 charge + 1 per two badges; refilled at Centers). Both refused in Frontier facilities, Safari Zone, Trainer Hill, and while a trade, gift, invitation or team screen is open.
+- **§6 FOLLOW** goes through ordinary doors, door mats, stairs, ladders and escalators when that warp leads to the partner's map; the follower's game warps itself; stops on any button, other warps, scene tiles, hazards, grass and cave floors, battles, menus. Each game counts only its own steps.
+- **§5 NPCs.** Shared NPC corrections never place an object on a player, another object, a wall or a warp (dropped and repeated by the authority's next refresh). Authority after leave/return, interiors, link loss: `npc_town_order`, `npc_interior_talk`, `npc_reconnect`.
+- **§3 Relink policy.** Personal: party, PC, money, bag, catches, purchases, pickups. Earned alone stays alone (badges, trainer/rival wins, quest steps). Earned together: recorded on both saves with the partner's trainer id; a relink with the same partner restores a joint outcome one save lost; never handed to another partner; no flag tables copied, nothing rolled back.
+- **§11 Duo Frontier.** DUO TOWER is implemented (LV. 50 / OPEN LEVEL, three each, pair species/item clauses on both games, generated opponent pairs from the run id and battle number, healed copies, real party restored after every battle including aborts, BP per set paid once per save, separate duo records, milestone pairs at 21 and 49, resume from the earlier save, one partner per run). The other six facilities have a DUO DESK that says their duo mode is not available in this version.
+- **§14 Sustained session.** Harness `leak_note`/`leak_check` count tasks, sprites, sprite palette tags and heap. `sustained_session` runs cancelled team screens, three duo battles, menus, an outfit change and FOLLOW in one session: all seven checks equal the first note on both games.
+
+## Confirmed and fixed in this build
+
+| Defect | First wrong state | Fix | Regression |
+|---|---|---|---|
+| Left wild Pokémon dark all battle in co-op wild doubles (both screens) | Two intro fades; the second dropped while the first ran (palette 3 faded ≠ unfaded) | Any non-trainer double uses the wild-double intro fade | `battle_visual_wild_double` (16 palette mismatches on old code, 0 now) |
+| Story fights could start from a closing conversation without the partner's consent | Busy-retry launched when the partner's message closed | Story fights ask; Beacon rule; availability check | `story_consent`, `story_beacon_off`, `mandatory_busy_*` |
+| "Not ready" note ran on into "The link dropped" (since S2) | `Coop_EventScript_NotReady` fell through | Script restored | `story_not_ready` |
+| Duo battle abort could leave the battle copies in the real party (found while building S9, never released) | Restore order on abort | Real party restored first on every path | `duo_tower_abort` |
+| Wardrobe preview wrote its palette over the player's field sprite and freed the player's palette tag | `tPicSprite` 0 (the player's sprite) during `ListMenuInit`'s first cursor callback | Preview starts as "no sprite"; 0xFFFF checked before s16 task data | `appearance_menu` leak check, `sustained_session` (fails on old code) |
+| A refused DUO invite after a won battle showed "battle won!" again | Last outcome never cleared before a new attempt | Cleared in `CoopDuo_PrepareInvite` | `duo_tower_decline` (fails on old code) |
+| In a co-op fight against one trainer, messages about the right-hand opponent named nobody ("…reacting to 's Mega Bracelet!"); the partner's game once stopped on "Opponent needs a valid name" at that message | Name lookup for the right-hand opponent read the empty second-trainer slot (opponentB = TRAINER_NONE) | Both opposing battlers name opponent A when there is no opponent B | `coop_wally_vr_partner` names both opposing battlers WALLY on both games (fails on old code: "") |
+| Relink handed solo progress to the partner and merged joint wins with any partner | No provenance for joint outcomes | Partner trainer id on joint badges, rival stage, story ledger, quest bits | `relink_policy*`, `rival_reconnect`, `pp_reconnect`, `pp_stagger*` |
+
+## Startup timing (§7)
+
+Frames at 60 per second (normal speed); the harness reads them from `gCoopStartTimes` on both games (`startup_timing_wild`, `startup_timing_gym`, final suite). The partner answers and presses READY as soon as the driver can, so the question and the team screen are the driver's reaction time, not a person's; the team screen's time is listed separately and is intentional.
+
+| Stage (§7) | Co-op wild double, before (S4 start) | after (final) | Co-op gym with team screen (final; no "before": the question and team screen are new) |
+| --- | --- | --- | --- |
+| 1. Encounter detection → request sent | same step (not separable) | same step | same step |
+| 2. Invitation: request → partner's answer back (inviter) | 154 | 104 | 164 (to both team screens) |
+| — partner's question on screen → YES (partner) | 134 | 86 | 146 |
+| — team screen (intentional, driver presses READY at once) | — | — | 44 |
+| 3./4. Launch → `CB2_InitBattle` (transition) | 90 | 90 | 140 |
+| 3. Party/state exchange (`CB2_InitBattle` → battle main loop) | 226 | 226 | 224 |
+| 5. Intro and send-outs (main loop → first action menu) | 860 | 878 | 1,318 |
+| 6. Request → first action menu (total) | 1,330 (22.2 s) | 1,298 (21.6 s) | 1,890 (31.5 s), of which 44 team screen |
+
+What changed: the join question is one page again (the partner's answer is 48 frames sooner at driver speed). The technical stages (transition, party exchange, link-battle intro exchanges) are the stock link-battle costs and were not shortened: no handshake, buffer check or readiness check was skipped. The intro stage varies by about ±20 frames between runs.
+
+## Remaining issues (not intended)
+
+- **Finding #16** (an invalid opponent-name assertion after a co-op wild battle into trainer detection): not reproduced. Matrix of 24 runs (Teleport then trainer sight, simultaneous approaches, partner wild then Karen, three wait lengths, both declining and accepting partners) gave 0 assertions and 0 bad-trainer diagnostics; 5 of them ended in driver timeouts in the decline variants (the driver waited for a battle the partner had declined). The invite-side id validation stays. Not declared fixed.
+- **Assert on the partner's game in a one-trainer co-op fight** (pass-1 suite, `coop_wally_vr_partner`, once): the message's name lookup is fixed (above), but why the partner's game asserted while the engine's game printed an empty name is not proven; 10 more runs of the scenario did not put Wally's Mega Gallade on the right-hand side again. The check now names both opposing battlers on both games.
+- **Partner drawn on tiles blocked by the other save's puzzle state** (a boulder pushed on one save): unchanged; the partner sprite never collides, so it can appear on a tile that is solid on the viewer's save.
+- **Shared dialogue with different personal progress**: joining a conversation still uses the initiator's script state; there is no explanation line when the partner's version differs (§5 asked for one). Not implemented.
+- **§8 visual refinements not done:** rival hats, hair, portraits and movement frames; party, bag and battle menu restyling and move-type colour accents. Only APPEARANCE, the CO-OP menu explanation, the move inspector and the team screen changed.
+- **§11:** DUO RENTALS, DUO DOME, DUO PALACE, DUO ARENA, DUO PIKE and DUO EXPEDITION are not implemented (each desk says so). No Mega-disabled bracket (Megas follow each player's own bracelet). No duo Frontier Brains; the 21/49 milestones are two fixed top Tower trainers.
+- **Not played:** berry planting/harvest, Trick House, Illusion, Repel prompts around scripts and transitions, joined conversations with mismatched progress, postgame rematches and League returns with mismatched progress, prep battles with Mega Evolution or move learning from slots 4–6.
+- **Not tested at all:** mGBA GUI at normal speed by a person, real hardware, two-PC netplay. Harness success is not netplay evidence.
+- **Balance:** not established (assisted wins only; duo battles use `weak_foes`/`strong_battlers` fixtures).
+
+## Intended differences (not bugs)
+
+- A badge, win or quest earned unlinked stays on that save after relinking.
+- The partner's own puzzle objects (boulders) and personal rooms (Secret Bases, Pyramid and Trainer Hill floors) are not shared.
+- Wild Pokémon and ordinary trainers use your first three Pokémon (no team screen); slots 4–6 sit out there.
+- FOLLOW stops before grass, cave floors, other warps and scene tiles by design.
+- Duo Tower battles give no EXP, prize money, bag use or catches; healed copies fight.
+
+## Where things are (work environment, not committed)
+
+- Checkpoints `/home/claude/journey/jNN`; final suite `/home/claude/journey/final13E/pass3/suite`; clips `/home/claude/journey/clips13E/out` (raw recordings in `raw/`).
+- Full suite: `OUT=dir ROM=… HARNESS_OUT=dir LONG=1 SEG6=… J06=… J13=… J16=… J37=… J43=… J44=… J46=… J48=… J50=… J51=… J52=… J57=… J58=… J59=… J65=… J66=… J68=… OLD13C_COAST=<0xC017013C suite>/coast_solo_j68 tools/coop_link_harness/run_all.sh`.
+
+# Previous build: 0xC017013D
+
+## Hoenn Co-op Battle Guide v2: build 0xC017013D
 
 Branch `coop-doorway-scenes-rivals` (continued from 0xC017013C), pushed, not merged. Both players need this build: 0xC017013C and older refuse to link with it (the invite carries a team key now). Older saves load; nothing in the save layout moved. Test log: [COOP_TESTLOG_C017013D.md](COOP_TESTLOG_C017013D.md). Team spec and every substitution: [COOP_TEAM_SPEC.md](COOP_TEAM_SPEC.md). Stones, sources and item balls: [COOP_MEGA_MANIFEST.md](COOP_MEGA_MANIFEST.md). Player-facing: [COOP.md](COOP.md) (Story rules, Level cap, Mega Evolution).
 

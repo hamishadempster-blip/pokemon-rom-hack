@@ -758,14 +758,14 @@ While linked with your partner somewhere else, these fights wait and say so: com
 - After a shared gym or Elite Four win, the guest receives the same story flags and the way forward. The person who talked to the leader still gets the TM. The guest can ask the leader for that TM afterward.
 - A shared champion win sends the guest to the Hall of Fame so their party is recorded too.
 - The rescue fight waits until your partner is on Route 101 with their menu closed. Press B to back out and try again. After the fight, each game walks itself to the lab.
-- Co-op battles field three Pokémon per player, through the stock link-multi exchange. Slots 4–6 sit out.
+- Co-op battles field three Pokémon per player, through the stock link-multi exchange. In wild and ordinary trainer battles those are your first three (slots 4–6 sit out); shared story fights and the DUO TOWER let you choose the three on the team screen.
 - Mega Evolution is on (see [Mega Evolution](#mega-evolution)); Z-Moves, Dynamax, Terastal and primals stay off.
 - Id 865 is unused on purpose. It is the in-game partner id for Steven, and a normal trainer cannot live there.
 - Invalid link frames are dropped. One bad packet does not disconnect you.
 - The partner mark is a sprite like the partner: in a dark cave without FLASH, a partner outside your light circle and their mark are both hidden.
 - A shared legendary battle opens with the link-multi VS screen, whose opponent card is blank (a wild Pokémon has no trainer card).
 - Joining conversations is conservative: a script is joinable only if every branch it can take shows text, asks yes/no or moves people; shops, gifts, battles, warps, special code and scene scripts are not, even where sharing would have been harmless.
-- FOLLOW is on foot only and stops at grass, caves and other wild terrain (so you never walk into an encounter you didn't choose). Events on a connected map's tiles are checked only once you are on that map.
+- FOLLOW is on foot only and stops at grass, caves and other wild terrain (so you never walk into an encounter you didn't choose). It goes through ordinary doors, stairs and ladders that lead to your partner's map, and stops before any other warp. Events on a connected map's tiles are checked only once you are on that map.
 - In battle, only moves, switches and RUN can be changed after choosing; items cannot.
 - A BADGE both players won together in a co-op gym battle is recorded on both saves; on LINK UP a save that lacks it gets it back. That is the only way a partner can add to your badges, and so to your Exchange stock.
 - A partner busy at an Exchange counter or the Day Care is reported as "shopping".
