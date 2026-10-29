@@ -59,9 +59,11 @@ Coop_Text_StevenBraceletLater:
 
 @ A quest's Mega Stone, once per save, after its reward (also for a save
 @ that finished the quest before this build). A full bag leaves it for the
-@ next talk; the Exchange sells it again from 5 BADGES once the reward is in.
+@ next talk (checked first, so nothing is announced and lost); the Exchange sells it again from 5 BADGES once the reward is in.
 Coop_EventScript_StoneCoast::
 	goto_if_set FLAG_ITEM_COOP_MEGA_DRAGALGITE, Coop_EventScript_StoneDone
+	checkitemspace ITEM_DRAGALGITE
+	goto_if_eq VAR_RESULT, FALSE, Coop_EventScript_StoneNoRoom
 	msgbox Coop_Text_QuestStone, MSGBOX_DEFAULT
 	giveitem ITEM_DRAGALGITE
 	goto_if_eq VAR_RESULT, FALSE, Coop_EventScript_StoneDone
@@ -70,6 +72,8 @@ Coop_EventScript_StoneCoast::
 
 Coop_EventScript_StoneCaravan::
 	goto_if_set FLAG_ITEM_COOP_MEGA_GARCHOMPITE, Coop_EventScript_StoneDone
+	checkitemspace ITEM_GARCHOMPITE
+	goto_if_eq VAR_RESULT, FALSE, Coop_EventScript_StoneNoRoom
 	msgbox Coop_Text_QuestStone, MSGBOX_DEFAULT
 	giveitem ITEM_GARCHOMPITE
 	goto_if_eq VAR_RESULT, FALSE, Coop_EventScript_StoneDone
@@ -78,6 +82,8 @@ Coop_EventScript_StoneCaravan::
 
 Coop_EventScript_StoneWattson::
 	goto_if_set FLAG_ITEM_COOP_MEGA_EELEKTROSSITE, Coop_EventScript_StoneDone
+	checkitemspace ITEM_EELEKTROSSITE
+	goto_if_eq VAR_RESULT, FALSE, Coop_EventScript_StoneNoRoom
 	msgbox Coop_Text_QuestStone, MSGBOX_DEFAULT
 	giveitem ITEM_EELEKTROSSITE
 	goto_if_eq VAR_RESULT, FALSE, Coop_EventScript_StoneDone
@@ -86,6 +92,8 @@ Coop_EventScript_StoneWattson::
 
 Coop_EventScript_StoneShoal::
 	goto_if_set FLAG_ITEM_COOP_MEGA_FROSLASSITE, Coop_EventScript_StoneDone
+	checkitemspace ITEM_FROSLASSITE
+	goto_if_eq VAR_RESULT, FALSE, Coop_EventScript_StoneNoRoom
 	msgbox Coop_Text_QuestStone, MSGBOX_DEFAULT
 	giveitem ITEM_FROSLASSITE
 	goto_if_eq VAR_RESULT, FALSE, Coop_EventScript_StoneDone
@@ -93,6 +101,14 @@ Coop_EventScript_StoneShoal::
 Coop_EventScript_StoneDone::
 	return
 
+Coop_EventScript_StoneNoRoom::
+	msgbox Coop_Text_QuestStoneNoRoom, MSGBOX_DEFAULT
+	return
+
 Coop_Text_QuestStone:
 	.string "This turned up while you were at it.\n"
 	.string "A MEGA STONE, I think. It's yours.$"
+
+Coop_Text_QuestStoneNoRoom:
+	.string "I've got a MEGA STONE for you, but\n"
+	.string "your BAG is full. Come back for it.$"

@@ -1382,8 +1382,8 @@
    "item": "ITEM_VENUSAURITE",
    "map": "Route110",
    "tile": [
-    25,
-    97
+    24,
+    95
    ]
   },
   {
@@ -1481,8 +1481,8 @@
    "item": "ITEM_SCOVILLAINITE",
    "map": "Route115",
    "tile": [
-    12,
-    76
+    32,
+    68
    ]
   },
   {
@@ -1508,8 +1508,8 @@
    "item": "ITEM_AUDINITE",
    "map": "Route118",
    "tile": [
-    21,
-    2
+    16,
+    7
    ]
   },
   {
@@ -1517,8 +1517,8 @@
    "item": "ITEM_CHANDELURITE",
    "map": "MtPyre_4F",
    "tile": [
-    9,
-    5
+    5,
+    10
    ]
   },
   {
@@ -1544,8 +1544,8 @@
    "item": "ITEM_GOLISOPITE",
    "map": "Route106",
    "tile": [
-    28,
-    16
+    31,
+    13
    ]
   },
   {
@@ -1553,8 +1553,8 @@
    "item": "ITEM_GOLURKITE",
    "map": "Route120",
    "tile": [
-    2,
-    79
+    8,
+    76
    ]
   },
   {
@@ -1571,8 +1571,8 @@
    "item": "ITEM_KANGASKHANITE",
    "map": "SafariZone_South",
    "tile": [
-    36,
-    4
+    26,
+    7
    ]
   },
   {
@@ -1589,8 +1589,8 @@
    "item": "ITEM_PINSIRITE",
    "map": "SafariZone_Southwest",
    "tile": [
-    37,
-    23
+    33,
+    16
    ]
   },
   {
@@ -1607,8 +1607,8 @@
    "item": "ITEM_RAICHUNITE_Y",
    "map": "Route117",
    "tile": [
-    2,
-    12
+    9,
+    14
    ]
   },
   {
@@ -1625,8 +1625,8 @@
    "item": "ITEM_SHARPEDONITE",
    "map": "Route118",
    "tile": [
-    3,
-    14
+    4,
+    11
    ]
   },
   {
@@ -1634,8 +1634,8 @@
    "item": "ITEM_SLOWBRONITE",
    "map": "Route121",
    "tile": [
-    2,
-    17
+    7,
+    13
    ]
   },
   {
@@ -1706,8 +1706,8 @@
    "item": "ITEM_STARMINITE",
    "map": "Route122",
    "tile": [
-    18,
-    37
+    22,
+    31
    ]
   },
   {
@@ -1769,8 +1769,8 @@
    "item": "ITEM_NET_BALL",
    "map": "Route117",
    "tile": [
-    2,
-    10
+    8,
+    6
    ]
   },
   {
@@ -1779,7 +1779,7 @@
    "map": "Route124",
    "tile": [
     14,
-    76
+    75
    ]
   },
   {
@@ -1913,8 +1913,8 @@
    "item": "ITEM_UPGRADE",
    "map": "Route110",
    "tile": [
-    3,
-    37
+    12,
+    19
    ]
   },
   {
@@ -1940,8 +1940,8 @@
    "item": "ITEM_SCOPE_LENS",
    "map": "Route118",
    "tile": [
-    9,
-    3
+    5,
+    5
    ]
   },
   {
@@ -1967,8 +1967,8 @@
    "item": "ITEM_CARBOS",
    "map": "Route120",
    "tile": [
-    2,
-    50
+    5,
+    52
    ]
   },
   {
@@ -1985,8 +1985,8 @@
    "item": "ITEM_ZINC",
    "map": "Route122",
    "tile": [
-    20,
-    37
+    24,
+    30
    ]
   },
   {
@@ -2021,8 +2021,8 @@
    "item": "ITEM_EXP_CANDY_M",
    "map": "Route102",
    "tile": [
-    2,
-    4
+    8,
+    2
    ]
   },
   {
@@ -2030,8 +2030,8 @@
    "item": "ITEM_EXP_CANDY_L",
    "map": "Route125",
    "tile": [
-    6,
-    37
+    9,
+    23
    ]
   }
  ]

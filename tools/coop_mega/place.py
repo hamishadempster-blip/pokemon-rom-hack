@@ -4,8 +4,9 @@
 A ball is a solid object, so it must never stand where it can trap anyone:
 it goes on a plain walkable tile (no water, ledge, warp, sign, trigger, ice,
 puzzle tile), reachable from the map's warps or edges, not next to a warp,
-a trigger or a person, and not on a tile whose removal would cut the
-walkable area in two (an articulation point), so every path stays open.
+a trigger or a person, not on a tile whose removal would cut the walkable
+area in two (an articulation point), so every path stays open, and not on
+the shortest way between two entrances, where players walk through.
 Dead ends are preferred: the classic place for an item ball.
 
     place.py MAP [MAP...]     print the best candidate tiles of each map
@@ -115,6 +116,56 @@ class Grid:
                     q.append(n)
         return seen
 
+    def entrance_groups(self):
+        """Each warp, and each connected edge as one group of tiles."""
+        groups = [[w] for w in self.entrances]
+        sides = {c['direction'] for c in (self.map.get('connections') or [])}
+        if 'up' in sides:
+            groups.append([(x, 0) for x in range(self.W)])
+        if 'down' in sides:
+            groups.append([(x, self.H - 1) for x in range(self.W)])
+        if 'left' in sides:
+            groups.append([(0, y) for y in range(self.H)])
+        if 'right' in sides:
+            groups.append([(self.W - 1, y) for y in range(self.H)])
+        return groups
+
+    def main_paths(self, surf):
+        """Tiles on a shortest walk between any two entrances: where players
+        go through, so a ball there would stand in their way even when a
+        detour exists."""
+        groups = self.entrance_groups()
+        out = set()
+        for i, g in enumerate(groups):
+            prev = {}
+            q = deque()
+            for s in g:
+                if s in self.col and (s in self.entrances or self.walk(s) or (surf and self.water(s))):
+                    prev[s] = None
+                    q.append(s)
+            while q:
+                t = q.popleft()
+                for n in self.neighbours(t):
+                    if n not in prev and n not in self.objects and self.step_ok(t, n, surf):
+                        prev[n] = t
+                        q.append(n)
+            for h in groups[i + 1:]:
+                ends = [t for t in h if t in prev]
+                if not ends:
+                    continue
+                t = ends[0]
+                while t is not None:
+                    out.add(t)
+                    t = prev[t]
+        return out
+
+    def near_connection(self, t, margin=4):
+        """Within `margin` tiles of an edge that leads to another map."""
+        x, y = t
+        sides = {c['direction'] for c in (self.map.get('connections') or [])}
+        return (('up' in sides and y < margin) or ('down' in sides and y >= self.H - margin)
+                or ('left' in sides and x < margin) or ('right' in sides and x >= self.W - margin))
+
     def articulation(self, nodes, surf):
         """Tarjan's articulation points of the walkable graph on nodes."""
         idx, low, ap = {}, {}, set()
@@ -157,10 +208,11 @@ class Grid:
         reach = self.reachable(surf)
         ap = self.articulation(reach, surf)
         busy = self.objects | self.warps | self.coords | self.bgs
+        paths = self.main_paths(surf)
         out = []
         for t in sorted(reach):
             x, y = t
-            if not self.land(t) or t in busy or t in ap:
+            if not self.land(t) or t in busy or t in ap or t in paths or self.near_connection(t):
                 continue
             if x < 2 or y < 2 or x > self.W - 3 or y > self.H - 3:
                 continue
@@ -186,6 +238,10 @@ class Grid:
             return 'occupied'
         if t in self.articulation(reach, surf):
             return 'would cut the walkable area in two'
+        if t in self.main_paths(surf):
+            return 'on the main way between two entrances'
+        if self.near_connection(t):
+            return 'next to an edge into another map'
         x, y = t
         for n in ((x + dx, y + dy) for dx in (-1, 0, 1) for dy in (-1, 0, 1)):
             if n != t and (n in self.warps or n in self.coords):
@@ -194,15 +250,16 @@ class Grid:
 
 
 def pick(map_folder, surf=False, near=None, avoid=()):
-    """Best tile: a dead end first, then (when `near` is given) the closest
-    to it, else the farthest from the warps."""
+    """Best tile: the most enclosed first (a dead end, then a nook against
+    two walls...), then (when `near` is given) the closest to it, else the
+    farthest from the warps."""
     g = Grid(map_folder)
     cands = [(t, d) for t, d in g.candidates(surf) if t not in avoid]
     if not cands:
         return None
     def score(c):
         t, d = c
-        dead = 0 if d == 1 else 1
+        dead = d
         if near:
             return (dead, abs(t[0] - near[0]) + abs(t[1] - near[1]), t)
         far = min([abs(t[0] - w[0]) + abs(t[1] - w[1]) for w in g.warps] or [0])
