@@ -1,10 +1,12 @@
-# Leer targets both foes; B restores the normal move list.
+# A move that targets both foes (Battle Guide v2: the companion Fennekin's
+# Tail Whip, top-right; was Leer); B restores the normal move list.
 include rescue_start.inc
 0 until_mem gBattlerControllerFuncs:4 HandleInputChooseMove 5000 A
 1 until_mem gBattlerControllerFuncs+8:4 HandleInputChooseMove 5000 A
 b wait 16
 0 press A 2
 0 until_mem gBattlerControllerFuncs:4 HandleInputChooseTarget 3000
+1 press RIGHT 2
 1 press A 2
 1 until_mem gBattlerControllerFuncs+8:4 HandleInputShowTargets 3000
 1 shot both-foes
@@ -14,7 +16,7 @@ b wait 16
 1 press A 2
 1 until_mem gBattlerControllerFuncs+8:4 HandleInputShowTargets 3000
 b press A 2
-0 until_mem gChosenMoveByBattler+4:2 43 5000
+0 until_mem gChosenMoveByBattler+4:2 39 5000
 b mash_field 25000
 b expect gBattleOutcome 1
 b mash_field 12000

@@ -1,0 +1,51 @@
+# Battle Guide v2 Z-A Megas on the player side, linked, against Tate & Liza
+# (j57 saves, Mossdeep, 6 badges, Beacon ON). TEST HELPERS (logged): Kai's
+# lead a Lv 54 MEGANIUM holding MEGANIUMITE that knows only SOLAR BEAM,
+# Rosa's a Lv 54 FERALIGATR holding FERALIGITE (level-up moves), the MEGA
+# BRACELET put in each bag, healed. FIXTURE: warp below Tate & Liza.
+# DRIVER: mega_next 1 on both, smart_moves; strong_battlers ends the fight
+# (not a balance result).
+# Checked on the link master's battle data: Mega Meganium has MEGA SOL and
+# Mega Feraligatr DRAGONIZE once evolved; Solar Beam fires on its first
+# turn: "absorbed light" is followed by the hit in the same turn, not by
+# the next turn's menu (read from the battle log);
+# after the battle both are stored as their own species again.
+include continue.inc
+include relink.inc
+b expect coop.sLinkState 2
+include beacon_on_p1.inc
+b mash_field 2000 B
+b no_wild 1
+0 test_mon 0 154 54 76 0 0 0 0
+1 test_mon 0 160 54 0 0 0 0 0
+0 test_held 0 833
+1 test_held 0 834
+b test_item 703 1
+b test_heal
+0 fixture_warp 14 0 23 8
+1 fixture_warp 14 0 24 8
+b until_field 3000
+b sync
+b mega_next 1
+b smart_moves 1
+0 press UP 2
+0 wait 20
+0 press A 2
+b until_cb2 BattleMainCB2 12000 A
+b expect gBattlersCount 4
+# Both Megas happen at the start of turn 1, before Solar Beam.
+b until_battle_text Meganium_absorbed_light 30000 auto
+0 expect gBattleMons:2 1528
+0 expect gBattleMons+280:2 1529
+0 expect gBattleMons+32:2 315
+0 expect gBattleMons+312:2 312
+b shot mega-sol
+b expect gCoopMegaRejected 0
+b strong_battlers 400
+b mash_field 40000
+b expect gBattleOutcome 1
+b until_field 3000
+0 expect_mon 0 species 154
+1 expect_mon 0 species 160
+0 expect_mon 0 held 833
+1 expect_mon 0 held 834

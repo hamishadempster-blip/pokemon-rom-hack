@@ -1,0 +1,73 @@
+# Battle Guide v2: cancelling an uncommitted Mega does not spend it. j57
+# saves (Mossdeep), linked, Beacon ON, against Tate & Liza. TEST HELPERS
+# (logged): Kai's lead a Lv 54 BLAZIKEN holding BLAZIKENITE (EMBER, DOUBLE
+# KICK, QUICK ATTACK, FOCUS ENERGY: no two-turn move), Rosa's a Lv 54
+# GARDEVOIR holding GARDEVOIRITE
+# (PSYCHIC, CALM MIND, MOONBLAST, DOUBLE TEAM), the MEGA BRACELET in each bag, healed.
+# FIXTURE: warp below Tate & Liza.
+# Turn 1: Rosa (the guest) turns the Mega trigger on (START, the game's own
+# trigger), picks a move, and at "Ready. Waiting..." presses B to change her
+# choice; the menu reopens with the trigger off and she picks a move without
+# it; Kai then picks a move. Checked: no Mega that turn, nothing rejected.
+# Turn 2: both trigger it: both Mega Evolve (Rosa's allowance was kept).
+include continue.inc
+include relink.inc
+b expect coop.sLinkState 2
+include beacon_on_p1.inc
+b mash_field 2000 B
+b no_wild 1
+0 test_mon 0 257 54 52 24 98 116 0
+1 test_mon 0 282 54 94 347 585 104 0
+0 test_held 0 314
+1 test_held 0 316
+b test_item 703 1
+b test_heal
+0 fixture_warp 14 0 23 8
+1 fixture_warp 14 0 24 8
+b until_field 3000
+b sync
+0 press UP 2
+0 wait 20
+0 press A 2
+b until_cb2 BattleMainCB2 12000 A
+b expect gBattlersCount 4
+# FIXTURE: strong in-battle stats so neither lead faints before turn 2.
+b strong_battlers 400
+# Turn 1, Rosa: trigger on, a move, then change her mind.
+1 mega_next 1
+1 until_mem gBattlerControllerFuncs+8:4 HandleInputChooseAction 9000 A
+1 until_battle_text Waiting_for_Kai 6000 auto
+1 shot rosa-mega-chosen
+1 wait 40
+1 press B 2
+1 until_mem gBattlerControllerFuncs+8:4 HandleInputChooseAction 3000
+1 press A 2
+1 until_mem gBattlerControllerFuncs+8:4 HandleInputChooseMove 3000
+1 wait 20
+1 shot rosa-menu-again
+1 until_battle_text Waiting_for_Kai 6000 auto
+b sync
+# Kai picks after Rosa's change is in.
+0 until_mem gBattlerControllerFuncs:4 HandleInputChooseAction 9000 A
+0 until_battle_text used 9000 auto
+1 until_battle_text used 9000 auto
+b wait 60
+0 expect gBattleMons+280:2 282
+0 expect gBattleMons:2 257
+b expect gCoopMegaRejected 0
+# Turn 2: both trigger it (Kai first this time).
+b mega_next 1
+0 until_mem gBattlerControllerFuncs:4 HandleInputChooseAction 9000 A
+0 until_battle_text Waiting_for_Rosa 6000 auto
+b sync
+1 until_mem gBattlerControllerFuncs+8:4 HandleInputChooseAction 9000 A
+1 until_battle_text Waiting_for_Kai 6000 auto
+0 until_mem gBattleMons:2 928 6000
+0 until_mem gBattleMons+280:2 930 6000
+b shot both-megas-turn2
+b expect gCoopMegaRejected 0
+b mash_field 40000
+b expect gBattleOutcome 1
+b until_field 3000
+0 expect_mon 0 species 257
+1 expect_mon 0 species 282

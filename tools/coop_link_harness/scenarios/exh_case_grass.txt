@@ -1,0 +1,26 @@
+# Battle Guide v2 exhibition routing: the case "Grass (Treecko): rivals use Fire" (FIXTURE: VAR_STARTER_MON
+# = 0 on both saves), linked duo with Kai inviting. The twins' aces follow
+# the case: Soren's third Pokemon species 257, Mira's 655. The fight is won
+# (strong fixture leads: flow, not balance) and recorded on both saves.
+include exh_case.inc
+b fixture_var 0x4023 0
+0 press UP 2
+0 wait 20
+0 press A 2
+0 wait 60
+0 press A 2
+0 wait 60
+0 press A 2
+0 wait 120
+0 press A 2
+1 until_cb2 BattleMainCB2 9000 A
+0 until_cb2 BattleMainCB2 9000 A
+b expect gBattlersCount 4
+b expect coop.sInBattle 1
+b expect_mon 2 species 257 enemyA
+b expect_mon 2 species 655 enemyB
+b mash_field 40000
+b expect gBattleOutcome 1
+0 mash_field 6000
+b sync
+b expect_flag 0x4A0 1

@@ -1,0 +1,16 @@
+# Battle Guide v2: the regular Lilycove teams. j51 saves (Feather Badge, six
+# badges): the twins bring their regular teams (levels 50-52, each ace
+# holding its Mega Stone) to Lilycove.
+include rival_lilycove.inc
+b expect_mon 0 level 50 enemyA
+b expect_mon 0 level 50 enemyB
+b expect_mon 2 level 52 enemyA
+b shot lilycove-late
+b strong_battlers 400
+b mash_field 40000
+b expect gBattleOutcome 1
+b mash_field 3000
+b sync
+b expect_flag 0x3CB 1
+b expect coop.sLinkState 2
+b expect_mons_intact

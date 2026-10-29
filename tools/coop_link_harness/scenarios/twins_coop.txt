@@ -46,6 +46,14 @@ b wait 120
 b fixture_var 0x409D 0x1BF
 b fixture_lead 255 100 1059860
 b fixture_six
+# Battle Guide v2: the exhibition's Mega aces beat the copies' cached HP;
+# 999 HP on the first three copies (FIXTURE; flow, not balance).
+b write gParties+86:2 999
+b write gParties+88:2 999
+b write gParties+186:2 999
+b write gParties+188:2 999
+b write gParties+286:2 999
+b write gParties+288:2 999
 0 fixture_warp 0 9 10 19
 1 fixture_warp 0 9 11 19
 b until_field 3000

@@ -1,0 +1,18 @@
+# Battle Guide v2 rival routing, Route 103, linked: the case "Fire (Torchic)" (FIXTURE:
+# VAR_STARTER_MON = 1 on both lab saves, which hold the Torchic case), so
+# the twins use the counter type: Soren (opponent A, the case line) leads
+# with species 258, Mira (opponent B, the companion line) with 158. Player 1
+# talks to the twins.
+include oldale_reconnect.inc
+b fixture_var 0x4023 1
+include rival_case_route.inc
+1 goto 10 4 2000
+0 goto 11 4 2000
+1 press UP 2
+1 press A 2
+b until_cb2 BattleMainCB2 12000 A
+b expect coop.sInBattle 1
+b expect gTrainerBattleParameter+2:2 867
+b expect_mon 0 species 258 enemyA
+b expect_mon 0 species 158 enemyB
+include rival_case_finish.inc

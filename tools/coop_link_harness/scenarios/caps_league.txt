@@ -1,0 +1,50 @@
+# Battle Guide v2 level caps at the League: j66 saves (League 1F, 8 BADGES,
+# the door guards not yet passed), not linked, both players the same steps.
+# TEST HELPERS (logged): a Lv 75 PIKACHU in slot 3, five RARE CANDY.
+# Checked: before admission the cap is 66 (a candy on the Lv 75 is refused,
+# kept); showing the badges to the door guards (real script) sets League
+# admission and the cap becomes 76: one candy takes it to 76, the next is
+# refused and kept. caps_champion checks 80 on the post-League saves.
+include continue.inc
+b no_wild 1
+b mash_field 300 B
+b expect_flag 0x107 0
+b test_mon 2 25 75
+b fixture_item 0 102 5
+b press START 2
+b wait 40
+b menu_to BAG
+b press A 2
+b until_cb2 CB2_BagMenuRun 2500
+b wait 60
+b field_item 102 2
+b mash_field 600 B
+b expect_mon 2 level 75
+b expect_item 0 102 5
+0 walk 9 3 6000
+1 walk 10 3 6000
+b press UP 2
+b wait 10
+b press A 2
+b mash_field 4000 B
+b expect_flag 0x107 1
+b press START 2
+b wait 40
+b menu_to BAG
+b press A 2
+b until_cb2 CB2_BagMenuRun 2500
+b wait 60
+b field_item 102 2
+b mash_field 600 B
+b expect_mon 2 level 76
+b expect_item 0 102 4
+b press START 2
+b wait 40
+b menu_to BAG
+b press A 2
+b until_cb2 CB2_BagMenuRun 2500
+b wait 60
+b field_item 102 2
+b mash_field 600 B
+b expect_mon 2 level 76
+b expect_item 0 102 4

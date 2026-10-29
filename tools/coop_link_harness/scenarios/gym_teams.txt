@@ -11,6 +11,9 @@ b mash_field 2000 B
 b write sWildEncountersDisabled 1
 0 fixture_lead 255 70 344960
 1 fixture_lead 228 70 428750
+# Battle Guide v2: Juan and Wallace's Mega team beats the cached-stat leads;
+# strong_battlers keeps the in-battle stats (flow, not balance).
+b strong_battlers 600
 
 # --- Roxanne and Heath (badge 1): Nacli joins Nosepass and Aron.
 0 fixture_warp 11 3 5 3

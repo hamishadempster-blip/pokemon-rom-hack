@@ -1,0 +1,16 @@
+# Battle Guide v2: the pre-Winona Lilycove variant. j50 saves (five badges,
+# Devon Scope in hand, so Route 120 is open before Winona): the twins bring
+# their EARLY teams (levels 44-46, no Mega Stone) to Lilycove.
+include rival_lilycove.inc
+b expect_mon 0 level 44 enemyA
+b expect_mon 0 level 44 enemyB
+b expect_mon 2 level 46 enemyA
+b shot lilycove-early
+b strong_battlers 400
+b mash_field 40000
+b expect gBattleOutcome 1
+b mash_field 3000
+b sync
+b expect_flag 0x3CB 1
+b expect coop.sLinkState 2
+b expect_mons_intact

@@ -10,6 +10,9 @@ b mash_field 2000 B
 b write sWildEncountersDisabled 1
 0 fixture_lead 255 60 233990
 1 fixture_lead 228 60 270000
+# Battle Guide v2: the twins' teams beat the cached-stat leads once a
+# level-up recalculates them; strong_battlers keeps the in-battle stats.
+b strong_battlers 600
 b fixture_flag 0x4F0 1
 b fixture_flag 0x867 1
 

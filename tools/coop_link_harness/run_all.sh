@@ -11,6 +11,8 @@
 #   J13=dir J44=dir J59=dir: gym invites to a busy partner; Strength boulders
 #   J52=dir J65=dir J68=dir: late-game checkpoints (late wild encounters;
 #   Wally and roster evolutions; shared legendaries)
+#   J46 J50 J51 J57 J58 J66 OLD13C_COAST=dir: Battle Guide v2 checks (see the
+#   block near the end)
 #   SEG6=/path/dir run_all.sh                     # also the story_seg6-based
 #                                                 # partner menu, QoL, and quest runs
 #   AFFECTED=/path/dir run_all.sh                 # also run mays_house_recovery
@@ -291,6 +293,42 @@ if [ -n "${SEG6:-}" ]; then
 		run "${s}_coop_reload" SAVE0="$out/${s}_coop/p0.sav" SAVE1="$out/${s}_coop/p1.sav"
 	done
 fi
+
+# Battle Guide v2 (build 0xC017013D): team selection, rival routing by
+# starter case, boss pairs, level caps, Mega Evolution, Mega Stones and the
+# personal item balls. Lab saves always; the rest when its checkpoint is
+# given (J46 Route 118 before Steven's scene, J50 five badges with the
+# Devon Scope, J51 six badges, J57 Mossdeep, J58 Mossdeep before the Space
+# Center, J66 League 1F before the guards; OLD13C_COAST: coast_solo_j68's
+# saves from a 0xC017013C suite, a quest finished before Mega Stones).
+run guide_team_select SAVE0="$lab0" SAVE1="$lab1"
+for s in boss_pair_solo boss_pair_coop rival_case_grass rival_case_fire rival_case_water; do
+	run "$s" SAVE0="$lab0" SAVE1="$lab1"
+done
+if [ -n "${J16:-}" ]; then
+	run items_personal SAVE0="$J16/p0.sav" SAVE1="$J16/p1.sav"
+	run items_personal_reload SAVE0="$out/items_personal/p0.sav" SAVE1="$out/items_personal/p1.sav"
+fi
+if [ -n "${J46:-}" ]; then
+	run mega_bracelet SAVE0="$J46/p0.sav" SAVE1="$J46/p1.sav"
+	run mega_bracelet_reload SAVE0="$out/mega_bracelet/p0.sav" SAVE1="$out/mega_bracelet/p1.sav"
+fi
+[ -n "${J50:-}" ] && run rival_lilycove_early SAVE0="$J50/p0.sav" SAVE1="$J50/p1.sav"
+[ -n "${J51:-}" ] && run rival_lilycove_late SAVE0="$J51/p0.sav" SAVE1="$J51/p1.sav"
+if [ -n "${J57:-}" ]; then
+	for s in mega_coop_tate mega_cancel mega_abort mega_no_bracelet mega_za_abilities mega_hp_same mega_exchange; do
+		run "$s" SAVE0="$J57/p0.sav" SAVE1="$J57/p1.sav"
+	done
+fi
+[ -n "${J58:-}" ] && run space_center_solo SAVE0="$J58/p0.sav" SAVE1="$J58/p1.sav"
+[ -n "${J66:-}" ] && run caps_league SAVE0="$J66/p0.sav" SAVE1="$J66/p1.sav"
+[ -n "${J68:-}" ] && run caps_champion SAVE0="$J68/p0.sav" SAVE1="$J68/p1.sav"
+if [ -n "${SEG6:-}" ]; then
+	for s in exh_case_grass exh_case_fire exh_case_water; do
+		run "$s" SAVE0="$SEG6/p0.sav" SAVE1="$SEG6/p1.sav"
+	done
+fi
+[ -n "${OLD13C_COAST:-}" ] && run quest_stone_catchup SAVE0="$OLD13C_COAST/p0.sav" SAVE1="$OLD13C_COAST/p1.sav"
 
 if [ -n "${AFFECTED:-}" ]; then
 	run mays_house_recovery SAVE0="$AFFECTED/host_p0.sav" SAVE1="$AFFECTED/guest_p1.sav"

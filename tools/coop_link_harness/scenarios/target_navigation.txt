@@ -1,4 +1,5 @@
 # Reproduce the real rescue moves: Scratch and Ember, with a delayed guest.
+# (Battle Guide v2: the companion is Fennekin, Ember in the lower-left slot.)
 include rescue_start.inc
 b expect_vs_party 1 1
 0 until_mem gBattlerControllerFuncs:4 HandleInputChooseMove 5000 A
@@ -7,7 +8,7 @@ b wait 16
 b shot moves-ready
 0 press A 2
 0 until_mem gBattlerControllerFuncs:4 HandleInputChooseTarget 3000
-1 press RIGHT 2
+1 press DOWN 2
 1 press A 2
 1 until_mem gBattlerControllerFuncs+8:4 HandleInputChooseTarget 3000
 b shot target-choice

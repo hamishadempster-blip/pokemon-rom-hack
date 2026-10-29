@@ -16,6 +16,10 @@ include relink.inc
 b expect coop.sLinkState 2
 b smart_moves 1
 b test_heal
+# Battle Guide v2: Wally's Mega Gallade team beats the checkpoint's Lv 80
+# fixture trio (level-boosted, early moves); strong_battlers (FIXTURE,
+# in-battle stats) keeps this a check of the line's story state.
+b strong_battlers 500
 b no_wild 1
 include beacon_on.inc
 b mash_field 2000 B

@@ -1,0 +1,55 @@
+# Battle Guide v2: a co-op battle interrupted after both players Mega
+# Evolve. j57 saves, linked, Beacon ON, against Tate & Liza; the same TEST
+# HELPERS and FIXTURE as mega_coop_tate (Lv 54 BLAZIKEN / GARDEVOIR holding
+# their stones, MEGA BRACELET in each bag, healed, warp). KIND: recovery (a
+# fault is induced on purpose): after both Megas, the engine's link error
+# flag is set on both cores (as battle_abort_recovery; not cable-loss
+# detection). Checked: the battle ends on both games without a badge, the
+# link and Beacon stay up, and each stored Pokemon is its own base species
+# with the same personality, moves, held stone and EXP as before the fight.
+include continue.inc
+include relink.inc
+b expect coop.sLinkState 2
+include beacon_on_p1.inc
+b mash_field 2000 B
+b expect coop.sBeacon+1:1 1
+b no_wild 1
+0 test_mon 0 257 54 0 0 0 0 0
+1 test_mon 0 282 54 0 0 0 0 0
+0 test_held 0 314
+1 test_held 0 316
+b test_item 703 1
+b test_heal
+b expect_mon 0 personality @0
+b expect_mon 0 move @1 0
+b expect_mon 0 exp @2
+b expect_mon 0 held @3
+0 fixture_warp 14 0 23 8
+1 fixture_warp 14 0 24 8
+b until_field 3000
+b sync
+b mega_next 1
+b smart_moves 1
+0 press UP 2
+0 wait 20
+0 press A 2
+b until_cb2 BattleMainCB2 12000 A
+b expect gBattlersCount 4
+0 until_mem gBattleMons:2 928 9000 A
+0 until_mem gBattleMons+280:2 930 3000 A
+1 until_mem gBattleMons:2 928 9000 A
+1 until_mem gBattleMons+280:2 930 3000 A
+b shot both-megas
+b expect gCoopMegaRejected 0
+b write gLinkErrorOccurred:1 1
+b mash_field 6000 B
+b expect coop.sInBattle 0
+b expect coop.sLinkState 2
+b expect_flag 0x86D 0
+0 expect_mon 0 species 257
+1 expect_mon 0 species 282
+b expect_mon 0 personality @0
+b expect_mon 0 move @1 0
+b expect_mon 0 exp @2
+b expect_mon 0 held @3
+b expect_mons_intact

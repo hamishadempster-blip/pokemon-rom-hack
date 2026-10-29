@@ -1,0 +1,57 @@
+# Battle Guide v2 boss pairs, linked: Kai talks to HEATH (beside Roxanne)
+# and the shared co-op gym battle starts for both players against Roxanne
+# and Heath; the win gives both saves the badge. Then Rosa talks to Heath:
+# his own after-words. From lab saves. FIXTURES: fixture_warp below the
+# pair; level-70 leads with strong cached stats (flow, not balance).
+include beacon_battle.txt
+b mash_field 2000 B
+b write sWildEncountersDisabled 1
+0 fixture_lead 255 70 344960
+1 fixture_lead 228 70 428750
+0 fixture_warp 11 3 6 3
+1 fixture_warp 11 3 5 3
+b until_field 3000
+b sync
+b wait 40
+b sync
+b write gParties+86:2 999
+b write gParties+88:2 999
+b write gParties+90:2 600
+b write gParties+92:2 600
+b write gParties+94:2 600
+b write gParties+96:2 600
+b write gParties+98:2 600
+0 press UP 2
+0 wait 20
+b note_money
+0 note_text ROXANNE_and_I_battle_as_a_pair
+0 press A 2
+b until_cb2 BattleMainCB2 9000 A
+0 expect_noted
+b expect coop.sInBattle 1
+b expect gBattlersCount 4
+b expect gTrainerBattleParameter+2:2 265
+b shot pair-coop
+b mash_field 30000
+b expect gBattleOutcome 1
+b expect_flag 0x867 1
+b sync
+b expect_same_prize
+b expect coop.sLinkState 2
+b mash_field 8000
+b until_field 3000
+b sync
+# Kai steps away (the partner's figure is solid), then Rosa goes right one
+# tile, faces up and talks to Heath.
+0 walk 6 5 600
+b sync
+1 walk 6 3 600
+1 press UP 16
+1 wait 20
+1 shot rosa-before-heath
+1 note_text Rock_stands_firm
+1 press A 2
+1 mash_field 1500 B
+1 shot rosa-heath
+1 expect_noted
+b expect_mons_intact

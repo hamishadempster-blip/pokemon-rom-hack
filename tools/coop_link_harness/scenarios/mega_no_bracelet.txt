@@ -1,0 +1,51 @@
+# Battle Guide v2: the Mega Bracelet is personal. j57 saves (made before
+# the bracelet existed: neither has one), linked, Beacon ON, against Tate &
+# Liza. TEST HELPERS (logged): Kai's lead a Lv 54 BLAZIKEN holding
+# BLAZIKENITE and a MEGA BRACELET for Kai only; Rosa's lead a Lv 54
+# GARDEVOIR holding GARDEVOIRITE and no bracelet; healed. FIXTURE: warp.
+# DRIVER: mega_next 1 on both (START at the first move menu).
+# Checked: Kai Mega Evolves; Rosa's START does nothing (no trigger without
+# her own bracelet): her Gardevoir stays Gardevoir through the first turn,
+# and the master rejected nothing (no request was sent).
+include continue.inc
+include relink.inc
+b expect coop.sLinkState 2
+include beacon_on_p1.inc
+b mash_field 2000 B
+b expect coop.sBeacon+1:1 1
+b no_wild 1
+0 test_mon 0 257 54 0 0 0 0 0
+1 test_mon 0 282 54 0 0 0 0 0
+0 test_held 0 314
+1 test_held 0 316
+0 test_item 703 1
+1 expect_item 4 703 0
+b test_heal
+b expect_mon 0 personality @0
+b expect_mon 0 move @1 0
+b expect_mon 0 exp @2
+b expect_mon 0 held @3
+0 fixture_warp 14 0 23 8
+1 fixture_warp 14 0 24 8
+b until_field 3000
+b sync
+b mega_next 1
+b smart_moves 1
+0 press UP 2
+0 wait 20
+0 press A 2
+b until_cb2 BattleMainCB2 12000 A
+b expect gBattlersCount 4
+0 until_mem gBattleMons:2 928 9000 A
+1 until_battle_text Waiting_for_Kai 9000 auto
+b until_battle_text used 9000 auto
+b wait 120
+0 expect gBattleMons+280:2 282
+b expect gCoopMegaRejected 0
+b shot no-bracelet
+b strong_battlers 400
+b mash_field 40000
+b expect gBattleOutcome 1
+b until_field 3000
+0 expect_mon 0 species 257
+1 expect_mon 0 species 282

@@ -1,0 +1,29 @@
+# Battle Guide v2 level cap as Champion: j68 saves (after the League,
+# CHAMPION), not linked, both players. TEST HELPERS (logged): a Lv 79
+# PIKACHU in slot 3, three RARE CANDY. Checked: the cap is 80: one candy
+# takes it to 80, the next is refused and kept.
+include continue.inc
+b no_wild 1
+b mash_field 300 B
+b test_mon 2 25 79
+b fixture_item 0 102 3
+b press START 2
+b wait 40
+b menu_to BAG
+b press A 2
+b until_cb2 CB2_BagMenuRun 2500
+b wait 60
+b field_item 102 2
+b mash_field 600 B
+b expect_mon 2 level 80
+b expect_item 0 102 2
+b press START 2
+b wait 40
+b menu_to BAG
+b press A 2
+b until_cb2 CB2_BagMenuRun 2500
+b wait 60
+b field_item 102 2
+b mash_field 600 B
+b expect_mon 2 level 80
+b expect_item 0 102 2

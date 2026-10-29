@@ -1,0 +1,35 @@
+# Battle Guide v2 quest stones on an older save: coast_solo_j68's saves from
+# the 13C final suite (build 0xC017013C: COASTAL CLEANUP finished and claimed, no Mega Stone
+# then). Kai talks to Marlin again: with a full ITEMS pocket (FIXTURE) he
+# is told to come back, the stone is not given and nothing is set; with room he gets the DRAGALGITE
+# once; a third talk gives nothing more. Not linked. FIXTURE: fixture_warp
+# below Marlin.
+include continue.inc
+b mash_field 300 B
+0 expect_flag 0x4A3 0
+0 expect_item 0 850 0
+0 fixture_fill_pocket 0 900
+0 fixture_warp 0 24 10 9
+0 until_field 3000
+0 press UP 2
+0 wait 20
+0 note_text BAG_is_full._Come_back
+0 press A 2
+0 wait 200
+0 shot stone-bag-full
+0 mash_field 2500 B
+0 expect_noted
+0 expect_flag 0x4A3 0
+0 expect_item 0 850 0
+0 fixture_unfill_pocket 0 900
+0 wait 30
+0 press A 2
+0 wait 200
+0 shot stone-given
+0 mash_field 2500 B
+0 expect_flag 0x4A3 1
+0 expect_item 0 850 1
+0 press A 2
+0 mash_field 2500 B
+0 expect_item 0 850 1
+include save_continue.inc

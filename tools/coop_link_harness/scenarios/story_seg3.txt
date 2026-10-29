@@ -24,6 +24,10 @@ b dump petalburg
 b walk 0 12 3000
 b cross LEFT 0 19 3000
 b dump route104
+# Battle Guide v2: level-ups recalculate the cached stats mid-run and the
+# guide's Woods grunt then wins, so strong_battlers (as in seg4/seg5) holds
+# the in-battle stats too (flow, not balance: see the test log).
+b strong_battlers 400
 b write gParties+86:2 300
 b write gParties+88:2 300
 b write gParties+90:2 200

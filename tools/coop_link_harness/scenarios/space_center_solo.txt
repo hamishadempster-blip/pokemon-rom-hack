@@ -1,0 +1,75 @@
+# Battle Guide v2: the Space Center solo fight keeps Steven as the ally.
+# j58 saves (Mossdeep, Mind Badge), NOT linked: each game plays the Space
+# Center alone (the real story path: Maxie's walk, 1F stairs grunt, 2F
+# grunts, Steven), then Maxie & Tabitha with STEVEN (the guide's partner
+# team: Skarmory, Claydol, Metagross) beside the player.
+# Test helper: test_heal before Maxie & Tabitha (as journey_59).
+# FIXTURE for the last fight: strong_battlers (in-battle stats of the
+# player's battlers only; Steven's are untouched), because the harness
+# driver cannot pick a replacement in the stock solo-with-partner party
+# menu; this checks the flow, not balance (an unassisted try is in the test
+# log). Driver aids: smart_moves, heal_below, no_wild.
+include continue.inc
+b mash_field 300 B
+b expect coop.sLinkState 0
+b smart_moves 1
+b heal_below 35 2
+b no_wild 1
+b expect_flag 0x75 0
+b walk 7 8 2000
+b cross DOWN 0 6 2000
+0 walk 40 26 20000
+1 walk 40 25 20000
+b mash_field 20000 B
+b walk 64 16 20000
+b cross UP 14 9 3000
+b walk 13 3 20000
+b press UP 2
+b wait 10
+b press A 2
+b mash_field 30000
+b walk 13 2 3000
+b cross UP 14 10 3000
+b mash_field 60000
+b walk 2 8 20000
+b test_heal
+b strong_battlers 500
+b press LEFT 2
+b wait 10
+b press A 2
+b mash_field 6000 B
+b press LEFT 2
+b wait 10
+b press A 2
+b wait 60
+b press A 2
+# The stock solo flow: choose three to fight beside Steven (the first three).
+b until_cb2 CB2_UpdatePartyMenu 3000 A
+b wait 60
+b press A 2
+b wait 30
+b press A 2
+b wait 20
+b press DOWN 2
+b press A 2
+b wait 20
+b press A 2
+b wait 20
+b press DOWN 2
+b press A 2
+b wait 20
+b press A 2
+b wait 30
+b shot choose-three
+b press A 2
+b until_cb2 BattleMainCB2 9000 A
+b expect coop.sInBattle 0
+b expect gBattlersCount 4
+# Steven's lead (battler 2, beside the player): SKARMORY.
+b until_mem gBattleMons+280:2 227 3000
+b shot steven-ally
+b mash_field 200000 B
+b expect gBattleOutcome 1
+b mash_field 3000 B
+b expect_flag 0x75 1
+b expect_mons_intact

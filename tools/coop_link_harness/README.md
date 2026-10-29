@@ -460,3 +460,30 @@ remembers then compares), `test_data SLOT evs|ivs|hyper|clear|dcsteps V`
 the Day Care step counter), `note_text WORDS` / `expect_noted` (a message
 seen in any frame since), `expect_cb2 FUNC`, `expect_money_change DELTA`
 and `fixture_money N`.
+
+## Battle Guide v2 scenarios (build 0xC017013D)
+
+| Scenario | Saves | Checks |
+| --- | --- | --- |
+| `guide_team_select` | any | `Coop_TeamPartyIdForKey` for each selection rule (tiers, Lilycove/hideout early variants, exhibitions by case, rematch gating) |
+| `rival_case_grass/fire/water` | lab | Route 103 co-op rival fight per starter case (FIXTURE: `VAR_STARTER_MON`); Soren (opponent A) leads the case line, Mira (B) the companion line; both talker roles |
+| `rival_lilycove_early` / `_late` | j50 / j51 | Lilycove twins: the pre-Winona team (levels 44-46) with five badges, the regular Mega team with six |
+| `exh_case_grass/fire/water` | seg6 | Littleroot exhibition aces follow the case |
+| `boss_pair_solo` / `boss_pair_coop` | lab | Heath beside Roxanne: talking to him starts the same solo or co-op fight; his own after-words |
+| `caps_league` / `caps_champion` | j66 / j68 | Cap 66 before the door guards, 76 after them (League admission), 80 as Champion (Rare Candy refused and kept at the cap) |
+| `mega_bracelet` (+`_reload`) | j46 | Steven's Route 118 scene gives each save its own bracelet |
+| `mega_exchange` | j57 | Bracelet fallback at the Exchange, MEGA STONE counter stock, a purchase, WHERE TO FIND, a found stone added to the stock |
+| `mega_coop_tate` | j57 | Both players Mega Evolve the same turn; enemy Megas (Z-A Chimecho, Gallade); one per trainer; base forms after the battle |
+| `mega_cancel` | j57 | The guest turns the trigger on, then changes the choice: no Mega that turn, the allowance kept for the next |
+| `mega_abort` | j57 | Link error after both Megas: base forms, identity, moves, EXP, held stones kept |
+| `mega_no_bracelet` | j57 | No trigger without your own bracelet in co-op |
+| `mega_za_abilities` | j57 | Mega Meganium has MEGA SOL (Solar Beam fires on its first turn), Mega Feraligatr DRAGONIZE |
+| `mega_hp_same` | j57 | Mega Banette and Mega Chimecho keep the base form's max HP |
+| `space_center_solo` | j58 | Not linked: Maxie and Tabitha with Steven as the ally (stock choose-three) |
+| `items_personal` (+`_reload`) | j16 | Item balls are per save; both at one ball; full bag leaves it |
+| `quest_stone_catchup` | 13C coast_solo_j68 | A quest finished before this build gives its Mega Stone once; a full bag is told to come back |
+
+New verbs: `expect_team TRAINER KEY PARTY` (read-only: the party id the
+ROM picks for a trainer and team key), `expect_mon ... enemyA|enemyB` (the
+opponent parties, in battle), `mega_next N` (DRIVER: press START once at
+the next N move menus, the game's own Mega trigger).
