@@ -1,0 +1,66 @@
+# Spare buttons at the battle menus (0xC017013F), both roles, a co-op wild
+# double from the lab saves (Route 101, Beacon ON): R, START, SELECT, L,
+# L+R at the action menu; L (inspector), R, START, SELECT, L+R, B in the move
+# menu; then B back to the action menu. Both games stay in the battle, at
+# their action menus; the battle is then played to its end and both are
+# back on the field, still linked.
+include wild_route101_start.inc
+1 until_mem coop.sGuestPairPending 1 12000
+1 wait 2
+1 press A 2
+1 wait 2
+1 until_cb2 BattleMainCB2 12000 A
+0 write sWildEncountersDisabled 0
+0 pace_until_battle 9000
+0 write sWildEncountersDisabled 1
+0 until_cb2 BattleMainCB2 12000
+0 until_mem gBattlerControllerFuncs:4 HandleInputChooseAction 9000
+1 until_mem gBattlerControllerFuncs+8:4 HandleInputChooseAction 9000
+b wait 20
+b press R 2
+b wait 25
+b press START 2
+b wait 25
+b press SELECT 2
+b wait 25
+b press L 2
+b wait 25
+b press L+R 2
+b wait 25
+b press START 2
+b wait 25
+b shot action
+b expect_cb2 BattleMainCB2
+b press A 2
+b wait 40
+b press L 2
+b wait 25
+b press L 2
+b wait 25
+b press R 2
+b wait 25
+b press START 2
+b wait 25
+b press SELECT 2
+b wait 25
+b press L+R 2
+b wait 25
+b press START 2
+b wait 25
+b press L 2
+b wait 25
+b press B 2
+b wait 25
+b shot move
+b press B 2
+b wait 30
+b press B 2
+b wait 30
+b expect_cb2 BattleMainCB2
+0 expect gBattlerControllerFuncs:4 HandleInputChooseAction
+1 expect gBattlerControllerFuncs+8:4 HandleInputChooseAction
+b mash_field 20000
+b sync
+b wait 60
+b expect coop.sLinkState 2
+b expect_cb2 CB2_Overworld

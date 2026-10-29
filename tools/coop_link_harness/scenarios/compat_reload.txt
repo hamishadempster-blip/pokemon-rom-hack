@@ -1,0 +1,10 @@
+# Save compatibility, step 2 (0xC017013F): compat_load's saves after a power
+# cycle: loaded (CONTINUE, no input), dumped; then LINK UP; both still have
+# their parties, PCs and bags (compat.py), and the link comes up.
+include continue_quiet.inc
+b wait 300
+b save_dump reload
+include relink.inc
+b expect coop.sLinkState 2
+b wait 300
+b save_dump relinked

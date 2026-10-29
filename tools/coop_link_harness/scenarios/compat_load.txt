@@ -1,0 +1,22 @@
+# Save compatibility, step 1 (0xC017013F): an older save loaded (CONTINUE,
+# no link, no input on the field), its save data written out after 300
+# frames (save_dump), then SAVE on this build. compat.py compares the dump
+# with the same save loaded on the build that made it (or 0xC017013D) and
+# with compat_reload's dump of the save written here.
+include continue_quiet.inc
+b wait 300
+b save_dump load
+b press START 2
+b wait 60
+b menu_to SAVE
+b press A 2
+b wait 50
+b press A 2
+b wait 250
+b press A 2
+b wait 300
+b press A 2
+b wait 40
+b mash_field 600 B
+b wait 60
+b save_dump saved

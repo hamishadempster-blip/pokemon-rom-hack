@@ -23,7 +23,7 @@
 #define MAX_CMDS 4096
 #define MAX_SYMS 500000
 
-enum { C_PARTNER, C_GOTO, C_HEX, C_PRESS, C_WAIT, C_SHOT, C_DUMP, C_BARRIER, C_UNTIL_CB2, C_UNTIL_FIELD, C_EXPECT, C_UNTIL_MEM, C_BATTLE, C_MENU, C_PARTY, C_FIXTURE, C_WRITE, C_LEAD, C_MOVE, C_SIX, C_VAR, C_FLAG, C_VS, C_EXPECT_FLAG, C_EXPECT_VAR, C_NO_OBJECT, C_MAP, C_OBJECT, C_TEXT_SPEED, C_PACE, C_MUTE, C_PARTNER_AT, C_ITEM, C_EXPECT_ITEM, C_UNTIL_TEXT, C_WARP, C_PC_COUNT, C_MONS, C_NO_COPIES, C_NOTE_MONEY, C_MONEY_GAIN, C_FORCE_ENC, C_EXPECT_RANGE, C_WALK, C_NO_WILD, C_CROSS, C_WALK_BATTLE, C_SMART, C_STRONG, C_UNTIL_TASK, C_MIRROR, C_SPECIES, C_NOTE_PARTY, C_SAME_PARTY, C_PATCH_RET, C_SLOT, C_TXN, C_MONEY_SAME, C_DEX, C_SWAP, C_GENDER, C_FILL, C_UNFILL, C_WRITEP, C_TINT, C_UNTIL_FTEXT, C_NICK, C_GRIND, C_CATCH, C_HUNT, C_SWITCH_LEAD, C_PARTY_SLOT, C_HEAL_BELOW, C_TALK_OBJ, C_BOXES, C_TEST_HOOK, C_WATCH, C_EXPECT_WRITES, C_SURF, C_BAG_ITEM, C_FLY_MAP, C_STEP_TO, C_PARTY_ACTION, C_DIVE, C_RIDE, C_LEGEND, C_OWNED, C_PCFILL, C_TASKS, C_ALLOW_RESET, C_ROMWRITE, C_OBJBYTE, C_NPC_SYNC, C_BATTLE_ITEM, C_FIELD_ITEM, C_FISH, C_FORCE_MOVE, C_SCREEN_SAME, C_EXPECT_TEXT, C_MONEY_DELTA, C_SET_MONEY, C_NOTE_TEXT, C_EXPECT_CB2, C_MEGA_NEXT, C_LEAK, C_MENU_CURSOR };
+enum { C_PARTNER, C_GOTO, C_HEX, C_PRESS, C_WAIT, C_SHOT, C_DUMP, C_BARRIER, C_UNTIL_CB2, C_UNTIL_FIELD, C_EXPECT, C_UNTIL_MEM, C_BATTLE, C_MENU, C_PARTY, C_FIXTURE, C_WRITE, C_LEAD, C_MOVE, C_SIX, C_VAR, C_FLAG, C_VS, C_EXPECT_FLAG, C_EXPECT_VAR, C_NO_OBJECT, C_MAP, C_OBJECT, C_TEXT_SPEED, C_PACE, C_MUTE, C_PARTNER_AT, C_ITEM, C_EXPECT_ITEM, C_UNTIL_TEXT, C_WARP, C_PC_COUNT, C_MONS, C_NO_COPIES, C_NOTE_MONEY, C_MONEY_GAIN, C_FORCE_ENC, C_EXPECT_RANGE, C_WALK, C_NO_WILD, C_CROSS, C_WALK_BATTLE, C_SMART, C_STRONG, C_UNTIL_TASK, C_MIRROR, C_SPECIES, C_NOTE_PARTY, C_SAME_PARTY, C_PATCH_RET, C_SLOT, C_TXN, C_MONEY_SAME, C_DEX, C_SWAP, C_GENDER, C_FILL, C_UNFILL, C_WRITEP, C_TINT, C_UNTIL_FTEXT, C_NICK, C_GRIND, C_CATCH, C_HUNT, C_SWITCH_LEAD, C_PARTY_SLOT, C_HEAL_BELOW, C_TALK_OBJ, C_BOXES, C_TEST_HOOK, C_WATCH, C_EXPECT_WRITES, C_SURF, C_BAG_ITEM, C_FLY_MAP, C_STEP_TO, C_PARTY_ACTION, C_DIVE, C_RIDE, C_LEGEND, C_OWNED, C_PCFILL, C_TASKS, C_ALLOW_RESET, C_ROMWRITE, C_OBJBYTE, C_NPC_SYNC, C_BATTLE_ITEM, C_FIELD_ITEM, C_FISH, C_FORCE_MOVE, C_SCREEN_SAME, C_EXPECT_TEXT, C_MONEY_DELTA, C_SET_MONEY, C_NOTE_TEXT, C_EXPECT_CB2, C_MEGA_NEXT, C_LEAK, C_MENU_CURSOR, C_SAVE_DUMP };
 
 struct Cmd {
 	unsigned args[8];
@@ -2273,6 +2273,26 @@ static void frameCallback(struct mCoreThread* t) {
             unsigned tinted = diff > 8;
             if (tinted != c->value) { out("[p%d] FAIL tint %s: tinted=%u (%u colours differ), expected %u\n", p->id, c->text, tinted, diff, c->value); sFailures++; }
             else out("[p%d] ok tint %s: tinted=%u (%u colours differ)\n", p->id, c->text, tinted, diff);
+            advance = true;
+            break;
+        }
+        case C_SAVE_DUMP: {
+            struct { const char* name; unsigned addr, size; } parts[5] = {
+                { "sb1", rd32(p, symAddr("gSaveBlock1Ptr")), symValue("harness.sb1Size") },
+                { "sb2", rd32(p, symAddr("gSaveBlock2Ptr")), symValue("harness.sb2Size") },
+                { "sb3", rd32(p, symAddr("gSaveBlock3Ptr")), symValue("harness.sb3Size") },
+                { "pc", rd32(p, symAddr("gPokemonStoragePtr")), symValue("harness.storageSize") },
+                { "party", rd32(p, symAddr("gPlayerPartyPtr")), symValue("harness.monSize") * 6 },
+            };
+            for (int k = 0; k < 5; k++) {
+                char path[600];
+                snprintf(path, sizeof(path), "%s/p%d_%s_%s.bin", sOutDir, p->id, c->text, parts[k].name);
+                FILE* f = fopen(path, "wb");
+                if (!f) { out("[p%d] FAIL save_dump cannot write %s\n", p->id, path); sFailures++; continue; }
+                for (unsigned i = 0; i < parts[k].size; i++) fputc(rd8(p, parts[k].addr + i), f);
+                fclose(f);
+            }
+            out("[p%d] save_dump %s: sb1 %u sb2 %u sb3 %u pc %u party %u bytes\n", p->id, c->text, parts[0].size, parts[1].size, parts[2].size, parts[3].size, parts[4].size);
             advance = true;
             break;
         }
@@ -4603,6 +4623,12 @@ static void loadScript(const char* path, int depth) {
 			// differ from the unfaded ones, i.e. carry the time-of-day tint.
 			c.kind = C_TINT; c.value = strtoul(a, NULL, 0);
 			strncpy(c.text, n >= 3 ? b : "", sizeof(c.text) - 1);
+		} else if (!strcmp(cmd, "save_dump")) {
+			// save_dump LABEL: write this game's SaveBlock1/2/3, PC storage
+			// and party RAM to OUT/pN_LABEL_{sb1,sb2,sb3,pc,party}.bin (save
+			// compatibility checks compare them across builds).
+			c.kind = C_SAVE_DUMP;
+			snprintf(c.text, sizeof(c.text), "%s", a);
 		} else if (!strcmp(cmd, "menu_cursor")) {
 			// menu_cursor N [frames]: press DOWN/UP (one step at a time) until
 			// the open standard menu's cursor (menu.sMenu.cursorPos) is on
