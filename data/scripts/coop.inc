@@ -526,8 +526,9 @@ Coop_Text_CapMismatch:
 	.string "Set it the same way, then link again.$"
 
 Coop_Text_LegendConflict:
-	.string "The saves disagree about {STR_VAR_2}.\n"
-	.string "Linking would overwrite a catch, so it stops here.$"
+	.string "The saves disagree about {STR_VAR_2}.\p"
+	.string "Linking would overwrite a catch,\n"
+	.string "so it stops here.$"
 
 Coop_Text_BattleAborted:
 	.string "The link broke mid-battle.\n"

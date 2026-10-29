@@ -1,0 +1,90 @@
+# The Trainer Exchange's MEGA STONE counter: j57 saves (Kai: 6 badges; his
+# Route 118 scene ran before this build, so no bracelet). Not linked.
+# FIXTURES: warp to Rustboro (exchange_enter_p0.inc); later the pickup flag
+# of the SCIZORITE ball (Route 119) set as if found (0x4BE..: by name below).
+# Checked: the clerk hands over the bracelet Steven left (once); BUY lists
+# the 12 stones sold from 5 BADGES; one bought (money -10000, stone in the
+# bag); WHERE TO FIND names the next stones and their places; a stone found
+# out there (flag set) is then on sale too; talking again gives no second
+# bracelet.
+include continue.inc
+b mash_field 300 B
+b no_wild 1
+b expect_flag 0x4A2 0
+b expect_item 4 703 0
+include exchange_enter_p0.inc
+0 walk 13 4 2000
+0 press UP 2
+0 wait 10
+0 note_text STEVEN_left_a_MEGA_BRACELET
+0 press A 2
+0 until_task Task_HandleScrollingMultichoiceInput 1500 A
+0 expect_noted
+0 expect_flag 0x4A2 1
+0 expect_item 4 703 1
+0 wait 20
+0 shot mega-menu
+0 press A 2
+0 until_task Task_ShopMenu 600
+0 wait 20
+0 press A 2
+0 until_cb2 CB2_BuyMenu 600
+0 wait 60
+0 expect gCoopExchangeStats+1:1 5
+0 expect gCoopExchangeStats+2:1 12
+0 shot mega-list
+0 note_money
+0 press A 2
+0 wait 40
+0 press A 2
+0 wait 40
+0 press A 2
+0 wait 60
+0 press A 2
+0 wait 60
+0 expect_money_change -10000
+0 expect_item 0 314 1
+0 until_task Task_ShopMenu 900 B
+0 wait 30
+0 press DOWN 2
+0 wait 10
+0 press DOWN 2
+0 wait 10
+0 press A 2
+0 until_task Task_HandleScrollingMultichoiceInput 900
+0 wait 20
+0 press DOWN 2
+0 wait 10
+0 note_text Absolite:_HERE,_7_BADGES
+0 press A 2
+0 wait 30
+0 shot where
+0 until_task Task_HandleScrollingMultichoiceInput 1500 A
+0 expect_noted
+0 press B 2
+0 mash_field 600 B
+# A stone found out there (FIXTURE: its pickup flag) is on sale too.
+0 fixture_flag 0x4CC 1
+0 press A 2
+
+0 until_task Task_HandleScrollingMultichoiceInput 1500 A
+0 wait 20
+0 press A 2
+0 until_task Task_ShopMenu 600
+0 wait 20
+0 press A 2
+0 until_cb2 CB2_BuyMenu 600
+0 wait 60
+0 expect gCoopExchangeStats+2:1 13
+0 shot mega-list-found
+0 until_task Task_ShopMenu 900 B
+0 wait 30
+0 press DOWN 2
+0 wait 10
+0 press DOWN 2
+0 wait 10
+0 press A 2
+0 until_task Task_HandleScrollingMultichoiceInput 900
+0 press B 2
+0 mash_field 600 B
+0 expect_item 4 703 1

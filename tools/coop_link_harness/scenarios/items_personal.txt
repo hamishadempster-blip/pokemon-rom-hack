@@ -1,0 +1,70 @@
+# Extra item balls are personal (Battle Guide v2 rewards): j16 saves
+# (Route 116), linked. FIXTURES: warp to the GREAT BALL nook on Route 116,
+# Great Ball counts set to 5, Rosa's ITEMS pocket filled later (bag full).
+# Checked: both players press A at the same ball on the same frame (the
+# partner is not solid): each save gets its own GREAT BALL once and sets its
+# own flag; a second A finds nothing; the STARAPTITE ball with a full bag
+# stays (flag clear, nothing lost) and is taken once room is made; Kai takes
+# his own copy; both save (power-on checked in items_personal_reload).
+include continue.inc
+include relink.inc
+b expect coop.sLinkState 2
+b mash_field 2000 B
+b no_wild 1
+b expect_flag 0x4DC 0
+b expect_flag 0x4A9 0
+b fixture_item 1 2 5
+0 fixture_warp 0 31 41 8
+1 fixture_warp 0 31 41 8
+b until_field 3000
+b sync
+b walk 41 7 2000
+b press UP 2
+b wait 20
+b sync
+b shot before
+b press A 2
+b mash_field 1500 A
+b expect_flag 0x4DC 1
+b expect_item 1 2 6
+b shot after
+b press A 2
+b wait 60
+b mash_field 600 B
+b expect_item 1 2 6
+b expect_flag 0x4DC 1
+# The STARAPTITE ball, Rosa first with a full ITEMS pocket.
+# FIXTURE: warp into the east pocket (reached through Rusturf Tunnel's
+# Rock Smash exit in normal play).
+1 fixture_fill_pocket 0 900
+1 fixture_warp 0 31 66 11
+1 until_field 3000
+1 walk 70 7 4000
+1 press LEFT 2
+1 wait 20
+1 press A 2
+1 wait 150
+1 shot bag-full-msg
+1 mash_field 1500 B
+1 expect_flag 0x4A9 0
+1 expect_item 0 862 0
+1 shot bag-full
+1 fixture_unfill_pocket 0 900
+1 wait 30
+1 press A 2
+1 mash_field 1500 B
+1 expect_flag 0x4A9 1
+1 expect_item 0 862 1
+b sync
+0 expect_flag 0x4A9 0
+0 fixture_warp 0 31 66 11
+0 until_field 3000
+0 walk 70 7 4000
+0 press LEFT 2
+0 wait 20
+0 press A 2
+0 mash_field 1500 B
+0 expect_flag 0x4A9 1
+0 expect_item 0 862 1
+b sync
+include save_continue.inc

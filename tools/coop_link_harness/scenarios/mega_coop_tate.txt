@@ -1,0 +1,68 @@
+# Battle Guide v2 Megas in co-op: both players Mega Evolve on the same turn
+# against Tate & Liza (first clear), whose aces are Mega Gallade and the
+# Z-A Mega Chimecho. j57 saves (Mossdeep, 6 badges), linked, Beacon ON.
+# TEST HELPERS (logged): Kai's lead a Lv 54 BLAZIKEN holding BLAZIKENITE,
+# Rosa's a Lv 54 GARDEVOIR holding GARDEVOIRITE (level-up moves), the MEGA
+# BRACELET put in each bag (the story gives it on Route 118; tested in
+# mega_bracelet), healed. FIXTURE: warp below Tate & Liza.
+# DRIVER: mega_next 1 on both (START once at the first move menu, the
+# game's own trigger), smart_moves; after the four Megas are seen,
+# strong_battlers ends the fight (not a balance result).
+# Checked: each player's Mega on both games' battle data the same turn; one
+# Mega per trainer (no second trigger); the enemy aces Mega Evolve when sent
+# out; the win; afterwards each stored Pokemon is its own species again
+# with the same personality, held stone, moves and EXP noted before.
+include continue.inc
+include relink.inc
+b expect coop.sLinkState 2
+include beacon_on_p1.inc
+b mash_field 2000 B
+b expect coop.sBeacon+1:1 1
+b no_wild 1
+0 test_mon 0 257 54 0 0 0 0 0
+1 test_mon 0 282 54 0 0 0 0 0
+0 test_held 0 314
+1 test_held 0 316
+b test_item 703 1
+b test_heal
+b expect_mon 0 personality @0
+b expect_mon 0 move @1 0
+b expect_mon 0 exp @2
+b expect_mon 0 held @3
+0 fixture_warp 14 0 23 8
+1 fixture_warp 14 0 24 8
+b until_field 3000
+b sync
+b mega_next 1
+b smart_moves 1
+0 press UP 2
+0 wait 20
+0 press A 2
+b until_cb2 BattleMainCB2 12000 A
+b expect gBattlersCount 4
+0 until_mem gBattleMons:2 928 9000 A
+0 until_mem gBattleMons+280:2 930 3000 A
+1 until_mem gBattleMons:2 928 9000 A
+1 until_mem gBattleMons+280:2 930 3000 A
+b shot both-megas
+b expect gCoopMegaRejected 0
+b strong_battlers 400
+b until_battle_text Chimecho_has_Mega 30000 auto
+b shot mega-chimecho
+b until_battle_text Gallade_has_Mega 30000 auto
+b shot mega-gallade
+b mash_field 40000
+b expect gBattleOutcome 1
+b until_field 3000
+b sync
+b strong_battlers 0
+b expect_flag 0x86D 1
+0 expect_mon 0 species 257
+1 expect_mon 0 species 282
+b expect_mon 0 personality @0
+b expect_mon 0 move @1 0
+b expect_mon 0 held @3
+b expect_mon 0 exp -
+1 expect gCoopMegaReverts 1
+0 expect gCoopMegaReverts 0
+b expect coop.sLinkState 2

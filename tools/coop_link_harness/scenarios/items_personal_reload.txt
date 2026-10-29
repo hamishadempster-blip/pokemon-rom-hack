@@ -1,0 +1,8 @@
+# items_personal's saves after a power cycle: both balls gone on both saves,
+# each item held once.
+include continue.inc
+b mash_field 300 B
+b expect_flag 0x4DC 1
+b expect_flag 0x4A9 1
+b expect_item 1 2 6
+b expect_item 0 862 1

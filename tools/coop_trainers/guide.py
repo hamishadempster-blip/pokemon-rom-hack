@@ -387,6 +387,8 @@ def build(text, cards, partner_text, partner_cards):
     if not out.endswith('\n\n'):
         out = out.rstrip('\n') + '\n\n'
     for tid in NEW_IDS:
+        if tid in index:
+            continue   # written by an earlier run; updated in place above
         if tid not in new_entries:
             raise SystemExit('new id %s has no card' % tid)
         out += new_entries[tid]

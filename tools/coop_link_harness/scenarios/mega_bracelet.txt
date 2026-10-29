@@ -1,0 +1,38 @@
+# Mega Bracelet from Steven on Route 118 (the scene after Norman), each save
+# on its own. j46 saves (5 badges, Surf, the scene not yet seen), linked.
+# FIXTURE: warp each player two tiles below the scene's trigger row
+# (Route 118, east bank); then real walking into the trigger and the scene.
+# Checked: Kai's scene gives his bracelet (Key Items, flag 0x4A2) and
+# leaves Rosa's save alone; Rosa's own scene gives hers; neither save gets
+# a second one; after a save and power-on both keep theirs.
+include continue.inc
+include relink.inc
+b expect coop.sLinkState 2
+b mash_field 2000 B
+b no_wild 1
+b expect_var 0x4071 0
+b expect_flag 0x4A2 0
+b expect_item 4 703 0
+0 fixture_warp 0 33 44 13
+1 fixture_warp 0 33 42 13
+b until_field 3000
+b sync
+0 walk 44 12 3000
+0 press UP 16
+0 mash_field 6000 A
+0 expect_var 0x4071 1
+0 expect_flag 0x4A2 1
+0 expect_item 4 703 1
+1 expect_flag 0x4A2 0
+1 expect_item 4 703 0
+b sync
+0 shot kai-bracelet
+1 walk 44 12 3000
+1 press UP 16
+1 mash_field 6000 A
+1 expect_var 0x4071 1
+1 expect_flag 0x4A2 1
+1 expect_item 4 703 1
+0 expect_item 4 703 1
+b sync
+include save_continue.inc

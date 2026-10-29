@@ -1,0 +1,7 @@
+# mega_bracelet's saves after a power cycle: both bracelets kept, the scene
+# done, no second bracelet from the Exchange clerk.
+include continue.inc
+b mash_field 300 B
+b expect_flag 0x4A2 1
+b expect_item 4 703 1
+b expect_var 0x4071 1
