@@ -47,6 +47,6 @@ b sync
 1 press A 2
 1 wait 120
 1 press A 2
-0 until_cb2 BattleMainCB2 6000
-1 until_cb2 BattleMainCB2 3000
+0 until_cb2 BattleMainCB2 6000 A
+1 until_cb2 BattleMainCB2 3000 A
 b expect coop.sInBattle 1

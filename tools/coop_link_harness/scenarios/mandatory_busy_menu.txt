@@ -62,7 +62,7 @@ b expect coop.sInBattle 0
 1 press A 2
 1 wait 120
 1 press A 2
-b until_cb2 BattleMainCB2 3000
+b until_cb2 BattleMainCB2 3000 A
 b expect coop.sInBattle 1
 b wait 120
 b shot both-in-battle
