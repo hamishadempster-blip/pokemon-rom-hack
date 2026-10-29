@@ -686,6 +686,11 @@ While linked with your partner somewhere else, these fights wait and say so: com
 - In battle, only moves, switches and RUN can be changed after choosing; items cannot.
 - A BADGE both players won together in a co-op gym battle is recorded on both saves; on LINK UP a save that lacks it gets it back. That is the only way a partner can add to your badges, and so to your Exchange stock.
 - A partner busy at an Exchange counter or the Day Care is reported as "shopping".
+- A gym, rival, Elite Four or story fight waits while your partner has a menu screen or a message open (up to 30 seconds); if they stay busy you are told so and nothing starts.
+- In a co-op battle your Pokémon and your partner's can't take, give or swap items (Trick, Switcheroo, Bestow, Thief, Covet fail between you).
+- Strength boulders, rocks and trees are each save's own; a boulder your partner pushes doesn't move in your game.
+- In Secret Bases, Battle Pyramid floors and Trainer Hill floors your partner isn't shown (each room is built from its own save).
+- Losing a co-op battle costs no money; each of you wakes at your own last heal place.
 
 ## Fixes in build 0xC0170136
 

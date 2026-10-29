@@ -1,4 +1,35 @@
-# Trainer Exchange and breeding: build 0xC017013B
+# Co-op compatibility audit: build 0xC017013C
+
+Branch `coop-doorway-scenes-rivals` (continued from 0xC017013B), pushed, not merged. Both players need this build; 0xC017013B and older refuse to link with it. Older saves load (no save layout change). Audit table: [COOP_AUDIT_C017013C.md](COOP_AUDIT_C017013C.md). Test log: [COOP_TESTLOG_C017013C.md](COOP_TESTLOG_C017013C.md).
+
+- ROM `emerald-coop-C017013C.gba` from source `cfc98e64`: SHA-1 `68a24090dd7cfb2fbba8f58b2c4abe47895c958f`, SHA-256 `42277453eaea1f574b2d8bfe76a420a3b6257327e768be1bc780b6390a8059db`; a clean build gives the same SHA-1.
+- Commits: busy partner, personal rooms, win flags `148fab0a`; item moves between allies `38d818f0`; boulders not synced `36c7a370`; deal Pokémon checked `8f9c09f6`; build id `cfc98e64`; harness and regressions `ca8436f1`; docs after it.
+- Final suite: 215 scenarios, 211 pass; the 4 failures are test-driver luck or timing and one reload that depends on a failed run; all pass on rerun. Details in the test log.
+
+## Confirmed and fixed
+
+- **A.** A gym/rival/Elite Four/story fight started on a partner with a menu screen open (bag, party, PC, shop), replacing it without closing it. Now the partner answers busy; the inviter retries for 30 seconds, then explains.
+- **B.** The same with a message on the partner's screen stopped the partner's game at the battle's start (heap check). Same fix.
+- **C.** Trick between the two players' Pokémon left each save holding the other's item. Item moves between link multi allies now fail.
+- **D.** In Secret Bases (and Pyramid / Trainer Hill floors) the partner was drawn in your own room. Now hidden there.
+- **E.** Strength boulders were synced like wandering NPCs: a push on one save moved the other's boulder (it blocked `journey_60_seafloor`). Things are never synced now.
+- Hardening: incoming deal Pokémon are validated; a shared win's flag must be one of the known win flags.
+
+## Known gaps
+
+- Not played: cable car, ferries, Trick House, Battle Frontier and rentals, contests, berry planting, Escape Rope/Dig, Illusion, Knock Off between allies (refused by the same rule), Repel prompts around scenes. See the audit table.
+- A co-op loss costs no money (as stock link battles); documented, not changed.
+- Partner sprites can stand on tiles blocked in your own puzzle state (drawing only).
+- Harness weak points: rare-slot hunts (`roster_b3_catch`), A-only early battles, walks that meet a wandering NPC. Finding #16 still unreproduced. mGBA GUI, hardware and netplay not tested.
+
+## Where things are (work environment, not committed)
+
+- Checkpoints `/home/claude/journey/jNN`; before-fix logs `/home/claude/journey/audit`; 0xC017013B runs `/tmp/claude-0/runsB`; final suite `/home/claude/journey/final13C/suite`; clips `/home/claude/journey/clips13C`.
+- Full suite: `OUT=dir HARNESS_OUT=dir LONG=1 SEG6=… J06=… J13=… J16=… J37=… J43=… J44=… J48=… J52=… J59=… J65=… J68=… tools/coop_link_harness/run_all.sh`.
+
+# Previous build: 0xC017013B
+
+## Trainer Exchange and breeding: build 0xC017013B
 
 Branch `coop-doorway-scenes-rivals` (continued from 0xC017013A), pushed, not merged. Both players need this build; 0xC017013A and older refuse to link with it. Older saves load (no save layout change; a save standing where the new building is continues in front of its door). Test log: [COOP_TESTLOG_C017013B.md](COOP_TESTLOG_C017013B.md). Checklist: [COOP_CHECKLIST_C017013B.md](COOP_CHECKLIST_C017013B.md). Stock, prices and unlocks: [COOP_EXCHANGE_STOCK.md](COOP_EXCHANGE_STOCK.md). Player-facing: [COOP.md](COOP.md) (Trainer Exchange, Breeding and the Day Care, Level cap, Known limits).
 
@@ -36,7 +67,7 @@ Egg = mother's first stage (Ditto: the other parent's); babies without incense; 
 - Final suite output `/home/claude/journey/final13B/suite`; clips `/home/claude/journey/clips13B`.
 - Full suite: `OUT=dir HARNESS_OUT=dir LONG=1 SEG6=… J06=… J16=… J37=… J43=… J48=… J52=… J65=… J68=… tools/coop_link_harness/run_all.sh`.
 
-# Previous build: 0xC017013A
+## Previous build: 0xC017013A
 
 ## Co-op polish: build 0xC017013A
 
