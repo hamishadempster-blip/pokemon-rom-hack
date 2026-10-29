@@ -1,7 +1,8 @@
 # Shoal Cave, The Missing Researcher, linked (story_seg6 saves: player 0
 # Brendan, player 1 May). Clues found by either show on both saves live
-# (and the found object goes); player 1 is offline for one clue and the
-# link merges it back. Player 1 rescues ISLA while player 0 is in another
+# (and the found object goes); player 1 is offline for one clue: since
+# 0xC017013E (ownership policy) that clue stays on player 1's save only and
+# player 0 still finds the notes on its own save. Player 1 rescues ISLA while player 0 is in another
 # room: player 0 gets the rescue at its next map change (catch-up), and
 # each player is paid exactly once, even talking to her at the same time.
 # FIXTURES: fixture_warp between rooms; no wild battles.
@@ -36,12 +37,14 @@ b sync
 1 mash_field 3000
 1 expect_var 0x408B 3
 0 expect_var 0x408B 1
-# Relink: the notes merge into player 0's save.
+# Relink: the notes found alone stay player 1's (before 0xC017013E they
+# were merged into player 0's save).
 b sync
 include relink.inc
 b wait 240
-0 expect_var 0x408B 3
-0 expect_flag 0x29C 1
+0 expect_var 0x408B 1
+0 expect_flag 0x29C 0
+1 expect_var 0x408B 3
 # Player 0 brings the radio clue; player 1 rescues ISLA (player 0 is in the
 # lower room).
 0 fixture_warp 24 49 28 9
@@ -53,6 +56,7 @@ b wait 240
 b sync
 b wait 120
 1 expect_var 0x408B 7
+0 expect_var 0x408B 5
 1 fixture_warp 24 83 13 8
 1 until_field 3000
 1 press RIGHT 2
