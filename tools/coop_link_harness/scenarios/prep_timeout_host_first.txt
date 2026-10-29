@@ -1,0 +1,73 @@
+# Regression (0xC0170140): the team screen times out on the host's game
+# first. The host's withdrawal of its invite reaches the partner before the
+# preparation block that says why, and the partner was told "RED stepped
+# back from the battle" although nobody did (0xC017013F final suite,
+# prep_timeout: the two cartridge clocks tick their seconds at different
+# moments, so either game can time out first). Now the partner waits for
+# the reason and both screens say the time ran out.
+# Part 2: the host really steps back (CANCEL on Kai's team screen): Rosa
+# still reads that he stepped back, Kai that he did.
+# Lab saves, linked, Beacon ON, Rustboro Gym. FIXTURES: fixture_warp; the
+# host's (Kai's) team-screen clock is moved on to 115 seconds by frames
+# (sPrep.clock: frames +40, rtc +42 = 2, "count frames"), so it times out
+# about five seconds later while Rosa's clock is still near the start.
+include beacon_battle.txt
+b mash_field 2000 B
+b write sWildEncountersDisabled 1
+0 fixture_warp 11 3 5 3
+1 fixture_warp 11 3 3 4
+b until_field 3000
+b sync
+b wait 40
+b sync
+0 press UP 2
+0 wait 20
+0 press A 2
+0 until_mem coop.sWaitingAck 1 3000 A
+1 until_mem coop.sGuestPairPending 1 6000
+1 wait 90
+1 press A 2
+1 wait 120
+1 press A 2
+0 until_mem gCoopPrepPhase 1 3000
+1 until_mem gCoopPrepPhase 1 600
+b note_text stepped_back
+0 write sPrep+42:1 2
+0 write sPrep+40:2 6900
+0 until_mem gCoopPrepPhase 0 900
+# Rosa's own clock has not run out (about 20 s of 120): her screen closes
+# on Kai's word.
+1 until_mem gCoopPrepPhase 0 1200
+b wait 120
+b expect_text gStringVar4 took_too_long
+b shot timed-out
+b mash_field 3000 B
+b expect_not_noted
+b expect coop.sInBattle 0
+b expect_flag 0x867 0
+b expect coop.sLinkState 2
+b expect coop.sWaitingAck 0
+b sync
+# Part 2: Kai asks again, Rosa YES, Kai CANCEL.
+0 press A 2
+0 until_mem coop.sWaitingAck 1 3000 A
+1 until_mem coop.sGuestPairPending 1 6000
+1 wait 90
+1 press A 2
+1 wait 120
+1 press A 2
+0 until_mem gCoopPrepPhase 1 3000
+1 until_mem gCoopPrepPhase 1 600
+b wait 60
+0 note_text You_stepped_back
+1 note_text stepped_back_from_the
+0 menu_cursor 2
+0 press A 2
+b until_mem gCoopPrepPhase 0 600
+b wait 90
+b shot host-stepped-back
+b mash_field 3000 B
+b expect_noted
+b expect coop.sInBattle 0
+b expect_flag 0x867 0
+b expect coop.sLinkState 2

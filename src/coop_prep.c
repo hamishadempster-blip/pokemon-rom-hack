@@ -57,6 +57,10 @@
 #define PREP_TEAM_MAX 3
 #define PREP_SEND_FRAMES 30
 #define PREP_LINGER_SENDS 6
+// The host's withdrawal (its story invite) reaches the partner before the
+// preparation block that says why (a timeout or the host stepping back):
+// the partner waits this long for that block before saying "stepped back".
+#define PREP_WITHDRAW_GRACE 60
 
 struct CoopPrepMsg
 {
@@ -107,6 +111,7 @@ struct CoopPrepState
     u16 partnerSpecies[3];
     u16 partnerItems[3];
     u8 partnerMax;
+    u8 withdrawWait;      // frames left to hear why the host withdrew
 };
 
 static EWRAM_DATA struct CoopPrepState sPrep = {0};
@@ -928,8 +933,8 @@ u16 CoopPrep_TakeEndReason(void)
 void CoopPrep_PartnerWithdrew(u16 session)
 {
     if (sPrep.active && !sPrep.host && !sPrep.solo && sPrep.session == session
-     && sPrep.phase != COOP_PREP_COMMITTED)
-        Prep_End(COOP_PREP_END_PARTNER, FALSE);
+     && sPrep.phase != COOP_PREP_COMMITTED && sPrep.withdrawWait == 0)
+        sPrep.withdrawWait = PREP_WITHDRAW_GRACE;
 }
 
 void CoopPrep_LinkDown(void)
@@ -996,6 +1001,11 @@ void CoopPrep_Poll(void)
         {
             Prep_End(COOP_PREP_END_TIMEOUT, TRUE);
         }
+        else if (sPrep.withdrawWait != 0 && --sPrep.withdrawWait == 0 && sPrep.phase != COOP_PREP_COMMITTED)
+        {
+            // The host withdrew and no reason followed.
+            Prep_End(COOP_PREP_END_PARTNER, FALSE);
+        }
         else if (sPrep.host)
         {
             // Both READY: ask the partner to start at the revision it is
@@ -1027,7 +1037,8 @@ void CoopPrep_Poll(void)
             }
         }
         else if (sPrep.phase == COOP_PREP_READY && sPrep.partnerPhase == COOP_PREP_COMMIT
-              && sPrep.partnerCommitRev == sPrep.rev && !sPrep.inPicker && gMain.callback2 == CB2_Overworld)
+              && sPrep.partnerCommitRev == sPrep.rev && !sPrep.inPicker && gMain.callback2 == CB2_Overworld
+              && sPrep.withdrawWait == 0)
         {
             if (Prep_TeamValid() && Prep_DuoProblem() == DUO_OK)
             {

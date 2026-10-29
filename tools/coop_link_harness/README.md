@@ -533,6 +533,7 @@ Build 0xC017013E scenarios:
 | `move_inspector` | lab | L in the move menu: category, PWR ("var." when it depends), ACC ("sure"), who the move hits, then the description (screens) |
 | `prep_cancel` | lab | Team screen: READY then B, partner READY: nothing starts; CANCEL tells both; asking again works |
 | `prep_timeout` | lab | Nobody finishes the team screen: closes after ~2 min of clock, nothing starts |
+| `prep_timeout_host_first` | lab | The host's team-screen clock runs out first (FIXTURE: its clock moved on): the partner also reads "Choosing teams took too long", not "RED stepped back" (0xC0170140; failed on 0xC017013F). Then the host CANCELs: the partner reads that he stepped back |
 | `prep_link_stall` | lab | The partner's heartbeat stops during the team screen: nothing starts until it is back, then one fight |
 | `prep_win_j13` (+`_reload`) | j13 | Both choose from slots 3–5 in their own order; ASSISTED win; everyone back in their own slot on both saves; EXP to the chosen; badge; power-on reload |
 | `prep_slots456` | j44 | Kai picks 6, 4, 5 in the party screen; those three fight; order restored afterwards (the fight is lost: unassisted) |
