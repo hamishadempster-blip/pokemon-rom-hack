@@ -664,6 +664,8 @@ static void Prep_Start(bool8 host, bool8 solo, u16 session, u8 hostId)
     sPrep.partnerPhase = COOP_PREP_NONE;
     Prep_DefaultTeam();
     Coop_WaitClockStart(&sPrep.clock);
+    if (!solo)
+        Coop_NoteStartTime(COOP_START_PREP);
     sDrawnSecs = sDrawnPhase = sDrawnPartner = 0xFF;
     sOutLinger = 0;
     if (!solo)
@@ -938,6 +940,7 @@ void CoopPrep_OnLaunch(void)
     gCoopPrepApplied = 0;
     if (!sPrep.active || sPrep.solo)
         return;
+    Coop_NoteStartTime(COOP_START_PREP_DONE);
     if ((sPrep.phase == COOP_PREP_READY || sPrep.phase == COOP_PREP_COMMIT || sPrep.phase == COOP_PREP_COMMITTED)
      && Prep_TeamValid())
         CoopPrep_ApplyTeam();

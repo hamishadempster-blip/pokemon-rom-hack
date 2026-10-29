@@ -246,6 +246,8 @@ static void HandleInputChooseAction(enum BattlerId battler)
 
     DoBounceEffect(battler, BOUNCE_HEALTHBOX, 7, 1);
     DoBounceEffect(battler, BOUNCE_MON, 7, 1);
+    if (gBattleTypeFlags & BATTLE_TYPE_COOP)
+        Coop_NoteStartTime(COOP_START_FIRST_ACTION);
 
     if (JOY_REPEAT(DPAD_ANY) && gSaveBlock2Ptr->optionsButtonMode == OPTIONS_BUTTON_MODE_L_EQUALS_A)
         gPlayerDpadHoldFrames++;

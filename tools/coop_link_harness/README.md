@@ -502,6 +502,8 @@ Build 0xC017013E scenarios:
 | `story_beacon_off_wally` | j65 | Beacon OFF: Wally (a trainer's own battle meant for both) says so and starts nothing |
 | `story_simultaneous` | lab | Both talk to the leaders at once: player 0's request wins, one fight |
 | `invite_expiry_clock` (+`_wall`) | lab | A wild invitation expires after ~30 s of the cartridge clock: ~1,800 frames with the emulated RTC; many more frames with `RTC_WALL0/1=1` at harness speed |
+| `battle_visual_wild_double` | lab | Co-op wild double: all four battlers' displayed palettes equal their loaded colours at the first action menu (the left wild Pokémon used to stay dark) |
+| `startup_timing_wild` / `_gym` | lab | MEASUREMENT: frames from the request to the first action menu by stage (`gCoopStartTimes`); team-screen time separate |
 | `prep_cancel` | lab | Team screen: READY then B, partner READY: nothing starts; CANCEL tells both; asking again works |
 | `prep_timeout` | lab | Nobody finishes the team screen: closes after ~2 min of clock, nothing starts |
 | `prep_link_stall` | lab | The partner's heartbeat stops during the team screen: nothing starts until it is back, then one fight |
@@ -510,5 +512,5 @@ Build 0xC017013E scenarios:
 | `prep_solo_lead` | j13 | Unlinked gym: lead screen, CANCEL starts nothing, CHANGE LEAD to slot 5, the battle starts with it |
 
 New verbs: `expect_mon SLOT hp VALUE`, `expect_mon ... >@K` (more than note
-K). New harness variables: `RTC_EPOCH<i>` (start time) and `RTC_WALL<i>=1`
+K), `expect_equal SYM[+off]:size SYM[+off]` (two places on the same game). New harness variables: `RTC_EPOCH<i>` (start time) and `RTC_WALL<i>=1`
 (the host's wall clock instead of emulated time).

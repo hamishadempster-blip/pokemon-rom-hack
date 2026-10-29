@@ -1,0 +1,22 @@
+# Battle start timing, co-op wild double (0xC017013E). Lab saves, Route
+# 101, Beacon ON. MEASUREMENT: the partner answers YES as soon as the
+# question can be answered (the driver's reaction, not a person's). Both
+# games print gCoopStartTimes (frames; 60 per second at normal speed) once
+# their first action menu is up: the request, the partner's question and
+# answer, the launch, CB2_InitBattle (after the transition), the battle's
+# main loop (parties exchanged) and the first action menu.
+include wild_route101_start.inc
+1 until_mem coop.sGuestPairPending 1 12000
+1 wait 2
+1 press A 2
+1 wait 2
+1 until_cb2 BattleMainCB2 12000 A
+0 write sWildEncountersDisabled 0
+0 pace_until_battle 9000
+0 write sWildEncountersDisabled 1
+0 until_cb2 BattleMainCB2 12000
+0 until_mem gBattlerControllerFuncs:4 HandleInputChooseAction 9000 A
+1 until_mem gBattlerControllerFuncs+8:4 HandleInputChooseAction 9000 A
+b wait 5
+b hex gCoopStartTimes 36
+b expect gBattlersCount 4

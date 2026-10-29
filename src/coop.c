@@ -283,7 +283,10 @@ static EWRAM_DATA struct CoopWaitClock sBusyClock = {0};
 static EWRAM_DATA bool8 sGuestAskClosed = FALSE;   // the open question was closed by its time limit
 static EWRAM_DATA u8 sWaitShown = 0;          // the seconds last drawn in the waiting note (0xFF: none)
 static EWRAM_DATA u8 sWaitText[96] = {0};
-EWRAM_DATA u8 gCoopWaitSecondsLeft = 0;       // test visibility: the inviter's countdown
+EWRAM_DATA u8 gCoopWaitSecondsLeft = 0;
+// Battle start timing (frames, gMain.vblankCounter1) for the startup
+// measurements: COOP_START_* stages, written once each per request.
+EWRAM_DATA u32 gCoopStartTimes[COOP_START_COUNT] = {0};       // test visibility: the inviter's countdown
 static EWRAM_DATA struct CoopInvite sGuestPairInvite = {0};
 // The partner's team key (src/coop_teams.c) from the invite this game joins,
 // or from the answer to this game's invite.
@@ -1598,6 +1601,7 @@ static void Coop_QueueInvite(u8 kind, u16 trainerA, u16 trainerB, u8 badge, u16 
     sInvite.trainerB = trainerB;
     sInvite.aux = aux;
     sInvite.seq = ++sInviteSeq;
+    Coop_NoteStartTime(COOP_START_QUEUED);
     sInvite.teamKey = Coop_TeamKeyLocal();
     sInviteRetryDelay = 0;
     sRefusal = COOP_REFUSE_NONE;
@@ -1699,6 +1703,7 @@ static void Coop_LaunchBattle(bool8 isGuest)
         Coop_HideCallingMessage();
     // The teams chosen before the fight move to the front (undone after).
     CoopPrep_OnLaunch();
+    Coop_NoteStartTime(COOP_START_LAUNCH);
     sWaitingAck = FALSE;
     sIsGuest = isGuest;
     sInBattle = TRUE;
@@ -1867,6 +1872,7 @@ static void Coop_HandleInvite(u32 playerId, const struct CoopInvite *invite)
         if (sWaitingAck && invite->seq == sInvite.seq && Coop_SessionActive()
          && (sPartnerValid || CoopPrep_HostCommitted()))
         {
+            Coop_NoteStartTime(COOP_START_ANSWERED);
             sRemoteTeamKey = invite->teamKey;
             Coop_LaunchBattle(FALSE);
         }
@@ -2041,6 +2047,7 @@ static void Coop_HandleInvite(u32 playerId, const struct CoopInvite *invite)
         sGuestPairInvite = *invite;
         sGuestPairPending = TRUE;
         sGuestAskClosed = FALSE;
+        Coop_NoteStartTime(COOP_START_ASKED);
         sGuestPairTimer = 0;
         Coop_ClockStart(&sGuestClock);
         ScriptContext_SetupScript(Coop_EventScript_LegendAskGuest);
@@ -2092,6 +2099,7 @@ static void Coop_HandleInvite(u32 playerId, const struct CoopInvite *invite)
         sGuestPairInvite = *invite;
         sGuestPairPending = TRUE;
         sGuestAskClosed = FALSE;
+        Coop_NoteStartTime(COOP_START_ASKED);
         sGuestPairTimer = 0;
         Coop_ClockStart(&sGuestClock);
         ScriptContext_SetupScript(invite->kind == COOP_KIND_PAIR ? Coop_EventScript_PairAskGuest : Coop_EventScript_JoinAskGuest);
@@ -2115,6 +2123,7 @@ static void Coop_HandleInvite(u32 playerId, const struct CoopInvite *invite)
         sGuestPairInvite = *invite;
         sGuestPairPending = TRUE;
         sGuestAskClosed = FALSE;
+        Coop_NoteStartTime(COOP_START_ASKED);
         sGuestPairTimer = 0;
         Coop_ClockStart(&sGuestClock);
         ScriptContext_SetupScript(Coop_EventScript_StoryAskGuest);
@@ -5690,6 +5699,8 @@ u16 Coop_PairGuestAnswer(void)
         return sGuestPairTimer != 0xFFFF && sGuestPairTimer >= COOP_ANSWER_SECONDS
             && Coop_SessionActive() && Coop_PartnerOnSameMap() ? 5 : 4;
     }
+    if (accepted)
+        Coop_NoteStartTime(COOP_START_ANSWERED);
     if (!accepted || !(Coop_IsMandatoryKind(kind) ? Coop_HasBattleReadyMon() : Coop_HasBattleReadyLead())
      || (kind == COOP_KIND_PAIR && Coop_PairPlanFromHere(TRUE, accepted) != COOP_PAIR_JOINT))
     {
@@ -5948,6 +5959,21 @@ u16 Coop_StartSoloRescueBattle(void)
 
 // Terra/Marine Cave scripts: a co-op duo fight settles both legends; a solo
 // fight settles only the one in this cave, so the other cave stays open.
+
+void Coop_NoteStartTime(u8 stage)
+{
+    if (stage >= COOP_START_COUNT)
+        return;
+    if (stage == COOP_START_QUEUED || stage == COOP_START_ASKED)
+    {
+        // A new request: forget the last one's times.
+        if (stage == COOP_START_QUEUED || gCoopStartTimes[COOP_START_QUEUED] == 0
+         || gCoopStartTimes[COOP_START_FIRST_ACTION] != 0)
+            memset(gCoopStartTimes, 0, sizeof(gCoopStartTimes));
+    }
+    if (gCoopStartTimes[stage] == 0)
+        gCoopStartTimes[stage] = gMain.vblankCounter1 | 1;
+}
 
 // --- Team preparation (src/coop_prep.c) ----------------------------------
 

@@ -285,6 +285,23 @@ u16 Coop_TakeRefusal(void);
 bool8 Coop_HasBattleReadyLead(void);
 bool8 Coop_HasBattleReadyMon(void);
 
+// Battle start timing stages (gCoopStartTimes, frames).
+enum
+{
+    COOP_START_QUEUED,        // the request was made (encounter, trainer, talk)
+    COOP_START_ASKED,         // the partner's question opened (partner's game)
+    COOP_START_ANSWERED,      // YES (partner) / the answer arrived (inviter)
+    COOP_START_PREP,          // team preparation opened
+    COOP_START_PREP_DONE,     // both READY, starting
+    COOP_START_LAUNCH,        // the battle launch began
+    COOP_START_INIT,          // CB2_InitBattle (after the transition)
+    COOP_START_MAIN,          // parties exchanged, BattleMainCB2
+    COOP_START_FIRST_ACTION,  // the first action menu
+    COOP_START_COUNT,
+};
+extern u32 gCoopStartTimes[COOP_START_COUNT];
+void Coop_NoteStartTime(u8 stage);
+
 struct CoopWaitClock
 {
     u32 startSecs;

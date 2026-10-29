@@ -1,0 +1,27 @@
+# Battle start timing, a co-op gym fight with team preparation (0xC017013E).
+# Lab saves, Rustboro Gym, Beacon ON. MEASUREMENT: the partner answers YES
+# and both press READY as soon as they can (the driver's reaction). The team
+# screen's time (COOP_START_PREP .. PREP_DONE) is reported separately from
+# the technical stages. Both games print gCoopStartTimes at the first action
+# menu.
+include beacon_battle.txt
+b mash_field 2000 B
+b write sWildEncountersDisabled 1
+0 fixture_warp 11 3 5 3
+1 fixture_warp 11 3 3 4
+b until_field 3000
+b sync
+b wait 40
+b sync
+0 press UP 2
+0 wait 20
+0 press A 2
+0 until_mem coop.sWaitingAck 1 3000 A
+1 until_mem coop.sGuestPairPending 1 6000
+1 until_cb2 BattleMainCB2 9000 A
+0 until_cb2 BattleMainCB2 9000 A
+0 until_mem gBattlerControllerFuncs:4 HandleInputChooseAction 9000 A
+1 until_mem gBattlerControllerFuncs+8:4 HandleInputChooseAction 9000 A
+b wait 5
+b hex gCoopStartTimes 36
+b expect gBattlersCount 4

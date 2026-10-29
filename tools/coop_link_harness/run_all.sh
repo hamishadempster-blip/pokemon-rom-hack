@@ -316,7 +316,7 @@ fi
 run guide_team_select SAVE0="$lab0" SAVE1="$lab1"
 run catch_before_dex SAVE0="$lab0" SAVE1="$lab1"
 for s in story_consent story_beacon_off story_cancel story_unanswered story_simultaneous invite_expiry_clock \
-         prep_cancel prep_timeout prep_link_stall; do
+         prep_cancel prep_timeout prep_link_stall battle_visual_wild_double startup_timing_wild startup_timing_gym; do
 	run "$s" SAVE0="$lab0" SAVE1="$lab1"
 done
 # The same expiry by the wall clock while the harness runs faster than real

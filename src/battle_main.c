@@ -478,6 +478,8 @@ const u8 *const gStatusConditionStringsTable[][2] =
 
 void CB2_InitBattle(void)
 {
+    if (gBattleTypeFlags & BATTLE_TYPE_COOP)
+        Coop_NoteStartTime(COOP_START_INIT);
     if (!gTestRunnerEnabled)
         MoveSaveBlocks_ResetHeap();
     AllocateBattleResources();
@@ -1053,6 +1055,8 @@ static void CB2_HandleStartBattle(void)
             gPreBattleCallback1 = gMain.callback1;
             gMain.callback1 = BattleMainCB1;
             SetMainCallback2(BattleMainCB2);
+            if (gBattleTypeFlags & BATTLE_TYPE_COOP)
+                Coop_NoteStartTime(COOP_START_MAIN);
             if (gBattleTypeFlags & BATTLE_TYPE_LINK)
                 gBattleTypeFlags |= BATTLE_TYPE_LINK_IN_BATTLE;
         }
@@ -1388,6 +1392,8 @@ static void CB2_HandleStartMultiPartnerBattle(void)
             gPreBattleCallback1 = gMain.callback1;
             gMain.callback1 = BattleMainCB1;
             SetMainCallback2(BattleMainCB2);
+            if (gBattleTypeFlags & BATTLE_TYPE_COOP)
+                Coop_NoteStartTime(COOP_START_MAIN);
             if (gBattleTypeFlags & BATTLE_TYPE_LINK)
                 gBattleTypeFlags |= BATTLE_TYPE_LINK_IN_BATTLE;
         }
@@ -1770,6 +1776,8 @@ static void CB2_HandleStartMultiBattle(void)
             gPreBattleCallback1 = gMain.callback1;
             gMain.callback1 = BattleMainCB1;
             SetMainCallback2(BattleMainCB2);
+            if (gBattleTypeFlags & BATTLE_TYPE_COOP)
+                Coop_NoteStartTime(COOP_START_MAIN);
             if (gBattleTypeFlags & BATTLE_TYPE_LINK)
             {
                 TRAINER_BATTLE_PARAM.opponentA = TRAINER_LINK_OPPONENT;
@@ -2424,13 +2432,24 @@ u32 GetBattleWindowTemplatePixelWidth(u32 windowsType, u32 tableId)
 #define sBattler            data[0]
 #define sSpeciesId          data[2]
 
+// A wild double, including the co-op one (a link battle): the two wild
+// Pokemon slide in darkened together and light up together. With the link
+// flag WILD_DOUBLE_BATTLE is FALSE, so each started its own fade; the
+// second found the first still running and was dropped, and the wild
+// Pokemon on the left stayed dark for the whole battle on both screens
+// (0xC017013E).
+static bool32 IsWildDoubleIntro(void)
+{
+    return (gBattleTypeFlags & BATTLE_TYPE_DOUBLE) && !(gBattleTypeFlags & BATTLE_TYPE_TRAINER);
+}
+
 void SpriteCB_WildMon(struct Sprite *sprite)
 {
     sprite->callback = SpriteCB_MoveWildMonToRight;
     StartSpriteAnimIfDifferent(sprite, 0);
     if (B_FAST_INTRO_NO_SLIDE == FALSE && !gTestRunnerHeadless)
     {
-        if (WILD_DOUBLE_BATTLE)
+        if (IsWildDoubleIntro())
             BeginNormalPaletteFade((0x10000 << sprite->sBattler) | (0x10000 << GetPartnerBattler(sprite->sBattler)), 0, 10, 10, RGB(8, 8, 8));
         else
             BeginNormalPaletteFade((0x10000 << sprite->sBattler), 0, 10, 10, RGB(8, 8, 8));
@@ -2463,7 +2482,7 @@ static void SpriteCB_WildMonShowHealthbox(struct Sprite *sprite)
         StartSpriteAnimIfDifferent(sprite, 0);
         if (B_FAST_INTRO_NO_SLIDE == FALSE && !gTestRunnerHeadless)
         {
-            if (WILD_DOUBLE_BATTLE)
+            if (IsWildDoubleIntro())
                 BeginNormalPaletteFade((0x10000 << sprite->sBattler) | (0x10000 << GetPartnerBattler(sprite->sBattler)), 0, 10, 0, RGB(8, 8, 8));
             else
                 BeginNormalPaletteFade((0x10000 << sprite->sBattler), 0, 10, 0, RGB(8, 8, 8));

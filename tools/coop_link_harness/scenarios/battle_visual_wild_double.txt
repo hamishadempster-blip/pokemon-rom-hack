@@ -1,0 +1,52 @@
+# Battle visuals in a co-op wild double (0xC017013E): the two wild
+# Pokemon slide in darkened together and both light up. Before, the link
+# flag made each start its own fade, the second was dropped, and the wild
+# Pokemon on the left (battler 3) stayed dark the whole battle on both
+# screens (the dark Poochyena report). Lab saves, Route 101, Beacon ON.
+# Checked at the first action prompt on both games: the displayed (faded)
+# palettes of all four battlers equal their loaded colours.
+include wild_route101_start.inc
+0 write sWildEncountersDisabled 0
+0 pace_until_battle 9000
+0 write sWildEncountersDisabled 1
+0 until_cb2 BattleMainCB2 12000 A
+1 until_cb2 BattleMainCB2 12000 A
+0 until_mem gBattlerControllerFuncs:4 HandleInputChooseAction 9000 A
+1 until_mem gBattlerControllerFuncs+8:4 HandleInputChooseAction 9000 A
+b wait 30
+b expect gBattlersCount 4
+b shot prompt
+b expect_equal gPlttBufferFaded+0x200:4 gPlttBufferUnfaded+0x200
+b expect_equal gPlttBufferFaded+0x204:4 gPlttBufferUnfaded+0x204
+b expect_equal gPlttBufferFaded+0x208:4 gPlttBufferUnfaded+0x208
+b expect_equal gPlttBufferFaded+0x20c:4 gPlttBufferUnfaded+0x20c
+b expect_equal gPlttBufferFaded+0x210:4 gPlttBufferUnfaded+0x210
+b expect_equal gPlttBufferFaded+0x214:4 gPlttBufferUnfaded+0x214
+b expect_equal gPlttBufferFaded+0x218:4 gPlttBufferUnfaded+0x218
+b expect_equal gPlttBufferFaded+0x21c:4 gPlttBufferUnfaded+0x21c
+b expect_equal gPlttBufferFaded+0x220:4 gPlttBufferUnfaded+0x220
+b expect_equal gPlttBufferFaded+0x224:4 gPlttBufferUnfaded+0x224
+b expect_equal gPlttBufferFaded+0x228:4 gPlttBufferUnfaded+0x228
+b expect_equal gPlttBufferFaded+0x22c:4 gPlttBufferUnfaded+0x22c
+b expect_equal gPlttBufferFaded+0x230:4 gPlttBufferUnfaded+0x230
+b expect_equal gPlttBufferFaded+0x234:4 gPlttBufferUnfaded+0x234
+b expect_equal gPlttBufferFaded+0x238:4 gPlttBufferUnfaded+0x238
+b expect_equal gPlttBufferFaded+0x23c:4 gPlttBufferUnfaded+0x23c
+b expect_equal gPlttBufferFaded+0x240:4 gPlttBufferUnfaded+0x240
+b expect_equal gPlttBufferFaded+0x244:4 gPlttBufferUnfaded+0x244
+b expect_equal gPlttBufferFaded+0x248:4 gPlttBufferUnfaded+0x248
+b expect_equal gPlttBufferFaded+0x24c:4 gPlttBufferUnfaded+0x24c
+b expect_equal gPlttBufferFaded+0x250:4 gPlttBufferUnfaded+0x250
+b expect_equal gPlttBufferFaded+0x254:4 gPlttBufferUnfaded+0x254
+b expect_equal gPlttBufferFaded+0x258:4 gPlttBufferUnfaded+0x258
+b expect_equal gPlttBufferFaded+0x25c:4 gPlttBufferUnfaded+0x25c
+b expect_equal gPlttBufferFaded+0x260:4 gPlttBufferUnfaded+0x260
+b expect_equal gPlttBufferFaded+0x264:4 gPlttBufferUnfaded+0x264
+b expect_equal gPlttBufferFaded+0x268:4 gPlttBufferUnfaded+0x268
+b expect_equal gPlttBufferFaded+0x26c:4 gPlttBufferUnfaded+0x26c
+b expect_equal gPlttBufferFaded+0x270:4 gPlttBufferUnfaded+0x270
+b expect_equal gPlttBufferFaded+0x274:4 gPlttBufferUnfaded+0x274
+b expect_equal gPlttBufferFaded+0x278:4 gPlttBufferUnfaded+0x278
+b expect_equal gPlttBufferFaded+0x27c:4 gPlttBufferUnfaded+0x27c
+b mash_field 25000
+b expect coop.sLinkState 2

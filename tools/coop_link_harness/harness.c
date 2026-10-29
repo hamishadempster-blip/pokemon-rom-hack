@@ -1807,9 +1807,9 @@ static void frameCallback(struct mCoreThread* t) {
         case C_MIRROR: {
             // expect_mirror MINE THEIRS: a value on this game equals one on
             // the other game (use after a sync, at a quiet point).
-            struct Player* o = &P[1 - p->id];
+            struct Player* o = c->args[0] ? p : &P[1 - p->id];
             unsigned mine = rdN(p, c->addr, c->size), theirs = rdN(o, (unsigned)c->value, c->size);
-            if (mine != theirs) { out("[p%d] FAIL %s: this game %u, other game %u\n", p->id, c->text, mine, theirs); sFailures++; }
+            if (mine != theirs) { out("[p%d] FAIL %s: %u, %s %u\n", p->id, c->text, mine, c->args[0] ? "expected (same game)" : "other game", theirs); sFailures++; }
             else out("[p%d] ok %s (%u)\n", p->id, c->text, mine);
             advance = true;
             break;
@@ -4429,8 +4429,9 @@ static void loadScript(const char* path, int depth) {
 			c.frames = (int)symValue(d);
 			c.args[0] = n >= 6 ? (unsigned)strtoul(e, NULL, 0) : 0xFFFFFFFFu;
 			snprintf(c.text, sizeof(c.text), "%s in %s..%s%s%s", a, b, d, n >= 6 ? " mask " : "", n >= 6 ? e : "");
-		} else if (!strcmp(cmd, "expect_mirror")) {
-			// expect_mirror SYM[+off]:size SYM[+off]
+		} else if (!strcmp(cmd, "expect_mirror") || !strcmp(cmd, "expect_equal")) {
+			// expect_mirror SYM[+off]:size SYM[+off] (this game vs the other)
+			// expect_equal  SYM[+off]:size SYM[+off] (two places on this game)
 			char s1[96], s2[96]; unsigned o1 = 0, o2 = 0; int size = 1;
 			strncpy(s1, a, sizeof(s1) - 1); s1[sizeof(s1) - 1] = 0;
 			strncpy(s2, b, sizeof(s2) - 1); s2[sizeof(s2) - 1] = 0;
@@ -4442,6 +4443,7 @@ static void loadScript(const char* path, int depth) {
 			if ((plus = strchr(s2, '+'))) { o2 = strtoul(plus + 1, NULL, 0); *plus = 0; }
 			c.kind = C_MIRROR; c.size = size;
 			c.addr = symAddr(s1) + o1; c.value = symAddr(s2) + o2;
+			c.args[0] = !strcmp(cmd, "expect_equal");
 			snprintf(c.text, sizeof(c.text), "mirror %s ~ %s", a, b);
 		} else if (!strcmp(cmd, "expect_tint")) {
 			// expect_tint 1|0 [LABEL]: whether the shown map palettes (BG 2-6)

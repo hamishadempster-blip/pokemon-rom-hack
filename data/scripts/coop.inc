@@ -1448,13 +1448,9 @@ Coop_EventScript_JoinAskAnswer::
 	end
 
 Coop_Text_JoinAskWild:
-	.string "Your partner ran into a wild\n"
-	.string "{STR_VAR_1} nearby.\p"
-	.string "Join the battle?\n"
-	.string "(About 25 seconds to answer.)$"
+	.string "Your partner met a wild {STR_VAR_1}.\n"
+	.string "Join the battle? (25 seconds)$"
 
 Coop_Text_JoinAskTrainer:
-	.string "{STR_VAR_1} challenged your partner\n"
-	.string "nearby.\p"
-	.string "Join the battle?\n"
-	.string "(About 25 seconds to answer.)$"
+	.string "{STR_VAR_1} challenged your partner.\n"
+	.string "Join the battle? (25 seconds)$"
