@@ -278,7 +278,9 @@ b sync
 0 test_friendship 4 0
 0 test_data 0 dcsteps 127
 1 press LEFT 2
-0 press DOWN 20
+# (UP, onto Rosa's tile: the partner never blocks, while below Kai the
+# Route 117 girl wanders and can block the step; A then talked to her.)
+0 press UP 20
 0 until_cb2 CB2_EggHatch 900 A
 1 wait 30
 1 press A 2

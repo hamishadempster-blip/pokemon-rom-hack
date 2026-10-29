@@ -587,6 +587,15 @@ static void gameText(struct Player* p, unsigned addr, char* out, int max) {
 	out[n] = 0;
 }
 
+// A co-op battle's "Ready. Waiting for ... B: change your choice" note is up:
+// B there takes the choice back (the turn starts over), so the drivers that
+// close messages with B must not press it then.
+static bool coopStandby(struct Player* p) {
+	char t[48];
+	gameText(p, symAddr("gDisplayedStringBattle"), t, sizeof(t));
+	return !strncmp(t, "Ready. Waiting", 14);
+}
+
 // Species of each local party slot, decrypted (0 = empty).
 static void showPartySpecies(struct Player* p) {
 	char line[120]; int o = 0;
@@ -2484,7 +2493,7 @@ static void frameCallback(struct mCoreThread* t) {
                 }
             }
             if (atMenu) { keys = autoKeys(p, p->step); break; }
-            keys = (p->step % 24) < 2 ? 2 : 0;
+            keys = (p->step % 24) < 2 && !coopStandby(p) ? 2 : 0;
             break;
         }
         case C_HUNT: {
@@ -2605,7 +2614,7 @@ static void frameCallback(struct mCoreThread* t) {
                 if (!strcmp(fn, "HandleInputChooseMove") || !strcmp(fn, "HandleInputChooseTarget")) atMenu = 1;
             }
             if (atMenu) { keys = autoKeys(p, p->step); break; }
-            keys = (p->step % 24) < 2 ? 2 : 0;
+            keys = (p->step % 24) < 2 && !coopStandby(p) ? 2 : 0;
             break;
         }
         case C_GRIND: {
