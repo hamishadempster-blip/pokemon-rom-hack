@@ -255,6 +255,8 @@ struct CoopMoveSelection
     u8 validTargets[MAX_MON_MOVES];
     u8 absentBattlers;
     u8 partyIndexes[MAX_BATTLERS_COUNT];
+    u8 usableGimmick;   // the master's choice for this battler (Mega or none)
+    u8 gimmickUsed;     // this battler's trainer has already used it
     struct CoopMoveMon mons[MAX_BATTLERS_COUNT];
 };
 // transferBuffer is smaller than bufferA: respect the 256-byte send limit.

@@ -268,6 +268,8 @@ static EWRAM_DATA struct CoopInvite sGuestPairInvite = {0};
 // The partner's team key (src/coop_teams.c) from the invite this game joins,
 // or from the answer to this game's invite.
 static EWRAM_DATA u16 sRemoteTeamKey = 0;
+// Test visibility: Megas this game turned back after a co-op battle.
+EWRAM_DATA u8 gCoopMegaReverts = 0;
 // A joined wild fight starts once the question's script has ended: a wild
 // battle never resumes a script, so one left waiting would stay stuck.
 static EWRAM_DATA bool8 sJoinLaunchPending = FALSE;
@@ -3921,6 +3923,61 @@ void Coop_OnBattleLaunched(void)
     gCoopBattleLaunching = FALSE;
 }
 
+// The species a Mega form came from: the form of the same family whose own
+// Mega Evolution leads to it (Meowstic's female line has its own Mega).
+static u16 Coop_MegaBaseSpecies(u16 mega)
+{
+    const u16 *forms = gSpeciesInfo[mega].formSpeciesIdTable;
+    u32 i, j;
+
+    for (i = 0; forms != NULL && forms[i] != FORM_SPECIES_END; i++)
+    {
+        const struct FormChange *changes;
+
+        if (forms[i] == mega || gSpeciesInfo[forms[i]].isMegaEvolution)
+            continue;
+        changes = GetSpeciesFormChanges(forms[i]);
+        for (j = 0; changes != NULL && changes[j].method != FORM_CHANGE_TERMINATOR; j++)
+        {
+            if ((changes[j].method == FORM_CHANGE_BATTLE_MEGA_EVOLUTION_ITEM || changes[j].method == FORM_CHANGE_BATTLE_MEGA_EVOLUTION_MOVE)
+             && changes[j].targetSpecies == mega)
+                return forms[i];
+        }
+    }
+    return SPECIES_NONE;
+}
+
+// A co-op battle's guest runs no battle engine, so the stock end-of-battle
+// revert never reaches its own Pokemon: a Mega that the master's engine
+// wrote into this party is turned back here (the master reverts its own).
+// HP and everything else stay; Mega and base forms share base HP.
+static void Coop_RevertBattleMegas(void)
+{
+    u32 i;
+
+    for (i = 0; i < COOP_BATTLE_SLOTS; i++)
+    {
+        struct Pokemon *mon = &gParties[B_TRAINER_PLAYER][i];
+        u16 species = GetMonData(mon, MON_DATA_SPECIES);
+        u16 base;
+        u16 hp;
+
+        if (species == SPECIES_NONE || species >= NUM_SPECIES || !gSpeciesInfo[species].isMegaEvolution)
+            continue;
+        base = Coop_MegaBaseSpecies(species);
+        if (base == SPECIES_NONE)
+            continue;
+        hp = GetMonData(mon, MON_DATA_HP);
+        SetMonData(mon, MON_DATA_SPECIES, &base);
+        CalculateMonStats(mon);
+        if (hp > GetMonData(mon, MON_DATA_MAX_HP))
+            hp = GetMonData(mon, MON_DATA_MAX_HP);
+        SetMonData(mon, MON_DATA_HP, &hp);
+        if (gCoopMegaReverts < 0xFF)
+            gCoopMegaReverts++;
+    }
+}
+
 static void Coop_RestoreParty(bool8 aborted)
 {
     struct Pokemon arrivals[PARTY_SIZE - COOP_BATTLE_SLOTS];
@@ -3928,6 +3985,8 @@ static void Coop_RestoreParty(bool8 aborted)
 
     if (!sHasSnapshot)
         return;
+    if (!aborted)
+        Coop_RevertBattleMegas();
     if (aborted)
     {
         memset(sProgressLevels, 0, sizeof(sProgressLevels));

@@ -284,9 +284,27 @@ static inline u32 GetIndicatorSpriteId(u32 healthboxId)
     return gBattleStruct->gimmick.indicatorSpriteId[gSprites[healthboxId].hMain_Battler];
 }
 
-const u32 *GetIndicatorSpriteSrc(enum BattlerId battler)
+// The gimmick a healthbox shows. A co-op battle's guest runs no battle
+// engine, so its gimmick state stays empty: a Mega there is read from the
+// Pokemon the master's engine changed (its species is the Mega form).
+static enum Gimmick GetDisplayedGimmick(enum BattlerId battler)
 {
     enum Gimmick gimmick = GetActiveGimmick(battler);
+
+    if (gimmick == GIMMICK_NONE
+     && (gBattleTypeFlags & BATTLE_TYPE_COOP) && !(gBattleTypeFlags & BATTLE_TYPE_IS_MASTER))
+    {
+        enum Species species = GetMonData(GetBattlerMon(battler), MON_DATA_SPECIES);
+
+        if (species < NUM_SPECIES && gSpeciesInfo[species].isMegaEvolution)
+            gimmick = GIMMICK_MEGA;
+    }
+    return gimmick;
+}
+
+const u32 *GetIndicatorSpriteSrc(enum BattlerId battler)
+{
+    enum Gimmick gimmick = GetDisplayedGimmick(battler);
 
     if (IsBattlerPrimalReverted(battler))
     {
@@ -307,7 +325,7 @@ const u32 *GetIndicatorSpriteSrc(enum BattlerId battler)
 
 u32 GetIndicatorPalTag(enum BattlerId battler)
 {
-    enum Gimmick gimmick = GetActiveGimmick(battler);
+    enum Gimmick gimmick = GetDisplayedGimmick(battler);
     if (IsBattlerPrimalReverted(battler))
         return TAG_MISC_INDICATOR_PAL;
     else if (gGimmicksInfo[gimmick].indicatorPalTag != 0)
@@ -329,6 +347,10 @@ void UpdateIndicatorVisibilityAndType(u32 healthboxId, bool32 invisible)
 
     if (palTag != TAG_NONE)
     {
+        // The guest of a co-op battle runs no first-turn events, where the
+        // indicator palettes are loaded: load them on first use.
+        if (IndexOfSpritePaletteTag(palTag) == 0xFF)
+            LoadIndicatorSpritesGfx();
         sprite->oam.paletteNum = IndexOfSpritePaletteTag(palTag);
         sprite->invisible = invisible;
 

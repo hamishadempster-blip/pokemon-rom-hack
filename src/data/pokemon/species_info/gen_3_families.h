@@ -4652,7 +4652,7 @@ const struct SpeciesInfo gSpeciesInfoGen3[] =
 #if P_MEGA_EVOLUTIONS
     [SPECIES_SABLEYE_MEGA] =
     {
-        .baseHP        = 50,
+        .baseHP        = 70, // Battle Guide v2: the revamped base form's HP (Mega Evolution never changes HP; was 50)
         .baseAttack    = 85,
         .baseDefense   = 125,
         .baseSpeed     = 20,
@@ -4810,7 +4810,7 @@ const struct SpeciesInfo gSpeciesInfoGen3[] =
 #if P_MEGA_EVOLUTIONS
     [SPECIES_MAWILE_MEGA] =
     {
-        .baseHP        = 50,
+        .baseHP        = 65, // Battle Guide v2: the revamped base form's HP (Mega Evolution never changes HP; was 50)
         .baseAttack    = 105,
         .baseDefense   = 125,
         .baseSpeed     = 50,
@@ -9732,7 +9732,7 @@ const struct SpeciesInfo gSpeciesInfoGen3[] =
 #if P_MEGA_EVOLUTIONS
     [SPECIES_BANETTE_MEGA] =
     {
-        .baseHP        = 64,
+        .baseHP        = 74, // Battle Guide v2: the revamped base form's HP (Mega Evolution never changes HP; was 64)
         .baseAttack    = 165,
         .baseDefense   = 75,
         .baseSpeed     = 75,
@@ -10297,7 +10297,7 @@ const struct SpeciesInfo gSpeciesInfoGen3[] =
 #if P_GEN_9_MEGA_EVOLUTIONS
     [SPECIES_CHIMECHO_MEGA] =
     {
-        .baseHP        = 75,
+        .baseHP        = 85, // Battle Guide v2: the revamped base form's HP (Mega Evolution never changes HP; was 75)
         .baseAttack    = 50,
         .baseDefense   = 110,
         .baseSpeed     = 65,

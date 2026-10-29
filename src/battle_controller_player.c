@@ -2251,6 +2251,10 @@ void PlayerHandleChooseMove(enum BattlerId battler)
     {
         const struct CoopMoveSelection *selection = (const struct CoopMoveSelection *)&gBattleResources->bufferA[battler][4 + sizeof(struct ChooseMoveStruct)];
         gAbsentBattlerFlags = selection->absentBattlers;
+        // The guest runs no engine: what this battler may do this turn comes
+        // from the master. Only Mega Evolution can be offered.
+        gBattleStruct->gimmick.usableGimmick[battler] = selection->usableGimmick == GIMMICK_MEGA ? GIMMICK_MEGA : GIMMICK_NONE;
+        gBattleStruct->gimmick.activated[battler][GIMMICK_MEGA] = selection->gimmickUsed != 0;
         for (u32 i = 0; i < MAX_BATTLERS_COUNT; i++)
         {
             gBattlerPartyIndexes[i] = selection->partyIndexes[i];

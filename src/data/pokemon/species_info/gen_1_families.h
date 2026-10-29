@@ -1710,7 +1710,7 @@ const struct SpeciesInfo gSpeciesInfoGen1[] =
 #if P_MEGA_EVOLUTIONS
     [SPECIES_BEEDRILL_MEGA] =
     {
-        .baseHP        = 65,
+        .baseHP        = 70, // Battle Guide v2: the revamped base form's HP (Mega Evolution never changes HP; was 65)
         .baseAttack    = 150,
         .baseDefense   = 40,
         .baseSpeed     = 145,

@@ -8644,16 +8644,19 @@ bool32 DoesSpeciesUseHoldItemToChangeForm(enum Species species, enum Item heldIt
 
 bool32 CanMegaEvolve(enum BattlerId battler)
 {
-#if COOP_GIMMICKS_OFF
-    return FALSE;
-#endif
+    // Mega Evolution is on (Battle Guide v2); Z-Moves, Dynamax and
+    // Terastallization stay off (COOP_GIMMICKS_OFF).
     enum HoldEffect holdEffect = GetBattlerHoldEffectIgnoreNegation(battler);
     enum BattlerPosition position = GetBattlerPosition(battler);
 
-    // Check if Player has a Mega Ring.
+    // Check if Player has a Mega Ring (shown as the Mega Bracelet).
     if (!TESTING
         && (position == B_POSITION_PLAYER_LEFT || (!(gBattleTypeFlags & BATTLE_TYPE_MULTI) && position == B_POSITION_PLAYER_RIGHT))
         && !CheckBagHasItem(ITEM_MEGA_RING, 1))
+        return FALSE;
+    // Co-op: the partner's battler needs the partner's own bracelet (told by
+    // the invite or its answer, src/coop_teams.c), not this player's.
+    if (!TESTING && (gBattleTypeFlags & BATTLE_TYPE_COOP) && position == B_POSITION_PLAYER_RIGHT && !gCoopPartnerHasBracelet)
         return FALSE;
 
     // Check if Trainer has already Mega Evolved.

@@ -1200,6 +1200,11 @@ void BtlController_EmitChooseMove(enum BattlerId battler, u32 bufferId, bool8 is
                 if (CanTargetBattler(battler, target, movePPData->moves[slot]))
                     selection->validTargets[slot] |= 1u << target;
         }
+        // Mega Evolution: the guest's controller offers the trigger only for
+        // what the master's engine allows this turn (its own bracelet, the
+        // held stone, the trainer's one Mega not used yet).
+        selection->usableGimmick = gBattleStruct->gimmick.usableGimmick[battler] == GIMMICK_MEGA ? GIMMICK_MEGA : GIMMICK_NONE;
+        selection->gimmickUsed = HasTrainerUsedGimmick(battler, GIMMICK_MEGA);
         size += sizeof(*selection);
     }
     PrepareBufferDataTransfer(battler, bufferId, gBattleResources->transferBuffer, size);

@@ -13,6 +13,7 @@
 #include "battle_hold_effects.h"
 #include "battle_interface.h"
 #include "battle_main.h"
+#include "coop_teams.h"
 #include "battle_message.h"
 #include "battle_pyramid.h"
 #include "battle_scripts.h"
@@ -4227,8 +4228,16 @@ static void HandleTurnActionSelectionState(void)
                                 gProtectStructs[battler].laggingTail = TRUE;
 
                             // Check to see if any gimmicks need to be prepared.
-                            if (gBattleResources->bufferB[battler][2] & RET_GIMMICK)
+                            // Co-op: a request is taken only when this turn
+                            // offers one and the trainer has not used it
+                            // (a stale or repeated request is ignored).
+                            if ((gBattleResources->bufferB[battler][2] & RET_GIMMICK)
+                             && (!(gBattleTypeFlags & BATTLE_TYPE_COOP)
+                              || (gBattleStruct->gimmick.usableGimmick[battler] != GIMMICK_NONE
+                               && !HasTrainerUsedGimmick(battler, gBattleStruct->gimmick.usableGimmick[battler]))))
                                 gBattleStruct->gimmick.toActivate |= 1u << battler;
+                            else if ((gBattleResources->bufferB[battler][2] & RET_GIMMICK) && gCoopMegaRejected < 0xFF)
+                                gCoopMegaRejected++;
 
                             // Max Move check
                             if (GetActiveGimmick(battler) == GIMMICK_DYNAMAX || IsGimmickSelected(battler, GIMMICK_DYNAMAX))
