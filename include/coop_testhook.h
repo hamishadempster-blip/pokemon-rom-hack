@@ -12,7 +12,8 @@ enum {
     COOP_TEST_GIVE_ITEM,  // item, count
     COOP_TEST_SEND_REPLY, // kind, seq: a co-op reply block on the link (also in battle)
     COOP_TEST_SET_DATA,   // slot, friendship (test_friendship)
-    COOP_TEST_GET_DATA,   // slot, field (COOP_TEST_FIELD_*), arg, source (0 party, 1 Day Care): value
+    COOP_TEST_GET_DATA,   // slot, field (COOP_TEST_FIELD_*), arg, source (0 party, 1 Day Care, 2/3 the opposing trainers' parties): value
+    COOP_TEST_TEAM_FOR,   // trainer id, team key: the party id Coop_TeamPartyIdForKey picks (read-only)
 };
 
 struct CoopTestMailbox

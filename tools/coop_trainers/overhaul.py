@@ -514,10 +514,14 @@ def main():
             continue
         scope[tid] = maps
 
+    # Fights the Battle Guide v2 specifies belong to guide.py: never rebuilt
+    # here, so rerunning this script cannot bring back an older team.
+    import guide
+    owned = guide.owned_ids()
     plans, report = {}, []
     out = []
     for tid, text in split_entries(current):
-        if tid not in scope:
+        if tid not in scope or tid in owned:
             out.append(text)
             continue
         head, mons = parse_entry(base_entries[tid])
@@ -534,7 +538,7 @@ def main():
         f.write('trainer\tclass\tmaps\tstage\tbefore\tafter\n')
         for r in report:
             f.write('%s\t%s\t%s\t%d\t%s\t%s\n' % (r[0], r[1], ' '.join(r[2]) or '(rematch)', r[3], r[4], r[5]))
-    print('%d ordinary trainers rebuilt' % len(report))
+    print('%d ordinary trainers rebuilt (%d guide fights left to guide.py)' % (len(report), len(owned & set(scope))))
 
 
 if __name__ == '__main__':

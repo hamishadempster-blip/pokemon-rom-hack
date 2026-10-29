@@ -3,37 +3,21 @@
 #include "event_data.h"
 #include "caps.h"
 #include "coop.h"
+#include "coop_teams.h"
 #include "pokemon.h"
 
 
 u32 GetCurrentLevelCap(void)
 {
-    static const u32 sLevelCapFlagMap[][2] =
-    {
-        {FLAG_BADGE01_GET, 16},
-        {FLAG_BADGE02_GET, 22},
-        {FLAG_BADGE03_GET, 28},
-        {FLAG_BADGE04_GET, 34},
-        {FLAG_BADGE05_GET, 40},
-        {FLAG_BADGE06_GET, 46},
-        {FLAG_BADGE07_GET, 52},
-        {FLAG_BADGE08_GET, 58},
-        {FLAG_IS_CHAMPION, 66},
-    };
-
-    u32 i;
-
     if (!Coop_IsLevelCapOn())
         return MAX_LEVEL;
 
     if (B_LEVEL_CAP_TYPE == LEVEL_CAP_FLAG_LIST)
     {
-        for (i = 0; i < ARRAY_COUNT(sLevelCapFlagMap); i++)
-        {
-            if (!FlagGet(sLevelCapFlagMap[i][0]))
-                return sLevelCapFlagMap[i][1];
-        }
-        return 75;
+        // Battle Guide v2: 18 before the first badge, then 24/30/36/42/48/54/60
+        // after badges 1-7, 66 after the eighth, 76 from League admission
+        // (FLAG_ENTERED_ELITE_FOUR, kept after a loss), 80 as Champion.
+        return Coop_TierLevelCap(Coop_ProgressTier());
     }
     else if (B_LEVEL_CAP_TYPE == LEVEL_CAP_VARIABLE)
     {

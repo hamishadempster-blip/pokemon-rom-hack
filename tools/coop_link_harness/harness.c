@@ -3374,13 +3374,13 @@ static void frameCallback(struct mCoreThread* t) {
 				p->core->busWrite16(p->core, mb + 4, c->value);
 				p->core->busWrite16(p->core, mb + 22, 0);
 				p->core->busWrite32(p->core, mb, 0x7E57C0DEu);
-				if (c->value != 7) out(c->value == 5 ? "[f%06d p%d FIXTURE] %s %u %u %u %u %u %u %u\n" : "[f%06d p%d TEST HELPER] %s %u %u %u %u %u %u %u\n", p->frame, p->id, c->text,
+				if (c->value != 7 && c->value != 8) out(c->value == 5 ? "[f%06d p%d FIXTURE] %s %u %u %u %u %u %u %u\n" : "[f%06d p%d TEST HELPER] %s %u %u %u %u %u %u %u\n", p->frame, p->id, c->text,
 				    c->args[0], c->args[1], c->args[2], c->args[3], c->args[4], c->args[5], c->args[6]);
 			}
 			if (rd32(p, mb) == 0) {
 				unsigned r = rd16(p, mb + 22);
 				if (r != 1) { out("[p%d] FAIL %s refused (result %u)\n", p->id, c->text, r); sFailures++; }
-				else if (c->value == 7) {
+				else if (c->value == 7 || c->value == 8) {
 					unsigned v = rd32(p, mb + 24);
 					if (!c->size) out("[p%d] %s = %u (0x%x)\n", p->id, c->text, v, v);
 					else if (c->size == 3) {
@@ -3960,7 +3960,9 @@ static void loadScript(const char* path, int depth) {
         	if (c.args[1] == 0xFFFF) { fprintf(stderr, "expect_mon: unknown field %s\n", field); exit(2); }
         	c.args[2] = strtoul(arg, NULL, 0);
         	c.args[3] = !strcmp(src, "daycare") || !strcmp(arg, "daycare");
-        	if (!strcmp(arg, "daycare")) c.args[2] = 0;
+        	if (!strcmp(src, "enemyA") || !strcmp(arg, "enemyA")) c.args[3] = 2;
+        	if (!strcmp(src, "enemyB") || !strcmp(arg, "enemyB")) c.args[3] = 3;
+        	if (!strcmp(arg, "daycare") || !strcmp(arg, "enemyA") || !strcmp(arg, "enemyB")) c.args[2] = 0;
         	c.size = strcmp(val, "-") != 0;
         	c.addr = strtoul(val, NULL, 0);
         	// VALUE LO..HI: a range (packed in args[6..7], unused by the hook)
@@ -3968,7 +3970,19 @@ static void loadScript(const char* path, int depth) {
         	// VALUE @K: the first time, remember it as note K; later, the same
         	// value is expected (identity kept through a deposit, a reload).
         	if (val[0] == '@') { c.size = 3; c.addr = atoi(val + 1) & 7; }
-        	snprintf(c.text, sizeof(c.text), "expect_mon %s %s%s", slot, field, c.args[3] ? " daycare" : "");
+        	snprintf(c.text, sizeof(c.text), "expect_mon %s %s%s", slot, field, c.args[3] == 1 ? " daycare" : c.args[3] == 2 ? " enemyA" : c.args[3] == 3 ? " enemyB" : "");
+        	c.frames = 600;
+        } else if (!strcmp(cmd, "expect_team")) {
+        	// expect_team TRAINER KEY PARTY: the party id the ROM picks for a
+        	// trainer id under a team key (src/coop_teams.c). Read-only.
+        	c.kind = C_TEST_HOOK;
+        	c.value = 8;
+        	memset(c.args, 0, sizeof(c.args));
+        	c.args[0] = strtoul(a, NULL, 0);
+        	c.args[1] = strtoul(b, NULL, 0);
+        	c.size = 1;
+        	c.addr = strtoul(d, NULL, 0);
+        	snprintf(c.text, sizeof(c.text), "expect_team %s key %s", a, b);
         	c.frames = 600;
         } else if (!strcmp(cmd, "watch")) {
         	c.kind = C_WATCH;

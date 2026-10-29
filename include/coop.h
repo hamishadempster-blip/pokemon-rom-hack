@@ -404,4 +404,6 @@ void CoopExchange_ResetEvs(void);
 u16 CoopExchange_CheckHyperTrain(void);
 void CoopExchange_HyperTrain(void);
 
+extern const u16 gCoopCaseStarters[3][2];
+
 #endif // GUARD_COOP_H

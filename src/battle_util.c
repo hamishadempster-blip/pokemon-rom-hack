@@ -1,6 +1,8 @@
 #include "global.h"
 #include "battle.h"
 #include "coop.h"
+#include "caps.h"
+#include "coop_teams.h"
 #include "battle_anim.h"
 #include "battle_anim_scripts.h"
 #include "battle_arena.h"
@@ -5745,6 +5747,9 @@ enum Obedience GetAttackerObedienceForAction(void)
         obedienceLevel = 70;
     if (FlagGet(FLAG_BADGE07_GET)) // Mind Badge
         obedienceLevel = 80;
+    // Co-op level caps: a Pokemon at or below the current cap always obeys.
+    if (Coop_IsLevelCapOn() && GetCurrentLevelCap() > obedienceLevel && GetCurrentLevelCap() < MAX_LEVEL)
+        obedienceLevel = GetCurrentLevelCap();
 
     if (B_OBEDIENCE_MECHANICS >= GEN_8
      && !IsOtherTrainer(gBattleMons[gBattlerAttacker].otId, gBattleMons[gBattlerAttacker].otName))

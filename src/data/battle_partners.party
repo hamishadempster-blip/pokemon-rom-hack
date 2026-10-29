@@ -11,34 +11,37 @@ Class: Rival
 Pic: Steven
 Gender: Male
 Music: Male
-AI: Basic Trainer
+AI: Check Bad Move / Try To Faint / Check Viability / HP Aware / Smart Switching / Try To 2HKO / PP Stall Prevention / Weigh Ability Prediction
 
-Metang
-Brave Nature
-Level: 42
-IVs: 31 HP / 31 Atk / 31 Def / 31 SpA / 31 SpD / 31 Spe
-EVs: 252 Atk / 252 Def / 6 SpA
-- Light Screen
+Skarmory (M)
+Ability: Sturdy
+Level: 55
+Nature: Impish
+IVs: 28 HP / 28 Atk / 28 Def / 28 SpA / 28 SpD / 28 Spe
+EVs: 160 HP / 160 Def
+- Drill Peck
+- Iron Head
+- Tailwind
+- Protect
+
+Claydol
+Ability: Levitate
+Level: 56
+Nature: Modest
+IVs: 28 HP / 28 Atk / 28 Def / 28 SpA / 28 SpD / 28 Spe
+EVs: 160 HP / 160 SpA
+- Earth Power
 - Psychic
-- Reflect
-- Metal Claw
-
-Skarmory
-Impish Nature
-Level: 43
-IVs: 31 HP / 31 Atk / 31 Def / 31 SpA / 31 SpD / 31 Spe
-EVs: 252 HP / 6 SpA / 252 SpD
-- Toxic
-- Aerial Ace
+- Ice Beam
 - Protect
-- Steel Wing
 
-Aggron
-Adamant Nature
-Level: 44
-IVs: 31 HP / 31 Atk / 31 Def / 31 SpA / 31 SpD / 31 Spe
-EVs: 252 Atk / 252 SpA / 6 SpD
-- Thunder
-- Protect
-- Solar Beam
-- Dragon Claw
+Metagross @ Sitrus Berry
+Ability: Clear Body
+Level: 58
+Nature: Adamant
+IVs: 28 HP / 28 Atk / 28 Def / 28 SpA / 28 SpD / 28 Spe
+EVs: 160 HP / 160 Atk
+- Meteor Mash
+- Zen Headbutt
+- Hammer Arm
+- Rock Slide

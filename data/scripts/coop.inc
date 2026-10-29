@@ -600,15 +600,15 @@ Coop_Text_ChooseCase:
 	.string "then each of you takes a POKéMON.$"
 
 Coop_Text_CaseCinder:
-	.string "CINDER: TORCHIC and HOUNDOUR.\n"
+	.string "CINDER: TORCHIC and FENNEKIN.\n"
 	.string "Take that case?$"
 
 Coop_Text_CaseTide:
-	.string "TIDE: MUDKIP and WINGULL.\n"
+	.string "TIDE: MUDKIP and TOTODILE.\n"
 	.string "Take that case?$"
 
 Coop_Text_CaseThorn:
-	.string "THORN: TREECKO and SHROOMISH.\n"
+	.string "THORN: TREECKO and CHIKORITA.\n"
 	.string "Take that case?$"
 
 Coop_Text_TakeFirst:

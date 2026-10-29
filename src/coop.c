@@ -1,5 +1,6 @@
 #include "global.h"
 #include "coop.h"
+#include "coop_teams.h"
 #include "coop_npc.h"
 #include "coop_protocol.h"
 #include "battle.h"
@@ -108,6 +109,7 @@ struct CoopInvite
     u16 aux;
     u16 seq;
     u16 checksum;
+    u16 teamKey;   // Coop_TeamKeyLocal of the sender (invite and every answer)
 };
 
 enum
@@ -263,6 +265,9 @@ static EWRAM_DATA u16 sPairEngaged = 0;
 static EWRAM_DATA bool8 sGuestPairPending = FALSE;
 static EWRAM_DATA u16 sGuestPairTimer = 0;
 static EWRAM_DATA struct CoopInvite sGuestPairInvite = {0};
+// The partner's team key (src/coop_teams.c) from the invite this game joins,
+// or from the answer to this game's invite.
+static EWRAM_DATA u16 sRemoteTeamKey = 0;
 // A joined wild fight starts once the question's script has ended: a wild
 // battle never resumes a script, so one left waiting would stay stuck.
 static EWRAM_DATA bool8 sJoinLaunchPending = FALSE;
@@ -1540,7 +1545,8 @@ bool8 Coop_TryParseHeldKeys(u32 playerId)
 
 static u16 Coop_InviteChecksum(const struct CoopInvite *invite)
 {
-    return (u16)(invite->magic ^ invite->kind ^ ((u16)invite->badge << 8) ^ invite->trainerA ^ invite->trainerB ^ invite->aux ^ invite->seq ^ COOP_INVITE_MAGIC);
+    return (u16)(invite->magic ^ invite->kind ^ ((u16)invite->badge << 8) ^ invite->trainerA ^ invite->trainerB ^ invite->aux ^ invite->seq
+               ^ (u16)(invite->teamKey * 7u) ^ COOP_INVITE_MAGIC);
 }
 
 static void Coop_SendInvite(void)
@@ -1567,6 +1573,7 @@ static void Coop_QueueInvite(u8 kind, u16 trainerA, u16 trainerB, u8 badge, u16 
     sInvite.trainerB = trainerB;
     sInvite.aux = aux;
     sInvite.seq = ++sInviteSeq;
+    sInvite.teamKey = Coop_TeamKeyLocal();
     sInviteRetryDelay = 0;
     sRefusal = COOP_REFUSE_NONE;
     sWaitingAck = TRUE;
@@ -1600,6 +1607,13 @@ static bool8 Coop_IsTwinTrialTrainer(u16 trainerId)
 
 static void Coop_LaunchBattle(bool8 isGuest)
 {
+    // Both games pick the same parties: the lower progress tier of the two
+    // and the inviter's starter case (Battle Guide v2 variants).
+    if (isGuest)
+        Coop_SetBattleTeamKey(Coop_TeamKeyMerge(sRemoteTeamKey, Coop_TeamKeyLocal()));
+    else
+        Coop_SetBattleTeamKey(Coop_TeamKeyMerge(Coop_TeamKeyLocal(), sRemoteTeamKey));
+    gCoopPartnerHasBracelet = (sRemoteTeamKey & COOP_TEAMKEY_VALID) && (sRemoteTeamKey & COOP_TEAMKEY_BRACELET);
     if (!isGuest)
         Coop_HideCallingMessage();
     sWaitingAck = FALSE;
@@ -1621,7 +1635,7 @@ static void Coop_LaunchBattle(bool8 isGuest)
         {
             sBirchBag = FALSE;
             sResumeScript = FALSE;
-            CreateScriptedDoubleWildMon(SPECIES_POOCHYENA, 2, ITEM_NONE, SPECIES_POOCHYENA, 2, ITEM_NONE);
+            CreateScriptedDoubleWildMon(SPECIES_POOCHYENA, 2, ITEM_NONE, SPECIES_POOCHYENA, 2, ITEM_ORAN_BERRY);
         }
         BattleSetup_StartCoopWildBattle();
         return;
@@ -1678,6 +1692,7 @@ static void Coop_JoinSameTrainer(const struct CoopInvite *invite)
     sResumeScript = FALSE;
     TRAINER_BATTLE_PARAM.opponentA = invite->trainerA;
     TRAINER_BATTLE_PARAM.opponentB = invite->trainerB;
+    sRemoteTeamKey = invite->teamKey;
     Coop_SendReply(COOP_KIND_ACK, invite->seq);
     Coop_LaunchBattle(TRUE);
 }
@@ -1737,6 +1752,7 @@ static bool8 Coop_TrySendReply(u8 kind, u16 seq, u8 reason)
     reply.kind = kind;
     reply.seq = seq;
     reply.badge = reason;
+    reply.teamKey = Coop_TeamKeyLocal();
     reply.checksum = Coop_InviteChecksum(&reply);
     return SendBlock(BitmaskAllOtherLinkPlayers(), &reply, sizeof(reply));
 }
@@ -1778,7 +1794,10 @@ static void Coop_HandleInvite(u32 playerId, const struct CoopInvite *invite)
     if (invite->kind == COOP_KIND_ACK)
     {
         if (sWaitingAck && invite->seq == sInvite.seq && Coop_SessionActive() && sPartnerValid)
+        {
+            sRemoteTeamKey = invite->teamKey;
             Coop_LaunchBattle(FALSE);
+        }
         return;
     }
 
@@ -1884,7 +1903,7 @@ static void Coop_HandleInvite(u32 playerId, const struct CoopInvite *invite)
             return;
         }
         Coop_GiveRescueStarter(invite->badge, FALSE);
-        CreateScriptedDoubleWildMon(SPECIES_POOCHYENA, 2, ITEM_NONE, SPECIES_POOCHYENA, 2, ITEM_NONE);
+        CreateScriptedDoubleWildMon(SPECIES_POOCHYENA, 2, ITEM_NONE, SPECIES_POOCHYENA, 2, ITEM_ORAN_BERRY);
         sBattleKind = COOP_KIND_RESCUE;
         sBattleBadge = 0;
         sBattleFlag = 0;
@@ -1892,6 +1911,7 @@ static void Coop_HandleInvite(u32 playerId, const struct CoopInvite *invite)
         sRivalFightStage = 0xFF;
         TRAINER_BATTLE_PARAM.opponentA = 0;
         TRAINER_BATTLE_PARAM.opponentB = 0;
+        sRemoteTeamKey = invite->teamKey;
         Coop_SendReply(COOP_KIND_ACK, invite->seq);
         Coop_LaunchBattle(TRUE);
         return;
@@ -1918,6 +1938,7 @@ static void Coop_HandleInvite(u32 playerId, const struct CoopInvite *invite)
             sRivalFightStage = 0xFF;
             TRAINER_BATTLE_PARAM.opponentA = 0;
             TRAINER_BATTLE_PARAM.opponentB = 0;
+            sRemoteTeamKey = invite->teamKey;
             Coop_SendReply(COOP_KIND_ACK, invite->seq);
             Coop_LaunchBattle(TRUE);
             return;
@@ -2005,6 +2026,7 @@ static void Coop_HandleInvite(u32 playerId, const struct CoopInvite *invite)
     sRivalFightStage = invite->kind == COOP_KIND_RIVAL ? (u8)invite->badge : 0xFF;
     TRAINER_BATTLE_PARAM.opponentA = invite->trainerA;
     TRAINER_BATTLE_PARAM.opponentB = invite->trainerB;
+    sRemoteTeamKey = invite->teamKey;
 
     Coop_SendReply(COOP_KIND_ACK, invite->seq);
     Coop_LaunchBattle(TRUE);
@@ -2248,7 +2270,10 @@ static void Coop_PollRescue(void)
             return;
         }
         if (sPartner.request == COOP_REQ_RESCUE && sPartner.slot == sSlot)
+        {
+            sRemoteTeamKey = 0;
             Coop_LaunchBattle(FALSE);
+        }
         return;
     }
 
@@ -2278,6 +2303,7 @@ static void Coop_PollRescue(void)
     sRivalFightStage = 0xFF;
     sBirchBag = FALSE;
     sRescueEcho = 0;
+    sRemoteTeamKey = 0;
     Coop_LaunchBattle(TRUE);
 }
 
@@ -2293,11 +2319,6 @@ static void Coop_PollScriptWaits(void)
     else if (sWaitKind == COOP_REQ_CLAIM && sPartnerValid && sPartner.request == COOP_REQ_CLAIM)
     {
         struct CoopSave *save = CoopSave();
-        static const u16 species[3][2] = {
-            { SPECIES_TREECKO, SPECIES_SHROOMISH },
-            { SPECIES_TORCHIC, SPECIES_HOUNDOUR },
-            { SPECIES_MUDKIP, SPECIES_WINGULL },
-        };
         u8 mine = sClaim;
         u8 theirs = sPartner.slot;
         u8 index = mine;
@@ -2308,7 +2329,7 @@ static void Coop_PollScriptWaits(void)
         if (caseId > 2)
             caseId = sProposedCase <= 2 ? sProposedCase : 0;
         ZeroPlayerPartyMons();
-        ScriptGiveMon(species[caseId][index & 1], 5, ITEM_NONE);
+        ScriptGiveMon(gCoopCaseStarters[caseId][index & 1], 5, ITEM_NONE);
         if (save != NULL)
             save->rivalId = CoopProtocol_RivalForSlot(index & 1);
         VarSet(VAR_STARTER_MON, caseId);
@@ -3715,10 +3736,14 @@ u16 Coop_ProposeCase(void)
     return TRUE;
 }
 
-static const u16 sRescueSpecies[3][2] = {
-    { SPECIES_TREECKO, SPECIES_SHROOMISH },
-    { SPECIES_TORCHIC, SPECIES_HOUNDOUR },
-    { SPECIES_MUDKIP, SPECIES_WINGULL },
+// The duo starters of each case (Battle Guide v2), case player first.
+// Case order is grass, fire, water (VAR_STARTER_MON). Saves made before
+// 0xC017013D keep the Pokemon they were given (then Shroomish, Houndour,
+// Wingull); only new rescues use this table.
+const u16 gCoopCaseStarters[3][2] = {
+    { SPECIES_TREECKO, SPECIES_CHIKORITA },
+    { SPECIES_TORCHIC, SPECIES_FENNEKIN },
+    { SPECIES_MUDKIP, SPECIES_TOTODILE },
 };
 
 // The player who opened the bag gets the Pokémon they highlighted.
@@ -3746,7 +3771,7 @@ static void Coop_GiveRescueStarter(u8 caseId, bool8 opener)
     index = opener ? 0 : 1;
     if (save != NULL)
         save->rivalId = CoopProtocol_RivalForSlot(index);
-    ScriptGiveMon(sRescueSpecies[caseId][index], 5, ITEM_NONE);
+    ScriptGiveMon(gCoopCaseStarters[caseId][index], 5, ITEM_NONE);
 }
 
 u16 Coop_StartRescueBattle(void)
@@ -3767,7 +3792,7 @@ u16 Coop_StartRescueBattle(void)
         return FALSE;
     }
     Coop_GiveRescueStarter((u8)caseId, TRUE);
-    CreateScriptedDoubleWildMon(SPECIES_POOCHYENA, 2, ITEM_NONE, SPECIES_POOCHYENA, 2, ITEM_NONE);
+    CreateScriptedDoubleWildMon(SPECIES_POOCHYENA, 2, ITEM_NONE, SPECIES_POOCHYENA, 2, ITEM_ORAN_BERRY);
     sRescueDone = FALSE;
     sRescueResult = 1;
     sRescueField = COOP_RESCUE_RETURN_NONE;
@@ -4424,7 +4449,7 @@ u16 Coop_PrepareRivalJoin(void)
 }
 
 // The rival who answers this player's case. Set when the starter is handed
-// out; older saves work it out from the party once.
+// out (from the role: the case player faces Soren, the companion Mira).
 // 0 before the Route 103 fight, then one more for each rival fight won on
 // this save (Rustboro, Route 110, Route 119, Lilycove), up to 5.
 u16 Coop_TwinLineStage(void)
@@ -4439,28 +4464,17 @@ u16 Coop_TwinLineStage(void)
 static u8 Coop_RivalId(void)
 {
     struct CoopSave *save = CoopSave();
-    u8 i, slot;
 
     if (save == NULL)
         return COOP_RIVAL_NONE;
-    if (save->rivalId != COOP_RIVAL_NONE || save->caseId > 2)
-        return save->rivalId;
-    for (i = 0; i < PARTY_SIZE; i++)
-    {
-        u16 species = GetMonData(&gParties[B_TRAINER_PLAYER][i], MON_DATA_SPECIES);
-
-        while (species != SPECIES_NONE && GetSpeciesPreEvolution(species) != SPECIES_NONE)
-            species = GetSpeciesPreEvolution(species);
-        for (slot = 0; slot < 2; slot++)
-        {
-            if (species != SPECIES_NONE && species == sRescueSpecies[save->caseId][slot])
-            {
-                save->rivalId = CoopProtocol_RivalForSlot(slot);
-                return save->rivalId;
-            }
-        }
-    }
-    return COOP_RIVAL_NONE;
+    // Never from the party, its species, the player's gender or which
+    // starter is owned: boxing, evolving or trading a starter does not
+    // change the rivalry. A save that has a case but never recorded a role
+    // (none since the role was saved at the rescue) is the case player,
+    // once, and that is kept.
+    if (save->rivalId == COOP_RIVAL_NONE && save->caseId <= 2 && FlagGet(FLAG_SYS_POKEMON_GET))
+        save->rivalId = COOP_RIVAL_SOREN;
+    return save->rivalId;
 }
 
 // Route 103: the twin who answers this player's case speaks up before the
@@ -4470,11 +4484,6 @@ static u8 Coop_RivalId(void)
 // introduces themselves instead.
 u16 Coop_BufferRivalTaunt(void)
 {
-    // Rival type order is fire, water, grass; case order is grass, fire, water.
-    static const u16 sRivalLead[2][3] = {
-        { SPECIES_TORCHIC, SPECIES_MUDKIP, SPECIES_TREECKO },
-        { SPECIES_HOUNDOUR, SPECIES_WINGULL, SPECIES_SHROOMISH },
-    };
     struct CoopSave *save = CoopSave();
     u8 rival = Coop_RivalId();
     u8 home = gSaveBlock2Ptr->playerGender == MALE ? COOP_RIVAL_MIRA : COOP_RIVAL_SOREN;
@@ -4482,8 +4491,10 @@ u16 Coop_BufferRivalTaunt(void)
 
     if (save == NULL || rival == COOP_RIVAL_NONE || save->caseId > 2)
         return 0;
-    type = save->caseId;
-    StringCopy(gStringVar1, GetSpeciesName(sRivalLead[rival == COOP_RIVAL_SOREN ? 0 : 1][type]));
+    // The counter case: grass faces fire, fire faces water, water faces
+    // grass. Soren leads its case starter, Mira its companion.
+    type = (save->caseId + 1) % 3;
+    StringCopy(gStringVar1, GetSpeciesName(gCoopCaseStarters[type][rival == COOP_RIVAL_SOREN ? 0 : 1]));
     GetMonData(&gParties[B_TRAINER_PLAYER][0], MON_DATA_NICKNAME, gStringVar2);
     StringGet_Nickname(gStringVar2);
     return rival + (rival == home ? 2 : 0);
@@ -5334,6 +5345,7 @@ u16 Coop_PairGuestAnswer(void)
     sBattleFlag = 0;
     sLegendKind = kind == COOP_KIND_LEGEND ? (u8)sGuestPairInvite.aux : 0;
     sRivalFightStage = 0xFF;
+    sRemoteTeamKey = sGuestPairInvite.teamKey;
     if (kind == COOP_KIND_LEGEND)
     {
         TRAINER_BATTLE_PARAM.opponentA = 0;

@@ -1,0 +1,41 @@
+# Battle Guide v2 team selection (src/coop_teams.c, src/data/coop_team_variants.h),
+# read through the ROM's own Coop_TeamPartyIdForKey with explicit team keys
+# (0x80 valid | progress tier | starter case << 4). Read-only test helper
+# (expect_team); no gameplay. Any checkpoint works.
+include continue.inc
+b mash_field 200 B
+# Lilycove rivals: before badge six the level-46 roster, from six the main one.
+0 expect_team 891 0x85 927
+0 expect_team 891 0x86 891
+0 expect_team 891 0x8A 891
+# The solo slot (BRENDAN_LILYCOVE_TORCHIC: Soren, Fire case) picks the same.
+0 expect_team 663 0x85 927
+0 expect_team 663 0x86 663
+0 expect_team 665 0x84 929
+# Magma Hideout and Aqua Hideout early arrivals.
+0 expect_team 732 0x85 932
+0 expect_team 732 0x86 732
+0 expect_team 601 0x85 933
+0 expect_team 30 0x85 934
+0 expect_team 30 0x86 30
+# Exhibition by saved case: grass (0) faces Fire, fire (1) Water, water (2) Grass.
+0 expect_team 634 0x8A 937
+0 expect_team 634 0x9A 634
+0 expect_team 634 0xAA 938
+0 expect_team 633 0x8A 935
+0 expect_team 633 0xAA 936
+# Gabby and Ty: the repeat count's tier falls back to what the progress allows.
+0 expect_team 56 0x88 56
+0 expect_team 56 0x87 55
+0 expect_team 56 0x85 53
+0 expect_team 56 0x82 51
+0 expect_team 52 0x84 52
+0 expect_team 52 0x83 51
+# Stock gym rematch tiers never field their old teams.
+0 expect_team 771 0x8A 896
+0 expect_team 794 0x8A 908
+# An ordinary trainer's rematch tier stays within the cap (Calvin 5 at 3 badges: tier 3).
+0 expect_team 331 0x83 329
+0 expect_team 331 0x8A 331
+# Untouched ids stay themselves.
+0 expect_team 265 0x81 265

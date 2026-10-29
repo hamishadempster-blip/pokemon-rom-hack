@@ -3,6 +3,7 @@
 #include "main.h"
 #include "battle.h"
 #include "coop.h"
+#include "coop_teams.h"
 #include "battle_frontier.h"
 #include "battle_pike.h"
 #include "battle_pyramid.h"
@@ -2429,9 +2430,14 @@ void CreateNPCTrainerPartyFromTrainer(struct Pokemon *party, const struct Traine
 
 static void CreateNPCTrainerParty(struct Pokemon *party, u16 trainerNum)
 {
+    // Battle Guide v2: the party this id fields for these players' progress
+    // and starter case (src/coop_teams.c). The id itself (flag, name, intro)
+    // is unchanged.
+    trainerNum = Coop_TeamPartyId(trainerNum);
     if (!GetTrainerStructFromId(trainerNum)->overrideTrainer)
     {
         CreateNPCTrainerPartyFromTrainer(party, GetTrainerStructFromId(trainerNum));
+        Coop_ClampTeamLevels(party, trainerNum);
         return;
     }
 

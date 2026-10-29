@@ -9,6 +9,8 @@
 #include "global.h"
 #include "coop_testhook.h"
 #include "coop.h"
+#include "coop_teams.h"
+#include "battle.h"
 #include "item.h"
 #include "main.h"
 #include "random.h"
@@ -133,6 +135,14 @@ static bool8 TestHook_GetData(void)
             return FALSE;
         box = &gSaveBlock1Ptr->daycare.mons[slot].mon;
     }
+    else if (gCoopTestMailbox.arg[3] == 2 || gCoopTestMailbox.arg[3] == 3)
+    {
+        // The opposing trainers' parties as built for the battle (read-only).
+        if (slot >= PARTY_SIZE)
+            return FALSE;
+        mon = &gParties[gCoopTestMailbox.arg[3] == 2 ? B_TRAINER_OPPONENT_A : B_TRAINER_OPPONENT_B][slot];
+        box = &mon->box;
+    }
     else
     {
         if (slot >= PARTY_SIZE)
@@ -199,6 +209,22 @@ void CoopTest_Poll(void)
         if (!Coop_TestSendReply(gCoopTestMailbox.arg[0], gCoopTestMailbox.arg[1]))
             return;
         gCoopTestMailbox.result = 1;
+        gCoopTestMailbox.magic = 0;
+        return;
+    }
+    // Read-only questions are answered in battles too.
+    if (gCoopTestMailbox.cmd == COOP_TEST_GET_DATA || gCoopTestMailbox.cmd == COOP_TEST_TEAM_FOR)
+    {
+        if (gCoopTestMailbox.cmd == COOP_TEST_TEAM_FOR)
+        {
+            gCoopTestMailbox.value = Coop_TeamPartyIdForKey(gCoopTestMailbox.arg[0], gCoopTestMailbox.arg[1]);
+            ok = TRUE;
+        }
+        else
+        {
+            ok = TestHook_GetData();
+        }
+        gCoopTestMailbox.result = ok ? 1 : 2;
         gCoopTestMailbox.magic = 0;
         return;
     }

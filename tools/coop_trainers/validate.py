@@ -90,9 +90,10 @@ partners = set()
 for f in glob.glob(os.path.join(ROOT, 'data/maps/*/scripts.inc')):
     partners |= set(re.findall(r'setvar VAR_0x8005, (TRAINER_\w+)', open(f).read()))
 
-GYM_ACE = {'RustboroCity_Gym': 16, 'DewfordTown_Gym': 22, 'MauvilleCity_Gym': 28, 'LavaridgeTown_Gym_1F': 34,
-           'LavaridgeTown_Gym_B1F': 34, 'PetalburgCity_Gym': 40, 'FortreeCity_Gym': 46, 'MossdeepCity_Gym': 52,
-           'SootopolisCity_Gym_B1F': 58, 'SootopolisCity_Gym_1F': 58}
+# Leader aces of Battle Guide v2 (guide.py): each gym's trainers stay below.
+GYM_ACE = {'RustboroCity_Gym': 18, 'DewfordTown_Gym': 24, 'MauvilleCity_Gym': 30, 'LavaridgeTown_Gym_1F': 36,
+           'LavaridgeTown_Gym_B1F': 36, 'PetalburgCity_Gym': 42, 'FortreeCity_Gym': 48, 'MossdeepCity_Gym': 54,
+           'SootopolisCity_Gym_B1F': 60, 'SootopolisCity_Gym_1F': 60}
 ADDED_STAGE = {}
 for theme, lst in O.ADDED.items():
     for sp, st in lst:

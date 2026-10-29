@@ -1,6 +1,11 @@
 #!/usr/bin/env python3
 """Rivals, bosses, Elite Four, and champions for build 0xC017012F.
 
+SUPERSEDED (build 0xC017013D): every team below is now specified by the
+Hoenn Co-op Battle Guide v2 (tools/coop_trainers/guide.py). main() refuses
+to run so these older teams cannot be written back; the tables stay for
+history (docs/COOP_BOSSES_F.tsv).
+
 Run after overhaul.py. Rewrites only the entries named here; idempotent.
 
 - Solo rival teams: the stock BRENDAN_*/MAY_* slots are what a game that is
@@ -105,6 +110,7 @@ def set_head(head, key, value):
 
 
 def main():
+    raise SystemExit('bosses.py is superseded by guide.py (Battle Guide v2); run tools/coop_trainers/guide.py')
     text = open(O.PARTY, encoding='utf-8').read()
     entries = O.split_entries(text)
     index = {t: i for i, (t, _) in enumerate(entries) if t}

@@ -123,14 +123,10 @@ static const u16 sStarterMon[STARTER_MON_COUNT] =
     WATER_STARTER,
 };
 
-// The second Pokémon in each case. Grass brings Shroomish, fire brings
-// Houndour, water brings Wingull.
-static const u16 sStarterCompanion[STARTER_MON_COUNT] =
-{
-    SPECIES_SHROOMISH,
-    SPECIES_HOUNDOUR,
-    SPECIES_WINGULL,
-};
+// The second Pokémon in each case (Battle Guide v2 duo starters): grass
+// brings Chikorita, fire Fennekin, water Totodile. One table for the
+// chooser, the rescue, the lab and the rivals: gCoopCaseStarters (coop.c).
+#define sStarterCompanion(i) gCoopCaseStarters[i][1]
 
 static const u8 sText_WithCompanion[] = _("with {STR_VAR_1}");
 static const u8 sText_TakeStarter[] = _("Take {STR_VAR_1}?\nYour partner gets {STR_VAR_2}.");
@@ -548,7 +544,7 @@ static void Task_AskConfirmStarter(u8 taskId)
 
     PlayCry_Normal(GetStarterPokemon(selection), 0);
     StringCopy(gStringVar1, GetSpeciesName(GetStarterPokemon(selection)));
-    StringCopy(gStringVar2, GetSpeciesName(sStarterCompanion[selection]));
+    StringCopy(gStringVar2, GetSpeciesName(sStarterCompanion(selection)));
     StringExpandPlaceholders(text, sText_TakeStarter);
     FillWindowPixelBuffer(0, PIXEL_FILL(1));
     AddTextPrinterParameterized(0, FONT_NORMAL, text, 0, 1, 0, NULL);
@@ -597,7 +593,7 @@ static void CreateStarterPokemonLabel(u8 selection)
     u8 labelLeft, labelRight, labelTop, labelBottom;
 
     enum Species species = GetStarterPokemon(selection);
-    enum Species companion = sStarterCompanion[selection];
+    enum Species companion = sStarterCompanion(selection);
     u8 withText[24];
 
     speciesName = GetSpeciesName(species);

@@ -935,12 +935,27 @@
 #define TRAINER_BT_ROUND2_FROST          923
 #define TRAINER_BT_REPEAT_LUMEN          924
 #define TRAINER_BT_REPEAT_UMBRA          925
+// Battle Guide v2 variants: parties only, picked by Coop_TeamPartyId (the
+// base id keeps the trainer flag). Generated list: tools/coop_trainers/guide.py.
+#define TRAINER_SOREN_LILYCOVE_FIRE_EARLY    926
+#define TRAINER_SOREN_LILYCOVE_WATER_EARLY   927
+#define TRAINER_SOREN_LILYCOVE_GRASS_EARLY   928
+#define TRAINER_MIRA_LILYCOVE_FIRE_EARLY     929
+#define TRAINER_MIRA_LILYCOVE_WATER_EARLY    930
+#define TRAINER_MIRA_LILYCOVE_GRASS_EARLY    931
+#define TRAINER_TABITHA_MAGMA_HIDEOUT_EARLY  932
+#define TRAINER_MAXIE_MAGMA_HIDEOUT_EARLY    933
+#define TRAINER_MATT_EARLY                   934
+#define TRAINER_TWIN_EXH_SOREN_FIRE          935
+#define TRAINER_TWIN_EXH_SOREN_GRASS         936
+#define TRAINER_TWIN_EXH_MIRA_FIRE           937
+#define TRAINER_TWIN_EXH_MIRA_GRASS          938
 
 // NOTE: Because each Trainer uses a flag to determine when they are defeated, there is only space for 9 additional trainers before trainer flag space overflows
 //       More space can be made by shifting flags around in constants/flags.h or changing how trainer flags are handled
 //       MAX_TRAINERS_COUNT can be increased but will take up additional saveblock space
 
-#define TRAINERS_COUNT_EMERALD     926
+#define TRAINERS_COUNT_EMERALD     939
 #define MAX_TRAINERS_COUNT_EMERALD 864
 
 #if IS_FRLG
