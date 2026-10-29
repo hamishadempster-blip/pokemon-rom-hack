@@ -75,6 +75,7 @@ struct Player {
     int learnPhase, learnTarget; unsigned learnStart, partyBackFrame;
     int lastSent; unsigned lastSentFrame;   // the last replacement chosen (both battlers down)
     unsigned strongBattlers;
+    unsigned weakFoes;
     unsigned offField;
     unsigned noPath;      // walk: consecutive field frames with no path
     unsigned char partyNote[600];
@@ -1544,6 +1545,15 @@ static void frameCallback(struct mCoreThread* t) {
 	// battlers are 1 and 3; co-op battles put both humans on 0 and 2.
 	unsigned bflags = rd32(p, sBattleFlags);
 	int own = ((bflags & 2) && !(bflags & 0x40) && !(bflags & 4)) ? 1 : 0;
+	// FIXTURE: weak_foes 1 - on the battle engine's game, the opposing
+	// battlers (1 and 3) are held at 1 HP, so any hit knocks them out (a
+	// flow test's win, not balance).
+	if (p->weakFoes && (rd8(p, sMain + 0x439) & 2)) {
+		unsigned bm = symAddr("gBattleMons"), bmSize = symValue("harness.battleMonSize"), bmHp = symValue("harness.battleMonHp");
+		for (int b = 1; b < 4; b += 2)
+			if (rd16(p, bm + b * bmSize) && rd16(p, bm + b * bmSize + bmHp) > 1)
+				p->core->busWrite16(p->core, bm + b * bmSize + bmHp, 1);
+	}
 	if (p->strongBattlers && (rd8(p, sMain + 0x439) & 2)) {
 		unsigned mons = symAddr("gBattleMons");
 		for (int b = own; b < 4; b += 2)
@@ -1815,7 +1825,8 @@ static void frameCallback(struct mCoreThread* t) {
             break;
         }
         case C_STRONG:
-            p->strongBattlers = c->value;
+            if (c->size) p->weakFoes = c->value;
+            else p->strongBattlers = c->value;
             advance = true;
             break;
         case C_PARTY_SLOT: {
@@ -2227,6 +2238,20 @@ static void frameCallback(struct mCoreThread* t) {
         }
         case C_WRITEP: {
             unsigned addr = rd32(p, c->addr) + c->frames;
+            if (c->args[1] == 3) {
+                // expectp_same: the same value through the same pointer on
+                // the other game (read byte by byte: may be unaligned).
+                struct Player* o = &P[1 - p->id];
+                unsigned oaddr = rd32(o, c->addr) + c->frames, mine = 0, theirs = 0;
+                for (int k = c->size - 1; k >= 0; k--) {
+                    mine = (mine << 8) | rd8(p, addr + k);
+                    theirs = (theirs << 8) | rd8(o, oaddr + k);
+                }
+                if (mine != theirs) { out("[p%d] FAIL *%s+%u = %u, other game %u\n", p->id, c->text, c->frames, mine, theirs); sFailures++; }
+                else out("[p%d] ok *%s+%u same on both (%u)\n", p->id, c->text, c->frames, mine);
+                advance = true;
+                break;
+            }
             if (c->args[1] == 2) {
                 // expectp: a value read through the pointer.
                 unsigned v = rdN(p, addr, c->size);
@@ -3172,7 +3197,12 @@ static void frameCallback(struct mCoreThread* t) {
             break;
         }
         case C_NOTE_TEXT:
-            if (c->size) { snprintf(p->noteText, sizeof(p->noteText), "%s", c->text + 16); p->noteSeen = 0; }
+            if (c->size == 1) { snprintf(p->noteText, sizeof(p->noteText), "%s", c->text + 16); p->noteSeen = 0; }
+            else if (c->size == 2) {
+                if (!p->noteSeen) out("[p%d] ok never shown \"%s\"\n", p->id, p->noteText);
+                else { out("[p%d] FAIL \"%s\" was shown\n", p->id, p->noteText); sFailures++; }
+                p->noteText[0] = 0; p->noteSeen = 0;
+            }
             else {
                 if (p->noteSeen) out("[p%d] ok noted \"%s\"\n", p->id, p->noteText);
                 else { out("[p%d] FAIL \"%s\" was never in a message\n", p->id, p->noteText); sFailures++; }
@@ -3975,9 +4005,10 @@ static void loadScript(const char* path, int depth) {
         	c.value = strtoul(until ? b : d, NULL, 0);
         	c.frames = until ? (n >= 5 ? atoi(d) : 3000) : (n >= 6 ? atoi(e) : 3000);
         	snprintf(c.text, sizeof(c.text), "%s %s %s %s", cmd, a, b, until ? "" : d);
-        } else if (!strcmp(cmd, "strong_battlers")) {
+        } else if (!strcmp(cmd, "strong_battlers") || !strcmp(cmd, "weak_foes")) {
         	c.kind = C_STRONG;
         	c.value = strtoul(a, NULL, 0);
+        	c.size = !strcmp(cmd, "weak_foes");
         } else if (!strcmp(cmd, "smart_moves")) {
         	c.kind = C_SMART;
         	c.value = strtoul(a, NULL, 0);
@@ -4320,13 +4351,14 @@ static void loadScript(const char* path, int depth) {
             c.kind = C_EXPECT_CB2;
             c.addr = symAddr(a) & ~1u;
             snprintf(c.text, sizeof(c.text), "%s", a);
-        } else if (!strcmp(cmd, "note_text") || !strcmp(cmd, "expect_noted")) {
+        } else if (!strcmp(cmd, "note_text") || !strcmp(cmd, "expect_noted") || !strcmp(cmd, "expect_not_noted")) {
             // note_text Some_words: from now on, watch every frame's
-            // gStringVar4 for them; expect_noted: they were seen.
+            // gStringVar4 for them; expect_noted: they were seen;
+            // expect_not_noted: they were not.
             c.kind = C_NOTE_TEXT;
-            c.size = !strcmp(cmd, "note_text");
+            c.size = !strcmp(cmd, "note_text") ? 1 : !strcmp(cmd, "expect_not_noted") ? 2 : 0;
             snprintf(c.text, sizeof(c.text), "%s", cmd);
-            snprintf(c.text + 16, sizeof(c.text) - 16, "%s", c.size ? a : "");
+            snprintf(c.text + 16, sizeof(c.text) - 16, "%s", c.size == 1 ? a : "");
             for (char* q = c.text + 16; *q; q++) if (*q == '_') *q = ' ';
         } else if (!strcmp(cmd, "until_field_text")) {
             // until_field_text Some_words_here [timeout]: taps A meanwhile
@@ -4467,7 +4499,7 @@ static void loadScript(const char* path, int depth) {
 			// differ from the unfaded ones, i.e. carry the time-of-day tint.
 			c.kind = C_TINT; c.value = strtoul(a, NULL, 0);
 			strncpy(c.text, n >= 3 ? b : "", sizeof(c.text) - 1);
-		} else if (!strcmp(cmd, "writep_other") || !strcmp(cmd, "expectp")) {
+		} else if (!strcmp(cmd, "writep_other") || !strcmp(cmd, "expectp") || !strcmp(cmd, "expectp_same")) {
 			// FIXTURE writep_other PTRSYM+off:size SRCPTRSYM+off: write through
 			// a pointer a value read through a pointer on the OTHER game
 			// (e.g. the partner's trainer id). expectp PTRSYM+off:size VALUE:
@@ -4479,7 +4511,9 @@ static void loadScript(const char* path, int depth) {
 			char* plus = strchr(sym, '+');
 			if (plus) { off = strtoul(plus + 1, NULL, 0); *plus = 0; }
 			c.kind = C_WRITEP; c.addr = symAddr(sym); c.frames = off; c.size = size;
-			if (!strcmp(cmd, "expectp")) {
+			if (!strcmp(cmd, "expectp_same")) {
+				c.args[1] = 3;
+			} else if (!strcmp(cmd, "expectp")) {
 				c.args[1] = 2; c.value = symValue(b);
 			} else {
 				strncpy(src, b, sizeof(src) - 1); src[sizeof(src) - 1] = 0;

@@ -341,6 +341,14 @@ struct CoopSave
     u8 questJoint[4];              // quest bits found while linked with them
     u8 questJointGates;            // shrine gates opened while linked with them
     u8 questJointBreakers;         // breaker count last shared with them
+    // Duo Frontier runs (src/coop_frontier.c), continued: duoSeed and
+    // duoPaidRound above are unused (the seed comes from duoRunId).
+    u16 duoPaid;                   // battles of the run already paid in BP
+    u8 duoOppLevel;                // the opponents' level (50 in LV. 50)
+    u8 duoSymbols;                 // duo milestone bits (not the solo Symbols)
+    u32 duoTeamPid[3];             // this player's run team (personalities)
+    u16 duoBestOpen[7];            // best duo streak per facility, OPEN LEVEL
+                                   // (duoBest: LV. 50)
 };
 
 struct SaveBlock3

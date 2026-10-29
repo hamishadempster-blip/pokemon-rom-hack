@@ -1,0 +1,64 @@
+# Optional content (build 0xC017013E): the CABLE CAR and the S.S. TIDAL
+# while linked. j68 saves (both champions), linked. FIXTURES: fixture_warp
+# into the Route 112 cable car station (Kai) and Lilycove's harbor (Rosa);
+# no random wild battles.
+# Checks:
+# - Kai rides the cable car up (its full-screen ride): he arrives at the Mt.
+#   Chimney station; the link stays up; Rosa's game is unaffected;
+# - Kai rides back down: Route 112 station;
+# - Rosa boards the S.S. TIDAL in Lilycove (ticket shown; this save's only
+#   destination is SLATEPORT: its Battle Frontier route is not open): she
+#   is in the ship's corridor for the trip; the link stays up; Kai's game is
+#   unaffected.
+include continue.inc
+include relink.inc
+b expect coop.sLinkState 2
+b no_wild 1
+0 fixture_warp 19 0 6 7
+1 fixture_warp 13 10 8 11
+b until_field 3000
+b sync
+0 press UP 2
+0 wait 20
+0 press A 2
+0 until_field_text ready_to_go_up 3000
+0 wait 90
+0 press A 2
+0 wait 90
+0 press A 2
+0 until_map 19 1 12000
+0 until_field 3000
+0 shot kai-summit
+0 expect_map 19 1
+b expect coop.sLinkState 2
+1 expect_map 13 10
+0 walk 6 7 600
+0 press UP 2
+0 wait 20
+0 press A 2
+0 until_field_text ready_to_go_down 3000
+0 wait 90
+0 press A 2
+0 wait 90
+0 press A 2
+0 until_map 19 0 12000
+0 until_field 3000
+0 expect_map 19 0
+0 shot kai-down
+b expect coop.sLinkState 2
+# Rosa: the ferry.
+1 press UP 2
+1 wait 20
+1 press A 2
+1 until_task Task_HandleMultichoiceInput 4000 A
+1 wait 30
+1 shot rosa-ferry-menu
+1 press UP 2
+1 wait 20
+1 press A 2
+1 mash_field 15000
+1 until_field 3000
+1 expect_map 25 41
+1 shot rosa-on-board
+b expect coop.sLinkState 2
+0 expect_map 19 0

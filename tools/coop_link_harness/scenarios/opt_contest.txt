@@ -1,0 +1,30 @@
+# Optional content (build 0xC017013E): a POKeMON CONTEST while linked.
+# j68 saves (champions), linked. FIXTURES: fixture_warp in front of the
+# Lilycove contest receptionist (Kai) and outside in Lilycove (Rosa); no
+# random wild battles. Driver: A through the whole contest (first category,
+# first rank, lead Pokemon, first move each turn).
+# Checks: Kai enters, the contest runs (the hall, the four appeal turns,
+# the results) and he is back on the field with control; the link stays
+# up (or comes back) and Rosa's game is unaffected.
+include continue.inc
+include relink.inc
+b expect coop.sLinkState 2
+b no_wild 1
+0 fixture_warp 13 4 14 3
+1 fixture_warp 0 5 27 10
+b until_field 3000
+b sync
+0 press UP 2
+0 wait 20
+0 press A 2
+0 wait 60
+0 shot contest-desk
+0 mash_field 60000
+0 until_field 3000
+0 dump after-contest
+0 expect_map 13 4
+0 shot after-contest
+1 dump rosa
+1 expect_map 0 5
+b wait 300
+b expect coop.sLinkState 2

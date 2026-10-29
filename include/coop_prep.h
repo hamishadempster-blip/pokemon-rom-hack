@@ -54,5 +54,6 @@ extern u8 gCoopPrepPartnerPhase;
 extern u8 gCoopPrepOrder[3];
 extern u8 gCoopPrepApplied;
 extern u8 gCoopPrepMaxEntries;
+extern bool8 gCoopPrepDuo;
 
 #endif // GUARD_COOP_PREP_H

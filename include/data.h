@@ -276,10 +276,20 @@ static inline u16 GetPartnerIdFromTrainerId(u16 trainerId)
     return (trainerId - TRAINER_PARTNER(PARTNER_NONE));
 }
 
+const struct Trainer *CoopDuo_TrainerStruct(u16 trainerId);
+
 static inline const struct Trainer *GetTrainerStructFromId(u16 trainerId)
 {
     if (gIsDebugBattle) return GetDebugAiTrainer();
     enum DifficultyLevel difficulty;
+
+    // Duo Frontier opponents are generated per battle (src/coop_frontier.c).
+    if (trainerId == TRAINER_DUO_A || trainerId == TRAINER_DUO_B)
+    {
+        const struct Trainer *duo = CoopDuo_TrainerStruct(trainerId);
+        if (duo != NULL)
+            return duo;
+    }
 
     if (IsPartnerTrainerId(trainerId))
     {

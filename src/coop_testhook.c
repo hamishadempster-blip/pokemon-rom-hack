@@ -260,11 +260,11 @@ void CoopTest_Poll(void)
         }
         else if (gCoopTestMailbox.arg[2] == 2)
         {
-            // test_data: arg 3 = 1 current HP (a hurt Pokemon), 2 the
-            // evolution tracker (moves used, as counted in battle).
+            // test_data: arg 3 = 1 current HP (a hurt Pokemon; 0 a fainted
+            // one), 2 the evolution tracker (moves used, as counted in battle).
             struct Pokemon *mon = &gPlayerParty[gCoopTestMailbox.arg[0]];
             u32 v = gCoopTestMailbox.arg[1];
-            if (gCoopTestMailbox.arg[3] == 1 && v >= 1 && v <= GetMonData(mon, MON_DATA_MAX_HP))
+            if (gCoopTestMailbox.arg[3] == 1 && v <= GetMonData(mon, MON_DATA_MAX_HP))
             {
                 SetMonData(mon, MON_DATA_HP, &v);
                 ok = TRUE;

@@ -811,3 +811,12 @@ gSpecials::
 	def_special CoopExchange_ResetEvs
 	def_special CoopExchange_CheckHyperTrain
 	def_special CoopExchange_HyperTrain
+	def_special Coop_StartDuoBattle, 0, 1
+	def_special CoopDuo_DeskCheck
+	def_special CoopDuo_BufferStatus
+	def_special CoopDuo_PrepareInvite
+	def_special CoopDuo_LastOutcome
+	def_special CoopDuo_BufferRefusal
+	def_special CoopDuo_Retire
+	def_special CoopDuo_BufferRecords
+	def_special CoopDuo_SaveNow

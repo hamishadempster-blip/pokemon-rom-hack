@@ -352,6 +352,9 @@ details in `<name>.visual.txt`).
 | `writep PTRSYM+off:size VALUE` | Write through a pointer. |
 | `writep_other PTRSYM+off:size SRCPTRSYM+off` | FIXTURE: write through a pointer a value read (byte by byte) through a pointer on the OTHER game, e.g. the partner's trainer id at `gSaveBlock2Ptr+10`. |
 | `expectp PTRSYM+off:size VALUE` | Check a value read through a pointer (e.g. a `struct CoopSave` field in SaveBlock3). |
+| `expectp_same PTRSYM+off:size` | The value read through the same pointer is the same on both games (e.g. the duo run id). |
+| `weak_foes 1\|0` | FIXTURE: on this game (use it on the battle engine's, player 0), the opposing battlers (1 and 3) are held at 1 HP in battle: any hit knocks them out (a flow test's win, not balance). |
+| `expect_not_noted` | After `note_text WORDS`: those words were NOT in any message since. |
 | `fixture_nick SLOT NAME` | FIXTURE: a nickname for this player's party slot (letters, digits, `_` for a space, 9 at most). Names only; stats untouched. |
 | `until_field_text WORDS [timeout]` | Tap A every 24 frames until a field message containing WORDS (`_` for spaces) is expanded into `gStringVar4`. |
 
@@ -509,6 +512,16 @@ Build 0xC017013E scenarios:
 | `appearance_menu` | lab | CO-OP menu APPEARANCE opens the outfit list, unlinked and linked; the partner sees the change |
 | `relink_policy_setup` → `relink_policy` → `relink_policy_reload` | seg6 | Relink ownership policy: progress made unlinked (a crate found alone; FIXTURE: a solo badge and rival stage) stays on its save; joint outcomes recorded with this same partner by trainer id (FIXTURE: a joint badge, rival stage and crate whose message was lost) come back once; a joint badge recorded with another partner does not; checked after linking, after a map change, after a power cycle and a second link (nothing restored twice) |
 | `continue_quiet.inc` | — | CONTINUE without tapping A in the field (continue.inc's A mash can talk to whoever the save faces) |
+| `duo_tower_first` | j68 | DUO TOWER: Kai at the DUO DESK (LV. 50), Rosa says YES; both default teams have SHROOMISH, both screens say so and nothing starts; Rosa changes her team; battle 1 (FIXTURE weak_foes) against two generated Tower trainers, identical on both games; the same run at 1 win on both saves; real parties byte for byte, money and BP unchanged; NO to battle 2 |
+| `duo_tower_set` → `duo_tower_set_reload` | duo_tower_first | FIXTURE run at 6 wins: CONTINUE offers READY/CANCEL and the run's team; battle 7 pays 3 BP once on each save, best streak 7; battle 8 pays nothing; after a power cycle battle 9 is lost (FIXTURE strong_battlers 1): the run ends on both, no white-out, record 8, BP and parties unchanged |
+| `duo_tower_abort` | duo_tower_first | KIND recovery: link error during battle 2: nothing won or lost, parties byte for byte, run still at 1; CONTINUE fights battle 2 again (2 wins on both) |
+| `duo_tower_behind` | duo_tower_first | One save behind (FIXTURE): Rosa behind - Kai is told her battle and goes back; Kai behind - Rosa's save goes back at the launch; both end at the same battle, no BP change |
+| `duo_tower_partners` | duo_tower_first | A run belongs to one partner (FIXTURE: Rosa's run with another trainer id): refused with a message; Rosa retires it at the desk; then "no such DUO run" |
+| `duo_desks` | j68 | The six other DUO DESKS say their duo mode is not open; the Tower desk unlinked asks for a partner; the stock singles counter still opens its menu |
+| `story_not_ready` | lab | Regression (S2 script fall-through): no Pokemon able to fight gives "Heal one first" and never "The link dropped", for the talker and for the asked partner |
+| `opt_escape_dig` | j68 | ESCAPE ROPE (a reusable key item since Gen 8) and DIG out of Granite Cave while linked; the other player unaffected; link up |
+| `opt_travel` | j68 | Cable car up and down (Kai) and boarding the S.S. TIDAL in Lilycove (Rosa; this save's route is to Slateport) while linked; link up; the other game unaffected |
+| `opt_contest` | j68 | A whole POKeMON CONTEST (Lilycove, A through it) while linked: the hall, the appeals, the results, back in the lobby; link up; the other game unaffected |
 | `move_inspector` | lab | L in the move menu: category, PWR ("var." when it depends), ACC ("sure"), who the move hits, then the description (screens) |
 | `prep_cancel` | lab | Team screen: READY then B, partner READY: nothing starts; CANCEL tells both; asking again works |
 | `prep_timeout` | lab | Nobody finishes the team screen: closes after ~2 min of clock, nothing starts |

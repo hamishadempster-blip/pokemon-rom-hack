@@ -1,0 +1,50 @@
+# Shared story fight with no Pokemon able to fight (build 0xC017013E
+# regression: since S2 the "not ready" note ran on into the "link dropped"
+# text). Lab saves, linked, Beacon ON. FIXTURES: fixture_warp into the
+# Rustboro Gym in front of Roxanne (Kai) and beside the leaders (Rosa);
+# party HP set to 0 with test_data.
+# 1. Kai's only Pokemon has fainted: talking to Roxanne says "None of your
+#    POKeMON can fight right now. Heal one first." and nothing else; no
+#    battle; Rosa is not asked.
+# 2. Kai healed, Rosa's has fainted: Kai talks to Roxanne; Rosa's game says
+#    the same note to her (not "the link dropped") and Kai is told Rosa has
+#    no POKeMON that can battle; nothing started.
+include beacon_battle.txt
+b mash_field 2000 B
+b write sWildEncountersDisabled 1
+0 fixture_warp 11 3 5 3
+1 fixture_warp 11 3 3 4
+b until_field 3000
+b sync
+b wait 40
+0 test_data 0 hp 0
+0 note_text Heal_one_first
+0 press UP 2
+0 wait 20
+0 press A 2
+0 until_field_text Heal_one_first 3000
+0 shot kai-not-ready
+0 expect_noted
+0 note_text The_link_dropped
+0 mash_field 2000 B
+0 wait 120
+0 expect_not_noted
+b expect coop.sInBattle 0
+1 expect coop.sGuestPairPending 0
+0 test_heal
+b sync
+1 test_data 0 hp 0
+0 note_text no_POKeMON
+0 press A 2
+1 until_field_text Heal_one_first 4000
+1 shot rosa-not-ready
+1 note_text The_link_dropped
+1 mash_field 2000 B
+1 wait 120
+1 expect_not_noted
+0 until_field_text no_POKeMON 4000
+0 shot kai-told-partner
+0 expect_noted
+0 mash_field 2000 B
+b expect coop.sInBattle 0
+b expect_flag 0x867 0

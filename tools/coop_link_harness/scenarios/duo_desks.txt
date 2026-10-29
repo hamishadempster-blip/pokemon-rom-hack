@@ -1,0 +1,88 @@
+# Duo Frontier desks (build 0xC017013E): every Battle Frontier lobby has a
+# DUO DESK. Only the DUO TOWER is open; the six others say their duo mode is
+# not open in this version (and point to the usual counter). j68 saves, not
+# linked. FIXTURE: fixture_warp in front of each desk.
+# Also: the stock single-player Battle Tower counter still opens its own
+# menu (the solo challenge is untouched).
+include continue.inc
+b no_wild 1
+0 fixture_warp 26 18 16 13
+0 until_field 3000
+0 press UP 2
+0 wait 20
+0 note_text DUO_DOME_is_not_open
+0 press A 2
+0 until_field_text DUO_DOME_is_not_open 3000
+0 shot dome-desk
+0 mash_field 3000 B
+0 expect_noted
+0 fixture_warp 26 22 8 9
+0 until_field 3000
+0 press UP 2
+0 wait 20
+0 note_text DUO_PALACE_is_not_open
+0 press A 2
+0 until_field_text DUO_PALACE_is_not_open 3000
+0 mash_field 3000 B
+0 expect_noted
+0 fixture_warp 26 25 11 15
+0 until_field 3000
+0 press UP 2
+0 wait 20
+0 note_text DUO_EXPEDITIONS_are_not_open
+0 press A 2
+0 until_field_text DUO_EXPEDITIONS_are_not_open 3000
+0 mash_field 3000 B
+0 expect_noted
+0 fixture_warp 26 28 10 10
+0 until_field 3000
+0 press UP 2
+0 wait 20
+0 note_text DUO_ARENA_is_not_open
+0 press A 2
+0 until_field_text DUO_ARENA_is_not_open 3000
+0 mash_field 3000 B
+0 expect_noted
+0 fixture_warp 26 31 12 10
+0 until_field 3000
+0 press UP 2
+0 wait 20
+0 note_text DUO_RENTALS_are_not_open
+0 press A 2
+0 until_field_text DUO_RENTALS_are_not_open 3000
+0 mash_field 3000 B
+0 expect_noted
+0 fixture_warp 26 34 2 10
+0 until_field 3000
+0 press UP 2
+0 wait 20
+0 note_text DUO_PIKE_is_not_open
+0 press A 2
+0 until_field_text DUO_PIKE_is_not_open 3000
+0 shot pike-desk
+0 mash_field 3000 B
+0 expect_noted
+# The Tower desk, not linked: it says a partner is needed.
+0 fixture_warp 26 5 21 7
+0 until_field 3000
+0 press UP 2
+0 wait 20
+0 note_text for_two_linked
+0 press A 2
+0 wait 90
+0 until_task Task_HandleScrollingMultichoiceInput 3000 A
+0 wait 30
+0 press A 2
+0 until_field_text for_two_linked 3000
+0 shot tower-desk-unlinked
+0 mash_field 3000 B
+0 expect_noted
+# The stock singles counter (Battle Tower, x=6): its own menu opens.
+0 fixture_warp 26 5 6 6
+0 until_field 3000
+0 press UP 2
+0 wait 20
+0 press A 2
+0 until_task Task_HandleMultichoiceInput 3000 A
+0 shot solo-tower-counter
+0 mash_field 3000 B

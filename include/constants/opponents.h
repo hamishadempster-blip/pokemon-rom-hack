@@ -950,12 +950,16 @@
 #define TRAINER_TWIN_EXH_SOREN_GRASS         936
 #define TRAINER_TWIN_EXH_MIRA_FIRE           937
 #define TRAINER_TWIN_EXH_MIRA_GRASS          938
+// Duo Frontier opponents (src/coop_frontier.c): their name, class, picture
+// and party are generated for each duo battle from the run; no flag.
+#define TRAINER_DUO_A                        939
+#define TRAINER_DUO_B                        940
 
 // NOTE: Because each Trainer uses a flag to determine when they are defeated, there is only space for 9 additional trainers before trainer flag space overflows
 //       More space can be made by shifting flags around in constants/flags.h or changing how trainer flags are handled
 //       MAX_TRAINERS_COUNT can be increased but will take up additional saveblock space
 
-#define TRAINERS_COUNT_EMERALD     939
+#define TRAINERS_COUNT_EMERALD     941
 #define MAX_TRAINERS_COUNT_EMERALD 864
 
 #if IS_FRLG

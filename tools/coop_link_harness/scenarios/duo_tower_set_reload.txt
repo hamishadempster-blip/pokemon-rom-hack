@@ -1,0 +1,35 @@
+# DUO TOWER (build 0xC017013E): duo_tower_set's saves after a power cycle.
+# The run is at 8 wins on both, 103 BP; CONTINUE gives battle 9.
+# FIXTURE: strong_battlers 1 on the battle engine's game (Kai's): both
+# players' battlers fight with attack..spDefense 1, a forced loss.
+# Checks: the loss ends the run on both saves (state none), the best LV. 50
+# streak stays 8, BP stay 103, parties and money unchanged, no white-out
+# (both still in the Battle Tower lobby); both saved.
+include continue.inc
+b expectp gSaveBlock3Ptr+426:1 1
+b expectp gSaveBlock3Ptr+422:2 8
+b expectp gSaveBlock2Ptr+3768:2 103
+include relink.inc
+b expect coop.sLinkState 2
+b no_wild 1
+b note_party
+b note_money
+b sync
+include duo_desk_continue.inc
+b until_cb2 BattleMainCB2 6000 A
+0 strong_battlers 1
+b mash_field 40000
+0 strong_battlers 0
+# (B: Kai faces the desk; A would talk to it again once his script ends.)
+0 mash_field 3000 B
+1 mash_field 3000
+b sync
+b wait 60
+b expect gCoopDuoLastOutcome 2
+b expectp gSaveBlock3Ptr+426:1 0
+b expectp gSaveBlock3Ptr+432:2 8
+b expectp gSaveBlock2Ptr+3768:2 103
+b expect_party_same
+b expect_money_same
+b expect_map 26 5
+b shot after-loss

@@ -29,6 +29,7 @@
 #include "battle_setup.h"
 #include "coop.h"
 #include "coop_prep.h"
+#include "coop_frontier.h"
 #include "event_data.h"
 #include "field_message_box.h"
 #include "field_screen_effect.h"
@@ -67,6 +68,12 @@ struct CoopPrepMsg
     u8 commitRev;
     u8 reason;
     u8 count;
+    // The chosen team (duo Frontier: the pair's clauses and the OPEN LEVEL
+    // opponents' level are worked out from both teams on both games).
+    u16 species[3];
+    u16 items[3];
+    u8 maxLevel;
+    u8 duo;
     u16 checksum;
 };
 
@@ -93,6 +100,13 @@ struct CoopPrepState
     u32 pid[PREP_TEAM_MAX];
     struct CoopWaitClock clock;
     u8 secs;
+    bool8 duo;            // a duo Frontier battle (src/coop_frontier.c)
+    bool8 duoFixed;       // its team is the run's (after the first battle)
+    u8 duoProblem;        // why READY was refused / the pair's clash (status line)
+    bool8 partnerTeamKnown;
+    u16 partnerSpecies[3];
+    u16 partnerItems[3];
+    u8 partnerMax;
 };
 
 static EWRAM_DATA struct CoopPrepState sPrep = {0};
@@ -127,6 +141,7 @@ EWRAM_DATA u8 gCoopPrepPartnerPhase = 0;
 EWRAM_DATA u8 gCoopPrepOrder[3] = {0};
 EWRAM_DATA u8 gCoopPrepApplied = 0;
 EWRAM_DATA u8 gCoopPrepMaxEntries = 0;   // set before the picker opens
+EWRAM_DATA bool8 gCoopPrepDuo = FALSE;   // the picker's rules are the duo Frontier's
 
 static void Task_CoopPrep(u8 taskId);
 static void Prep_End(u8 reason, bool8 tellPartner);
@@ -138,6 +153,10 @@ static const u8 sText_Cancel[] = _("CANCEL");
 static const struct MenuAction sMenuLinked[] = {
     {sText_Ready, {NULL}},
     {sText_ChangeTeam, {NULL}},
+    {sText_Cancel, {NULL}},
+};
+static const struct MenuAction sMenuDuoFixed[] = {
+    {sText_Ready, {NULL}},
     {sText_Cancel, {NULL}},
 };
 static const struct MenuAction sMenuSolo[] = {
@@ -156,6 +175,10 @@ enum { MENU_READY, MENU_CHANGE, MENU_CANCEL };
 
 static bool8 Prep_MonCanFight(struct Pokemon *mon)
 {
+    // Duo Frontier: healed copies fight, so HP does not matter; banned
+    // species do.
+    if (sPrep.duo)
+        return CoopDuo_MonAllowed(mon);
     return GetMonData(mon, MON_DATA_SPECIES) != SPECIES_NONE && !GetMonData(mon, MON_DATA_IS_EGG)
         && GetMonData(mon, MON_DATA_HP) != 0;
 }
@@ -194,6 +217,17 @@ static void Prep_DefaultTeam(void)
     u8 found = 0;
 
     sPrep.count = 0;
+    if (sPrep.duoFixed)
+    {
+        u8 order[PREP_TEAM_MAX];
+
+        if (CoopDuo_FixedTeamSlots(order))
+        {
+            for (i = 0; i < PREP_TEAM_MAX; i++)
+                Prep_Add(order[i]);
+        }
+        return;
+    }
     if (!sPrep.solo)
     {
         for (i = 0; i < PREP_TEAM_MAX && sRemembered[i] != 0; i++)
@@ -272,6 +306,54 @@ bool8 CoopPrep_IsLinkBlock(const u16 *words)
     return msg->magic == COOP_PREP_MAGIC && msg->checksum == Prep_Checksum(msg);
 }
 
+static void Prep_TeamSummary(u16 *species, u16 *items, u8 *maxLevel)
+{
+    u32 i;
+
+    *maxLevel = 0;
+    for (i = 0; i < PREP_TEAM_MAX; i++)
+    {
+        species[i] = SPECIES_NONE;
+        items[i] = ITEM_NONE;
+        if (i < sPrep.count && sPrep.order[i] < PARTY_SIZE)
+        {
+            struct Pokemon *mon = &gParties[B_TRAINER_PLAYER][sPrep.order[i]];
+            u8 level = GetMonData(mon, MON_DATA_LEVEL);
+
+            species[i] = GetMonData(mon, MON_DATA_SPECIES);
+            items[i] = GetMonData(mon, MON_DATA_HELD_ITEM);
+            if (level > *maxLevel)
+                *maxLevel = level;
+        }
+    }
+}
+
+// Duo Frontier: this team breaks no rule (DUO_OK), and with the partner's
+// team known, the pair's six do not either.
+#define DUO_OK 0
+#define DUO_CLASH_SPECIES 10
+#define DUO_CLASH_ITEM    11
+static u8 Prep_DuoProblem(void)
+{
+    u16 species[PREP_TEAM_MAX], items[PREP_TEAM_MAX];
+    u8 maxLevel, own, pair;
+
+    if (!sPrep.duo)
+        return DUO_OK;
+    own = CoopDuo_CheckOwnTeam(sPrep.order, sPrep.count);
+    if (own != 0)
+        return own;
+    if (!sPrep.partnerTeamKnown)
+        return DUO_OK;
+    Prep_TeamSummary(species, items, &maxLevel);
+    pair = CoopDuo_CheckCombined(species, items, sPrep.partnerSpecies, sPrep.partnerItems);
+    if (pair == 1)
+        return DUO_CLASH_SPECIES;
+    if (pair == 2)
+        return DUO_CLASH_ITEM;
+    return DUO_OK;
+}
+
 static void Prep_Stage(void)
 {
     memset(&sOut, 0, sizeof(sOut));
@@ -283,6 +365,8 @@ static void Prep_Stage(void)
     sOut.commitRev = sPrep.commitRev;
     sOut.reason = sPrep.pendingEnd;
     sOut.count = sPrep.count;
+    Prep_TeamSummary(sOut.species, sOut.items, &sOut.maxLevel);
+    sOut.duo = sPrep.duo;
     sOut.checksum = Prep_Checksum(&sOut);
     sOutDirty = TRUE;
 }
@@ -351,8 +435,16 @@ static void Prep_ShowMenu(void)
     template = CreateWindowTemplate(0, 18, 13, 11, 6, 0xF, 0x14E);
     sMenuWin = AddWindow(&template) + 1;
     SetStandardWindowBorderStyle(sMenuWin - 1, FALSE);
-    PrintMenuTable(sMenuWin - 1, 3, sPrep.solo ? sMenuSolo : sMenuLinked);
-    InitMenuInUpperLeftCornerNormal(sMenuWin - 1, 3, MENU_READY);
+    if (sPrep.duoFixed)
+    {
+        PrintMenuTable(sMenuWin - 1, 2, sMenuDuoFixed);
+        InitMenuInUpperLeftCornerNormal(sMenuWin - 1, 2, MENU_READY);
+    }
+    else
+    {
+        PrintMenuTable(sMenuWin - 1, 3, sPrep.solo ? sMenuSolo : sMenuLinked);
+        InitMenuInUpperLeftCornerNormal(sMenuWin - 1, 3, MENU_READY);
+    }
     CopyWindowToVram(sMenuWin - 1, COPYWIN_FULL);
 }
 
@@ -387,7 +479,7 @@ static void Prep_DrawTeam(void)
     win = sTeamWin - 1;
     FillWindowPixelBuffer(win, PIXEL_FILL(1));
     // Title: who the fight is against, and the time left.
-    end = StringCopy(buf, sPrep.solo ? COMPOUND_STRING("Lead vs ") : COMPOUND_STRING("Team vs "));
+    end = StringCopy(buf, sPrep.solo ? COMPOUND_STRING("Lead vs ") : sPrep.duo ? COMPOUND_STRING("") : COMPOUND_STRING("Team vs "));
     if (sPrep.solo)
     {
         *end = EOS;
@@ -438,7 +530,28 @@ rows:
         Prep_Print(win, FONT_NARROW, COMPOUND_STRING("The rest of your party follows."), 0, 16 + 14);
     }
     // Status: the partner's state, or this player's wait.
-    if (!sPrep.solo)
+    if (!sPrep.solo && sPrep.duo && (sPrep.duoProblem = Prep_DuoProblem()) != DUO_OK)
+    {
+        static const u8 *const sDuoProblems[] = {
+            [1] = COMPOUND_STRING("Choose exactly three POKéMON."),
+            [2] = COMPOUND_STRING("A POKéMON here can't enter."),
+            [3] = COMPOUND_STRING("Two of the same POKéMON."),
+            [4] = COMPOUND_STRING("Two hold the same item."),
+        };
+
+        if (sPrep.duoProblem == DUO_CLASH_SPECIES || sPrep.duoProblem == DUO_CLASH_ITEM)
+        {
+            end = StringCopy(buf, COMPOUND_STRING("Both teams have "));
+            end = StringCopy(end, gStringVar1);
+            StringCopy(end, COMPOUND_STRING(": change one."));
+        }
+        else
+        {
+            StringCopy(buf, sDuoProblems[sPrep.duoProblem < ARRAY_COUNT(sDuoProblems) && sPrep.duoProblem ? sPrep.duoProblem : 1]);
+        }
+        Prep_Print(win, FONT_NARROW, buf, 0, 16 + 3 * 14 + 2);
+    }
+    else if (!sPrep.solo)
     {
         const u8 *state;
 
@@ -500,6 +613,7 @@ static void Prep_OpenPicker(void)
     sSavedFacility = VarGet(VAR_FRONTIER_FACILITY);
     VarSet(VAR_FRONTIER_FACILITY, FACILITY_COOP_PREP);
     gCoopPrepMaxEntries = Prep_Max();
+    gCoopPrepDuo = sPrep.duo;
     sPrep.inPicker = TRUE;
     gMain.savedCallback = CB2_PrepBackFromPicker;
     InitChooseHalfPartyForBattle(0);
@@ -598,6 +712,8 @@ static void Task_CoopPrep(u8 taskId)
             return;
         if (input == MENU_B_PRESSED)
             input = MENU_CANCEL;
+        else if (sPrep.duoFixed && input == 1)
+            input = MENU_CANCEL;   // READY / CANCEL only: the run's team is fixed
         switch (input)
         {
         case MENU_READY:
@@ -605,6 +721,13 @@ static void Task_CoopPrep(u8 taskId)
             {
                 PlaySE(SE_FAILURE);
                 Prep_DefaultTeam();
+                Prep_DrawTeam();
+                return;
+            }
+            if (sPrep.duo && CoopDuo_CheckOwnTeam(sPrep.order, sPrep.count) != 0)
+            {
+                // The duo rules first (the status line says which).
+                PlaySE(SE_FAILURE);
                 Prep_DrawTeam();
                 return;
             }
@@ -662,6 +785,20 @@ static void Prep_Start(bool8 host, bool8 solo, u16 session, u8 hostId)
     sPrep.phase = COOP_PREP_REVIEW;
     sPrep.rev = 1;
     sPrep.partnerPhase = COOP_PREP_NONE;
+    if (!solo)
+    {
+        u16 runId = 0, modeWord = 0, battle = 0;
+        u8 flags = 0;
+
+        sPrep.duo = Coop_PrepDuoFields(host, &runId, &modeWord, &battle, &flags);
+        CoopDuo_SetPrepContext(sPrep.duo, runId, modeWord, battle, flags);
+        sPrep.duoFixed = CoopDuo_PrepTeamFixed();
+    }
+    else
+    {
+        CoopDuo_SetPrepContext(FALSE, 0, 0, 0, 0);
+    }
+    gCoopPrepDuo = sPrep.duo;
     Prep_DefaultTeam();
     Coop_WaitClockStart(&sPrep.clock);
     if (!solo)
@@ -840,6 +977,10 @@ void CoopPrep_HandleBlock(u32 playerId, const u16 *words)
     sPrep.partnerPhase = msg->phase;
     sPrep.partnerRev = msg->rev;
     sPrep.partnerCommitRev = msg->commitRev;
+    memcpy(sPrep.partnerSpecies, msg->species, sizeof(sPrep.partnerSpecies));
+    memcpy(sPrep.partnerItems, msg->items, sizeof(sPrep.partnerItems));
+    sPrep.partnerMax = msg->maxLevel;
+    sPrep.partnerTeamKnown = TRUE;
     if (msg->phase == COOP_PREP_CANCELLED && sPrep.phase != COOP_PREP_COMMITTED)
         Prep_End(msg->reason == COOP_PREP_END_TIMEOUT ? COOP_PREP_END_TIMEOUT
                : msg->reason == COOP_PREP_END_SELF ? COOP_PREP_END_PARTNER : COOP_PREP_END_LINK, FALSE);
@@ -863,7 +1004,7 @@ void CoopPrep_Poll(void)
             // (Not while the partner's overworld frames have stopped: a
             // fight is only asked for with the partner visibly there.)
             if (sPrep.phase == COOP_PREP_READY && sPrep.partnerKnown && sPrep.partnerPhase == COOP_PREP_READY
-             && Prep_TeamValid() && Coop_PrepPartnerHere())
+             && Prep_TeamValid() && Prep_DuoProblem() == DUO_OK && Coop_PrepPartnerHere())
             {
                 sPrep.phase = COOP_PREP_COMMIT;
                 sPrep.commitRev = sPrep.partnerRev;
@@ -888,7 +1029,7 @@ void CoopPrep_Poll(void)
         else if (sPrep.phase == COOP_PREP_READY && sPrep.partnerPhase == COOP_PREP_COMMIT
               && sPrep.partnerCommitRev == sPrep.rev && !sPrep.inPicker && gMain.callback2 == CB2_Overworld)
         {
-            if (Prep_TeamValid())
+            if (Prep_TeamValid() && Prep_DuoProblem() == DUO_OK)
             {
                 // (No message for this: the ACK that starts the host's
                 // battle is the answer.)
@@ -943,7 +1084,23 @@ void CoopPrep_OnLaunch(void)
     Coop_NoteStartTime(COOP_START_PREP_DONE);
     if ((sPrep.phase == COOP_PREP_READY || sPrep.phase == COOP_PREP_COMMIT || sPrep.phase == COOP_PREP_COMMITTED)
      && Prep_TeamValid())
-        CoopPrep_ApplyTeam();
+    {
+        // Duo Frontier: the chosen three fight as copies, the real party
+        // waits aside (src/coop_frontier.c); no slot moves.
+        if (sPrep.duo)
+        {
+            u32 i;
+
+            for (i = 0; i < PREP_TEAM_MAX; i++)
+                sRemembered[i] = i < sPrep.count ? sPrep.pid[i] : 0;
+            CoopDuo_BuildBattleParty(sPrep.order, sPrep.count, sPrep.partnerMax);
+            gCoopPrepApplied = sPrep.count;
+        }
+        else
+        {
+            CoopPrep_ApplyTeam();
+        }
+    }
     Prep_CloseUi();
     sPrep.active = FALSE;
     sOutDirty = FALSE;

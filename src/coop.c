@@ -1,6 +1,7 @@
 #include "global.h"
 #include "coop.h"
 #include "coop_prep.h"
+#include "coop_frontier.h"
 #include "coop_teams.h"
 #include "coop_npc.h"
 #include "coop_protocol.h"
@@ -208,6 +209,8 @@ static EWRAM_DATA bool8 sProgressPending = FALSE;
 static EWRAM_DATA u8 sProgressSlot = 0;
 static EWRAM_DATA u16 sProgressEvolution = SPECIES_NONE;
 static EWRAM_DATA bool8 sProgressCanStop = FALSE;
+extern const u8 CoopDuo_EventScript_AskGuest[];
+extern const u8 CoopDuo_EventScript_GuestAfter[];
 extern const u8 Coop_EventScript_Progression[];
 
 static EWRAM_DATA u8 sGuestFollowup = 0;
@@ -462,6 +465,11 @@ static struct CoopSave *CoopSave(void)
         memset(save->questJoint, 0, sizeof(save->questJoint));
         save->questJointGates = 0;
         save->questJointBreakers = 0;
+        save->duoPaid = 0;
+        save->duoOppLevel = 0;
+        save->duoSymbols = 0;
+        memset(save->duoTeamPid, 0, sizeof(save->duoTeamPid));
+        memset(save->duoBestOpen, 0, sizeof(save->duoBestOpen));
     }
     return save;
 }
@@ -1794,6 +1802,15 @@ static void Coop_LaunchBattle(bool8 isGuest)
     gCoopPartnerHasBracelet = (sRemoteTeamKey & COOP_TEAMKEY_VALID) && (sRemoteTeamKey & COOP_TEAMKEY_BRACELET);
     if (!isGuest)
         Coop_HideCallingMessage();
+    // A duo Frontier battle: the run's opponents (src/coop_frontier.c).
+    if (sBattleKind == COOP_KIND_DUO)
+    {
+        const struct CoopInvite *duo = isGuest ? &sGuestPairInvite : &sInvite;
+
+        sBattleBadge = 0;
+        sBattleFlag = 0;
+        CoopDuo_BeginBattle(duo->trainerA, duo->trainerB, duo->aux, duo->badge);
+    }
     // The teams chosen before the fight move to the front (undone after).
     CoopPrep_OnLaunch();
     Coop_NoteStartTime(COOP_START_LAUNCH);
@@ -1843,7 +1860,7 @@ static bool8 Coop_IsOptionalKind(u8 kind)
 static bool8 Coop_IsMandatoryKind(u8 kind)
 {
     return kind == COOP_KIND_GYM || kind == COOP_KIND_RIVAL || kind == COOP_KIND_E4
-        || kind == COOP_KIND_CHAMPION || kind == COOP_KIND_STORY;
+        || kind == COOP_KIND_CHAMPION || kind == COOP_KIND_STORY || kind == COOP_KIND_DUO;
 }
 
 // An optional invite never pulls a player out of a menu, a script, a trade,
@@ -1904,10 +1921,11 @@ static bool8 Coop_GuestBusy(void)
 static EWRAM_DATA u8 sReplyKind = 0;
 static EWRAM_DATA u16 sReplySeq = 0;
 static EWRAM_DATA u8 sReplyReason = 0;
+static EWRAM_DATA u16 sReplyAux = 0;
 
 // A NACK carries why (COOP_SOLO_*) in the badge byte, for the inviter's
 // solo note.
-static bool8 Coop_TrySendReply(u8 kind, u16 seq, u8 reason)
+static bool8 Coop_TrySendReply(u8 kind, u16 seq, u8 reason, u16 aux)
 {
     struct CoopInvite reply;
 
@@ -1918,18 +1936,25 @@ static bool8 Coop_TrySendReply(u8 kind, u16 seq, u8 reason)
     reply.kind = kind;
     reply.seq = seq;
     reply.badge = reason;
+    reply.aux = aux;
     reply.teamKey = Coop_TeamKeyLocal();
     reply.checksum = Coop_InviteChecksum(&reply);
     return SendBlock(BitmaskAllOtherLinkPlayers(), &reply, sizeof(reply));
 }
 
-static void Coop_SendReplyWhy(u8 kind, u16 seq, u8 reason)
+static void Coop_SendReplyWhyAux(u8 kind, u16 seq, u8 reason, u16 aux)
 {
-    if (Coop_TrySendReply(kind, seq, reason))
+    if (Coop_TrySendReply(kind, seq, reason, aux))
         return;
     sReplyKind = kind;
     sReplySeq = seq;
     sReplyReason = reason;
+    sReplyAux = aux;
+}
+
+static void Coop_SendReplyWhy(u8 kind, u16 seq, u8 reason)
+{
+    Coop_SendReplyWhyAux(kind, seq, reason, 0);
 }
 
 static void Coop_SendReply(u8 kind, u16 seq)
@@ -1939,7 +1964,7 @@ static void Coop_SendReply(u8 kind, u16 seq)
 
 static void Coop_FlushReply(void)
 {
-    if (sReplyKind != 0 && Coop_TrySendReply(sReplyKind, sReplySeq, sReplyReason))
+    if (sReplyKind != 0 && Coop_TrySendReply(sReplyKind, sReplySeq, sReplyReason, sReplyAux))
         sReplyKind = 0;
 }
 
@@ -1950,7 +1975,7 @@ static void Coop_HandleInvite(u32 playerId, const struct CoopInvite *invite)
     if (invite->magic != COOP_INVITE_MAGIC || invite->checksum != Coop_InviteChecksum(invite))
         return;
     // A kind this build does not know: dropped, never acted on.
-    if (invite->kind == 0 || invite->kind > COOP_KIND_WITHDRAW)
+    if (invite->kind == 0 || invite->kind > COOP_KIND_LAST)
     {
         if (gCoopStaleInvites < 0xFFFF)
             gCoopStaleInvites++;
@@ -2016,6 +2041,16 @@ static void Coop_HandleInvite(u32 playerId, const struct CoopInvite *invite)
                     gCoopBusyRetries++;
                 return;
             }
+            if (sBattleKind == COOP_KIND_DUO && invite->badge >= COOP_DUO_NACK_TEAM && invite->badge <= COOP_DUO_NACK_NO_RUN)
+            {
+                CoopDuo_OnPartnerRefused(invite->badge, invite->aux);
+                sRefusal = invite->badge == COOP_DUO_NACK_TEAM ? COOP_REFUSE_DUO_TEAM
+                         : invite->badge == COOP_DUO_NACK_OTHER_RUN ? COOP_REFUSE_DUO_OTHER_RUN
+                         : invite->badge == COOP_DUO_NACK_BEHIND ? COOP_REFUSE_DUO_BEHIND
+                         : COOP_REFUSE_DUO_NO_RUN;
+                Coop_FailWait();
+                return;
+            }
             sRefusal = invite->badge == COOP_SOLO_DECLINED ? COOP_REFUSE_PARTNER_DECLINED
                      : invite->badge == COOP_SOLO_NO_ANSWER ? COOP_REFUSE_NO_ANSWER
                      : COOP_REFUSE_PARTNER_NOT_READY;
@@ -2055,6 +2090,7 @@ static void Coop_HandleInvite(u32 playerId, const struct CoopInvite *invite)
     // bad id (a damaged frame, another build's table) is refused here, so
     // neither game launches a battle against nobody (finding #16).
     if ((Coop_IsMandatoryKind(invite->kind) || invite->kind == COOP_KIND_TRAINER || invite->kind == COOP_KIND_PAIR)
+     && invite->kind != COOP_KIND_DUO
      && (invite->trainerA == TRAINER_NONE || invite->trainerA >= TRAINERS_COUNT || invite->trainerB >= TRAINERS_COUNT))
     {
         Coop_NoteBadTrainer(COOP_BADTR_INVITE, invite->trainerA, invite->trainerB);
@@ -2199,6 +2235,42 @@ static void Coop_HandleInvite(u32 playerId, const struct CoopInvite *invite)
         return;
     }
 
+    // A duo Frontier battle (src/coop_frontier.c): this save's own run and
+    // team decide; healed copies fight, so no Pokemon needs HP now.
+    if (invite->kind == COOP_KIND_DUO)
+    {
+        u16 aux = 0;
+        u8 why;
+
+        if (sWaitingAck && sBattleKind == COOP_KIND_DUO)
+        {
+            // Both asked at once. The same battle of the same run: one
+            // fight, as for a leader both talked to. Different requests:
+            // this game stops waiting and hears the partner's next.
+            if (sInvite.trainerA == invite->trainerA && sInvite.aux == invite->aux && !(invite->badge & 1))
+                goto join;
+            sRefusal = COOP_REFUSE_DUO_SAME_TIME;
+            Coop_FailWait();
+            Coop_SendReplyWhy(COOP_KIND_NACK, invite->seq, COOP_SOLO_BUSY);
+            return;
+        }
+        why = CoopDuo_GuestCheck(invite->trainerA, invite->trainerB, invite->aux, invite->badge, &aux);
+        if (why != 0)
+        {
+            Coop_SendReplyWhyAux(COOP_KIND_NACK, invite->seq, why, aux);
+            return;
+        }
+        sGuestPairInvite = *invite;
+        sGuestPairPending = TRUE;
+        sGuestAskClosed = FALSE;
+        Coop_NoteStartTime(COOP_START_ASKED);
+        sGuestPairTimer = 0;
+        Coop_ClockStart(&sGuestClock);
+        CoopDuo_BufferAskText(invite->aux, invite->trainerB, invite->badge);
+        ScriptContext_SetupScript(CoopDuo_EventScript_AskGuest);
+        return;
+    }
+
     // Story fights pick their team first (src/coop_prep.c): any one
     // Pokemon able to fight is enough to be asked.
     if (!Coop_HasBattleReadyMon())
@@ -2225,6 +2297,7 @@ static void Coop_HandleInvite(u32 playerId, const struct CoopInvite *invite)
     // Both asked for the same fight: this game joins the partner's (link
     // player 0's request won, CoopProtocol_KeepOwnInvite), and both go on
     // to choose their teams.
+join:
     Coop_HideCallingMessage();
     sWaitingAck = FALSE;
     sResumeScript = FALSE;
@@ -4055,6 +4128,46 @@ u16 Coop_StartGymBattle(void)
     return TRUE;
 }
 
+// Special (waitstate), after CoopDuo_PrepareInvite: ask the partner on this
+// map for the duo battle. No Beacon needed: the desk itself is the consent.
+// VAR_RESULT TRUE once won; FALSE when lost or nothing started (the refusal:
+// Coop_TakeRefusal; the outcome: CoopDuo_LastOutcome).
+u16 Coop_StartDuoBattle(void)
+{
+    if (!Coop_SessionActive() || !Coop_PartnerOnSameMap())
+    {
+        sRefusal = COOP_REFUSE_NONE;
+        gSpecialVar_Result = FALSE;
+        CreateTask(Task_CoopEnableScript, 0);
+        return FALSE;
+    }
+    sResumeScript = TRUE;
+    sLegendKind = 0;
+    Coop_QueueInvite(COOP_KIND_DUO, CoopDuo_InviteRunId(), CoopDuo_InviteModeWord(), CoopDuo_InviteFlags(), CoopDuo_InviteBattle());
+    // The invite's trainer fields carry the run, not trainers: while it
+    // waits, this game's battle parameters name the duo placeholders.
+    TRAINER_BATTLE_PARAM.opponentA = TRAINER_DUO_A;
+    TRAINER_BATTLE_PARAM.opponentB = TRAINER_DUO_B;
+    sBattleBadge = 0;
+    sBattleFlag = 0;
+    gSpecialVar_Result = FALSE;
+    return TRUE;
+}
+
+// The duo invite a team preparation belongs to (host: this game's own).
+bool8 Coop_PrepDuoFields(bool8 host, u16 *runId, u16 *modeWord, u16 *battle, u8 *flags)
+{
+    const struct CoopInvite *inv = host ? &sInvite : &sGuestPairInvite;
+
+    if (inv->kind != COOP_KIND_DUO)
+        return FALSE;
+    *runId = inv->trainerA;
+    *modeWord = inv->trainerB;
+    *battle = inv->aux;
+    *flags = inv->badge;
+    return TRUE;
+}
+
 u16 Coop_StartStoryBattle(void)
 {
     if (Coop_RefuseMandatory())
@@ -4383,6 +4496,21 @@ static void Coop_RestoreParty(bool8 aborted)
     struct Pokemon arrivals[PARTY_SIZE - COOP_BATTLE_SLOTS];
     u32 i, count = 0;
 
+    // Duo Frontier: copies fought; the real party comes back as it was,
+    // whatever happened (the copies' snapshot below must not be used).
+    if (CoopDuo_RestoreRealParty())
+    {
+        if (aborted)
+        {
+            CoopDuo_AbortBattle();
+            memset(sProgressLevels, 0, sizeof(sProgressLevels));
+            sProgressPending = FALSE;
+        }
+        sHasSnapshot = FALSE;
+        return;
+    }
+    if (aborted)
+        CoopDuo_AbortBattle();
     if (!sHasSnapshot)
         return;
     if (!aborted)
@@ -5277,6 +5405,29 @@ bool8 Coop_FinishTrainerBattle(void)
     bool8 won = gBattleOutcome == B_OUTCOME_WON || gBattleOutcome == B_OUTCOME_CAUGHT;
     bool8 firstClear = sBattleFlag == 0 || !FlagGet(sBattleFlag);
 
+    // A duo Frontier battle: no prize, flags, EXP or white-out. Both games
+    // put the real party back and record the result on their own run; the
+    // inviter's desk script goes on, the partner gets its own note.
+    if (sBattleKind == COOP_KIND_DUO && (gCoopDuoBattle || sHasSnapshot))
+    {
+        Coop_RestoreParty(FALSE);
+        sInBattle = FALSE;
+        CoopDuo_FinishBattle(won ? COOP_DUO_OUT_WON : COOP_DUO_OUT_LOST);
+        gSpecialVar_Result = won ? TRUE : FALSE;
+        if (sIsGuest)
+        {
+            sIsGuest = FALSE;
+            ScriptContext_Init();
+            sPendingMessage = CoopDuo_EventScript_GuestAfter;
+            gFieldCallback = FieldCB_ReturnToFieldNoScriptCheckMusic;
+            SetMainCallback2(CB2_ReturnToField);
+            return TRUE;
+        }
+        sIsGuest = FALSE;
+        SetMainCallback2(CB2_ReturnToFieldContinueScriptPlayMapMusic);
+        return TRUE;
+    }
+
     Coop_RestoreParty(FALSE);
     sInBattle = FALSE;
     if (won)
@@ -5586,7 +5737,7 @@ void Coop_QueueWildPair(void)
 // facility-style challenge), and not in friendly battles (no co-op flag).
 bool8 Coop_BattleItemsAllowed(void)
 {
-    if (!(gBattleTypeFlags & BATTLE_TYPE_COOP) || gCoopPracticeBattle)
+    if (!(gBattleTypeFlags & BATTLE_TYPE_COOP) || gCoopPracticeBattle || gCoopDuoBattle)
         return FALSE;
     if ((gBattleTypeFlags & BATTLE_TYPE_TRAINER) && Coop_IsTwinTrialTrainer(TRAINER_BATTLE_PARAM.opponentA))
         return FALSE;
@@ -5841,7 +5992,7 @@ u16 Coop_PairGuestAnswer(void)
     }
     if (accepted)
         Coop_NoteStartTime(COOP_START_ANSWERED);
-    if (!accepted || !(Coop_IsMandatoryKind(kind) ? Coop_HasBattleReadyMon() : Coop_HasBattleReadyLead())
+    if (!accepted || !(kind == COOP_KIND_DUO || (Coop_IsMandatoryKind(kind) ? Coop_HasBattleReadyMon() : Coop_HasBattleReadyLead()))
      || (kind == COOP_KIND_PAIR && Coop_PairPlanFromHere(TRUE, accepted) != COOP_PAIR_JOINT))
     {
         Coop_SendReplyWhy(COOP_KIND_NACK, seq, !accepted ? COOP_SOLO_DECLINED : COOP_SOLO_PARTNER_NOT_READY);
@@ -6000,7 +6151,7 @@ u16 Coop_ResetRivalScene(void)
 // crossed level; normal field move-learning UI handles replacements afterward.
 void Coop_RecordLevelUp(u8 slot, u8 oldLevel)
 {
-    if (!(gBattleTypeFlags & BATTLE_TYPE_COOP) || slot >= COOP_BATTLE_SLOTS)
+    if (!(gBattleTypeFlags & BATTLE_TYPE_COOP) || slot >= COOP_BATTLE_SLOTS || gCoopDuoBattle)
         return;
     if (sProgressLevels[slot] == 0)
         sProgressLevels[slot] = oldLevel;
@@ -6183,6 +6334,12 @@ void Coop_BufferPrepOpponents(u8 *dst, bool8 host)
 {
     u16 a = host ? sInvite.trainerA : sGuestPairInvite.trainerA;
     u16 b = host ? sInvite.trainerB : sGuestPairInvite.trainerB;
+
+    if ((host ? sInvite.kind : sGuestPairInvite.kind) == COOP_KIND_DUO)
+    {
+        CoopDuo_BufferPrepTitle(dst);
+        return;
+    }
 
     *dst = EOS;
     if (a != TRAINER_NONE && a < TRAINERS_COUNT)

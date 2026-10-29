@@ -1,0 +1,63 @@
+# Optional content (build 0xC017013E): ESCAPE ROPE and DIG while linked.
+# j68 saves, linked. FIXTURES: fixture_warp to Route 106 below the Granite
+# Cave entrance (both walk in through the real door, so the cave's escape
+# point is the real one); one ESCAPE ROPE given to Kai (fixture_item); Rosa's
+# lead becomes a Lv. 50 DUGTRIO that knows DIG (test_mon); no random wild
+# battles.
+# Checks:
+# - Kai uses the ESCAPE ROPE inside the cave: he is back on Route 106 (the
+#   rope stays: since Gen 8 it is a reusable key item, I_KEY_ESCAPE_ROPE); Rosa, still in the cave, is where she was; the
+#   link stays up;
+# - Rosa uses DIG from the party menu: she is back on Route 106 too; both
+#   linked, partner visible again.
+include continue.inc
+include relink.inc
+b expect coop.sLinkState 2
+b no_wild 1
+0 fixture_item 0 120 1
+0 expect_item 0 120 1
+1 test_mon 0 51 50 91
+0 fixture_warp 0 21 48 17
+1 fixture_warp 0 21 49 17
+b until_field 3000
+b sync
+0 cross UP 24 7 3000
+1 walk 48 17 600
+1 cross UP 24 7 3000
+b sync
+b wait 60
+0 walk 37 9 1000
+1 walk 36 11 1000
+b sync
+b dump in-cave
+b shot in-cave
+0 press START 2
+0 wait 40
+0 menu_to BAG
+0 press A 2
+0 until_cb2 CB2_BagMenuRun 2500
+0 wait 60
+0 field_item 120
+0 until_map 0 21 6000
+0 until_field 3000
+0 expect_map 0 21
+0 expect_item 0 120 1
+0 shot kai-out
+1 expect_map 24 7
+1 dump rosa-still-in
+b expect coop.sLinkState 2
+1 press START 2
+1 wait 40
+1 menu_to POKEMON
+1 press A 2
+1 until_cb2 CB2_UpdatePartyMenu 600
+1 wait 60
+1 party_action 0 37
+1 until_map 0 21 6000
+1 until_field 3000
+1 expect_map 0 21
+1 shot rosa-out
+b sync
+b wait 120
+b expect coop.sLinkState 2
+b expect_partner both-out

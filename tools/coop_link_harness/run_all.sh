@@ -322,7 +322,7 @@ run guide_team_select SAVE0="$lab0" SAVE1="$lab1"
 run catch_before_dex SAVE0="$lab0" SAVE1="$lab1"
 for s in story_consent story_beacon_off story_cancel story_unanswered story_simultaneous invite_expiry_clock \
          prep_cancel prep_timeout prep_link_stall battle_visual_wild_double startup_timing_wild startup_timing_gym \
-         appearance_menu move_inspector; do
+         appearance_menu move_inspector story_not_ready; do
 	run "$s" SAVE0="$lab0" SAVE1="$lab1"
 done
 # The same expiry by the wall clock while the harness runs faster than real
@@ -338,6 +338,17 @@ fi
 if [ -n "${J46:-}" ]; then
 	run mega_bracelet SAVE0="$J46/p0.sav" SAVE1="$J46/p1.sav"
 	run mega_bracelet_reload SAVE0="$out/mega_bracelet/p0.sav" SAVE1="$out/mega_bracelet/p1.sav"
+fi
+# Duo Frontier (0xC017013E) and optional travel, on the champions' saves.
+if [ -n "${J68:-}" ]; then
+	run duo_tower_first SAVE0="$J68/p0.sav" SAVE1="$J68/p1.sav"
+	for s in duo_tower_set duo_tower_abort duo_tower_behind duo_tower_partners; do
+		run "$s" SAVE0="$out/duo_tower_first/p0.sav" SAVE1="$out/duo_tower_first/p1.sav"
+	done
+	run duo_tower_set_reload SAVE0="$out/duo_tower_set/p0.sav" SAVE1="$out/duo_tower_set/p1.sav"
+	for s in duo_desks opt_escape_dig opt_travel opt_contest; do
+		run "$s" SAVE0="$J68/p0.sav" SAVE1="$J68/p1.sav"
+	done
 fi
 [ -n "${J50:-}" ] && run rival_lilycove_early SAVE0="$J50/p0.sav" SAVE1="$J50/p1.sav"
 [ -n "${J51:-}" ] && run rival_lilycove_late SAVE0="$J51/p0.sav" SAVE1="$J51/p1.sav"

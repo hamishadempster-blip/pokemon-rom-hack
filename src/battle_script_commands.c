@@ -3,6 +3,7 @@
 #include "constants/coop.h"
 #include "battle.h"
 #include "coop.h"
+#include "coop_frontier.h"
 #include "battle_hold_effects.h"
 #include "battle_message.h"
 #include "battle_anim.h"
@@ -2131,7 +2132,7 @@ static bool32 BattleTypeAllowsExp(void)
     // Co-op is marked as a link battle so the cable can carry it, but the
     // Pokémon that fought are the players' own and should still gain experience.
     else if (gBattleTypeFlags & BATTLE_TYPE_COOP)
-        return TRUE;
+        return !gCoopDuoBattle;   // Duo Frontier battles give none (copies fight)
     else if (gBattleTypeFlags &
               ( BATTLE_TYPE_LINK
               | BATTLE_TYPE_RECORDED_LINK

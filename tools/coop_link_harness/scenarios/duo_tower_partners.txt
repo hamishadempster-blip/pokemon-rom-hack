@@ -1,0 +1,60 @@
+# DUO TOWER (build 0xC017013E): a run belongs to one partner (trainer id).
+# duo_tower_first's saves (run with each other at 1 win).
+# 1. FIXTURE: Rosa's run recorded with another partner (duoPartnerOtId
+#    0x12345678). Kai CONTINUEs: Rosa's game refuses ("Rosa has a DUO run
+#    with someone else"); nothing starts; Rosa's record is untouched.
+# 2. Rosa at the desk: CONTINUE says her save's run is with another
+#    partner and offers to retire it; YES ends it (state none).
+# 3. Kai CONTINUEs again: Rosa's save has no such run now ("no such DUO
+#    run"); nothing starts.
+include continue.inc
+include relink.inc
+b expect coop.sLinkState 2
+b no_wild 1
+b smart_moves 1
+1 writep gSaveBlock3Ptr+428:4 0x12345678
+b sync
+0 note_text with_someone_else
+0 press UP 2
+0 wait 20
+0 press A 2
+0 wait 90
+0 until_task Task_HandleScrollingMultichoiceInput 3000 A
+0 wait 30
+0 press A 2
+0 until_field_text with_someone_else 4000
+0 shot kai-told-other-run
+0 mash_field 2000 B
+0 expect_noted
+1 expectp gSaveBlock3Ptr+426:1 1
+1 expectp gSaveBlock3Ptr+428:4 0x12345678
+# Rosa at the desk (she steps in front of it).
+0 walk 20 7 600
+1 walk 21 7 600
+1 press UP 2
+1 wait 20
+1 note_text Retire_it
+1 press A 2
+1 until_field_text Retire_it 3000
+1 wait 90
+1 shot rosa-other-run
+1 press A 2
+1 wait 60
+1 mash_field 3000 B
+1 expect_noted
+1 expectp gSaveBlock3Ptr+426:1 0
+# Kai: CONTINUE now meets no run on Rosa's save.
+1 walk 22 7 600
+0 walk 21 7 600
+b sync
+0 note_text no_such_DUO
+0 press UP 2
+0 wait 20
+0 press A 2
+0 wait 90
+0 until_task Task_HandleScrollingMultichoiceInput 3000 A
+0 wait 30
+0 press A 2
+0 until_field_text no_such_DUO 4000
+0 mash_field 2000 B
+0 expect_noted

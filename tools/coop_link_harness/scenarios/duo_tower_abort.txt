@@ -1,0 +1,56 @@
+# KIND: recovery (a fault is induced on purpose; the game must recover)
+# DUO TOWER (build 0xC017013E): a link failure in the middle of a duo
+# battle. duo_tower_first's saves (run at 1 win, BP 100). Driver aid:
+# smart_moves; FIXTURE weak_foes 1 and strong_battlers 400 on the battle
+# engine's game (Kai's) in each duo battle: opposing battlers held at 1 HP,
+# ours sturdy (flow, not balance). FAULT: the engine's link
+# error flag set on both cores during battle 2 (the abort and rollback path, not physical cable loss).
+# Checks:
+# - nothing is won or lost: both back on the field in the lobby, real
+#   parties byte for byte, the run still at 1 win on both saves, no BP;
+# - the run goes on: CONTINUE offers battle 2 again and it is won (2 wins
+#   on both saves, the same run id).
+include continue.inc
+include relink.inc
+b expect coop.sLinkState 2
+b no_wild 1
+b smart_moves 1
+b note_party
+b note_money
+b sync
+include duo_desk_continue.inc
+b until_cb2 BattleMainCB2 6000 A
+0 until_mem gBattlerControllerFuncs:4 HandleInputChooseAction 4000 A
+b wait 30
+b write gLinkErrorOccurred:1 1
+b mash_field 6000 B
+b sync
+b wait 120
+b expect gCoopDuoBattle 0
+b expect gCoopDuoLastOutcome 3
+b expect coop.sInBattle 0
+b expect_map 26 5
+b expectp gSaveBlock3Ptr+426:1 1
+b expectp gSaveBlock3Ptr+422:2 1
+b expectp gSaveBlock2Ptr+3768:2 100
+b expect_party_same
+b expect_money_same
+b shot after-abort
+b expect coop.sLinkState 2
+b wait 120
+include duo_desk_continue.inc
+b until_cb2 BattleMainCB2 6000 A
+0 weak_foes 1
+0 strong_battlers 400
+0 until_field_text Go_on_to_battle_3 40000
+1 mash_field 40000
+0 wait 60
+0 press DOWN 2
+0 wait 10
+0 press A 2
+0 mash_field 3000 B
+b sync
+b wait 60
+b expectp gSaveBlock3Ptr+422:2 2
+b expectp_same gSaveBlock3Ptr+418:2
+b expect_party_same

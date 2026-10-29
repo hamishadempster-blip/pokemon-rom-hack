@@ -1,0 +1,72 @@
+# DUO TOWER (build 0xC017013E): the two saves disagree on the run.
+# duo_tower_first's saves (run at 1 win on both, BP 100). Driver aid:
+# smart_moves; FIXTURE weak_foes 1 and strong_battlers 400 on the battle
+# engine's game (Kai's) in each duo battle: opposing battlers held at 1 HP,
+# ours sturdy (flow, not balance).
+# 1. FIXTURE: Rosa's run back at 0 wins (her game lost power before saving
+#    battle 1). Kai CONTINUEs (battle 2): Rosa's game refuses ("Rosa's save
+#    is at battle 1"); Kai's run goes back to 0 wins (nothing started, no BP
+#    change); Kai CONTINUEs again: battle 1 is offered and won: 1 win on
+#    both.
+# 2. FIXTURE: Kai's run back at 0 (his game lost the win), Rosa at 1: Kai
+#    CONTINUEs (battle 1); Rosa accepts and her save goes back to 0 with the
+#    launch; battle 1 won: 1 win on both. BP never change (no set ended).
+include continue.inc
+include relink.inc
+b expect coop.sLinkState 2
+b no_wild 1
+b smart_moves 1
+b note_party
+1 writep gSaveBlock3Ptr+422:2 0
+b sync
+0 note_text save_is_at_battle_1
+0 press UP 2
+0 wait 20
+0 press A 2
+0 wait 90
+0 until_task Task_HandleScrollingMultichoiceInput 3000 A
+0 wait 30
+0 press A 2
+0 until_field_text save_is_at_battle 4000
+0 shot kai-told-behind
+0 mash_field 2000 B
+0 expect_noted
+1 expect gCoopPrepPhase 0
+b expectp gSaveBlock3Ptr+422:2 0
+b sync
+include duo_desk_continue.inc
+b until_cb2 BattleMainCB2 6000 A
+0 weak_foes 1
+0 strong_battlers 400
+0 until_field_text Go_on_to_battle_2 40000
+1 mash_field 40000
+0 wait 60
+0 press DOWN 2
+0 wait 10
+0 press A 2
+0 mash_field 3000 B
+b sync
+b wait 60
+b expectp gSaveBlock3Ptr+422:2 1
+# 2. Kai behind.
+0 writep gSaveBlock3Ptr+422:2 0
+1 expectp gSaveBlock3Ptr+422:2 1
+b sync
+include duo_desk_continue.inc
+b until_cb2 BattleMainCB2 6000 A
+0 weak_foes 1
+0 strong_battlers 400
+1 expectp gSaveBlock3Ptr+422:2 0
+0 until_field_text Go_on_to_battle_2 40000
+1 mash_field 40000
+0 wait 60
+0 press DOWN 2
+0 wait 10
+0 press A 2
+0 mash_field 3000 B
+b sync
+b wait 60
+b expectp gSaveBlock3Ptr+422:2 1
+b expectp_same gSaveBlock3Ptr+418:2
+b expectp gSaveBlock2Ptr+3768:2 100
+b expect_party_same

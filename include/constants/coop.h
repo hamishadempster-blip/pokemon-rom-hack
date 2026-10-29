@@ -227,4 +227,24 @@
 #define COOP_EXCHANGE_BREED  4
 #define COOP_EXCHANGE_MEGA   5
 
+// Duo Frontier (src/coop_frontier.c).
+#define COOP_DUO_LV50            0
+#define COOP_DUO_OPEN            1
+#define COOP_DUO_STATE_NONE      0
+#define COOP_DUO_STATE_ACTIVE    1
+#define COOP_DUO_SET_LENGTH      7    // battles per set (BP after each set)
+#define COOP_DUO_MILESTONE_1     21   // curated milestone pairs
+#define COOP_DUO_MILESTONE_2     49
+// CoopDuo_DeskCheck results (VAR_RESULT).
+#define COOP_DUO_DESK_OK          0
+#define COOP_DUO_DESK_NOT_LINKED  1   // not linked, or the partner is not in this room
+#define COOP_DUO_DESK_TEAM        2   // fewer than three Pokemon allowed here
+#define COOP_DUO_DESK_OTHER_RUN   3   // a run with someone else is open on this save
+#define COOP_DUO_DESK_PARTNER_BUSY 4  // the partner is not free right now
+// CoopDuo_LastOutcome results.
+#define COOP_DUO_OUT_NONE         0   // nothing was fought
+#define COOP_DUO_OUT_WON          1
+#define COOP_DUO_OUT_LOST         2
+#define COOP_DUO_OUT_ABORTED      3   // the link failed: no result
+
 #endif // GUARD_CONSTANTS_COOP_H

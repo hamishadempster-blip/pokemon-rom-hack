@@ -1,0 +1,83 @@
+# DUO TOWER (build 0xC017013E), the end of a set: duo_tower_first's saves
+# (one run, 1 win, BP 100 on both). FIXTURE: both saves' run moved on to 6
+# wins and 6 battles paid (as if battles 2-6 had been won); no random wild
+# battles. Driver aid: smart_moves; FIXTURE weak_foes 1 and strong_battlers
+# 400 on the battle engine's game (Kai's) in each duo battle: opposing
+# battlers held at 1 HP, ours sturdy (flow, not balance).
+# Checks:
+# - CONTINUE at the desk: the team screen offers READY / CANCEL only and
+#   the run's team (Kai slots 1, 2, 3; Rosa 1, 2, 5), not a new choice;
+# - battle 7 won: each save gets 3 BP once (100 -> 103), 7 battles paid,
+#   best LV. 50 streak 7; the same opponents on both games;
+# - Kai goes on (YES): Rosa is asked again; battle 8 won: no BP (not the
+#   end of a set); Kai stops (NO). Parties and money unchanged throughout;
+#   both saved (duo_tower_set_reload).
+include continue.inc
+include relink.inc
+b expect coop.sLinkState 2
+b no_wild 1
+b smart_moves 1
+b expectp gSaveBlock3Ptr+426:1 1
+b expectp gSaveBlock3Ptr+422:2 1
+b writep gSaveBlock3Ptr+422:2 6
+b writep gSaveBlock3Ptr+530:2 6
+b expectp gSaveBlock2Ptr+3768:2 100
+b note_party
+b note_money
+b sync
+include duo_desk_continue.inc
+b shot team-fixed
+0 expect gCoopPrepOrder 1
+0 expect gCoopPrepOrder+1 2
+0 expect gCoopPrepOrder+2 3
+1 expect gCoopPrepOrder 1
+1 expect gCoopPrepOrder+1 2
+1 expect gCoopPrepOrder+2 5
+b until_cb2 BattleMainCB2 6000 A
+0 weak_foes 1
+0 strong_battlers 400
+b expect gCoopDuoBattle 1
+b expect_mirror gCoopDuoTrainerIds:2 gCoopDuoTrainerIds
+b expect_mirror gCoopDuoTrainerIds+2:2 gCoopDuoTrainerIds+2
+b expect_mirror gCoopDuoMonIds+2:2 gCoopDuoMonIds+2
+b expect_mirror gCoopDuoMonIds+8:2 gCoopDuoMonIds+8
+0 note_text You_earned_3_BP
+1 note_text You_earned_3_BP
+0 until_field_text Go_on_to_battle_8 40000
+1 mash_field 40000
+0 wait 60
+0 expect_noted
+1 expect_noted
+b expectp gSaveBlock3Ptr+422:2 7
+b expectp gSaveBlock3Ptr+530:2 7
+b expectp gSaveBlock3Ptr+432:2 7
+b expectp gSaveBlock2Ptr+3768:2 103
+b expect_party_same
+b expect_money_same
+b shot after-7
+# Go on: battle 8.
+0 press A 2
+1 until_mem coop.sGuestPairPending 1 3000
+1 wait 90
+1 press A 2
+b until_mem gCoopPrepPhase 1 1500
+b wait 120
+b until_cb2 BattleMainCB2 6000 A
+0 weak_foes 1
+0 strong_battlers 400
+0 until_field_text Go_on_to_battle_9 40000
+1 mash_field 40000
+0 wait 60
+0 press DOWN 2
+0 wait 10
+0 press A 2
+0 mash_field 3000 B
+b sync
+b wait 60
+b expectp gSaveBlock3Ptr+422:2 8
+b expectp gSaveBlock3Ptr+530:2 7
+b expectp gSaveBlock2Ptr+3768:2 103
+b expectp_same gSaveBlock3Ptr+418:2
+b expect_party_same
+b expect_money_same
+b shot after-8

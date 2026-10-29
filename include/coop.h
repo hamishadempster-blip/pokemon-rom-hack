@@ -41,6 +41,11 @@ extern const u8 Coop_EventScript_TalkPartner[];
 // The inviter gave up on an optional invite; the partner's open question
 // for that sequence number becomes too late.
 #define COOP_KIND_WITHDRAW  14
+// A duo Frontier battle (src/coop_frontier.c): trainerA the run id,
+// trainerB the mode and opponent level, aux the battle number, badge bit 0
+// a new run. Asked like a story fight, but no Beacon is needed.
+#define COOP_KIND_DUO       15
+#define COOP_KIND_LAST      COOP_KIND_DUO
 
 #define COOP_GATE_CHIMNEY  1
 #define COOP_GATE_MAGMA    2
@@ -65,6 +70,11 @@ extern const u8 Coop_EventScript_TalkPartner[];
 #define COOP_REFUSE_PREP_PARTNER    9   // the partner stepped back (or stopped waiting)
 #define COOP_REFUSE_PREP_TIMEOUT    10  // team preparation ran out of time
 #define COOP_REFUSE_PREP_STOPPED    11  // interrupted (link, a changed party)
+#define COOP_REFUSE_DUO_TEAM        12  // the partner has no three Pokemon allowed in the duo facility
+#define COOP_REFUSE_DUO_OTHER_RUN   13  // the partner has a duo run with someone else
+#define COOP_REFUSE_DUO_BEHIND      14  // the partner's save is at an earlier battle: continue from there
+#define COOP_REFUSE_DUO_NO_RUN      15  // the partner's save has no such run (retired, or a new save)
+#define COOP_REFUSE_DUO_SAME_TIME   16  // both asked for different duo runs at once: the partner's question comes next
 
 // Invitations: how long the inviter waits for an answer and how long the
 // partner's question stays open (shorter, so a YES arrives in time). Real
@@ -104,6 +114,11 @@ extern u16 gCoopBusyRetries;
 #define COOP_SOLO_KIND              9
 #define COOP_SOLO_LEGEND_NOT_ELIGIBLE 10   // a shared legendary the partner's save cannot take part in
 #define COOP_SOLO_COUNT             11
+// Duo Frontier NACK reasons (badge byte; aux: the partner's battles won).
+#define COOP_DUO_NACK_TEAM          0x40
+#define COOP_DUO_NACK_OTHER_RUN     0x41
+#define COOP_DUO_NACK_BEHIND        0x42
+#define COOP_DUO_NACK_NO_RUN        0x43
 
 struct Pokemon;
 
@@ -154,6 +169,8 @@ u32 Coop_DisplayedLevelCap(void);
 u16 Coop_CaseChosen(void);
 u16 Coop_StartGymBattle(void);
 u16 Coop_StartStoryBattle(void);
+u16 Coop_StartDuoBattle(void);
+bool8 Coop_PrepDuoFields(bool8 host, u16 *runId, u16 *modeWord, u16 *battle, u8 *flags);
 u16 Coop_ApplyGuestStory(void);
 u16 Coop_StartLegendaryBattle(void);
 u16 Coop_BeginLink(void);

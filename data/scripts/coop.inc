@@ -108,8 +108,58 @@ Coop_EventScript_RefusalNote::
 	goto_if_eq VAR_RESULT, 9, Coop_EventScript_RefusalPrepPartner
 	goto_if_eq VAR_RESULT, 10, Coop_EventScript_RefusalPrepTimeout
 	goto_if_eq VAR_RESULT, 11, Coop_EventScript_RefusalPrepStopped
+	goto_if_eq VAR_RESULT, 12, Coop_EventScript_RefusalDuoTeam
+	goto_if_eq VAR_RESULT, 13, Coop_EventScript_RefusalDuoOtherRun
+	goto_if_eq VAR_RESULT, 14, Coop_EventScript_RefusalDuoBehind
+	goto_if_eq VAR_RESULT, 15, Coop_EventScript_RefusalDuoNoRun
+	goto_if_eq VAR_RESULT, 16, Coop_EventScript_RefusalDuoSameTime
 	msgbox Coop_Text_NeedPartner, MSGBOX_DEFAULT
 	return
+Coop_EventScript_RefusalDuoTeam::
+	specialvar VAR_RESULT, CoopDeal_BufferPartnerName
+	msgbox Coop_Text_DuoTeam, MSGBOX_DEFAULT
+	return
+Coop_EventScript_RefusalDuoOtherRun::
+	specialvar VAR_RESULT, CoopDeal_BufferPartnerName
+	msgbox Coop_Text_DuoOtherRun, MSGBOX_DEFAULT
+	return
+Coop_EventScript_RefusalDuoBehind::
+	specialvar VAR_RESULT, CoopDeal_BufferPartnerName
+	specialvar VAR_RESULT, CoopDuo_BufferRefusal
+	msgbox Coop_Text_DuoBehind, MSGBOX_DEFAULT
+	return
+Coop_EventScript_RefusalDuoNoRun::
+	specialvar VAR_RESULT, CoopDeal_BufferPartnerName
+	msgbox Coop_Text_DuoNoRun, MSGBOX_DEFAULT
+	return
+Coop_EventScript_RefusalDuoSameTime::
+	specialvar VAR_RESULT, CoopDeal_BufferPartnerName
+	msgbox Coop_Text_DuoSameTime, MSGBOX_DEFAULT
+	return
+
+Coop_Text_DuoTeam:
+	.string "{STR_VAR_1} doesn't have three\n"
+	.string "POKéMON that can enter. Nothing\l"
+	.string "started.$"
+
+Coop_Text_DuoOtherRun:
+	.string "{STR_VAR_1} has a DUO run with\n"
+	.string "someone else. They must retire it\l"
+	.string "at the DUO DESK first.$"
+
+Coop_Text_DuoBehind:
+	.string "{STR_VAR_1}'s save is at battle\n"
+	.string "{STR_VAR_2}. The run goes on from\l"
+	.string "there: talk to me again.$"
+
+Coop_Text_DuoNoRun:
+	.string "{STR_VAR_1}'s save has no such DUO\n"
+	.string "run (retired, or not saved).\l"
+	.string "Start a new run together.$"
+
+Coop_Text_DuoSameTime:
+	.string "{STR_VAR_1} asked at the same\n"
+	.string "moment. Their question comes next.$"
 Coop_EventScript_RefusalPrepSelf::
 	msgbox Coop_Text_PrepSelf, MSGBOX_DEFAULT
 	return
@@ -211,8 +261,9 @@ Coop_Text_StoryAsk:
 
 Coop_EventScript_NotReady::
 	lockall
-
-
+	msgbox Coop_Text_NotReady, MSGBOX_DEFAULT
+	releaseall
+	end
 
 Coop_EventScript_Disconnected::
 	lockall

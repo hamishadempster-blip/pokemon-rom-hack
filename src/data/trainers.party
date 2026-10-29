@@ -22917,3 +22917,31 @@ EVs: 252 HP / 252 SpA / 4 SpD
 - Dazzling Gleam
 - Earth Power
 - Protect
+
+=== TRAINER_DUO_A ===
+Name: DUO
+Class: Expert
+Pic: Expert M
+Gender: Male
+Music: Male
+Double Battle: No
+AI: Check Bad Move / Try To Faint / Check Viability / HP Aware / Smart Switching
+
+Zigzagoon
+Level: 5
+IVs: 0 HP / 0 Atk / 0 Def / 0 SpA / 0 SpD / 0 Spe
+- Tackle
+
+=== TRAINER_DUO_B ===
+Name: DUO
+Class: Expert
+Pic: Expert M
+Gender: Male
+Music: Male
+Double Battle: No
+AI: Check Bad Move / Try To Faint / Check Viability / HP Aware / Smart Switching
+
+Zigzagoon
+Level: 5
+IVs: 0 HP / 0 Atk / 0 Def / 0 SpA / 0 SpD / 0 Spe
+- Tackle

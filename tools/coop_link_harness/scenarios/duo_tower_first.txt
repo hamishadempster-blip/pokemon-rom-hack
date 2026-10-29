@@ -1,0 +1,118 @@
+# DUO TOWER (build 0xC017013E), the first battle of a run. j68 saves
+# (both champions), linked. Real play from the desk on; FIXTURES:
+# fixture_warp into the Battle Tower lobby beside the DUO DESK; BP set to
+# 100 on both saves (to see that nothing is paid before 7 wins); no random
+# wild battles. Driver aid: smart_moves (the move cursor on the strongest
+# damaging move); FIXTURE weak_foes 1 and strong_battlers 400 on the battle
+# engine's game (Kai's): the opposing battlers held at 1 HP, ours sturdy (flow, not balance: each new run draws
+# other opponents, and unassisted runs were both won and lost).
+# CoopSave offsets (SaveBlock3): duoRunId +418, duoRound +422, duoState
+# +426, duoPartnerOtId +428, duoBest +432 (LV. 50), duoPaid +530,
+# duoTeamPid +536. BP: SaveBlock2 +3768.
+# Checks:
+# - Kai at the DUO DESK chooses LV. 50; Rosa is asked and says YES; both see
+#   the team screen (DUO TOWER LV. 50, battle 1) with three Pokemon;
+# - both default teams have SHROOMISH: both screens say so and nothing can
+#   start; Rosa changes her team (slots 1, 2, 5), both READY;
+# - one co-op battle against two generated TOWER trainers, the same on both
+#   games (trainer ids and Pokemon ids compared across the games);
+# - won: both saves have the same run at 1 win (state ACTIVE, partner,
+#   team recorded); real parties byte for byte as before; money the same;
+#   BP still 100; the best LV. 50 duo streak is 1;
+# - Kai answers NO to battle 2: the run stays; both games saved.
+include continue.inc
+include relink.inc
+b expect coop.sLinkState 2
+b no_wild 1
+b smart_moves 1
+0 fixture_warp 26 5 21 7
+1 fixture_warp 26 5 22 7
+b until_field 3000
+b sync
+b wait 30
+b writep gSaveBlock2Ptr+3768:2 100
+b expectp gSaveBlock3Ptr+426:1 0
+b note_party
+b note_money
+0 press UP 2
+0 wait 20
+0 press A 2
+0 wait 90
+0 shot desk-welcome
+0 until_task Task_HandleScrollingMultichoiceInput 3000 A
+0 wait 30
+0 shot desk-bracket
+0 press A 2
+1 until_mem coop.sGuestPairPending 1 3000
+1 wait 90
+1 shot rosa-asked
+1 press A 2
+b wait 240
+b expect gCoopPrepPhase 1
+# Both default teams have SHROOMISH: the pair's species clause shows on both
+# screens and nothing can start.
+b shot team-clash
+# Rosa: CHANGE TEAM, takes slot 3 out and slot 5 in (1, 2, 5).
+1 press DOWN 2
+1 wait 10
+1 press A 2
+1 until_cb2 CB2_UpdatePartyMenu 600
+1 wait 90
+1 press DOWN 2
+1 wait 10
+1 press DOWN 2
+1 wait 10
+1 press A 2
+1 wait 20
+1 press A 2
+1 wait 20
+1 press DOWN 2
+1 wait 10
+1 press DOWN 2
+1 wait 10
+1 press A 2
+1 wait 20
+1 press A 2
+1 wait 20
+1 shot rosa-picker
+1 press A 2
+1 until_cb2 CB2_Overworld 600
+1 wait 150
+1 expect gCoopPrepOrder 1
+1 expect gCoopPrepOrder+1 2
+1 expect gCoopPrepOrder+2 5
+1 shot team-fixed
+b until_cb2 BattleMainCB2 6000 A
+0 weak_foes 1
+0 strong_battlers 400
+b expect gCoopDuoBattle 1
+b expect gBattlersCount 4
+b expect_mirror gCoopDuoTrainerIds:2 gCoopDuoTrainerIds
+b expect_mirror gCoopDuoTrainerIds+2:2 gCoopDuoTrainerIds+2
+b expect_mirror gCoopDuoMonIds:2 gCoopDuoMonIds
+b expect_mirror gCoopDuoMonIds+4:2 gCoopDuoMonIds+4
+b expect_mirror gCoopDuoMonIds+6:2 gCoopDuoMonIds+6
+b expect_mirror gCoopDuoMonIds+10:2 gCoopDuoMonIds+10
+b wait 600
+b shot duo-battle
+0 until_field_text Go_on_to_battle 40000
+1 mash_field 40000
+0 wait 60
+0 shot ask-next
+0 press DOWN 2
+0 wait 10
+0 press A 2
+0 mash_field 3000 B
+b sync
+b wait 120
+b expect gCoopDuoBattle 0
+b expect gCoopDuoLastOutcome 1
+b expectp gSaveBlock3Ptr+426:1 1
+b expectp gSaveBlock3Ptr+422:2 1
+b expectp_same gSaveBlock3Ptr+418:2
+b expectp gSaveBlock3Ptr+432:2 1
+b expectp gSaveBlock3Ptr+530:2 0
+b expectp gSaveBlock2Ptr+3768:2 100
+b expect_party_same
+b expect_money_same
+b shot after-first

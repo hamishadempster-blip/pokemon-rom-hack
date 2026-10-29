@@ -14,6 +14,7 @@
 #include "coop.h"
 #include "coop_deal.h"
 #include "coop_prep.h"
+#include "coop_frontier.h"
 #include "constants/coop.h"
 #include "data.h"
 #include "decompress.h"
@@ -7438,6 +7439,8 @@ static bool8 GetBattleEntryEligibility(struct Pokemon *mon)
     case FACILITY_COOP_FRIENDLY: // healed for the fight; eggs are already out
         return TRUE;
     case FACILITY_COOP_PREP: // a story fight: no healing, so able to fight now
+        if (gCoopPrepDuo)   // a duo Frontier battle: healed copies fight
+            return CoopDuo_MonAllowed(mon);
         return GetMonData(mon, MON_DATA_HP) != 0;
     default: // Battle Frontier
         species = GetMonData(mon, MON_DATA_SPECIES);
@@ -7465,7 +7468,8 @@ static u8 CheckBattleEntriesAndGetMessage(void)
     }
 
     facility = VarGet(VAR_FRONTIER_FACILITY);
-    if (facility == FACILITY_UNION_ROOM || facility == FACILITY_MULTI_OR_EREADER || facility == FACILITY_COOP_PREP)
+    if (facility == FACILITY_UNION_ROOM || facility == FACILITY_MULTI_OR_EREADER
+     || (facility == FACILITY_COOP_PREP && !gCoopPrepDuo))
         return 0xFF;
     if (facility == FACILITY_COOP_FRIENDLY)
     {
@@ -7568,7 +7572,7 @@ static u8 GetMinBattleEntries(void)
     case FACILITY_COOP_FRIENDLY:
         return (gCoopFriendlyRules & COOP_RULE_DOUBLES) ? 2 : 1;
     case FACILITY_COOP_PREP:
-        return 1;
+        return gCoopPrepDuo ? gCoopPrepMaxEntries : 1;
     case FACILITY_UNION_ROOM:
         return UNION_ROOM_PARTY_SIZE;
     default: // Battle Frontier
