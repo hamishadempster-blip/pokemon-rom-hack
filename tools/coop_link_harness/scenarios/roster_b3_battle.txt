@@ -67,7 +67,9 @@ b sync
 b shot school
 0 expect_screen_same 8 56 56 48
 b until_battle_text used_Super 8000 auto
-0 until_mem gBattleMons+280:2 1199 6000
+# (SUPER FANG can miss (90%): the next turns repeat it until it lands.)
+0 until_mem gBattleMons+280:2 1199 12000 A
+1 until_mem gBattleMons+280:2 1199 12000 A
 b until_battle_text Waiting_for 8000 auto
 1 expect gBattleMons+280:2 1199
 1 expect gBattleMons:2 1175
