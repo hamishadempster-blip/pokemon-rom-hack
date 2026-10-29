@@ -3,12 +3,16 @@
 # FIXTURE: both warped into the Petalburg Gym, Norman's room.
 # 1. Rosa opens her BAG; Kai talks to Norman. Rosa's game answers "busy"
 #    while the bag is open (it is not closed under her); Kai's game asks
-#    again; Rosa closes the bag (back to her start menu) and the shared
-#    fight starts for both.
+#    again; Rosa closes the bag (back to her start menu); the shared fight
+#    does not start by itself: Rosa is asked (0xC017013E) and says YES.
+#    The Beacon is turned on first (shared story fights need it on).
 #    Then the battle is left unplayed: both saves are discarded.
 include continue.inc
 include relink.inc
 b expect coop.sLinkState 2
+include beacon_on.inc
+b mash_field 2000 B
+b expect coop.sBeacon+1:1 1
 b no_wild 1
 b fixture_warp 8 1 4 4
 b until_field 3000
@@ -48,6 +52,16 @@ b sync
 b expect coop.sInBattle 0
 0 expect_range gCoopBusyRetries:2 1 1000
 1 press B 2
+1 until_cb2 CB2_Overworld 600
+1 wait 30
+1 press B 2
+1 until_mem coop.sGuestPairPending 1 3000
+1 wait 60
+1 shot rosa-asked
+b expect coop.sInBattle 0
+1 press A 2
+1 wait 120
+1 press A 2
 b until_cb2 BattleMainCB2 3000
 b expect coop.sInBattle 1
 b wait 120

@@ -3,10 +3,15 @@
 # FIXTURE: both warped into Norman's room.
 # Rosa keeps her party screen open; Kai talks to Norman: no battle; after
 # the wait Kai is told Rosa is still in a menu and nothing started; Rosa's
-# screen was never closed; Kai can ask again once she is back.
+# screen was never closed; Kai can ask again once she is back, and the
+# fight starts when she says YES (0xC017013E; the Beacon is turned on first;
+# the wait is about 30 seconds of game-clock time).
 include continue.inc
 include relink.inc
 b expect coop.sLinkState 2
+include beacon_on.inc
+b mash_field 2000 B
+b expect coop.sBeacon+1:1 1
 b no_wild 1
 b fixture_warp 8 1 4 4
 b until_field 3000
@@ -24,8 +29,9 @@ b sync
 0 note_text stayed_busy
 0 press A 2
 0 until_mem gCoopBusyRetries:2 2 6000 A
-1 wait 2000
+1 wait 2400
 1 expect_cb2 CB2_UpdatePartyMenu
+0 until_mem coop.sWaitingAck 0 3000
 0 mash_field 4000 B
 0 expect_noted
 b expect coop.sInBattle 0
@@ -35,6 +41,12 @@ b expect coop.sInBattle 0
 1 mash_field 600 B
 b sync
 0 press A 2
-0 until_cb2 BattleMainCB2 6000 A
+0 until_mem coop.sWaitingAck 1 3000 A
+1 until_mem coop.sGuestPairPending 1 3000
+1 wait 60
+1 press A 2
+1 wait 120
+1 press A 2
+0 until_cb2 BattleMainCB2 6000
 1 until_cb2 BattleMainCB2 3000
 b expect coop.sInBattle 1

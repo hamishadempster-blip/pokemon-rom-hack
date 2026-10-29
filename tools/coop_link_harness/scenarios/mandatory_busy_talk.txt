@@ -3,11 +3,15 @@
 # the Rustboro Gym, Kai below Roxanne, Rosa below the gym guide.
 # Before 0xC017013C Rosa's game started the battle under the open message
 # box and stopped at the battle's start (heap check, reset). Now her game
-# answers "busy"; she reads on undisturbed; when her message closes, the
-# shared fight starts for both.
+# answers "busy"; she reads on undisturbed; when her message closes she
+# is asked (0xC017013E: shared story fights start only on YES, with the
+# Twin Beacon on) and the shared fight starts for both.
 include continue.inc
 include relink.inc
 b expect coop.sLinkState 2
+include beacon_on.inc
+b mash_field 2000 B
+b expect coop.sBeacon+1:1 1
 b no_wild 1
 0 fixture_warp 11 3 5 3
 1 fixture_warp 11 3 3 19
@@ -50,7 +54,14 @@ b sync
 0 expect_range gCoopBusyRetries:2 1 1000
 1 shot rosa-still-reading
 b expect coop.sInBattle 0
-1 until_cb2 BattleMainCB2 4000 B
+1 until_mem coop.sGuestPairPending 1 4000 B
+1 wait 60
+1 shot rosa-asked
+b expect coop.sInBattle 0
+1 press A 2
+1 wait 120
+1 press A 2
+1 until_cb2 BattleMainCB2 3000
 0 until_cb2 BattleMainCB2 3000
 b expect coop.sInBattle 1
 b wait 120

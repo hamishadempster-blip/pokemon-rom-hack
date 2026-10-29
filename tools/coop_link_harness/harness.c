@@ -4599,16 +4599,22 @@ int main(int argc, char** argv) {
 		if (!mCoreLoadFile(p->core, argv[1])) { fprintf(stderr, "rom load failed\n"); return 1; }
 		struct VFile* sav = VFileOpen(argv[3 + i], O_CREAT | O_RDWR);
 		if (!sav || !p->core->loadSave(p->core, sav)) { fprintf(stderr, "save load failed\n"); return 1; }
-		// FIXTURE (RTC_EPOCH<i>=unix seconds): this core's cartridge clock
-		// starts at that moment and runs with emulated time, instead of the
-		// host's wall clock. Lets a test pick each game's time of day.
+		// The cartridge clock runs with emulated time, so a run is the same
+		// on any host and at any harness speed (1 emulated second = 60
+		// frames, as on hardware). RTC_EPOCH<i>=unix seconds picks where it
+		// starts (a test's time of day); otherwise 2026-10-29 10:00 UTC
+		// (build 0xC017013E; before it the default was the host's clock).
+		// RTC_WALL<i>=1 uses the host's wall clock instead, as an emulator
+		// running faster than real time does (tests of real-time waits).
 		{
 			char name[32];
 			snprintf(name, sizeof(name), "RTC_EPOCH%d", i);
 			const char* epoch = getenv(name);
-			if (epoch && epoch[0]) {
+			snprintf(name, sizeof(name), "RTC_WALL%d", i);
+			const char* wall = getenv(name);
+			if (!(wall && wall[0] == '1')) {
 				p->core->rtc.override = RTC_FAKE_EPOCH;
-				p->core->rtc.value = (int64_t)strtoll(epoch, NULL, 0) * 1000;
+				p->core->rtc.value = (int64_t)strtoll(epoch && epoch[0] ? epoch : "1793268000", NULL, 0) * 1000;
 			}
 		}
 		GBASIOLockstepNodeCreate(&p->node);

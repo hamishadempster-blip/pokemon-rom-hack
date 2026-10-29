@@ -70,6 +70,9 @@
 #include "coop_legend.h"
 #include "coop_outfit.h"
 #include "coop_quest.h"
+#include "rtc.h"
+#include "constants/rtc.h"
+#include "text_window.h"
 
 #define COOP_INVITE_MAGIC 0xC0A1
 #define COOP_SAVE_MAGIC   0xC0
@@ -79,12 +82,12 @@
 // guest stops accepting a yes well before the host gives up.
 // Wild and ordinary-trainer invites now wait on a person: the partner sees
 // a YES/NO. The partner's answer must arrive before the inviter gives up.
-#define COOP_WILD_TIMEOUT 600
-#define COOP_JOIN_ANSWER_LIMIT 480
+// (Wild, trainer, pair, shared-legend and story-fight invitations now wait
+// COOP_WAIT_SECONDS of real time, include/coop.h; these frame counts are
+// only the rescue's and the CO-OP menu's.)
 #define COOP_PAIR_TIMEOUT 1800
 // The rescue waits on a person who may still be closing a menu.
 #define COOP_RESCUE_TIMEOUT 1800
-#define COOP_PAIR_ANSWER_LIMIT 1500
 // The CO-OP menu holds on the waiting text for this long. Both players
 // need time to say yes. 30 seconds at 60 frames.
 #define COOP_LINK_WAIT_LIMIT 1800
@@ -175,8 +178,12 @@ static EWRAM_DATA u16 sInviteTimer = 0;
 static EWRAM_DATA u8 sInviteRetryDelay = 0;
 EWRAM_DATA u16 gCoopBusyRetries = 0;
 #define COOP_BUSY_RETRY_FRAMES 30
-// A partner who answers "busy" (a menu, a message) gets this long in all.
-#define COOP_BUSY_TIMEOUT (60 * 30)
+// A partner who answers "busy" (a menu, a message) gets COOP_WAIT_SECONDS
+// in all to become free (sBusyClock, from the first busy answer); once free
+// and actually asked, the full COOP_WAIT_SECONDS to answer (sInviteClock
+// restarts at every busy answer). sPartnerBusyNow: a busy answer came in
+// the last couple of seconds.
+static EWRAM_DATA bool8 sPartnerBusyNow = FALSE;
 static EWRAM_DATA u16 sInviteSeq = 0;
 static EWRAM_DATA u8 sBattleKind = 0;
 static EWRAM_DATA u8 sBattleBadge = 0;
@@ -263,7 +270,26 @@ static EWRAM_DATA u16 sPartnerCaught[COOP_WILD_SLOTS] = {0};
 static EWRAM_DATA u8 sPartnerCaughtCount = 0;
 static EWRAM_DATA u16 sPairEngaged = 0;
 static EWRAM_DATA bool8 sGuestPairPending = FALSE;
-static EWRAM_DATA u16 sGuestPairTimer = 0;
+static EWRAM_DATA u16 sGuestPairTimer = 0;   // seconds the question has been open; 0xFFFF: closed (too late)
+
+// A wait measured in real seconds: the cartridge clock while it runs, so a
+// player who speeds the emulator up still gets the full time; 60 frames a
+// second when there is no clock (or it stands still). Frames alone also end
+// it after ten times the limit, so a stuck clock can never hold it open.
+struct CoopWaitClock
+{
+    u32 startSecs;
+    u16 frames;
+    u8 rtc;        // 0 not known yet, 1 running, 2 not usable
+    u8 secs;       // seconds from the clock
+};
+static EWRAM_DATA struct CoopWaitClock sInviteClock = {0};
+static EWRAM_DATA struct CoopWaitClock sGuestClock = {0};
+static EWRAM_DATA struct CoopWaitClock sBusyClock = {0};
+static EWRAM_DATA bool8 sGuestAskClosed = FALSE;   // the open question was closed by its time limit
+static EWRAM_DATA u8 sWaitShown = 0;          // the seconds last drawn in the waiting note (0xFF: none)
+static EWRAM_DATA u8 sWaitText[96] = {0};
+EWRAM_DATA u8 gCoopWaitSecondsLeft = 0;       // test visibility: the inviter's countdown
 static EWRAM_DATA struct CoopInvite sGuestPairInvite = {0};
 // The partner's team key (src/coop_teams.c) from the invite this game joins,
 // or from the answer to this game's invite.
@@ -283,7 +309,6 @@ static const u8 sText_BeaconNeedLink[] = _("Link from the CO-OP menu first.{PAUS
 static const u8 sText_BeaconWaiting[] = _("Still waiting on your partner.{PAUSE_UNTIL_PRESS}");
 static const u8 sText_BeaconQueued[] = _("The request waits until this\nbattle or trade ends.{PAUSE_UNTIL_PRESS}");
 static const u8 sText_BeaconSent[] = _("Asking your partner.\nBoth of you have to agree.{PAUSE_UNTIL_PRESS}");
-static const u8 sText_CallingPartner[] = _("Calling your partner over…\nB: battle alone.");
 
 STATIC_ASSERT(COOP_BATTLE_SLOTS == MULTI_PARTY_SIZE, CoopFieldsTheStockMultiHalf);
 STATIC_ASSERT(COOP_ROSTER_SLOTS == PARTY_SIZE, CoopSnapshotCoversWholeParty);
@@ -311,6 +336,9 @@ static u8 Coop_SoloReasonHere(void);
 static void Coop_PollStory(void);
 static void Coop_PollCoordJoin(void);
 static bool8 Coop_GuestBusy(void);
+static void Coop_AcceptMandatory(const struct CoopInvite *invite);
+static void Coop_ClockStart(struct CoopWaitClock *clock);
+static u8 Coop_ClockTick(struct CoopWaitClock *clock);
 static void Coop_SendReply(u8 kind, u16 seq);
 
 // Frames before another "went inside" note may show.
@@ -1578,9 +1606,12 @@ static void Coop_QueueInvite(u8 kind, u16 trainerA, u16 trainerB, u8 badge, u16 
     sInvite.teamKey = Coop_TeamKeyLocal();
     sInviteRetryDelay = 0;
     sRefusal = COOP_REFUSE_NONE;
+    sPartnerBusyNow = FALSE;
     sWaitingAck = TRUE;
     sInviteSent = FALSE;
     sInviteTimer = 0;
+    Coop_ClockStart(&sInviteClock);
+    sWaitShown = 0xFF;
     sBattleKind = kind;
     sBattleBadge = badge;
     sBattleFlag = aux;
@@ -1588,10 +1619,63 @@ static void Coop_QueueInvite(u8 kind, u16 trainerA, u16 trainerB, u8 badge, u16 
     TRAINER_BATTLE_PARAM.opponentB = trainerB;
 }
 
+static EWRAM_DATA bool8 sWaitOpenedBox = FALSE;   // the waiting note opened the message box itself
+
 static void Coop_HideCallingMessage(void)
 {
-    if ((sBattleKind == COOP_KIND_WILD || sBattleKind == COOP_KIND_TRAINER) && !IsFieldMessageBoxHidden())
+    // (IsFieldMessageBoxHidden() is TRUE once a line has finished printing,
+    // with the box still on screen: a note this game drew is always closed.)
+    if (sWaitOpenedBox
+     || ((sBattleKind == COOP_KIND_WILD || sBattleKind == COOP_KIND_TRAINER) && !IsFieldMessageBoxHidden()))
         HideFieldMessageBox();
+    sWaitOpenedBox = FALSE;
+    sWaitShown = 0xFF;
+}
+
+// The inviter's note while the partner decides, with the seconds left:
+// "Calling ROSA over… 27 / B: battle alone." for an optional fight, or
+// "Waiting for ROSA to agree… 27 / B: stop waiting." for a shared story
+// fight (written over the trainer's own message when that is still up).
+static void Coop_DrawWaitNote(u8 left)
+{
+    u8 *end;
+    const u8 *name = gLinkPlayers[GetMultiplayerId() ^ 1].name;
+    bool8 optional = sBattleKind == COOP_KIND_WILD || sBattleKind == COOP_KIND_TRAINER;
+
+    if (left == sWaitShown)
+        return;
+    if (!IsFieldMessageBoxHidden() && IsTextPrinterActiveOnWindow(0))
+        return;   // the trainer's own line is still being printed
+    if (optional)
+        end = StringCopy(sWaitText, COMPOUND_STRING("Calling "));
+    else
+        end = StringCopy(sWaitText, COMPOUND_STRING("Waiting for "));
+    end = StringCopyN(end, name, PLAYER_NAME_LENGTH);
+    *end = EOS;
+    if (optional)
+        end = StringAppend(sWaitText, COMPOUND_STRING(" over… "));
+    else if (sPartnerBusyNow)
+        end = StringAppend(sWaitText, COMPOUND_STRING(" to be free… "));
+    else
+        end = StringAppend(sWaitText, COMPOUND_STRING(" to agree… "));
+    end = ConvertIntToDecimalStringN(end, left, STR_CONV_MODE_LEFT_ALIGN, 2);
+    StringAppend(sWaitText, optional ? COMPOUND_STRING("\nB: battle alone.") : COMPOUND_STRING("\nB: stop waiting."));
+    // The first note opens the box (or replaces the trainer's finished
+    // line); later ones redraw it in place at once. "Hidden" here only means
+    // that nothing is being printed: the box stays on screen after a line.
+    if (!sWaitOpenedBox)
+    {
+        if (!ShowFieldMessage(sWaitText))
+            return;
+        sWaitOpenedBox = TRUE;
+    }
+    else
+    {
+        FillWindowPixelBuffer(0, PIXEL_FILL(1));
+        AddTextPrinterParameterized(0, FONT_NORMAL, sWaitText, 0, 1, 0, NULL);
+        CopyWindowToVram(0, COPYWIN_FULL);
+    }
+    sWaitShown = left;
 }
 
 static bool8 Coop_IsTwinTrialTrainer(u16 trainerId)
@@ -1717,22 +1801,7 @@ void Coop_NoteBadTrainer(u8 site, u16 trainerA, u16 trainerB)
 
 static bool8 Coop_GuestBusy(void)
 {
-    return ScriptContext_IsEnabled()
-        || ArePlayerFieldControlsLocked()
-        || Coop_InteractionBusy()
-        || gMain.callback2 != CB2_Overworld
-        || sPendingMessage != NULL;
-}
-
-static u16 Coop_InviteTimeout(u8 kind)
-{
-    if (kind == COOP_KIND_WILD)
-        return COOP_WILD_TIMEOUT;
-    if (kind == COOP_KIND_RESCUE)
-        return COOP_RESCUE_TIMEOUT;
-    if (kind == COOP_KIND_PAIR || kind == COOP_KIND_LEGEND)
-        return COOP_PAIR_TIMEOUT;
-    return COOP_ACK_TIMEOUT;
+    return Coop_LocalAvailability(COOP_PURPOSE_OPTIONAL) != COOP_AVAIL_OK;
 }
 
 // A reply that meets a block already on the cable used to be dropped, and
@@ -1835,14 +1904,20 @@ static void Coop_HandleInvite(u32 playerId, const struct CoopInvite *invite)
             // little later, until the invite's own time runs out.
             if (Coop_IsMandatoryKind(sBattleKind) && invite->badge == COOP_SOLO_BUSY)
             {
+                if (sRefusal != COOP_REFUSE_PARTNER_BUSY)
+                    Coop_ClockStart(&sBusyClock);
                 sInviteSent = FALSE;
                 sInviteRetryDelay = COOP_BUSY_RETRY_FRAMES;
                 sRefusal = COOP_REFUSE_PARTNER_BUSY;
+                sPartnerBusyNow = TRUE;
+                Coop_ClockStart(&sInviteClock);
                 if (gCoopBusyRetries < 0xFFFF)
                     gCoopBusyRetries++;
                 return;
             }
-            sRefusal = COOP_REFUSE_PARTNER_NOT_READY;
+            sRefusal = invite->badge == COOP_SOLO_DECLINED ? COOP_REFUSE_PARTNER_DECLINED
+                     : invite->badge == COOP_SOLO_NO_ANSWER ? COOP_REFUSE_NO_ANSWER
+                     : COOP_REFUSE_PARTNER_NOT_READY;
             sSoloNote = invite->badge < COOP_SOLO_COUNT && invite->badge != COOP_SOLO_NONE
                       ? invite->badge : COOP_SOLO_DECLINED;
             Coop_FailWait();
@@ -1891,7 +1966,10 @@ static void Coop_HandleInvite(u32 playerId, const struct CoopInvite *invite)
     // without closing it (from a conversation the heap was left damaged and
     // the game stopped at the battle's start). The inviter asks again until
     // this player is back on the field.
-    if (Coop_IsMandatoryKind(invite->kind) && (gMain.callback2 != CB2_Overworld || !IsFieldMessageBoxHidden()))
+    // Since 0xC017013E the shared availability check also covers a running
+    // script or cutscene with nothing on screen (and an open question); this
+    // game's own invitation for a shared fight does not count as busy.
+    if (Coop_IsMandatoryKind(invite->kind) && Coop_LocalAvailability(COOP_PURPOSE_MANDATORY) != COOP_AVAIL_OK)
     {
         Coop_SendReplyWhy(COOP_KIND_NACK, invite->seq, COOP_SOLO_BUSY);
         return;
@@ -1960,7 +2038,9 @@ static void Coop_HandleInvite(u32 playerId, const struct CoopInvite *invite)
         }
         sGuestPairInvite = *invite;
         sGuestPairPending = TRUE;
+        sGuestAskClosed = FALSE;
         sGuestPairTimer = 0;
+        Coop_ClockStart(&sGuestClock);
         ScriptContext_SetupScript(Coop_EventScript_LegendAskGuest);
         return;
     }
@@ -2009,18 +2089,46 @@ static void Coop_HandleInvite(u32 playerId, const struct CoopInvite *invite)
         }
         sGuestPairInvite = *invite;
         sGuestPairPending = TRUE;
+        sGuestAskClosed = FALSE;
         sGuestPairTimer = 0;
+        Coop_ClockStart(&sGuestClock);
         ScriptContext_SetupScript(invite->kind == COOP_KIND_PAIR ? Coop_EventScript_PairAskGuest : Coop_EventScript_JoinAskGuest);
         return;
     }
 
     if (!Coop_HasBattleReadyLead())
     {
-        Coop_SendReply(COOP_KIND_NACK, invite->seq);
+        Coop_SendReplyWhy(COOP_KIND_NACK, invite->seq, COOP_SOLO_PARTNER_NOT_READY);
         sPendingMessage = Coop_EventScript_NotReady;
         return;
     }
 
+    // A shared story fight starts only when this player knowingly agrees:
+    // a question, unless this game has itself just asked for the same fight
+    // (both players talked to it). Never a silent pull.
+    if (Coop_IsMandatoryKind(invite->kind) && !(sWaitingAck && Coop_IsMandatoryKind(sBattleKind)))
+    {
+        sGuestPairInvite = *invite;
+        sGuestPairPending = TRUE;
+        sGuestAskClosed = FALSE;
+        sGuestPairTimer = 0;
+        Coop_ClockStart(&sGuestClock);
+        ScriptContext_SetupScript(Coop_EventScript_StoryAskGuest);
+        return;
+    }
+    if (sWaitingAck)
+    {
+        // Both asked for the same fight: this game joins the partner's.
+        Coop_HideCallingMessage();
+        sWaitingAck = FALSE;
+        sResumeScript = FALSE;
+    }
+    Coop_AcceptMandatory(invite);
+}
+
+// The partner's shared story fight, accepted: the same battle on this game.
+static void Coop_AcceptMandatory(const struct CoopInvite *invite)
+{
     sBattleKind = invite->kind;
     sBattleBadge = invite->badge;
     sBattleFlag = invite->aux;
@@ -2157,9 +2265,10 @@ static void Coop_FailWait(void)
     u8 kind = sBattleKind;
 
     Coop_HideCallingMessage();
-    // Withdraw an optional question the partner may still be reading, so a
-    // late YES gets "too late" instead of a fight that is not coming.
-    if (sWaitingAck && Coop_IsOptionalKind(kind) && sInviteSent)
+    sPartnerBusyNow = FALSE;
+    // Withdraw a question the partner may still be reading, so a late YES
+    // gets "too late" instead of a fight that is not coming.
+    if (sWaitingAck && (Coop_IsOptionalKind(kind) || Coop_IsMandatoryKind(kind)) && sInviteSent)
         Coop_SendReply(COOP_KIND_WITHDRAW, sInvite.seq);
     sWaitingAck = FALSE;
     sWaitKind = 0;
@@ -2197,6 +2306,13 @@ static void Coop_FailWait(void)
         sResumeScript = FALSE;
         ScriptContext_Enable();
     }
+    else if (kind == COOP_KIND_RIVAL)
+    {
+        // The rival scene walked the twins up: say why and put them back,
+        // so the scene plays again in full later.
+        sPendingMessage = Coop_EventScript_RivalWaits;
+        ScriptContext_SetupScript(Coop_EventScript_RivalWaits);
+    }
     else if (ScriptContext_IsEnabled())
     {
         sPendingMessage = Coop_EventScript_PartnerDeclined;
@@ -2210,28 +2326,69 @@ static void Coop_FailWait(void)
 
 static void Coop_PollInviteTimeout(void)
 {
+    u8 secs;
+
     if (!sWaitingAck)
         return;
     // B leaves the rescue wait so a partner stuck in a menu does not
     // freeze the person who opened the bag. For an optional fight it means
-    // "fight alone now" instead of waiting out the partner's answer.
+    // "fight alone now" instead of waiting out the partner's answer; for a
+    // shared story fight, "stop waiting" (nothing starts, nothing is used).
     if ((sBattleKind == COOP_KIND_RESCUE || sBattleKind == COOP_KIND_WILD || sBattleKind == COOP_KIND_TRAINER)
      && JOY_NEW(B_BUTTON))
     {
         Coop_FailWait();
         return;
     }
-    // Say why the field stopped while the partner decides.
-    if ((sBattleKind == COOP_KIND_WILD || sBattleKind == COOP_KIND_TRAINER) && sInviteTimer == 20)
-        ShowFieldMessage(sText_CallingPartner);
+    if (Coop_IsMandatoryKind(sBattleKind) && sInviteTimer >= 20 && JOY_NEW(B_BUTTON))
+    {
+        sRefusal = COOP_REFUSE_CANCELLED;
+        Coop_FailWait();
+        return;
+    }
     Coop_SendInvite();
-    if (++sInviteTimer >= (Coop_IsMandatoryKind(sBattleKind) && sRefusal == COOP_REFUSE_PARTNER_BUSY
-                           ? COOP_BUSY_TIMEOUT : Coop_InviteTimeout(sBattleKind)))
+    if (sInviteTimer < 0xFFFF)
+        sInviteTimer++;
+    if (sBattleKind == COOP_KIND_RESCUE)
+    {
+        if (sInviteTimer >= COOP_RESCUE_TIMEOUT)
+            Coop_FailWait();
+        return;
+    }
+    secs = Coop_ClockTick(&sInviteClock);
+    if (sRefusal == COOP_REFUSE_PARTNER_BUSY)
+    {
+        u8 busySecs = Coop_ClockTick(&sBusyClock);
+
+        // No busy answer for two seconds: the partner is free and has the
+        // question in front of them now.
+        if (sPartnerBusyNow && secs >= 2)
+            sPartnerBusyNow = FALSE;
+        if (sPartnerBusyNow)
+        {
+            if (busySecs >= COOP_WAIT_SECONDS)
+            {
+                Coop_FailWait();   // stayed busy the whole time
+                return;
+            }
+            secs = busySecs;
+        }
+    }
+    gCoopWaitSecondsLeft = secs >= COOP_WAIT_SECONDS ? 0 : COOP_WAIT_SECONDS - secs;
+    // Say why the field stopped while the partner decides, and how long.
+    if ((Coop_IsOptionalKind(sBattleKind) && sBattleKind != COOP_KIND_PAIR && sBattleKind != COOP_KIND_LEGEND)
+     || Coop_IsMandatoryKind(sBattleKind))
+    {
+        if (sInviteTimer >= 20)
+            Coop_DrawWaitNote(gCoopWaitSecondsLeft);
+    }
+    if (secs >= COOP_WAIT_SECONDS)
     {
         if (Coop_IsOptionalKind(sBattleKind))
             sSoloNote = COOP_SOLO_NO_ANSWER;
-        // A mandatory fight whose partner stayed in a menu screen keeps
-        // COOP_REFUSE_PARTNER_BUSY (set by the busy answers) for its message.
+            // (A partner who stayed busy was handled above.)
+        if (Coop_IsMandatoryKind(sBattleKind) && !sPartnerBusyNow)
+            sRefusal = COOP_REFUSE_NO_ANSWER;
         if (!Coop_IsMandatoryKind(sBattleKind) && sRefusal == COOP_REFUSE_PARTNER_BUSY)
             sRefusal = COOP_REFUSE_NONE;
         Coop_FailWait();
@@ -2656,14 +2813,24 @@ static void Task_CoopSession(u8 taskId)
         Coop_PollInviteTimeout();
         Coop_PollStory();
         if (sGuestPairPending && sGuestPairTimer < 0xFFFF)
-            sGuestPairTimer++;
+            sGuestPairTimer = Coop_ClockTick(&sGuestClock);
         // Nobody answered the join question in time (or the inviter stopped
         // waiting): close it as a NO, so the prompt does not sit on screen
         // for a fight that has already gone ahead. The ask script then says
         // so ("couldn't wait") and tells the inviter.
+        // A question still on its first page (nobody pressed anything) has
+        // no YES/NO box to cancel yet: its script is replaced by the answer
+        // step, which then sees the time ran out (the ask scripts do nothing
+        // else before the answer).
         if (sGuestPairPending
-         && sGuestPairTimer >= (sGuestPairInvite.kind == COOP_KIND_PAIR || sGuestPairInvite.kind == COOP_KIND_LEGEND ? COOP_PAIR_ANSWER_LIMIT : COOP_JOIN_ANSWER_LIMIT))
-            ScriptMenu_CancelYesNo();
+         && sGuestPairTimer >= COOP_ANSWER_SECONDS
+         && !ScriptMenu_CancelYesNo() && !sGuestAskClosed)
+        {
+            sGuestAskClosed = TRUE;
+            HideFieldMessageBox();
+            gSpecialVar_Result = FALSE;
+            ScriptContext_SetupScript(Coop_EventScript_JoinAskAnswer);
+        }
         if (sRescueGuestFollow && !gMain.inBattle)
         {
             if (sRescueGuestTimer < 0xFFFF)
@@ -3261,6 +3428,83 @@ bool8 Coop_BeaconActive(void)
     return sBeacon.on ? TRUE : FALSE;
 }
 
+static u32 Coop_ClockNow(bool8 *ok)
+{
+    struct SiiRtcInfo rtc;
+
+    *ok = FALSE;
+    if (RtcGetErrorStatus() & RTC_ERR_FLAG_MASK)
+        return 0;
+    RtcGetInfo(&rtc);
+    *ok = TRUE;
+    return RtcGetDayCount(&rtc) * 86400u + ConvertBcdToBinary(rtc.hour) * 3600u
+         + ConvertBcdToBinary(rtc.minute) * 60u + ConvertBcdToBinary(rtc.second);
+}
+
+static void Coop_ClockStart(struct CoopWaitClock *clock)
+{
+    bool8 ok;
+
+    clock->startSecs = Coop_ClockNow(&ok);
+    clock->rtc = ok ? 0 : 2;
+    clock->frames = 0;
+    clock->secs = 0;
+}
+
+// Once a frame: the seconds this wait has lasted.
+static u8 Coop_ClockTick(struct CoopWaitClock *clock)
+{
+    u16 frameSecs;
+
+    if (clock->frames < 0xFFFF)
+        clock->frames++;
+    if (clock->rtc != 2 && (clock->frames % 15) == 0)
+    {
+        bool8 ok;
+        u32 now = Coop_ClockNow(&ok);
+
+        if (!ok || now < clock->startSecs)
+            clock->rtc = 2;
+        else
+        {
+            u32 el = now - clock->startSecs;
+
+            clock->secs = el > 250 ? 250 : el;
+            if (el > 0)
+                clock->rtc = 1;
+            else if (clock->frames >= 60 * 60)
+                clock->rtc = 2;   // a minute of frames and the clock never moved
+        }
+    }
+    frameSecs = clock->frames / 60;
+    if (clock->rtc == 2)
+        return frameSecs > 250 ? 250 : frameSecs;
+    return max(clock->secs, frameSecs / 10);
+}
+
+static bool8 Coop_IsMandatoryKind(u8 kind);
+
+u8 Coop_LocalAvailability(u8 purpose)
+{
+    if (gMain.inBattle || sInBattle || gCoopBattleLaunching)
+        return COOP_AVAIL_BATTLE;
+    if (gMain.callback2 != CB2_Overworld)
+        return COOP_AVAIL_SCREEN;
+    if (sGuestPairPending || sJoinLaunchPending)
+        return COOP_AVAIL_PROMPT;
+    // Waiting on its own shared story fight (its script is stopped there):
+    // the partner's invitation for that fight is the same fight.
+    if (purpose == COOP_PURPOSE_MANDATORY && sWaitingAck && Coop_IsMandatoryKind(sBattleKind))
+        return COOP_AVAIL_OK;
+    if (!IsFieldMessageBoxHidden() || sPendingMessage != NULL)
+        return COOP_AVAIL_MESSAGE;
+    if (CoopDeal_Busy() || sProgressPending || sWaitKind != 0 || sWaitingAck)
+        return COOP_AVAIL_TRANSACTION;
+    if (ScriptContext_IsEnabled() || ArePlayerFieldControlsLocked())
+        return COOP_AVAIL_SCENE;
+    return COOP_AVAIL_OK;
+}
+
 static bool8 Coop_InteractionBusy(void)
 {
     return sProgressPending || sInBattle || gMain.inBattle || CoopDeal_Busy() || sWaitingAck || sWaitKind != 0 || sGuestPairPending;
@@ -3646,6 +3890,10 @@ static bool8 Coop_RefuseMandatory(void)
         sRefusal = COOP_REFUSE_NONE;
     else if (!Coop_HasBattleReadyLead())
         sRefusal = COOP_REFUSE_SELF_NOT_READY;
+    // Linked and together, but the Beacon is OFF: a shared fight is asked
+    // for with the Beacon on (the opening rescue is the one exception).
+    else if (!sBeacon.on)
+        sRefusal = COOP_REFUSE_BEACON_OFF;
     else
         return FALSE;
     gSpecialVar_Result = FALSE;
@@ -5379,20 +5627,31 @@ u16 Coop_PairGuestAnswer(void)
 
     u8 kind = sGuestPairInvite.kind;
 
+    // Too late: an optional fight went ahead without this player (2); a
+    // shared story fight did not start at all (4).
     if (!sGuestPairPending)
-        return 2;
+        return Coop_IsMandatoryKind(kind) ? 4 : 2;
     sGuestPairPending = FALSE;
-    if (sGuestPairTimer >= (kind == COOP_KIND_PAIR || kind == COOP_KIND_LEGEND ? COOP_PAIR_ANSWER_LIMIT : COOP_JOIN_ANSWER_LIMIT)
+    if (sGuestPairTimer >= COOP_ANSWER_SECONDS
      || !Coop_SessionActive() || !Coop_PartnerOnSameMap())
     {
         Coop_SendReplyWhy(COOP_KIND_NACK, seq, COOP_SOLO_NO_ANSWER);
-        return 2;
+        if (!Coop_IsMandatoryKind(kind))
+            return 2;
+        // This player's own time ran out (5), or the partner withdrew or left (4).
+        return sGuestPairTimer != 0xFFFF && sGuestPairTimer >= COOP_ANSWER_SECONDS
+            && Coop_SessionActive() && Coop_PartnerOnSameMap() ? 5 : 4;
     }
     if (!accepted || !Coop_HasBattleReadyLead()
      || (kind == COOP_KIND_PAIR && Coop_PairPlanFromHere(TRUE, accepted) != COOP_PAIR_JOINT))
     {
         Coop_SendReplyWhy(COOP_KIND_NACK, seq, !accepted ? COOP_SOLO_DECLINED : COOP_SOLO_PARTNER_NOT_READY);
         return 0;
+    }
+    if (Coop_IsMandatoryKind(kind))
+    {
+        Coop_AcceptMandatory(&sGuestPairInvite);
+        return 1;
     }
     if (kind == COOP_KIND_LEGEND && !CoopLegend_Eligible((u8)sGuestPairInvite.aux))
     {
@@ -5434,6 +5693,24 @@ u16 Coop_PairGuestAnswer(void)
     Coop_SendReply(COOP_KIND_ACK, seq);
     Coop_LaunchBattle(TRUE);
     return 1;
+}
+
+// The shared story fight's question: STR_VAR_1 the trainers ("ROXANNE &
+// HEATH"), STR_VAR_2 the partner.
+void Coop_BufferStoryAsk(void)
+{
+    u8 *end = gStringVar1;
+
+    *end = EOS;
+    if (sGuestPairInvite.trainerA != TRAINER_NONE && sGuestPairInvite.trainerA < TRAINERS_COUNT)
+        end = StringCopy(end, GetTrainerNameFromId(sGuestPairInvite.trainerA));
+    if (sGuestPairInvite.trainerB != TRAINER_NONE && sGuestPairInvite.trainerB < TRAINERS_COUNT)
+    {
+        end = StringCopy(end, COMPOUND_STRING(" & "));
+        StringCopy(end, GetTrainerNameFromId(sGuestPairInvite.trainerB));
+    }
+    StringCopyN(gStringVar2, gLinkPlayers[GetMultiplayerId() ^ 1].name, PLAYER_NAME_LENGTH);
+    gStringVar2[PLAYER_NAME_LENGTH] = EOS;
 }
 
 // STR_VAR_1: what the partner ran into, for the join question.
@@ -5480,6 +5757,12 @@ bool8 Coop_InterceptRival(u16 trainerId)
     if (!Coop_HasBattleReadyLead())
     {
         sRefusal = COOP_REFUSE_SELF_NOT_READY;
+        ScriptContext_SetupScript(Coop_EventScript_RivalWaits);
+        return TRUE;
+    }
+    if (!sBeacon.on)
+    {
+        sRefusal = COOP_REFUSE_BEACON_OFF;
         ScriptContext_SetupScript(Coop_EventScript_RivalWaits);
         return TRUE;
     }

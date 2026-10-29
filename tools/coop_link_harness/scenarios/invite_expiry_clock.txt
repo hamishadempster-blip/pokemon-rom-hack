@@ -1,0 +1,37 @@
+# Invitation timing by the game clock (0xC017013E). Lab saves, Route 102,
+# linked with the Beacon ON. Kai meets a wild Pokemon; Rosa is asked and
+# presses nothing. Kai's countdown reaches 0 after about 30 seconds of the
+# cartridge clock and Kai fights alone; Rosa's question closes at about 26
+# seconds ("went ahead without you"); both carry on linked.
+# Frame counts depend on the clock source: with the harness's emulated RTC
+# (default) 30 s = about 1800 frames; with RTC_WALL0=1 RTC_WALL1=1 the wall
+# clock runs while the harness emulates many times faster than real time,
+# so expiry takes more frames (capped at ten times 30 s of frames). The log
+# frame numbers of the hex lines (question opened) and of Kai's battle
+# start record both. The cartridge clock counts whole seconds, so any
+# reading can be up to one second ahead of the frames.
+include route102_reconnect_start.inc
+# (wild_steps.inc, with room for a wall-clock wait at harness speed)
+0 goto 39 10 2000
+0 goto 39 4 2000
+0 write sWildEncountersDisabled 0
+0 pace_until_battle 30000
+0 write sWildEncountersDisabled 1
+1 until_mem coop.sGuestPairPending 1 6000
+1 hex coop.sGuestPairTimer 2
+1 wait 60
+1 shot asked
+1 wait 1380
+1 hex coop.sGuestPairTimer 2
+1 expect coop.sGuestPairPending 1
+0 until_cb2 BattleMainCB2 20000
+0 expect gBattlersCount 2
+1 until_mem coop.sGuestPairPending 0 20000
+1 wait 60
+1 note_text went_ahead_without_you
+1 mash_field 3000 B
+1 expect_noted
+0 mash_field 25000
+b wait 300
+b expect coop.sLinkState 2
+b expect coop.sGuestPairPending 0

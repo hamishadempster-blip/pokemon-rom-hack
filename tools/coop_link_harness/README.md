@@ -346,7 +346,8 @@ details in `<name>.visual.txt`).
 |---|---|
 | `BATTLE_LOG=1` | In battle, print each new battle message on each screen with every battler's species, HP and absent bit: `[fNNN pX battle] text \| b0=species:hp/max ...`. Who acted on what can then be read, not guessed from the picture. |
 | `SNAP_EVERY=N SNAP_DIR=dir` | Every N battle frames, dump VRAM, OAM, palettes and I/O to `dir/p<id>_<frame>.bin` and a PNG. |
-| `RTC_EPOCH0/1=unix seconds` | FIXTURE: that core's cartridge clock starts at that moment (the RTC reads it as local time; 1699963200 is 23:00, 1699923600 is 12:00 AEDT). |
+| `RTC_EPOCH0/1=unix seconds` | FIXTURE: that core's cartridge clock starts at that moment (the RTC reads it as local time; 1699963200 is 23:00, 1699923600 is 12:00 AEDT). The clock always runs with emulated time (60 frames a second); without RTC_EPOCH it starts at 1793268000 (since build 0xC017013E; before that it was the host's clock). |
+| `RTC_WALL0/1=1` | That core's clock is the host's wall clock instead, as in an emulator running faster than real time (tests of real-time waits). |
 | `expect_tint 1\|0 LABEL` | The outdoor time-of-day tint is (1) or is not (0) applied: BG palettes 2–6 of `gPlttBufferFaded` against `gPlttBufferUnfaded`. |
 | `writep PTRSYM+off:size VALUE` | Write through a pointer. |
 | `fixture_nick SLOT NAME` | FIXTURE: a nickname for this player's party slot (letters, digits, `_` for a space, 9 at most). Names only; stats untouched. |

@@ -1,8 +1,11 @@
-# Nearby wild invitation, refused. Player 1 is asked and answers NO; player 0
+# Nearby wild invitation, refused. Player 1 is asked (two pages since
+# 0xC017013E: who, then the question and its time) and answers NO; player 0
 # fights the wild Pokemon alone, the link stays up, and nobody is stuck.
 include route102_reconnect_start.inc
 include wild_steps.inc
 1 until_mem coop.sGuestPairPending 1 6000
+1 wait 150
+1 press A 2
 1 wait 150
 1 shot invite-question
 1 press B 2

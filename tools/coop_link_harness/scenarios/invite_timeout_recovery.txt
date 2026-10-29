@@ -7,8 +7,10 @@ include wild_steps.inc
 1 until_mem coop.sGuestPairPending 1 6000
 # The invitation expires while the guest is reading. A late YES cannot start
 # an orphan battle. Application heartbeats recover without toggling Beacon.
-1 mute_coop 900
-1 wait 750
+# (0xC017013E: the question closes after 26 seconds and the inviter waits
+# 30, so the guest stays silent for 1900 frames and answers at 1650.)
+1 mute_coop 1900
+1 wait 1650
 1 press A 2
 1 mash_field 1200
 0 until_cb2 BattleMainCB2 9000

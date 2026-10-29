@@ -57,6 +57,33 @@ extern const u8 Coop_EventScript_TalkPartner[];
 #define COOP_REFUSE_SELF_NOT_READY  1
 #define COOP_REFUSE_PARTNER_NOT_READY 2
 #define COOP_REFUSE_PARTNER_BUSY    3   // the partner stayed in a menu screen
+#define COOP_REFUSE_BEACON_OFF      4   // linked, together, but the Twin Beacon is OFF
+#define COOP_REFUSE_PARTNER_DECLINED 5  // the partner answered NO to the shared fight
+#define COOP_REFUSE_NO_ANSWER       6   // the partner did not answer in time
+#define COOP_REFUSE_CANCELLED       7   // this player stopped waiting (B)
+
+// Invitations: how long the inviter waits for an answer and how long the
+// partner's question stays open (shorter, so a YES arrives in time). Real
+// seconds from the cartridge clock while it runs (so accelerated emulation
+// does not shorten them), else 60 frames a second.
+#define COOP_WAIT_SECONDS    30
+#define COOP_ANSWER_SECONDS  26
+
+// What this game is doing, for every request from the partner (a shared
+// fight, a trade or gift, joining a conversation, following, preparing a
+// team): one answer, checked when asked and again before committing.
+enum {
+    COOP_AVAIL_OK,
+    COOP_AVAIL_BATTLE,       // in or entering a battle
+    COOP_AVAIL_SCREEN,       // a menu screen: bag, party, PC, shop, summary, save, fade
+    COOP_AVAIL_MESSAGE,      // a message box or a message queued to show
+    COOP_AVAIL_PROMPT,       // already answering the partner's question
+    COOP_AVAIL_TRANSACTION,  // a trade, gift, shared progress, or its own invitation
+    COOP_AVAIL_SCENE,        // a script or cutscene has the field
+};
+#define COOP_PURPOSE_OPTIONAL  0  // optional fights, trades, gifts, conversations, following
+#define COOP_PURPOSE_MANDATORY 1  // a shared story fight: its own waiting invitation counts as free
+u8 Coop_LocalAvailability(u8 purpose);
 extern u16 gCoopBusyRetries;
 
 // Why an ordinary fight stayed solo while linked with the Beacon on. Sent in
@@ -368,6 +395,9 @@ extern const u8 Coop_EventScript_CaughtNickname[];
 extern const u8 Coop_EventScript_PairAskHost[];
 extern const u8 Coop_EventScript_PairAskGuest[];
 extern const u8 Coop_EventScript_JoinAskGuest[];
+extern const u8 Coop_EventScript_StoryAskGuest[];
+extern const u8 Coop_EventScript_JoinAskAnswer[];
+void Coop_BufferStoryAsk(void);
 extern const u8 Coop_EventScript_PairTooLate[];
 
 // Co-op move target prompt (src/battle_controller_player.c).

@@ -1,0 +1,61 @@
+# Shared story fights need both players to agree (build 0xC017013E). Lab
+# saves, linked, Beacon ON. FIXTURES: fixture_warp into the Rustboro Gym in
+# front of Roxanne (Kai) and beside the leaders (Rosa); strong cached stats.
+# 1. Kai talks to Roxanne: Kai's screen counts down while Rosa is asked
+#    "...is ready to battle ROXANNE & HEATH with you. Ready now?"; Rosa says
+#    NO: nothing starts (no battle, no flag) and Kai is told why.
+# 2. Kai talks again; Rosa says YES: the shared battle starts for both.
+include beacon_battle.txt
+b mash_field 2000 B
+b write sWildEncountersDisabled 1
+0 fixture_lead 255 70 344960
+1 fixture_lead 228 70 428750
+0 fixture_warp 11 3 5 3
+1 fixture_warp 11 3 3 4
+b until_field 3000
+b sync
+b wait 40
+b sync
+0 press UP 2
+0 wait 20
+0 press A 2
+0 until_mem coop.sWaitingAck 1 3000 A
+1 until_mem coop.sGuestPairPending 1 6000
+1 wait 90
+1 note_text ready_to_battle
+1 press A 2
+1 wait 40
+1 expect_noted
+0 until_mem gCoopWaitSecondsLeft:1 28 3000
+0 shot kai-countdown
+1 shot rosa-asked
+# NO (after a few seconds of the countdown)
+1 wait 240
+1 press DOWN 2
+1 wait 10
+0 note_text isn't_ready_for_this
+1 press A 2
+1 wait 60
+0 until_field_text isn't_ready_for_this 3000
+0 wait 60
+0 shot kai-told
+0 mash_field 3000 B
+1 mash_field 1000 B
+b expect coop.sInBattle 0
+b expect_flag 0x867 0
+b expect coop.sGuestPairPending 0
+b sync
+# YES
+0 press A 2
+0 wait 20
+0 press A 2
+0 until_mem coop.sWaitingAck 1 3000 A
+1 until_mem coop.sGuestPairPending 1 6000
+1 wait 90
+1 press A 2
+1 wait 120
+1 press A 2
+b until_cb2 BattleMainCB2 9000 A
+b expect coop.sInBattle 1
+b expect gBattlersCount 4
+b shot both-in-battle

@@ -1,0 +1,31 @@
+# Both players start the same shared story fight at once (0xC017013E).
+# Lab saves, linked, Beacon ON, Rustboro Gym. FIXTURES: fixture_warp; strong
+# cached stats. Kai talks to Roxanne and Rosa to Heath on the same frame:
+# link player 0's request wins and Rosa's game joins it (the driver
+# presses A through both leaders' lines, so it would also answer a question
+# if one appeared); one shared battle starts on both games (four battlers),
+# Kai hosting, and nobody is left waiting.
+include beacon_battle.txt
+b mash_field 2000 B
+b write sWildEncountersDisabled 1
+0 fixture_lead 255 70 344960
+1 fixture_lead 228 70 428750
+0 fixture_warp 11 3 5 3
+1 fixture_warp 11 3 6 3
+b until_field 3000
+b sync
+b wait 40
+b sync
+b press UP 2
+b wait 20
+b sync
+b press A 2
+b until_cb2 BattleMainCB2 9000 A
+b expect coop.sInBattle 1
+b expect gBattlersCount 4
+b expect coop.sGuestPairPending 0
+b expect coop.sWaitingAck 0
+0 expect coop.sIsGuest 0
+1 expect coop.sIsGuest 1
+b wait 120
+b shot both-in-battle

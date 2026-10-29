@@ -1,0 +1,37 @@
+# A shared story fight nobody answers (0xC017013E). Lab saves, linked,
+# Beacon ON, Rustboro Gym. FIXTURES: fixture_warp; strong cached stats.
+# Kai talks to Roxanne; Rosa presses nothing (her question stays on its
+# first page). At about 26 seconds Rosa's question closes by itself ("Time
+# ran out"); at about 30 Kai is told she didn't answer; nothing started.
+include beacon_battle.txt
+b mash_field 2000 B
+b write sWildEncountersDisabled 1
+0 fixture_lead 255 70 344960
+1 fixture_lead 228 70 428750
+0 fixture_warp 11 3 5 3
+1 fixture_warp 11 3 3 4
+b until_field 3000
+b sync
+b wait 40
+b sync
+0 press UP 2
+0 wait 20
+0 press A 2
+0 until_mem coop.sWaitingAck 1 3000 A
+1 until_mem coop.sGuestPairPending 1 6000
+1 note_text Time_ran_out
+1 until_mem coop.sGuestPairPending 0 2400
+1 wait 90
+1 shot rosa-time-up
+1 mash_field 2000 B
+1 expect_noted
+0 note_text didn't_answer_in_time
+0 until_mem coop.sWaitingAck 0 2400
+0 wait 90
+0 shot kai-no-answer
+0 mash_field 2000 B
+0 expect_noted
+b wait 120
+b expect coop.sInBattle 0
+b expect_flag 0x867 0
+b expect coop.sLinkState 2

@@ -24,6 +24,7 @@
 	.global Coop_EventScript_TalkTwin
 	.global Coop_EventScript_RivalTaunt
 	.global Coop_EventScript_JoinAskGuest
+	.global Coop_EventScript_StoryAskGuest
 
 @ Coop_TakeRefusal: 1 means this player's first three are down,
 @ 2 means the partner's are. 0 falls through to the usual message.
@@ -65,24 +66,17 @@ Coop_Text_NpcBusy:
 Coop_EventScript_NeedPartner::
 	lockall
 	specialvar VAR_RESULT, Coop_TakeRefusal
-	goto_if_eq VAR_RESULT, 1, Coop_EventScript_ShowNotReady
-	goto_if_eq VAR_RESULT, 2, Coop_EventScript_ShowPartnerNotReady
-	goto_if_eq VAR_RESULT, 3, Coop_EventScript_ShowPartnerBusy
-	msgbox Coop_Text_NeedPartner, MSGBOX_DEFAULT
+	call Coop_EventScript_RefusalNote
 	releaseall
 	end
 
 @ A rival scene that needs both players, started alone (or with the first
-@ three down): say why, then reset the scene so it plays again in full.
+@ three down, the Beacon off, the partner saying no): say why, then reset
+@ the scene so it plays again in full.
 Coop_EventScript_RivalWaits::
 	lockall
 	specialvar VAR_RESULT, Coop_TakeRefusal
-	goto_if_eq VAR_RESULT, 1, Coop_EventScript_RivalWaitsNotReady
-	msgbox Coop_Text_NeedPartner, MSGBOX_DEFAULT
-	goto Coop_EventScript_RivalWaitsReset
-Coop_EventScript_RivalWaitsNotReady::
-	msgbox Coop_Text_NotReady, MSGBOX_DEFAULT
-Coop_EventScript_RivalWaitsReset::
+	call Coop_EventScript_RefusalNote
 	special Coop_ResetRivalScene
 	fadedefaultbgm
 	releaseall
@@ -91,29 +85,92 @@ Coop_EventScript_RivalWaitsReset::
 Coop_EventScript_PartnerDeclined::
 	lockall
 	specialvar VAR_RESULT, Coop_TakeRefusal
-	goto_if_eq VAR_RESULT, 1, Coop_EventScript_ShowNotReady
-	goto_if_eq VAR_RESULT, 2, Coop_EventScript_ShowPartnerNotReady
+	goto_if_eq VAR_RESULT, 0, Coop_EventScript_PartnerDeclinedPlain
+	call Coop_EventScript_RefusalNote
+	releaseall
+	end
+Coop_EventScript_PartnerDeclinedPlain::
 	msgbox Coop_Text_PartnerDeclined, MSGBOX_DEFAULT
 	releaseall
 	end
 
-Coop_EventScript_NotReady::
-	lockall
-Coop_EventScript_ShowNotReady::
+@ VAR_RESULT: why a shared story fight did not start (COOP_REFUSE_*).
+@ 0 is the "come back together, or UNLINK" note.
+Coop_EventScript_RefusalNote::
+	goto_if_eq VAR_RESULT, 1, Coop_EventScript_RefusalNotReady
+	goto_if_eq VAR_RESULT, 2, Coop_EventScript_RefusalPartnerNotReady
+	goto_if_eq VAR_RESULT, 3, Coop_EventScript_RefusalBusy
+	goto_if_eq VAR_RESULT, 4, Coop_EventScript_RefusalBeaconOff
+	goto_if_eq VAR_RESULT, 5, Coop_EventScript_RefusalDeclined
+	goto_if_eq VAR_RESULT, 6, Coop_EventScript_RefusalNoAnswer
+	goto_if_eq VAR_RESULT, 7, Coop_EventScript_RefusalCancelled
+	msgbox Coop_Text_NeedPartner, MSGBOX_DEFAULT
+	return
+Coop_EventScript_RefusalNotReady::
 	msgbox Coop_Text_NotReady, MSGBOX_DEFAULT
-	releaseall
-	end
-
-Coop_EventScript_ShowPartnerNotReady::
+	return
+Coop_EventScript_RefusalPartnerNotReady::
 	msgbox Coop_Text_PartnerNotReady, MSGBOX_DEFAULT
-	releaseall
-	end
-
-Coop_EventScript_ShowPartnerBusy::
+	return
+Coop_EventScript_RefusalBusy::
 	specialvar VAR_RESULT, CoopDeal_BufferPartnerName
 	msgbox Coop_Text_PartnerBusy, MSGBOX_DEFAULT
-	releaseall
-	end
+	return
+Coop_EventScript_RefusalBeaconOff::
+	msgbox Coop_Text_StoryBeaconOff, MSGBOX_DEFAULT
+	return
+Coop_EventScript_RefusalDeclined::
+	specialvar VAR_RESULT, CoopDeal_BufferPartnerName
+	msgbox Coop_Text_StoryDeclined, MSGBOX_DEFAULT
+	return
+Coop_EventScript_RefusalNoAnswer::
+	specialvar VAR_RESULT, CoopDeal_BufferPartnerName
+	msgbox Coop_Text_StoryNoAnswer, MSGBOX_DEFAULT
+	return
+Coop_EventScript_RefusalCancelled::
+	msgbox Coop_Text_StoryCancelled, MSGBOX_DEFAULT
+	return
+
+Coop_Text_StoryBeaconOff:
+	.string "You're linked and together, so this\n"
+	.string "fight is for both of you, but the\l"
+	.string "TWIN BEACON is OFF.\p"
+	.string "Turn it on (BAG, KEY ITEMS), or\n"
+	.string "choose UNLINK in the CO-OP menu\l"
+	.string "to face it alone.$"
+
+Coop_Text_StoryDeclined:
+	.string "{STR_VAR_1} isn't ready for this\n"
+	.string "fight yet. Nothing started.\p"
+	.string "Talk again when you both are.$"
+
+Coop_Text_StoryNoAnswer:
+	.string "{STR_VAR_1} didn't answer in time.\n"
+	.string "Nothing started.$"
+
+Coop_Text_StoryCancelled:
+	.string "You stopped waiting.\n"
+	.string "Nothing started.$"
+
+@ The partner is ready for a shared story fight (a gym, a rival, the
+@ League, a villain): it starts only on YES. Answered like the join
+@ question: in time, or it closes as too late.
+Coop_EventScript_StoryAskGuest::
+	lockall
+	special Coop_BufferStoryAsk
+	msgbox Coop_Text_StoryAsk, MSGBOX_YESNO
+	goto Coop_EventScript_JoinAskAnswer
+
+Coop_Text_StoryAsk:
+	.string "{STR_VAR_2} is ready to battle\n"
+	.string "{STR_VAR_1} with you.\p"
+	.string "This fight needs you both.\n"
+	.string "Ready now? (about 25 seconds)$"
+
+Coop_EventScript_NotReady::
+	lockall
+
+
 
 Coop_EventScript_Disconnected::
 	lockall
@@ -972,6 +1029,24 @@ Coop_EventScript_PairTooLate::
 	releaseall
 	end
 
+Coop_EventScript_StoryTooLate::
+	msgbox Coop_Text_StoryTooLate, MSGBOX_DEFAULT
+	releaseall
+	end
+
+Coop_EventScript_StoryTimeUp::
+	msgbox Coop_Text_StoryTimeUp, MSGBOX_DEFAULT
+	releaseall
+	end
+
+Coop_Text_StoryTimeUp:
+	.string "Time ran out before you answered.\n"
+	.string "Nothing started. Talk again together.$"
+
+Coop_Text_StoryTooLate:
+	.string "Your partner stopped waiting.\n"
+	.string "Nothing started. Talk again together.$"
+
 Coop_Text_PartnerCaught:
 	.string "Your partner's ball caught the\n"
 	.string "{STR_VAR_1}. It belongs to them.$"
@@ -1325,6 +1400,8 @@ Coop_EventScript_JoinAskAnswer::
 	specialvar VAR_RESULT, Coop_PairGuestAnswer
 	goto_if_eq VAR_RESULT, 1, Coop_EventScript_PairGuestWait
 	goto_if_eq VAR_RESULT, 2, Coop_EventScript_PairTooLate
+	goto_if_eq VAR_RESULT, 4, Coop_EventScript_StoryTooLate
+	goto_if_eq VAR_RESULT, 5, Coop_EventScript_StoryTimeUp
 	@ 3: a wild fight, launched once this script has ended, from the
 	@ same idle field state the old automatic answer started it from.
 	releaseall
@@ -1332,8 +1409,12 @@ Coop_EventScript_JoinAskAnswer::
 
 Coop_Text_JoinAskWild:
 	.string "Your partner ran into a wild\n"
-	.string "{STR_VAR_1} nearby. Join the battle?$"
+	.string "{STR_VAR_1} nearby.\p"
+	.string "Join the battle?\n"
+	.string "(About 25 seconds to answer.)$"
 
 Coop_Text_JoinAskTrainer:
 	.string "{STR_VAR_1} challenged your partner\n"
-	.string "nearby. Join the battle?$"
+	.string "nearby.\p"
+	.string "Join the battle?\n"
+	.string "(About 25 seconds to answer.)$"

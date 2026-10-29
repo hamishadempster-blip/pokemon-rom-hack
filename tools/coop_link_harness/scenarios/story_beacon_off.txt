@@ -1,0 +1,38 @@
+# With the Twin Beacon OFF, a shared story fight says so instead of starting
+# or pulling the partner in (build 0xC017013E). Lab saves, linked (the
+# Beacon is off after linking), both in the Rustboro Gym. FIXTURES:
+# fixture_warp; strong cached stats. Kai talks to Roxanne: the message
+# names the Beacon and UNLINK; Rosa is never asked; nothing starts.
+b wait 1100
+b press START 2
+b wait 200
+b until_cb2 CB2_Overworld 8000 A
+b until_field 3000
+b press START 2
+b wait 40
+b menu_to COOP
+b press A 2
+b mash_field 3000
+b expect coop.sLinkState 2
+b until_field 1500
+b mash_field 2000 B
+b write sWildEncountersDisabled 1
+b expect coop.sBeacon+1:1 0
+0 fixture_lead 255 70 344960
+1 fixture_lead 228 70 428750
+0 fixture_warp 11 3 5 3
+1 fixture_warp 11 3 3 4
+b until_field 3000
+b sync
+b wait 40
+b sync
+0 press UP 2
+0 wait 20
+0 note_text TWIN_BEACON_is_OFF
+0 press A 2
+0 mash_field 4000 A
+0 expect_noted
+0 shot beacon-off-note
+b expect coop.sInBattle 0
+1 expect coop.sGuestPairPending 0
+b expect_flag 0x867 0

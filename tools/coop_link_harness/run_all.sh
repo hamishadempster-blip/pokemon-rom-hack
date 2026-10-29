@@ -308,6 +308,12 @@ fi
 # saves from a 0xC017013C suite, a quest finished before Mega Stones).
 run guide_team_select SAVE0="$lab0" SAVE1="$lab1"
 run catch_before_dex SAVE0="$lab0" SAVE1="$lab1"
+for s in story_consent story_beacon_off story_cancel story_unanswered story_simultaneous invite_expiry_clock; do
+	run "$s" SAVE0="$lab0" SAVE1="$lab1"
+done
+# The same expiry by the wall clock while the harness runs faster than real
+# time: more frames pass, the same 30 seconds of clock time.
+run_as invite_expiry_clock_wall invite_expiry_clock SAVE0="$lab0" SAVE1="$lab1" RTC_WALL0=1 RTC_WALL1=1
 for s in boss_pair_solo boss_pair_coop rival_case_grass rival_case_fire rival_case_water; do
 	run "$s" SAVE0="$lab0" SAVE1="$lab1"
 done
