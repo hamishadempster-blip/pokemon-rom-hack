@@ -1,4 +1,45 @@
-# Co-op compatibility audit: build 0xC017013C
+# Hoenn Co-op Battle Guide v2: build 0xC017013D
+
+Branch `coop-doorway-scenes-rivals` (continued from 0xC017013C), pushed, not merged. Both players need this build: 0xC017013C and older refuse to link with it (the invite carries a team key now). Older saves load; nothing in the save layout moved. Test log: [COOP_TESTLOG_C017013D.md](COOP_TESTLOG_C017013D.md). Team spec and every substitution: [COOP_TEAM_SPEC.md](COOP_TEAM_SPEC.md). Stones, sources and item balls: [COOP_MEGA_MANIFEST.md](COOP_MEGA_MANIFEST.md). Player-facing: [COOP.md](COOP.md) (Story rules, Level cap, Mega Evolution).
+
+- ROM `emerald-coop-C017013D.gba` from source `1b26b863` (no game-code change after it): SHA-1 `7ec98060cb241e0749fbc4d73e43c93f4cf05527`, SHA-256 `1ef8450dbe64423bfa1868c08392504ef80c4c88726ccf775e3a5c0b0143f71b`.
+- Commits: project instructions `104eab18`; team spec, progress-based selection, caps, duo starters `982e48a7`; Mega Evolution in co-op battles `bea2ac70`; bracelet, stones, personal item balls `026d3894`; boss pairs `84f76907`; harness and first scenarios `720845e3`; ball placement rules and quest-stone room check `8fe80b9a`; scenarios and fixture updates `1b26b863`; harness pace fix `c59a587e`; docs after it.
+- Final suite: 241 scenarios, 237 pass on the first run. Of the 4 failures, 3 (an egg-roll frame budget; a harness START lost mid-step and the reload that depends on it) pass on rerun after the harness fix `c59a587e`; `roster_b3_catch` failed again (driver: a wild Stunfisk in the air after Bounce, the throw refused). Details in the test log.
+
+## What changed
+
+- **One team spec.** `tools/coop_trainers/battle_plan.json` (the guide's embedded plan) → `guide.py` writes the parties in `src/data/trainers.party` and `battle_partners.party`, the variant rules `src/data/coop_team_variants.h` and `docs/COOP_TEAM_SPEC.md`. `overhaul.py` skips the ids the guide owns; `bosses.py` is retired. 13 new party-only ids (926-938): Lilycove and hideout early variants and the exhibition case variants. Trainer flags stay on the base ids.
+- **Team selection.** `src/coop_teams.c`: progress tier (0 before badge 1, 1-8 badges, 9 League admission = `FLAG_ENTERED_ELITE_FOUR`, 10 Champion) and the starter case make a team key. A linked fight uses the lower tier of the two players and the inviter's case (sent in the invite and every answer). Ordinary rematch tiers step down while their levels pass the cap.
+- **Caps** 18 / 24-60 / 66 / 76 (League admission, kept) / 80 (Champion); a Pokémon at or below the cap obeys.
+- **Duo starters** Torchic+Fennekin, Mudkip+Totodile, Treecko+Chikorita with their own level-up moves; rivals use the counter type; Soren owns the case line, Mira the companion line, from the save's recorded rival (never the party).
+- **Mega Evolution** on in co-op and solo (Z-Moves, Dynamax, Tera stay off). The guest's move selection says whether a Mega is allowed and already used; the master takes a Mega only if still allowed; a withdrawn choice gives it back. The partner slot needs the partner's own bracelet. The guest's healthbox shows the Mega indicator. Party Megas revert after a co-op battle with HP kept. Mega Banette, Beedrill, Chimecho, Mawile and Sableye keep the revamped base forms' HP. `ITEM_MEGA_RING` is shown as the Mega Bracelet.
+- **Bracelet** from Steven on Route 118 after badge 5 (`FLAG_RECEIVED_MEGA_BRACELET` 0x4A2), each save on its own; the Exchange's MEGA STONE clerk gives it to a 5-badge save without it.
+- **Stones and item balls.** `tools/coop_mega/rewards.py` (+ `place.py`): 82 stones (Exchange tiers 5 badges / 7 badges / Champion, four quest rewards, 53 balls) and 31 other balls; 88 flags from unused ranges (0x21-0x4F, 0x4A3-0x4EF). Found stones are sold again; WHERE TO FIND gives hints.
+- **Boss pairs.** The second trainer stands beside each leader, Elite Four member and the Champion (`data/scripts/coop_boss_pairs.inc`); talking to either starts the same fight.
+
+## Migration notes
+
+- No save layout change. New flags were unused before (listed in `include/constants/flags.h` with the generator's comment).
+- Existing Pokémon are untouched; saves from before keep their old companion starters (Houndour, Wingull, Shroomish); the rival is still read from the save.
+- A save past Route 118's scene gets its bracelet from the Exchange clerk; a save that finished a quest before gets that quest's stone the next time it talks to the quest's person (a full bag is told to come back).
+- Trainer flags are unchanged (base ids keep them), so beaten trainers stay beaten.
+
+## Known gaps
+
+- **Balance is not established.** Unassisted runs with the main journey's parties lost to the Petalburg Woods grunt and to Rustboro's third gym trainer, and later fights were lost with the journey's level-boosted, early-move parties (test log, Balance). No balance claim.
+- Played: Roxanne/Heath as a boss pair (solo and co-op), Lilycove early/late, Route 103 all three cases, exhibitions all three cases, Megas (simultaneous, cancel, abort, bracelet ownership, HP, MEGA SOL, DRAGONIZE). Not played: the other 11 boss-pair NPCs, Elite Four/Champion pairs, Gabby and Ty, rematch tiers and hideout variants in battle, the other Z-A abilities, most of the 84 balls.
+- Reed at Dewford (3,3) stands where the old journey script walked to talk to Brawly from the side; Brawly is still reached from the front.
+- Mega Milotic and other custom Megas deferred (as asked).
+- Harness weak points: rare-slot hunts, the visual checker's absent-battler and Safari false positives, the driver cannot pick a replacement in the stock solo-with-partner party menu. mGBA GUI, hardware and netplay not tested.
+
+## Where things are (work environment, not committed)
+
+- Checkpoints `/home/claude/journey/jNN`; final suite `/home/claude/journey/final13D/suite`; harness reruns `/home/claude/journey/final13D/harness_rerun`; earlier full run `/home/claude/journey/pre13D`; clips `/home/claude/journey/clips13D`; balance probes (copies of journey scenarios) `/tmp/claude-0/zz`.
+- Full suite: `OUT=dir ROM=… HARNESS_OUT=dir LONG=1 SEG6=… J06=… J13=… J16=… J37=… J43=… J44=… J46=… J48=… J50=… J51=… J52=… J57=… J58=… J59=… J65=… J66=… J68=… OLD13C_COAST=<0xC017013C suite>/coast_solo_j68 tools/coop_link_harness/run_all.sh`.
+
+# Previous build: 0xC017013C
+
+## Co-op compatibility audit: build 0xC017013C
 
 Branch `coop-doorway-scenes-rivals` (continued from 0xC017013B), pushed, not merged. Both players need this build; 0xC017013B and older refuse to link with it. Older saves load (no save layout change). Audit table: [COOP_AUDIT_C017013C.md](COOP_AUDIT_C017013C.md). Test log: [COOP_TESTLOG_C017013C.md](COOP_TESTLOG_C017013C.md).
 
