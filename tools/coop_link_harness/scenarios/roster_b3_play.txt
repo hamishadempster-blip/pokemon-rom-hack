@@ -19,7 +19,9 @@ b no_wild 1
 b test_item 1 20
 b mash_field 300 B
 0 fixture_warp 0 17 5 5
-1 fixture_warp 0 18 14 4
+# (Route 103: the middle of the west grass, x 5: (14,4) is two steps above
+# a ledge, and a hunt that jumps it is left below with no grass.)
+1 fixture_warp 0 18 5 8
 b until_field 3000
 b no_wild 0
 0 hunt 6 427 120000
