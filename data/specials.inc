@@ -794,6 +794,7 @@ gSpecials::
 	def_special CoopExchange_OpenShop
 	def_special CoopExchange_CountStock
 	def_special CoopExchange_BufferUpcoming
+	def_special CoopExchange_BufferMegaHints
 	def_special CoopExchange_PushTutorTypes
 	def_special CoopExchange_PushTutorMoves
 	def_special CoopExchange_SelectTutorMove

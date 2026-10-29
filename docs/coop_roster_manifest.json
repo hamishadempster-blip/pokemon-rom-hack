@@ -10207,7 +10207,7 @@
    "species": "SPECIES_CHIKORITA",
    "national_dex": 152,
    "hoenn_dex": 886,
-   "earliest_badges_with_evolution": 9,
+   "earliest_badges_with_evolution": 0,
    "name": "Chikorita",
    "types": [
     "Grass"
@@ -10225,12 +10225,22 @@
      "renewable": false
     },
     {
+     "method": "first partner (Birch, partner of the case; co-op)",
+     "location": "Route 101",
+     "map": "MAP_ROUTE101",
+     "requires": "start, linked",
+     "badges": 0,
+     "renewable": false,
+     "one_of": "Hoenn starter cases",
+     "coop_only": true
+    },
+    {
      "method": "breeding",
      "parent": "SPECIES_CHIKORITA",
      "location": "Day Care, Route 117 (a female Chikorita and a male Bulbasaur)",
      "map": "MAP_ROUTE117",
      "requires": "Route 117; a Chikorita",
-     "badges": 9,
+     "badges": 2,
      "renewable": true,
      "needs_ditto": false
     },
@@ -10240,7 +10250,7 @@
      "location": "Day Care, Route 117 (a female Bayleef and a male Bulbasaur)",
      "map": "MAP_ROUTE117",
      "requires": "Route 117; a Bayleef",
-     "badges": 9,
+     "badges": 2,
      "renewable": true,
      "needs_ditto": false
     },
@@ -10250,7 +10260,7 @@
      "location": "Day Care, Route 117 (a female Meganium and a male Bulbasaur)",
      "map": "MAP_ROUTE117",
      "requires": "Route 117; a Meganium",
-     "badges": 9,
+     "badges": 2,
      "renewable": true,
      "needs_ditto": false
     }
@@ -10258,7 +10268,7 @@
    "evolution": [],
    "renewable": true,
    "solo": true,
-   "earliest_badges": 9,
+   "earliest_badges": 0,
    "dex_area": "acquisition hint",
    "issues": [],
    "verification": "source-checked (audit), not played",
@@ -10268,7 +10278,7 @@
    "species": "SPECIES_BAYLEEF",
    "national_dex": 153,
    "hoenn_dex": 887,
-   "earliest_badges_with_evolution": 9,
+   "earliest_badges_with_evolution": 0,
    "name": "Bayleef",
    "types": [
     "Grass"
@@ -10299,7 +10309,7 @@
    "species": "SPECIES_MEGANIUM",
    "national_dex": 154,
    "hoenn_dex": 888,
-   "earliest_badges_with_evolution": 9,
+   "earliest_badges_with_evolution": 0,
    "name": "Meganium",
    "types": [
     "Grass"
@@ -10472,7 +10482,7 @@
    "species": "SPECIES_TOTODILE",
    "national_dex": 158,
    "hoenn_dex": 892,
-   "earliest_badges_with_evolution": 9,
+   "earliest_badges_with_evolution": 0,
    "name": "Totodile",
    "types": [
     "Water"
@@ -10490,12 +10500,22 @@
      "renewable": false
     },
     {
+     "method": "first partner (Birch, partner of the case; co-op)",
+     "location": "Route 101",
+     "map": "MAP_ROUTE101",
+     "requires": "start, linked",
+     "badges": 0,
+     "renewable": false,
+     "one_of": "Hoenn starter cases",
+     "coop_only": true
+    },
+    {
      "method": "breeding",
      "parent": "SPECIES_TOTODILE",
      "location": "Day Care, Route 117 (a female Totodile and a male Bulbasaur)",
      "map": "MAP_ROUTE117",
      "requires": "Route 117; a Totodile",
-     "badges": 9,
+     "badges": 2,
      "renewable": true,
      "needs_ditto": false
     },
@@ -10505,7 +10525,7 @@
      "location": "Day Care, Route 117 (a female Croconaw and a male Bulbasaur)",
      "map": "MAP_ROUTE117",
      "requires": "Route 117; a Croconaw",
-     "badges": 9,
+     "badges": 2,
      "renewable": true,
      "needs_ditto": false
     },
@@ -10515,7 +10535,7 @@
      "location": "Day Care, Route 117 (a female Feraligatr and a male Bulbasaur)",
      "map": "MAP_ROUTE117",
      "requires": "Route 117; a Feraligatr",
-     "badges": 9,
+     "badges": 2,
      "renewable": true,
      "needs_ditto": false
     }
@@ -10523,7 +10543,7 @@
    "evolution": [],
    "renewable": true,
    "solo": true,
-   "earliest_badges": 9,
+   "earliest_badges": 0,
    "dex_area": "acquisition hint",
    "issues": [],
    "verification": "source-checked (audit), not played",
@@ -10533,7 +10553,7 @@
    "species": "SPECIES_CROCONAW",
    "national_dex": 159,
    "hoenn_dex": 893,
-   "earliest_badges_with_evolution": 9,
+   "earliest_badges_with_evolution": 0,
    "name": "Croconaw",
    "types": [
     "Water"
@@ -10564,7 +10584,7 @@
    "species": "SPECIES_FERALIGATR",
    "national_dex": 160,
    "hoenn_dex": 894,
-   "earliest_badges_with_evolution": 9,
+   "earliest_badges_with_evolution": 0,
    "name": "Feraligatr",
    "types": [
     "Water"
@@ -14294,13 +14314,13 @@
    ],
    "sources": [
     {
-     "method": "first partner (Birch, one of three)",
+     "method": "first partner (Birch, case player)",
      "location": "Route 101",
      "map": "MAP_ROUTE101",
      "requires": "start",
      "badges": 0,
      "renewable": false,
-     "one_of": "Hoenn starters"
+     "one_of": "Hoenn starter cases"
     },
     {
      "method": "partner Pokemon (daily gift)",
@@ -14396,13 +14416,13 @@
    ],
    "sources": [
     {
-     "method": "first partner (Birch, one of three)",
+     "method": "first partner (Birch, case player)",
      "location": "Route 101",
      "map": "MAP_ROUTE101",
      "requires": "start",
      "badges": 0,
      "renewable": false,
-     "one_of": "Hoenn starters"
+     "one_of": "Hoenn starter cases"
     },
     {
      "method": "partner Pokemon (daily gift)",
@@ -14500,13 +14520,13 @@
    ],
    "sources": [
     {
-     "method": "first partner (Birch, one of three)",
+     "method": "first partner (Birch, case player)",
      "location": "Route 101",
      "map": "MAP_ROUTE101",
      "requires": "start",
      "badges": 0,
      "renewable": false,
-     "one_of": "Hoenn starters"
+     "one_of": "Hoenn starter cases"
     },
     {
      "method": "partner Pokemon (daily gift)",
@@ -31167,7 +31187,7 @@
    "species": "SPECIES_FENNEKIN",
    "national_dex": 653,
    "hoenn_dex": 441,
-   "earliest_badges_with_evolution": 7,
+   "earliest_badges_with_evolution": 0,
    "name": "Fennekin",
    "types": [
     "Fire"
@@ -31176,6 +31196,16 @@
     "SPECIES_FENNEKIN"
    ],
    "sources": [
+    {
+     "method": "first partner (Birch, partner of the case; co-op)",
+     "location": "Route 101",
+     "map": "MAP_ROUTE101",
+     "requires": "start, linked",
+     "badges": 0,
+     "renewable": false,
+     "one_of": "Hoenn starter cases",
+     "coop_only": true
+    },
     {
      "method": "partner Pokemon (daily gift)",
      "location": "Mossdeep Pokemon Center 1F, Kalos guest",
@@ -31188,7 +31218,7 @@
    "evolution": [],
    "renewable": true,
    "solo": true,
-   "earliest_badges": 7,
+   "earliest_badges": 0,
    "dex_area": "acquisition hint",
    "issues": [],
    "verification": "source-checked (audit), not played",
@@ -31198,7 +31228,7 @@
    "species": "SPECIES_BRAIXEN",
    "national_dex": 654,
    "hoenn_dex": 442,
-   "earliest_badges_with_evolution": 7,
+   "earliest_badges_with_evolution": 0,
    "name": "Braixen",
    "types": [
     "Fire"
@@ -31229,7 +31259,7 @@
    "species": "SPECIES_DELPHOX",
    "national_dex": 655,
    "hoenn_dex": 443,
-   "earliest_badges_with_evolution": 7,
+   "earliest_badges_with_evolution": 0,
    "name": "Delphox",
    "types": [
     "Fire",

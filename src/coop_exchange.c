@@ -41,13 +41,16 @@ enum {
     EXCHANGE_EVO,
     EXCHANGE_TRAIN,
     EXCHANGE_BREED,
+    EXCHANGE_MEGA,      // Battle Guide v2: Mega Stones (tools/coop_mega/rewards.py)
     EXCHANGE_COUNTERS,
 };
 
-enum {
-    EXQ_NONE,
-    EXQ_TWIN_TRIAL,
+struct MegaStoneHint
+{
+    u16 item;
+    const u8 *where;
 };
+
 
 #define TIER_CHAMPION 5
 
@@ -73,6 +76,7 @@ struct ExchangePrice
 };
 
 #include "data/coop_exchange_stock.h"
+#include "data/coop_mega_hints.h"
 
 // Fixed service prices (also listed in tools/coop_exchange/stock.py).
 #define PRICE_RELEARN       1000
@@ -316,6 +320,58 @@ u16 CoopExchange_BufferUpcoming(void)
     else
     {
         str = StringCopy(str, COMPOUND_STRING("."));
+    }
+    return TRUE;
+}
+
+// ---------------------------------------------------------------- Mega
+
+// The MEGA STONE counter's WHERE TO FIND: the stones this save cannot buy
+// yet, each with where its first one is found, two to a page.
+u16 CoopExchange_BufferMegaHints(void)
+{
+    u32 i, j, shown = 0, more = 0;
+    u8 tier = OwnTier();
+    u8 *str = gStringVar4;
+    u8 name[32];
+
+    *str = EOS;
+    for (i = 0; i < ARRAY_COUNT(sExchangeStock); i++)
+    {
+        const struct ExchangeStock *s = &sExchangeStock[i];
+        const u8 *where = NULL;
+
+        if (s->counter != EXCHANGE_MEGA || Unlocked(s, tier))
+            continue;
+        if (shown >= 16)
+        {
+            more++;
+            continue;
+        }
+        for (j = 0; j < ARRAY_COUNT(sMegaStoneHints); j++)
+        {
+            if (sMegaStoneHints[j].item == s->item)
+                where = sMegaStoneHints[j].where;
+        }
+        if (shown != 0)
+            *str++ = (shown % 2) ? CHAR_NEWLINE : CHAR_PROMPT_SCROLL;
+        CopyItemName(s->item, name);
+        str = StringCopy(str, name);
+        str = StringCopy(str, COMPOUND_STRING(": "));
+        str = StringCopy(str, where != NULL ? where : COMPOUND_STRING("?"));
+        shown++;
+    }
+    if (shown == 0)
+    {
+        StringCopy(gStringVar4, COMPOUND_STRING("You can buy every MEGA STONE here.\nThank you for your custom!"));
+        return FALSE;
+    }
+    if (more != 0)
+    {
+        *str++ = (shown % 2) ? CHAR_NEWLINE : CHAR_PROMPT_SCROLL;
+        str = StringCopy(str, COMPOUND_STRING("…and "));
+        str = ConvertIntToDecimalStringN(str, more, STR_CONV_MODE_LEFT_ALIGN, 3);
+        StringCopy(str, COMPOUND_STRING(" more to find."));
     }
     return TRUE;
 }

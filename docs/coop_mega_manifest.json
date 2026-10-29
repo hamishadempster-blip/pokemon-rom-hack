@@ -1,0 +1,2038 @@
+{
+ "generated_by": "tools/coop_mega/rewards.py",
+ "megas": [
+  {
+   "species": "SPECIES_ABOMASNOW",
+   "mega": "SPECIES_ABOMASNOW_MEGA",
+   "stone": "ITEM_ABOMASITE",
+   "obtainable": true,
+   "species_earliest_badges": 7,
+   "mega_ability": "SNOW_WARNING",
+   "source": [
+    "ball",
+    "ShoalCave_LowTideIceRoom",
+    "SHOAL CAVE"
+   ],
+   "hint": "SHOAL CAVE"
+  },
+  {
+   "species": "SPECIES_ABSOL",
+   "mega": "SPECIES_ABSOL_MEGA",
+   "stone": "ITEM_ABSOLITE",
+   "obtainable": true,
+   "species_earliest_badges": 5,
+   "mega_ability": "MAGIC_BOUNCE",
+   "source": [
+    "exchange",
+    4
+   ],
+   "hint": "HERE, 7 BADGES"
+  },
+  {
+   "species": "SPECIES_ABSOL",
+   "mega": "SPECIES_ABSOL_MEGA_Z",
+   "stone": "ITEM_ABSOLITE_Z",
+   "obtainable": true,
+   "species_earliest_badges": 5,
+   "mega_ability": "SHARPNESS",
+   "source": [
+    "exchange",
+    5
+   ],
+   "hint": "HERE, CHAMPION"
+  },
+  {
+   "species": "SPECIES_AERODACTYL",
+   "mega": "SPECIES_AERODACTYL_MEGA",
+   "stone": "ITEM_AERODACTYLITE",
+   "obtainable": true,
+   "species_earliest_badges": 3,
+   "mega_ability": "TOUGH_CLAWS",
+   "source": [
+    "ball",
+    "DesertUnderpass",
+    "DESERT UNDERPASS"
+   ],
+   "hint": "DESERT UNDERPASS"
+  },
+  {
+   "species": "SPECIES_AGGRON",
+   "mega": "SPECIES_AGGRON_MEGA",
+   "stone": "ITEM_AGGRONITE",
+   "obtainable": true,
+   "species_earliest_badges": 1,
+   "mega_ability": "FILTER",
+   "source": [
+    "exchange",
+    3
+   ],
+   "hint": "HERE, 5 BADGES"
+  },
+  {
+   "species": "SPECIES_ALAKAZAM",
+   "mega": "SPECIES_ALAKAZAM_MEGA",
+   "stone": "ITEM_ALAKAZITE",
+   "obtainable": true,
+   "species_earliest_badges": 0,
+   "mega_ability": "TRACE",
+   "source": [
+    "ball",
+    "GraniteCave_1F",
+    "GRANITE CAVE"
+   ],
+   "hint": "GRANITE CAVE"
+  },
+  {
+   "species": "SPECIES_ALTARIA",
+   "mega": "SPECIES_ALTARIA_MEGA",
+   "stone": "ITEM_ALTARIANITE",
+   "obtainable": true,
+   "species_earliest_badges": 3,
+   "mega_ability": "PIXILATE",
+   "source": [
+    "exchange",
+    3
+   ],
+   "hint": "HERE, 5 BADGES"
+  },
+  {
+   "species": "SPECIES_AMPHAROS",
+   "mega": "SPECIES_AMPHAROS_MEGA",
+   "stone": "ITEM_AMPHAROSITE",
+   "obtainable": true,
+   "species_earliest_badges": 9,
+   "mega_ability": "MOLD_BREAKER",
+   "source": [
+    "exchange",
+    5
+   ],
+   "hint": "HERE, CHAMPION"
+  },
+  {
+   "species": "SPECIES_AUDINO",
+   "mega": "SPECIES_AUDINO_MEGA",
+   "stone": "ITEM_AUDINITE",
+   "obtainable": true,
+   "species_earliest_badges": 5,
+   "mega_ability": "HEALER",
+   "source": [
+    "ball",
+    "Route118",
+    "ROUTE 118"
+   ],
+   "hint": "ROUTE 118"
+  },
+  {
+   "species": "SPECIES_BANETTE",
+   "mega": "SPECIES_BANETTE_MEGA",
+   "stone": "ITEM_BANETTITE",
+   "obtainable": true,
+   "species_earliest_badges": 5,
+   "mega_ability": "PRANKSTER",
+   "source": [
+    "exchange",
+    4
+   ],
+   "hint": "HERE, 7 BADGES"
+  },
+  {
+   "species": "SPECIES_BARBARACLE",
+   "mega": "SPECIES_BARBARACLE_MEGA",
+   "stone": "ITEM_BARBARACITE",
+   "obtainable": true,
+   "species_earliest_badges": 7,
+   "mega_ability": "TOUGH_CLAWS",
+   "source": [
+    "ball",
+    "Route124",
+    "ROUTE 124"
+   ],
+   "hint": "ROUTE 124"
+  },
+  {
+   "species": "SPECIES_BAXCALIBUR",
+   "mega": "SPECIES_BAXCALIBUR_MEGA",
+   "stone": "ITEM_BAXCALIBRITE",
+   "obtainable": true,
+   "species_earliest_badges": 8,
+   "mega_ability": "THERMAL_EXCHANGE",
+   "source": [
+    "ball",
+    "ShoalCave_LowTideInnerRoom",
+    "SHOAL CAVE"
+   ],
+   "hint": "SHOAL CAVE"
+  },
+  {
+   "species": "SPECIES_BEEDRILL",
+   "mega": "SPECIES_BEEDRILL_MEGA",
+   "stone": "ITEM_BEEDRILLITE",
+   "obtainable": true,
+   "species_earliest_badges": 0,
+   "mega_ability": "ADAPTABILITY",
+   "source": [
+    "ball",
+    "PetalburgWoods",
+    "PETALBURG WOODS"
+   ],
+   "hint": "PETALBURG WOODS"
+  },
+  {
+   "species": "SPECIES_BLASTOISE",
+   "mega": "SPECIES_BLASTOISE_MEGA",
+   "stone": "ITEM_BLASTOISINITE",
+   "obtainable": true,
+   "species_earliest_badges": 1,
+   "mega_ability": "MEGA_LAUNCHER",
+   "source": [
+    "ball",
+    "Route109",
+    "ROUTE 109 BEACH"
+   ],
+   "hint": "ROUTE 109 BEACH"
+  },
+  {
+   "species": "SPECIES_BLAZIKEN",
+   "mega": "SPECIES_BLAZIKEN_MEGA",
+   "stone": "ITEM_BLAZIKENITE",
+   "obtainable": true,
+   "species_earliest_badges": 0,
+   "mega_ability": "SPEED_BOOST",
+   "source": [
+    "exchange",
+    3
+   ],
+   "hint": "HERE, 5 BADGES"
+  },
+  {
+   "species": "SPECIES_CAMERUPT",
+   "mega": "SPECIES_CAMERUPT_MEGA",
+   "stone": "ITEM_CAMERUPTITE",
+   "obtainable": true,
+   "species_earliest_badges": 3,
+   "mega_ability": "SHEER_FORCE",
+   "source": [
+    "ball",
+    "MtChimney",
+    "MT. CHIMNEY"
+   ],
+   "hint": "MT. CHIMNEY"
+  },
+  {
+   "species": "SPECIES_CHANDELURE",
+   "mega": "SPECIES_CHANDELURE_MEGA",
+   "stone": "ITEM_CHANDELURITE",
+   "obtainable": true,
+   "species_earliest_badges": 5,
+   "mega_ability": "INFILTRATOR",
+   "source": [
+    "ball",
+    "MtPyre_4F",
+    "MT. PYRE"
+   ],
+   "hint": "MT. PYRE"
+  },
+  {
+   "species": "SPECIES_CHARIZARD",
+   "mega": "SPECIES_CHARIZARD_MEGA_X",
+   "stone": "ITEM_CHARIZARDITE_X",
+   "obtainable": true,
+   "species_earliest_badges": 1,
+   "mega_ability": "TOUGH_CLAWS",
+   "source": [
+    "ball",
+    "FieryPath",
+    "FIERY PATH"
+   ],
+   "hint": "FIERY PATH"
+  },
+  {
+   "species": "SPECIES_CHARIZARD",
+   "mega": "SPECIES_CHARIZARD_MEGA_Y",
+   "stone": "ITEM_CHARIZARDITE_Y",
+   "obtainable": true,
+   "species_earliest_badges": 1,
+   "mega_ability": "DROUGHT",
+   "source": [
+    "ball",
+    "Route112",
+    "ROUTE 112"
+   ],
+   "hint": "ROUTE 112"
+  },
+  {
+   "species": "SPECIES_CHESNAUGHT",
+   "mega": "SPECIES_CHESNAUGHT_MEGA",
+   "stone": "ITEM_CHESNAUGHTITE",
+   "obtainable": true,
+   "species_earliest_badges": 7,
+   "mega_ability": "BULLETPROOF",
+   "source": [
+    "ball",
+    "Route121",
+    "ROUTE 121"
+   ],
+   "hint": "ROUTE 121"
+  },
+  {
+   "species": "SPECIES_CHIMECHO",
+   "mega": "SPECIES_CHIMECHO_MEGA",
+   "stone": "ITEM_CHIMECHITE",
+   "obtainable": true,
+   "species_earliest_badges": 5,
+   "mega_ability": "LEVITATE",
+   "source": [
+    "exchange",
+    4
+   ],
+   "hint": "HERE, 7 BADGES"
+  },
+  {
+   "species": "SPECIES_CLEFABLE",
+   "mega": "SPECIES_CLEFABLE_MEGA",
+   "stone": "ITEM_CLEFABLITE",
+   "obtainable": true,
+   "species_earliest_badges": 3,
+   "mega_ability": "MAGIC_BOUNCE",
+   "source": [
+    "ball",
+    "MeteorFalls_1F_2R",
+    "METEOR FALLS"
+   ],
+   "hint": "METEOR FALLS"
+  },
+  {
+   "species": "SPECIES_CRABOMINABLE",
+   "mega": "SPECIES_CRABOMINABLE_MEGA",
+   "stone": "ITEM_CRABOMINITE",
+   "obtainable": true,
+   "species_earliest_badges": 5,
+   "mega_ability": "IRON_FIST",
+   "source": [
+    "ball",
+    "ShoalCave_LowTideLowerRoom",
+    "SHOAL CAVE"
+   ],
+   "hint": "SHOAL CAVE"
+  },
+  {
+   "species": "SPECIES_DARKRAI",
+   "mega": "SPECIES_DARKRAI_MEGA",
+   "stone": "ITEM_DARKRANITE",
+   "obtainable": false,
+   "species_earliest_badges": null,
+   "mega_ability": "BAD_DREAMS",
+   "source": null,
+   "hint": null
+  },
+  {
+   "species": "SPECIES_DELPHOX",
+   "mega": "SPECIES_DELPHOX_MEGA",
+   "stone": "ITEM_DELPHOXITE",
+   "obtainable": true,
+   "species_earliest_badges": 0,
+   "mega_ability": "LEVITATE",
+   "source": [
+    "exchange",
+    3
+   ],
+   "hint": "HERE, 5 BADGES"
+  },
+  {
+   "species": "SPECIES_DIANCIE",
+   "mega": "SPECIES_DIANCIE_MEGA",
+   "stone": "ITEM_DIANCITE",
+   "obtainable": false,
+   "species_earliest_badges": null,
+   "mega_ability": "MAGIC_BOUNCE",
+   "source": null,
+   "hint": null
+  },
+  {
+   "species": "SPECIES_DRAGALGE",
+   "mega": "SPECIES_DRAGALGE_MEGA",
+   "stone": "ITEM_DRAGALGITE",
+   "obtainable": true,
+   "species_earliest_badges": 5,
+   "mega_ability": "REGENERATOR",
+   "source": [
+    "quest",
+    "COAST"
+   ],
+   "hint": "COAST CLEANUP"
+  },
+  {
+   "species": "SPECIES_DRAGONITE",
+   "mega": "SPECIES_DRAGONITE_MEGA",
+   "stone": "ITEM_DRAGONINITE",
+   "obtainable": true,
+   "species_earliest_badges": 7,
+   "mega_ability": "MULTISCALE",
+   "source": [
+    "ball",
+    "MeteorFalls_B1F_2R",
+    "METEOR FALLS"
+   ],
+   "hint": "METEOR FALLS"
+  },
+  {
+   "species": "SPECIES_DRAMPA",
+   "mega": "SPECIES_DRAMPA_MEGA",
+   "stone": "ITEM_DRAMPANITE",
+   "obtainable": true,
+   "species_earliest_badges": 8,
+   "mega_ability": "BERSERK",
+   "source": [
+    "ball",
+    "MtPyre_Exterior",
+    "MT. PYRE"
+   ],
+   "hint": "MT. PYRE"
+  },
+  {
+   "species": "SPECIES_EELEKTROSS",
+   "mega": "SPECIES_EELEKTROSS_MEGA",
+   "stone": "ITEM_EELEKTROSSITE",
+   "obtainable": true,
+   "species_earliest_badges": 5,
+   "mega_ability": "EELEVATE",
+   "source": [
+    "quest",
+    "PP_WATTSON"
+   ],
+   "hint": "POWER PROBLEMS"
+  },
+  {
+   "species": "SPECIES_EMBOAR",
+   "mega": "SPECIES_EMBOAR_MEGA",
+   "stone": "ITEM_EMBOARITE",
+   "obtainable": true,
+   "species_earliest_badges": 6,
+   "mega_ability": "MOLD_BREAKER",
+   "source": [
+    "ball",
+    "Route112",
+    "ROUTE 112"
+   ],
+   "hint": "ROUTE 112"
+  },
+  {
+   "species": "SPECIES_EXCADRILL",
+   "mega": "SPECIES_EXCADRILL_MEGA",
+   "stone": "ITEM_EXCADRITE",
+   "obtainable": true,
+   "species_earliest_badges": 1,
+   "mega_ability": "PIERCING_DRILL",
+   "source": [
+    "ball",
+    "RusturfTunnel",
+    "RUSTURF TUNNEL"
+   ],
+   "hint": "RUSTURF TUNNEL"
+  },
+  {
+   "species": "SPECIES_FALINKS",
+   "mega": "SPECIES_FALINKS_MEGA",
+   "stone": "ITEM_FALINKSITE",
+   "obtainable": true,
+   "species_earliest_badges": 3,
+   "mega_ability": "BATTLE_ARMOR",
+   "source": [
+    "ball",
+    "Route111",
+    "ROUTE 111"
+   ],
+   "hint": "ROUTE 111"
+  },
+  {
+   "species": "SPECIES_FERALIGATR",
+   "mega": "SPECIES_FERALIGATR_MEGA",
+   "stone": "ITEM_FERALIGITE",
+   "obtainable": true,
+   "species_earliest_badges": 0,
+   "mega_ability": "DRAGONIZE",
+   "source": [
+    "exchange",
+    3
+   ],
+   "hint": "HERE, 5 BADGES"
+  },
+  {
+   "species": "SPECIES_FLOETTE_ETERNAL",
+   "mega": "SPECIES_FLOETTE_MEGA",
+   "stone": "ITEM_FLOETTITE",
+   "obtainable": false,
+   "species_earliest_badges": null,
+   "mega_ability": "FAIRY_AURA",
+   "source": null,
+   "hint": null
+  },
+  {
+   "species": "SPECIES_FROSLASS",
+   "mega": "SPECIES_FROSLASS_MEGA",
+   "stone": "ITEM_FROSLASSITE",
+   "obtainable": true,
+   "species_earliest_badges": 7,
+   "mega_ability": "SNOW_WARNING",
+   "source": [
+    "quest",
+    "SHOAL_RESCUE"
+   ],
+   "hint": "SHOAL RESCUE"
+  },
+  {
+   "species": "SPECIES_GALLADE",
+   "mega": "SPECIES_GALLADE_MEGA",
+   "stone": "ITEM_GALLADITE",
+   "obtainable": true,
+   "species_earliest_badges": 0,
+   "mega_ability": "INNER_FOCUS",
+   "source": [
+    "exchange",
+    3
+   ],
+   "hint": "HERE, 5 BADGES"
+  },
+  {
+   "species": "SPECIES_GARCHOMP",
+   "mega": "SPECIES_GARCHOMP_MEGA",
+   "stone": "ITEM_GARCHOMPITE",
+   "obtainable": true,
+   "species_earliest_badges": 3,
+   "mega_ability": "SAND_FORCE",
+   "source": [
+    "quest",
+    "CARAVAN"
+   ],
+   "hint": "DESERT CARAVAN"
+  },
+  {
+   "species": "SPECIES_GARCHOMP",
+   "mega": "SPECIES_GARCHOMP_MEGA_Z",
+   "stone": "ITEM_GARCHOMPITE_Z",
+   "obtainable": true,
+   "species_earliest_badges": 3,
+   "mega_ability": "LEVITATE",
+   "source": [
+    "exchange",
+    5
+   ],
+   "hint": "HERE, CHAMPION"
+  },
+  {
+   "species": "SPECIES_GARDEVOIR",
+   "mega": "SPECIES_GARDEVOIR_MEGA",
+   "stone": "ITEM_GARDEVOIRITE",
+   "obtainable": true,
+   "species_earliest_badges": 0,
+   "mega_ability": "PIXILATE",
+   "source": [
+    "exchange",
+    3
+   ],
+   "hint": "HERE, 5 BADGES"
+  },
+  {
+   "species": "SPECIES_GENGAR",
+   "mega": "SPECIES_GENGAR_MEGA",
+   "stone": "ITEM_GENGARITE",
+   "obtainable": true,
+   "species_earliest_badges": 5,
+   "mega_ability": "SHADOW_TAG",
+   "source": [
+    "ball",
+    "MtPyre_2F",
+    "MT. PYRE"
+   ],
+   "hint": "MT. PYRE"
+  },
+  {
+   "species": "SPECIES_GLALIE",
+   "mega": "SPECIES_GLALIE_MEGA",
+   "stone": "ITEM_GLALITITE",
+   "obtainable": true,
+   "species_earliest_badges": 7,
+   "mega_ability": "REFRIGERATE",
+   "source": [
+    "exchange",
+    4
+   ],
+   "hint": "HERE, 7 BADGES"
+  },
+  {
+   "species": "SPECIES_GLIMMORA",
+   "mega": "SPECIES_GLIMMORA_MEGA",
+   "stone": "ITEM_GLIMMORANITE",
+   "obtainable": true,
+   "species_earliest_badges": 1,
+   "mega_ability": "ADAPTABILITY",
+   "source": [
+    "ball",
+    "MeteorFalls_1F_1R",
+    "METEOR FALLS"
+   ],
+   "hint": "METEOR FALLS"
+  },
+  {
+   "species": "SPECIES_GOLISOPOD",
+   "mega": "SPECIES_GOLISOPOD_MEGA",
+   "stone": "ITEM_GOLISOPITE",
+   "obtainable": true,
+   "species_earliest_badges": 5,
+   "mega_ability": "TOUGH_CLAWS",
+   "source": [
+    "ball",
+    "Route106",
+    "ROUTE 106"
+   ],
+   "hint": "ROUTE 106"
+  },
+  {
+   "species": "SPECIES_GOLURK",
+   "mega": "SPECIES_GOLURK_MEGA",
+   "stone": "ITEM_GOLURKITE",
+   "obtainable": true,
+   "species_earliest_badges": 5,
+   "mega_ability": "UNSEEN_FIST",
+   "source": [
+    "ball",
+    "Route120",
+    "ROUTE 120"
+   ],
+   "hint": "ROUTE 120"
+  },
+  {
+   "species": "SPECIES_GRENINJA",
+   "mega": "SPECIES_GRENINJA_MEGA",
+   "stone": "ITEM_GRENINJITE",
+   "obtainable": true,
+   "species_earliest_badges": 7,
+   "mega_ability": "PROTEAN",
+   "source": [
+    "ball",
+    "Route123",
+    "ROUTE 123"
+   ],
+   "hint": "ROUTE 123"
+  },
+  {
+   "species": "SPECIES_GYARADOS",
+   "mega": "SPECIES_GYARADOS_MEGA",
+   "stone": "ITEM_GYARADOSITE",
+   "obtainable": true,
+   "species_earliest_badges": 1,
+   "mega_ability": "MOLD_BREAKER",
+   "source": [
+    "ball",
+    "Route103",
+    "ROUTE 103"
+   ],
+   "hint": "ROUTE 103"
+  },
+  {
+   "species": "SPECIES_HAWLUCHA",
+   "mega": "SPECIES_HAWLUCHA_MEGA",
+   "stone": "ITEM_HAWLUCHANITE",
+   "obtainable": true,
+   "species_earliest_badges": 3,
+   "mega_ability": "NO_GUARD",
+   "source": [
+    "ball",
+    "Route113",
+    "ROUTE 113"
+   ],
+   "hint": "ROUTE 113"
+  },
+  {
+   "species": "SPECIES_HEATRAN",
+   "mega": "SPECIES_HEATRAN_MEGA",
+   "stone": "ITEM_HEATRANITE",
+   "obtainable": false,
+   "species_earliest_badges": null,
+   "mega_ability": "FLASH_FIRE",
+   "source": null,
+   "hint": null
+  },
+  {
+   "species": "SPECIES_HERACROSS",
+   "mega": "SPECIES_HERACROSS_MEGA",
+   "stone": "ITEM_HERACRONITE",
+   "obtainable": true,
+   "species_earliest_badges": 5,
+   "mega_ability": "SKILL_LINK",
+   "source": [
+    "ball",
+    "Route119",
+    "ROUTE 119"
+   ],
+   "hint": "ROUTE 119"
+  },
+  {
+   "species": "SPECIES_HOUNDOOM",
+   "mega": "SPECIES_HOUNDOOM_MEGA",
+   "stone": "ITEM_HOUNDOOMINITE",
+   "obtainable": true,
+   "species_earliest_badges": 9,
+   "mega_ability": "SOLAR_POWER",
+   "source": [
+    "exchange",
+    5
+   ],
+   "hint": "HERE, CHAMPION"
+  },
+  {
+   "species": "SPECIES_KANGASKHAN",
+   "mega": "SPECIES_KANGASKHAN_MEGA",
+   "stone": "ITEM_KANGASKHANITE",
+   "obtainable": true,
+   "species_earliest_badges": 5,
+   "mega_ability": "PARENTAL_BOND",
+   "source": [
+    "ball",
+    "SafariZone_South",
+    "SAFARI ZONE"
+   ],
+   "hint": "SAFARI ZONE"
+  },
+  {
+   "species": "SPECIES_LATIAS",
+   "mega": "SPECIES_LATIAS_MEGA",
+   "stone": "ITEM_LATIASITE",
+   "obtainable": true,
+   "species_earliest_badges": 9,
+   "mega_ability": "LEVITATE",
+   "source": [
+    "exchange",
+    5
+   ],
+   "hint": "HERE, CHAMPION"
+  },
+  {
+   "species": "SPECIES_LATIOS",
+   "mega": "SPECIES_LATIOS_MEGA",
+   "stone": "ITEM_LATIOSITE",
+   "obtainable": true,
+   "species_earliest_badges": 9,
+   "mega_ability": "LEVITATE",
+   "source": [
+    "exchange",
+    5
+   ],
+   "hint": "HERE, CHAMPION"
+  },
+  {
+   "species": "SPECIES_LOPUNNY",
+   "mega": "SPECIES_LOPUNNY_MEGA",
+   "stone": "ITEM_LOPUNNITE",
+   "obtainable": true,
+   "species_earliest_badges": 0,
+   "mega_ability": "SCRAPPY",
+   "source": [
+    "ball",
+    "Route102",
+    "ROUTE 102"
+   ],
+   "hint": "ROUTE 102"
+  },
+  {
+   "species": "SPECIES_LUCARIO",
+   "mega": "SPECIES_LUCARIO_MEGA",
+   "stone": "ITEM_LUCARIONITE",
+   "obtainable": true,
+   "species_earliest_badges": 1,
+   "mega_ability": "ADAPTABILITY",
+   "source": [
+    "exchange",
+    3
+   ],
+   "hint": "HERE, 5 BADGES"
+  },
+  {
+   "species": "SPECIES_LUCARIO",
+   "mega": "SPECIES_LUCARIO_MEGA_Z",
+   "stone": "ITEM_LUCARIONITE_Z",
+   "obtainable": true,
+   "species_earliest_badges": 1,
+   "mega_ability": "AURA_GUARD",
+   "source": [
+    "exchange",
+    5
+   ],
+   "hint": "HERE, CHAMPION"
+  },
+  {
+   "species": "SPECIES_MAGEARNA",
+   "mega": "SPECIES_MAGEARNA_MEGA",
+   "stone": "ITEM_MAGEARNITE",
+   "obtainable": false,
+   "species_earliest_badges": null,
+   "mega_ability": "SOUL_HEART",
+   "source": null,
+   "hint": null
+  },
+  {
+   "species": "SPECIES_MAGEARNA_ORIGINAL",
+   "mega": "SPECIES_MAGEARNA_ORIGINAL_MEGA",
+   "stone": "ITEM_MAGEARNITE",
+   "obtainable": false,
+   "species_earliest_badges": null,
+   "mega_ability": "SOUL_HEART",
+   "source": null,
+   "hint": null
+  },
+  {
+   "species": "SPECIES_MALAMAR",
+   "mega": "SPECIES_MALAMAR_MEGA",
+   "stone": "ITEM_MALAMARITE",
+   "obtainable": true,
+   "species_earliest_badges": 8,
+   "mega_ability": "CONTRARY",
+   "source": [
+    "ball",
+    "VictoryRoad_B1F",
+    "VICTORY ROAD"
+   ],
+   "hint": "VICTORY ROAD"
+  },
+  {
+   "species": "SPECIES_MANECTRIC",
+   "mega": "SPECIES_MANECTRIC_MEGA",
+   "stone": "ITEM_MANECTITE",
+   "obtainable": true,
+   "species_earliest_badges": 2,
+   "mega_ability": "INTIMIDATE",
+   "source": [
+    "exchange",
+    3
+   ],
+   "hint": "HERE, 5 BADGES"
+  },
+  {
+   "species": "SPECIES_MAWILE",
+   "mega": "SPECIES_MAWILE_MEGA",
+   "stone": "ITEM_MAWILITE",
+   "obtainable": true,
+   "species_earliest_badges": 8,
+   "mega_ability": "HUGE_POWER",
+   "source": [
+    "ball",
+    "VictoryRoad_1F",
+    "VICTORY ROAD"
+   ],
+   "hint": "VICTORY ROAD"
+  },
+  {
+   "species": "SPECIES_MEDICHAM",
+   "mega": "SPECIES_MEDICHAM_MEGA",
+   "stone": "ITEM_MEDICHAMITE",
+   "obtainable": true,
+   "species_earliest_badges": 5,
+   "mega_ability": "PURE_POWER",
+   "source": [
+    "exchange",
+    4
+   ],
+   "hint": "HERE, 7 BADGES"
+  },
+  {
+   "species": "SPECIES_MEGANIUM",
+   "mega": "SPECIES_MEGANIUM_MEGA",
+   "stone": "ITEM_MEGANIUMITE",
+   "obtainable": true,
+   "species_earliest_badges": 0,
+   "mega_ability": "MEGA_SOL",
+   "source": [
+    "exchange",
+    3
+   ],
+   "hint": "HERE, 5 BADGES"
+  },
+  {
+   "species": "SPECIES_MEOWSTIC_M",
+   "mega": "SPECIES_MEOWSTIC_M_MEGA",
+   "stone": "ITEM_MEOWSTICITE",
+   "obtainable": false,
+   "species_earliest_badges": null,
+   "mega_ability": "TRACE",
+   "source": [
+    "ball",
+    "Route120",
+    "ROUTE 120"
+   ],
+   "hint": "ROUTE 120"
+  },
+  {
+   "species": "SPECIES_MEOWSTIC_F",
+   "mega": "SPECIES_MEOWSTIC_F_MEGA",
+   "stone": "ITEM_MEOWSTICITE",
+   "obtainable": true,
+   "species_earliest_badges": 5,
+   "mega_ability": "TRACE",
+   "source": [
+    "ball",
+    "Route120",
+    "ROUTE 120"
+   ],
+   "hint": "ROUTE 120"
+  },
+  {
+   "species": "SPECIES_METAGROSS",
+   "mega": "SPECIES_METAGROSS_MEGA",
+   "stone": "ITEM_METAGROSSITE",
+   "obtainable": true,
+   "species_earliest_badges": 7,
+   "mega_ability": "TOUGH_CLAWS",
+   "source": [
+    "exchange",
+    4
+   ],
+   "hint": "HERE, 7 BADGES"
+  },
+  {
+   "species": "SPECIES_MEWTWO",
+   "mega": "SPECIES_MEWTWO_MEGA_X",
+   "stone": "ITEM_MEWTWONITE_X",
+   "obtainable": false,
+   "species_earliest_badges": null,
+   "mega_ability": "STEADFAST",
+   "source": null,
+   "hint": null
+  },
+  {
+   "species": "SPECIES_MEWTWO",
+   "mega": "SPECIES_MEWTWO_MEGA_Y",
+   "stone": "ITEM_MEWTWONITE_Y",
+   "obtainable": false,
+   "species_earliest_badges": null,
+   "mega_ability": "INSOMNIA",
+   "source": null,
+   "hint": null
+  },
+  {
+   "species": "SPECIES_PIDGEOT",
+   "mega": "SPECIES_PIDGEOT_MEGA",
+   "stone": "ITEM_PIDGEOTITE",
+   "obtainable": true,
+   "species_earliest_badges": 0,
+   "mega_ability": "NO_GUARD",
+   "source": [
+    "ball",
+    "Route104",
+    "ROUTE 104"
+   ],
+   "hint": "ROUTE 104"
+  },
+  {
+   "species": "SPECIES_PINSIR",
+   "mega": "SPECIES_PINSIR_MEGA",
+   "stone": "ITEM_PINSIRITE",
+   "obtainable": true,
+   "species_earliest_badges": 5,
+   "mega_ability": "AERILATE",
+   "source": [
+    "ball",
+    "SafariZone_Southwest",
+    "SAFARI ZONE"
+   ],
+   "hint": "SAFARI ZONE"
+  },
+  {
+   "species": "SPECIES_PYROAR",
+   "mega": "SPECIES_PYROAR_MEGA",
+   "stone": "ITEM_PYROARITE",
+   "obtainable": true,
+   "species_earliest_badges": 3,
+   "mega_ability": "FIRE_MANE",
+   "source": [
+    "ball",
+    "Route114",
+    "ROUTE 114"
+   ],
+   "hint": "ROUTE 114"
+  },
+  {
+   "species": "SPECIES_RAICHU",
+   "mega": "SPECIES_RAICHU_MEGA_X",
+   "stone": "ITEM_RAICHUNITE_X",
+   "obtainable": true,
+   "species_earliest_badges": 5,
+   "mega_ability": "ELECTRIC_SURGE",
+   "source": [
+    "ball",
+    "NewMauville_Inside",
+    "NEW MAUVILLE"
+   ],
+   "hint": "NEW MAUVILLE"
+  },
+  {
+   "species": "SPECIES_RAICHU",
+   "mega": "SPECIES_RAICHU_MEGA_Y",
+   "stone": "ITEM_RAICHUNITE_Y",
+   "obtainable": true,
+   "species_earliest_badges": 5,
+   "mega_ability": "NO_GUARD",
+   "source": [
+    "ball",
+    "Route117",
+    "ROUTE 117"
+   ],
+   "hint": "ROUTE 117"
+  },
+  {
+   "species": "SPECIES_SABLEYE",
+   "mega": "SPECIES_SABLEYE_MEGA",
+   "stone": "ITEM_SABLENITE",
+   "obtainable": true,
+   "species_earliest_badges": 1,
+   "mega_ability": "MAGIC_BOUNCE",
+   "source": [
+    "ball",
+    "GraniteCave_B1F",
+    "GRANITE CAVE"
+   ],
+   "hint": "GRANITE CAVE"
+  },
+  {
+   "species": "SPECIES_SALAMENCE",
+   "mega": "SPECIES_SALAMENCE_MEGA",
+   "stone": "ITEM_SALAMENCITE",
+   "obtainable": true,
+   "species_earliest_badges": 8,
+   "mega_ability": "AERILATE",
+   "source": [
+    "ball",
+    "MeteorFalls_B1F_1R",
+    "METEOR FALLS"
+   ],
+   "hint": "METEOR FALLS"
+  },
+  {
+   "species": "SPECIES_SCEPTILE",
+   "mega": "SPECIES_SCEPTILE_MEGA",
+   "stone": "ITEM_SCEPTILITE",
+   "obtainable": true,
+   "species_earliest_badges": 0,
+   "mega_ability": "LIGHTNING_ROD",
+   "source": [
+    "exchange",
+    3
+   ],
+   "hint": "HERE, 5 BADGES"
+  },
+  {
+   "species": "SPECIES_SCIZOR",
+   "mega": "SPECIES_SCIZOR_MEGA",
+   "stone": "ITEM_SCIZORITE",
+   "obtainable": true,
+   "species_earliest_badges": 5,
+   "mega_ability": "TECHNICIAN",
+   "source": [
+    "ball",
+    "Route119",
+    "ROUTE 119"
+   ],
+   "hint": "ROUTE 119"
+  },
+  {
+   "species": "SPECIES_SCOLIPEDE",
+   "mega": "SPECIES_SCOLIPEDE_MEGA",
+   "stone": "ITEM_SCOLIPITE",
+   "obtainable": true,
+   "species_earliest_badges": 0,
+   "mega_ability": "SHELL_ARMOR",
+   "source": [
+    "ball",
+    "Route117",
+    "ROUTE 117"
+   ],
+   "hint": "ROUTE 117"
+  },
+  {
+   "species": "SPECIES_SCOVILLAIN",
+   "mega": "SPECIES_SCOVILLAIN_MEGA",
+   "stone": "ITEM_SCOVILLAINITE",
+   "obtainable": true,
+   "species_earliest_badges": 3,
+   "mega_ability": "SPICY_SPRAY",
+   "source": [
+    "ball",
+    "Route115",
+    "ROUTE 115"
+   ],
+   "hint": "ROUTE 115"
+  },
+  {
+   "species": "SPECIES_SCRAFTY",
+   "mega": "SPECIES_SCRAFTY_MEGA",
+   "stone": "ITEM_SCRAFTINITE",
+   "obtainable": true,
+   "species_earliest_badges": 3,
+   "mega_ability": "INTIMIDATE",
+   "source": [
+    "ball",
+    "Route114",
+    "ROUTE 114"
+   ],
+   "hint": "ROUTE 114"
+  },
+  {
+   "species": "SPECIES_SHARPEDO",
+   "mega": "SPECIES_SHARPEDO_MEGA",
+   "stone": "ITEM_SHARPEDONITE",
+   "obtainable": true,
+   "species_earliest_badges": 5,
+   "mega_ability": "STRONG_JAW",
+   "source": [
+    "ball",
+    "Route118",
+    "ROUTE 118"
+   ],
+   "hint": "ROUTE 118"
+  },
+  {
+   "species": "SPECIES_SKARMORY",
+   "mega": "SPECIES_SKARMORY_MEGA",
+   "stone": "ITEM_SKARMORITE",
+   "obtainable": true,
+   "species_earliest_badges": 3,
+   "mega_ability": "STALWART",
+   "source": [
+    "ball",
+    "Route113",
+    "ROUTE 113"
+   ],
+   "hint": "ROUTE 113"
+  },
+  {
+   "species": "SPECIES_SLOWBRO",
+   "mega": "SPECIES_SLOWBRO_MEGA",
+   "stone": "ITEM_SLOWBRONITE",
+   "obtainable": true,
+   "species_earliest_badges": 5,
+   "mega_ability": "SHELL_ARMOR",
+   "source": [
+    "ball",
+    "Route121",
+    "ROUTE 121"
+   ],
+   "hint": "ROUTE 121"
+  },
+  {
+   "species": "SPECIES_STARAPTOR",
+   "mega": "SPECIES_STARAPTOR_MEGA",
+   "stone": "ITEM_STARAPTITE",
+   "obtainable": true,
+   "species_earliest_badges": 0,
+   "mega_ability": "CONTRARY",
+   "source": [
+    "ball",
+    "Route116",
+    "ROUTE 116"
+   ],
+   "hint": "ROUTE 116"
+  },
+  {
+   "species": "SPECIES_STARMIE",
+   "mega": "SPECIES_STARMIE_MEGA",
+   "stone": "ITEM_STARMINITE",
+   "obtainable": true,
+   "species_earliest_badges": 7,
+   "mega_ability": "HUGE_POWER",
+   "source": [
+    "ball",
+    "Route122",
+    "ROUTE 122"
+   ],
+   "hint": "ROUTE 122"
+  },
+  {
+   "species": "SPECIES_STEELIX",
+   "mega": "SPECIES_STEELIX_MEGA",
+   "stone": "ITEM_STEELIXITE",
+   "obtainable": true,
+   "species_earliest_badges": 1,
+   "mega_ability": "SAND_FORCE",
+   "source": [
+    "ball",
+    "GraniteCave_B2F",
+    "GRANITE CAVE"
+   ],
+   "hint": "GRANITE CAVE"
+  },
+  {
+   "species": "SPECIES_SWAMPERT",
+   "mega": "SPECIES_SWAMPERT_MEGA",
+   "stone": "ITEM_SWAMPERTITE",
+   "obtainable": true,
+   "species_earliest_badges": 0,
+   "mega_ability": "SWIFT_SWIM",
+   "source": [
+    "exchange",
+    3
+   ],
+   "hint": "HERE, 5 BADGES"
+  },
+  {
+   "species": "SPECIES_TATSUGIRI_CURLY",
+   "mega": "SPECIES_TATSUGIRI_CURLY_MEGA",
+   "stone": "ITEM_TATSUGIRINITE",
+   "obtainable": false,
+   "species_earliest_badges": null,
+   "mega_ability": "STORM_DRAIN",
+   "source": null,
+   "hint": null
+  },
+  {
+   "species": "SPECIES_TATSUGIRI_DROOPY",
+   "mega": "SPECIES_TATSUGIRI_DROOPY_MEGA",
+   "stone": "ITEM_TATSUGIRINITE",
+   "obtainable": false,
+   "species_earliest_badges": null,
+   "mega_ability": "STORM_DRAIN",
+   "source": null,
+   "hint": null
+  },
+  {
+   "species": "SPECIES_TATSUGIRI_STRETCHY",
+   "mega": "SPECIES_TATSUGIRI_STRETCHY_MEGA",
+   "stone": "ITEM_TATSUGIRINITE",
+   "obtainable": false,
+   "species_earliest_badges": null,
+   "mega_ability": "STORM_DRAIN",
+   "source": null,
+   "hint": null
+  },
+  {
+   "species": "SPECIES_TYRANITAR",
+   "mega": "SPECIES_TYRANITAR_MEGA",
+   "stone": "ITEM_TYRANITARITE",
+   "obtainable": true,
+   "species_earliest_badges": 1,
+   "mega_ability": "SAND_STREAM",
+   "source": [
+    "ball",
+    "JaggedPass",
+    "JAGGED PASS"
+   ],
+   "hint": "JAGGED PASS"
+  },
+  {
+   "species": "SPECIES_VENUSAUR",
+   "mega": "SPECIES_VENUSAUR_MEGA",
+   "stone": "ITEM_VENUSAURITE",
+   "obtainable": true,
+   "species_earliest_badges": 1,
+   "mega_ability": "THICK_FAT",
+   "source": [
+    "ball",
+    "Route110",
+    "ROUTE 110"
+   ],
+   "hint": "ROUTE 110"
+  },
+  {
+   "species": "SPECIES_VICTREEBEL",
+   "mega": "SPECIES_VICTREEBEL_MEGA",
+   "stone": "ITEM_VICTREEBELITE",
+   "obtainable": true,
+   "species_earliest_badges": 5,
+   "mega_ability": "INNARDS_OUT",
+   "source": [
+    "ball",
+    "Route123",
+    "ROUTE 123"
+   ],
+   "hint": "ROUTE 123"
+  },
+  {
+   "species": "SPECIES_ZERAORA",
+   "mega": "SPECIES_ZERAORA_MEGA",
+   "stone": "ITEM_ZERAORITE",
+   "obtainable": false,
+   "species_earliest_badges": null,
+   "mega_ability": "VOLT_ABSORB",
+   "source": null,
+   "hint": null
+  },
+  {
+   "species": "SPECIES_ZYGARDE_COMPLETE",
+   "mega": "SPECIES_ZYGARDE_MEGA",
+   "stone": "ITEM_ZYGARDITE",
+   "obtainable": false,
+   "species_earliest_badges": null,
+   "mega_ability": "AURA_BREAK",
+   "source": null,
+   "hint": null
+  },
+  {
+   "species": "SPECIES_RAYQUAZA",
+   "mega": "SPECIES_RAYQUAZA_MEGA",
+   "stone": null,
+   "move": "MOVE_DRAGON_ASCENT",
+   "obtainable": true,
+   "source": [
+    "move",
+    "MOVE_DRAGON_ASCENT"
+   ],
+   "hint": "KNOWS DRAGON ASCENT (EXCHANGE RELEARN)"
+  }
+ ],
+ "balls": [
+  {
+   "flag": "FLAG_ITEM_COOP_MEGA_BEEDRILLITE",
+   "item": "ITEM_BEEDRILLITE",
+   "map": "PetalburgWoods",
+   "tile": [
+    6,
+    24
+   ]
+  },
+  {
+   "flag": "FLAG_ITEM_COOP_MEGA_PIDGEOTITE",
+   "item": "ITEM_PIDGEOTITE",
+   "map": "Route104",
+   "tile": [
+    31,
+    56
+   ]
+  },
+  {
+   "flag": "FLAG_ITEM_COOP_MEGA_STARAPTITE",
+   "item": "ITEM_STARAPTITE",
+   "map": "Route116",
+   "tile": [
+    69,
+    7
+   ]
+  },
+  {
+   "flag": "FLAG_ITEM_COOP_MEGA_SCOLIPITE",
+   "item": "ITEM_SCOLIPITE",
+   "map": "Route117",
+   "tile": [
+    36,
+    4
+   ]
+  },
+  {
+   "flag": "FLAG_ITEM_COOP_MEGA_LOPUNNITE",
+   "item": "ITEM_LOPUNNITE",
+   "map": "Route102",
+   "tile": [
+    34,
+    9
+   ]
+  },
+  {
+   "flag": "FLAG_ITEM_COOP_MEGA_ALAKAZITE",
+   "item": "ITEM_ALAKAZITE",
+   "map": "GraniteCave_1F",
+   "tile": [
+    12,
+    12
+   ]
+  },
+  {
+   "flag": "FLAG_ITEM_COOP_MEGA_SABLENITE",
+   "item": "ITEM_SABLENITE",
+   "map": "GraniteCave_B1F",
+   "tile": [
+    28,
+    11
+   ]
+  },
+  {
+   "flag": "FLAG_ITEM_COOP_MEGA_STEELIXITE",
+   "item": "ITEM_STEELIXITE",
+   "map": "GraniteCave_B2F",
+   "tile": [
+    17,
+    12
+   ]
+  },
+  {
+   "flag": "FLAG_ITEM_COOP_MEGA_EXCADRITE",
+   "item": "ITEM_EXCADRITE",
+   "map": "RusturfTunnel",
+   "tile": [
+    12,
+    4
+   ]
+  },
+  {
+   "flag": "FLAG_ITEM_COOP_MEGA_GLIMMORANITE",
+   "item": "ITEM_GLIMMORANITE",
+   "map": "MeteorFalls_1F_1R",
+   "tile": [
+    10,
+    24
+   ]
+  },
+  {
+   "flag": "FLAG_ITEM_COOP_MEGA_TYRANITARITE",
+   "item": "ITEM_TYRANITARITE",
+   "map": "JaggedPass",
+   "tile": [
+    22,
+    34
+   ]
+  },
+  {
+   "flag": "FLAG_ITEM_COOP_MEGA_VENUSAURITE",
+   "item": "ITEM_VENUSAURITE",
+   "map": "Route110",
+   "tile": [
+    25,
+    97
+   ]
+  },
+  {
+   "flag": "FLAG_ITEM_COOP_MEGA_CHARIZARDITE_X",
+   "item": "ITEM_CHARIZARDITE_X",
+   "map": "FieryPath",
+   "tile": [
+    18,
+    19
+   ]
+  },
+  {
+   "flag": "FLAG_ITEM_COOP_MEGA_CHARIZARDITE_Y",
+   "item": "ITEM_CHARIZARDITE_Y",
+   "map": "Route112",
+   "tile": [
+    20,
+    33
+   ]
+  },
+  {
+   "flag": "FLAG_ITEM_COOP_MEGA_BLASTOISINITE",
+   "item": "ITEM_BLASTOISINITE",
+   "map": "Route109",
+   "tile": [
+    20,
+    59
+   ]
+  },
+  {
+   "flag": "FLAG_ITEM_COOP_MEGA_GYARADOSITE",
+   "item": "ITEM_GYARADOSITE",
+   "map": "Route103",
+   "tile": [
+    75,
+    15
+   ]
+  },
+  {
+   "flag": "FLAG_ITEM_COOP_MEGA_CAMERUPTITE",
+   "item": "ITEM_CAMERUPTITE",
+   "map": "MtChimney",
+   "tile": [
+    8,
+    13
+   ]
+  },
+  {
+   "flag": "FLAG_ITEM_COOP_MEGA_AERODACTYLITE",
+   "item": "ITEM_AERODACTYLITE",
+   "map": "DesertUnderpass",
+   "tile": [
+    120,
+    15
+   ]
+  },
+  {
+   "flag": "FLAG_ITEM_COOP_MEGA_CLEFABLITE",
+   "item": "ITEM_CLEFABLITE",
+   "map": "MeteorFalls_1F_2R",
+   "tile": [
+    12,
+    6
+   ]
+  },
+  {
+   "flag": "FLAG_ITEM_COOP_MEGA_FALINKSITE",
+   "item": "ITEM_FALINKSITE",
+   "map": "Route111",
+   "tile": [
+    7,
+    81
+   ]
+  },
+  {
+   "flag": "FLAG_ITEM_COOP_MEGA_HAWLUCHANITE",
+   "item": "ITEM_HAWLUCHANITE",
+   "map": "Route113",
+   "tile": [
+    56,
+    2
+   ]
+  },
+  {
+   "flag": "FLAG_ITEM_COOP_MEGA_PYROARITE",
+   "item": "ITEM_PYROARITE",
+   "map": "Route114",
+   "tile": [
+    26,
+    70
+   ]
+  },
+  {
+   "flag": "FLAG_ITEM_COOP_MEGA_SCOVILLAINITE",
+   "item": "ITEM_SCOVILLAINITE",
+   "map": "Route115",
+   "tile": [
+    12,
+    76
+   ]
+  },
+  {
+   "flag": "FLAG_ITEM_COOP_MEGA_SCRAFTINITE",
+   "item": "ITEM_SCRAFTINITE",
+   "map": "Route114",
+   "tile": [
+    16,
+    18
+   ]
+  },
+  {
+   "flag": "FLAG_ITEM_COOP_MEGA_SKARMORITE",
+   "item": "ITEM_SKARMORITE",
+   "map": "Route113",
+   "tile": [
+    60,
+    14
+   ]
+  },
+  {
+   "flag": "FLAG_ITEM_COOP_MEGA_AUDINITE",
+   "item": "ITEM_AUDINITE",
+   "map": "Route118",
+   "tile": [
+    21,
+    2
+   ]
+  },
+  {
+   "flag": "FLAG_ITEM_COOP_MEGA_CHANDELURITE",
+   "item": "ITEM_CHANDELURITE",
+   "map": "MtPyre_4F",
+   "tile": [
+    9,
+    5
+   ]
+  },
+  {
+   "flag": "FLAG_ITEM_COOP_MEGA_GENGARITE",
+   "item": "ITEM_GENGARITE",
+   "map": "MtPyre_2F",
+   "tile": [
+    6,
+    3
+   ]
+  },
+  {
+   "flag": "FLAG_ITEM_COOP_MEGA_CRABOMINITE",
+   "item": "ITEM_CRABOMINITE",
+   "map": "ShoalCave_LowTideLowerRoom",
+   "tile": [
+    13,
+    6
+   ]
+  },
+  {
+   "flag": "FLAG_ITEM_COOP_MEGA_GOLISOPITE",
+   "item": "ITEM_GOLISOPITE",
+   "map": "Route106",
+   "tile": [
+    28,
+    16
+   ]
+  },
+  {
+   "flag": "FLAG_ITEM_COOP_MEGA_GOLURKITE",
+   "item": "ITEM_GOLURKITE",
+   "map": "Route120",
+   "tile": [
+    2,
+    79
+   ]
+  },
+  {
+   "flag": "FLAG_ITEM_COOP_MEGA_HERACRONITE",
+   "item": "ITEM_HERACRONITE",
+   "map": "Route119",
+   "tile": [
+    10,
+    83
+   ]
+  },
+  {
+   "flag": "FLAG_ITEM_COOP_MEGA_KANGASKHANITE",
+   "item": "ITEM_KANGASKHANITE",
+   "map": "SafariZone_South",
+   "tile": [
+    36,
+    4
+   ]
+  },
+  {
+   "flag": "FLAG_ITEM_COOP_MEGA_MEOWSTICITE",
+   "item": "ITEM_MEOWSTICITE",
+   "map": "Route120",
+   "tile": [
+    21,
+    64
+   ]
+  },
+  {
+   "flag": "FLAG_ITEM_COOP_MEGA_PINSIRITE",
+   "item": "ITEM_PINSIRITE",
+   "map": "SafariZone_Southwest",
+   "tile": [
+    37,
+    23
+   ]
+  },
+  {
+   "flag": "FLAG_ITEM_COOP_MEGA_RAICHUNITE_X",
+   "item": "ITEM_RAICHUNITE_X",
+   "map": "NewMauville_Inside",
+   "tile": [
+    24,
+    37
+   ]
+  },
+  {
+   "flag": "FLAG_ITEM_COOP_MEGA_RAICHUNITE_Y",
+   "item": "ITEM_RAICHUNITE_Y",
+   "map": "Route117",
+   "tile": [
+    2,
+    12
+   ]
+  },
+  {
+   "flag": "FLAG_ITEM_COOP_MEGA_SCIZORITE",
+   "item": "ITEM_SCIZORITE",
+   "map": "Route119",
+   "tile": [
+    34,
+    61
+   ]
+  },
+  {
+   "flag": "FLAG_ITEM_COOP_MEGA_SHARPEDONITE",
+   "item": "ITEM_SHARPEDONITE",
+   "map": "Route118",
+   "tile": [
+    3,
+    14
+   ]
+  },
+  {
+   "flag": "FLAG_ITEM_COOP_MEGA_SLOWBRONITE",
+   "item": "ITEM_SLOWBRONITE",
+   "map": "Route121",
+   "tile": [
+    2,
+    17
+   ]
+  },
+  {
+   "flag": "FLAG_ITEM_COOP_MEGA_VICTREEBELITE",
+   "item": "ITEM_VICTREEBELITE",
+   "map": "Route123",
+   "tile": [
+    121,
+    16
+   ]
+  },
+  {
+   "flag": "FLAG_ITEM_COOP_MEGA_EMBOARITE",
+   "item": "ITEM_EMBOARITE",
+   "map": "Route112",
+   "tile": [
+    31,
+    13
+   ]
+  },
+  {
+   "flag": "FLAG_ITEM_COOP_MEGA_ABOMASITE",
+   "item": "ITEM_ABOMASITE",
+   "map": "ShoalCave_LowTideIceRoom",
+   "tile": [
+    14,
+    12
+   ]
+  },
+  {
+   "flag": "FLAG_ITEM_COOP_MEGA_BARBARACITE",
+   "item": "ITEM_BARBARACITE",
+   "map": "Route124",
+   "tile": [
+    17,
+    71
+   ]
+  },
+  {
+   "flag": "FLAG_ITEM_COOP_MEGA_CHESNAUGHTITE",
+   "item": "ITEM_CHESNAUGHTITE",
+   "map": "Route121",
+   "tile": [
+    73,
+    14
+   ]
+  },
+  {
+   "flag": "FLAG_ITEM_COOP_MEGA_DRAGONINITE",
+   "item": "ITEM_DRAGONINITE",
+   "map": "MeteorFalls_B1F_2R",
+   "tile": [
+    3,
+    14
+   ]
+  },
+  {
+   "flag": "FLAG_ITEM_COOP_MEGA_GRENINJITE",
+   "item": "ITEM_GRENINJITE",
+   "map": "Route123",
+   "tile": [
+    124,
+    11
+   ]
+  },
+  {
+   "flag": "FLAG_ITEM_COOP_MEGA_STARMINITE",
+   "item": "ITEM_STARMINITE",
+   "map": "Route122",
+   "tile": [
+    18,
+    37
+   ]
+  },
+  {
+   "flag": "FLAG_ITEM_COOP_MEGA_BAXCALIBRITE",
+   "item": "ITEM_BAXCALIBRITE",
+   "map": "ShoalCave_LowTideInnerRoom",
+   "tile": [
+    3,
+    25
+   ]
+  },
+  {
+   "flag": "FLAG_ITEM_COOP_MEGA_DRAMPANITE",
+   "item": "ITEM_DRAMPANITE",
+   "map": "MtPyre_Exterior",
+   "tile": [
+    30,
+    24
+   ]
+  },
+  {
+   "flag": "FLAG_ITEM_COOP_MEGA_MALAMARITE",
+   "item": "ITEM_MALAMARITE",
+   "map": "VictoryRoad_B1F",
+   "tile": [
+    43,
+    14
+   ]
+  },
+  {
+   "flag": "FLAG_ITEM_COOP_MEGA_MAWILITE",
+   "item": "ITEM_MAWILITE",
+   "map": "VictoryRoad_1F",
+   "tile": [
+    34,
+    15
+   ]
+  },
+  {
+   "flag": "FLAG_ITEM_COOP_MEGA_SALAMENCITE",
+   "item": "ITEM_SALAMENCITE",
+   "map": "MeteorFalls_B1F_1R",
+   "tile": [
+    14,
+    27
+   ]
+  },
+  {
+   "flag": "FLAG_ITEM_COOP_ROUTE116_GREAT_BALL",
+   "item": "ITEM_GREAT_BALL",
+   "map": "Route116",
+   "tile": [
+    41,
+    6
+   ]
+  },
+  {
+   "flag": "FLAG_ITEM_COOP_ROUTE117_NET_BALL",
+   "item": "ITEM_NET_BALL",
+   "map": "Route117",
+   "tile": [
+    2,
+    10
+   ]
+  },
+  {
+   "flag": "FLAG_ITEM_COOP_ROUTE124_DIVE_BALL",
+   "item": "ITEM_DIVE_BALL",
+   "map": "Route124",
+   "tile": [
+    14,
+    76
+   ]
+  },
+  {
+   "flag": "FLAG_ITEM_COOP_GRANITE_CAVE_B2_F_DUSK_BALL",
+   "item": "ITEM_DUSK_BALL",
+   "map": "GraniteCave_B2F",
+   "tile": [
+    13,
+    12
+   ]
+  },
+  {
+   "flag": "FLAG_ITEM_COOP_ROUTE119_QUICK_BALL",
+   "item": "ITEM_QUICK_BALL",
+   "map": "Route119",
+   "tile": [
+    29,
+    40
+   ]
+  },
+  {
+   "flag": "FLAG_ITEM_COOP_ROUTE121_TIMER_BALL",
+   "item": "ITEM_TIMER_BALL",
+   "map": "Route121",
+   "tile": [
+    75,
+    12
+   ]
+  },
+  {
+   "flag": "FLAG_ITEM_COOP_ROUTE120_ULTRA_BALL",
+   "item": "ITEM_ULTRA_BALL",
+   "map": "Route120",
+   "tile": [
+    9,
+    68
+   ]
+  },
+  {
+   "flag": "FLAG_ITEM_COOP_ROUTE104_NEST_BALL",
+   "item": "ITEM_NEST_BALL",
+   "map": "Route104",
+   "tile": [
+    8,
+    29
+   ]
+  },
+  {
+   "flag": "FLAG_ITEM_COOP_METEOR_FALLS_1_F_2_R_MOON_STONE",
+   "item": "ITEM_MOON_STONE",
+   "map": "MeteorFalls_1F_2R",
+   "tile": [
+    11,
+    8
+   ]
+  },
+  {
+   "flag": "FLAG_ITEM_COOP_FIERY_PATH_FIRE_STONE",
+   "item": "ITEM_FIRE_STONE",
+   "map": "FieryPath",
+   "tile": [
+    19,
+    21
+   ]
+  },
+  {
+   "flag": "FLAG_ITEM_COOP_NEW_MAUVILLE_INSIDE_THUNDER_STONE",
+   "item": "ITEM_THUNDER_STONE",
+   "map": "NewMauville_Inside",
+   "tile": [
+    26,
+    37
+   ]
+  },
+  {
+   "flag": "FLAG_ITEM_COOP_ROUTE109_WATER_STONE",
+   "item": "ITEM_WATER_STONE",
+   "map": "Route109",
+   "tile": [
+    18,
+    58
+   ]
+  },
+  {
+   "flag": "FLAG_ITEM_COOP_ROUTE119_LEAF_STONE",
+   "item": "ITEM_LEAF_STONE",
+   "map": "Route119",
+   "tile": [
+    30,
+    38
+   ]
+  },
+  {
+   "flag": "FLAG_ITEM_COOP_ROUTE111_SUN_STONE",
+   "item": "ITEM_SUN_STONE",
+   "map": "Route111",
+   "tile": [
+    6,
+    25
+   ]
+  },
+  {
+   "flag": "FLAG_ITEM_COOP_MT_PYRE_3_F_DUSK_STONE",
+   "item": "ITEM_DUSK_STONE",
+   "map": "MtPyre_3F",
+   "tile": [
+    4,
+    2
+   ]
+  },
+  {
+   "flag": "FLAG_ITEM_COOP_ROUTE117_OVAL_STONE",
+   "item": "ITEM_OVAL_STONE",
+   "map": "Route117",
+   "tile": [
+    4,
+    12
+   ]
+  },
+  {
+   "flag": "FLAG_ITEM_COOP_ROUTE114_RAZOR_FANG",
+   "item": "ITEM_RAZOR_FANG",
+   "map": "Route114",
+   "tile": [
+    27,
+    61
+   ]
+  },
+  {
+   "flag": "FLAG_ITEM_COOP_ROUTE110_UPGRADE",
+   "item": "ITEM_UPGRADE",
+   "map": "Route110",
+   "tile": [
+    3,
+    37
+   ]
+  },
+  {
+   "flag": "FLAG_ITEM_COOP_ROUTE113_MUSCLE_BAND",
+   "item": "ITEM_MUSCLE_BAND",
+   "map": "Route113",
+   "tile": [
+    19,
+    6
+   ]
+  },
+  {
+   "flag": "FLAG_ITEM_COOP_ROUTE115_WISE_GLASSES",
+   "item": "ITEM_WISE_GLASSES",
+   "map": "Route115",
+   "tile": [
+    15,
+    72
+   ]
+  },
+  {
+   "flag": "FLAG_ITEM_COOP_ROUTE118_SCOPE_LENS",
+   "item": "ITEM_SCOPE_LENS",
+   "map": "Route118",
+   "tile": [
+    9,
+    3
+   ]
+  },
+  {
+   "flag": "FLAG_ITEM_COOP_VICTORY_ROAD_B2_F_EXPERT_BELT",
+   "item": "ITEM_EXPERT_BELT",
+   "map": "VictoryRoad_B2F",
+   "tile": [
+    32,
+    8
+   ]
+  },
+  {
+   "flag": "FLAG_ITEM_COOP_ROUTE112_PROTEIN",
+   "item": "ITEM_PROTEIN",
+   "map": "Route112",
+   "tile": [
+    29,
+    31
+   ]
+  },
+  {
+   "flag": "FLAG_ITEM_COOP_ROUTE120_CARBOS",
+   "item": "ITEM_CARBOS",
+   "map": "Route120",
+   "tile": [
+    2,
+    50
+   ]
+  },
+  {
+   "flag": "FLAG_ITEM_COOP_ROUTE123_CALCIUM",
+   "item": "ITEM_CALCIUM",
+   "map": "Route123",
+   "tile": [
+    114,
+    11
+   ]
+  },
+  {
+   "flag": "FLAG_ITEM_COOP_ROUTE122_ZINC",
+   "item": "ITEM_ZINC",
+   "map": "Route122",
+   "tile": [
+    20,
+    37
+   ]
+  },
+  {
+   "flag": "FLAG_ITEM_COOP_JAGGED_PASS_IRON",
+   "item": "ITEM_IRON",
+   "map": "JaggedPass",
+   "tile": [
+    19,
+    8
+   ]
+  },
+  {
+   "flag": "FLAG_ITEM_COOP_RUSTURF_TUNNEL_HP_UP",
+   "item": "ITEM_HP_UP",
+   "map": "RusturfTunnel",
+   "tile": [
+    27,
+    4
+   ]
+  },
+  {
+   "flag": "FLAG_ITEM_COOP_ROUTE106_PP_UP",
+   "item": "ITEM_PP_UP",
+   "map": "Route106",
+   "tile": [
+    76,
+    15
+   ]
+  },
+  {
+   "flag": "FLAG_ITEM_COOP_ROUTE102_EXP_CANDY_M",
+   "item": "ITEM_EXP_CANDY_M",
+   "map": "Route102",
+   "tile": [
+    2,
+    4
+   ]
+  },
+  {
+   "flag": "FLAG_ITEM_COOP_ROUTE125_EXP_CANDY_L",
+   "item": "ITEM_EXP_CANDY_L",
+   "map": "Route125",
+   "tile": [
+    6,
+    37
+   ]
+  }
+ ]
+}

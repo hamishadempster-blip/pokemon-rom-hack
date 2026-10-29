@@ -144,6 +144,32 @@
       "trainer_sight_or_berry_tree_id": "ITEM_METAL_COAT",
       "script": "Common_EventScript_FindItem",
       "flag": "FLAG_ITEM_COOP_GRANITE_CAVE_METAL_COAT"
+    },
+    {
+      "graphics_id": "OBJ_EVENT_GFX_ITEM_BALL",
+      "x": 17,
+      "y": 12,
+      "elevation": 3,
+      "movement_type": "MOVEMENT_TYPE_LOOK_AROUND",
+      "movement_range_x": 0,
+      "movement_range_y": 0,
+      "trainer_type": "TRAINER_TYPE_NONE",
+      "trainer_sight_or_berry_tree_id": "ITEM_STEELIXITE",
+      "script": "Common_EventScript_FindItem",
+      "flag": "FLAG_ITEM_COOP_MEGA_STEELIXITE"
+    },
+    {
+      "graphics_id": "OBJ_EVENT_GFX_ITEM_BALL",
+      "x": 13,
+      "y": 12,
+      "elevation": 3,
+      "movement_type": "MOVEMENT_TYPE_LOOK_AROUND",
+      "movement_range_x": 0,
+      "movement_range_y": 0,
+      "trainer_type": "TRAINER_TYPE_NONE",
+      "trainer_sight_or_berry_tree_id": "ITEM_DUSK_BALL",
+      "script": "Common_EventScript_FindItem",
+      "flag": "FLAG_ITEM_COOP_GRANITE_CAVE_B2_F_DUSK_BALL"
     }
   ],
   "warp_events": [

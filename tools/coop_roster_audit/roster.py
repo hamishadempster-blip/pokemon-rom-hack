@@ -194,10 +194,14 @@ for sc in glob.glob(os.path.join(ROOT, 'data/maps/*/scripts.inc')):
                                      'map': mapc, 'requires': gt or 'see location', 'badges': gb if gb is not None else -1, 'renewable': False})
 
 # Stock sources outside the wild tables and the givemon scripts.
-# Birch's bag: one of the three Hoenn starters, once per save.
-for sp in ('SPECIES_TREECKO', 'SPECIES_TORCHIC', 'SPECIES_MUDKIP'):
-    add(sp, {'method': 'first partner (Birch, one of three)', 'location': 'Route 101', 'map': 'MAP_ROUTE101',
-             'requires': 'start', 'badges': 0, 'renewable': False, 'one_of': 'Hoenn starters'})
+# Birch's bag: one case of two same-type starters (gCoopCaseStarters, coop.c):
+# the case player takes the first, the partner (or nobody, solo) the second.
+_cases = re.search(r'gCoopCaseStarters\[3\]\[2\] = \{(.*?)\};', read('src/coop.c'), re.S).group(1)
+for _player, _companion in re.findall(r'\{ (SPECIES_\w+), (SPECIES_\w+) \}', _cases):
+    add(_player, {'method': 'first partner (Birch, case player)', 'location': 'Route 101', 'map': 'MAP_ROUTE101',
+                  'requires': 'start', 'badges': 0, 'renewable': False, 'one_of': 'Hoenn starter cases'})
+    add(_companion, {'method': 'first partner (Birch, partner of the case; co-op)', 'location': 'Route 101', 'map': 'MAP_ROUTE101',
+                     'requires': 'start, linked', 'badges': 0, 'renewable': False, 'one_of': 'Hoenn starter cases', 'coop_only': True})
 # Legendary encounters handled by src/coop_legend.c (both players' saves).
 for m in re.finditer(r'\[COOP_ENC_\w+\]\s*=\s*\{\s*(SPECIES_\w+),\s*(\d+),[^}]*?MAP_NUM\((MAP_\w+)\)', read('src/coop_legend.c')):
     gb, gt = map_gate(m.group(3))
@@ -228,6 +232,8 @@ for b, alist in COOP_PAIR_SRC.items():
 # Birch's Johto starters are a post-game gift (stock Emerald).
 for sp in ('SPECIES_CHIKORITA', 'SPECIES_CYNDAQUIL', 'SPECIES_TOTODILE'):
     for x in sources.get(sp, []):
+        if x['method'].startswith('first partner'):
+            continue
         x['requires'], x['badges'] = 'after the Hall of Fame (Birch)', 9
 
 # Co-op roster code: starter guests and fossils (src/coop_roster.c).

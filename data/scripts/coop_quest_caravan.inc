@@ -53,6 +53,7 @@ Route111_EventScript_ZahraGift::
 	setvar VAR_0x8004, COOP_REWARD_CARAVAN
 	special CoopQuest_ClaimReward
 Route111_EventScript_ZahraAfter::
+	call Coop_EventScript_StoneCaravan
 	msgbox Route111_Text_ZahraAfter, MSGBOX_DEFAULT
 	release
 	end

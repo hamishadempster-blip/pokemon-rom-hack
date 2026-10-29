@@ -264,6 +264,45 @@
       "trainer_sight_or_berry_tree_id": "0",
       "script": "Route113_EventScript_BramblinTrade",
       "flag": "0"
+    },
+    {
+      "graphics_id": "OBJ_EVENT_GFX_ITEM_BALL",
+      "x": 56,
+      "y": 2,
+      "elevation": 3,
+      "movement_type": "MOVEMENT_TYPE_LOOK_AROUND",
+      "movement_range_x": 0,
+      "movement_range_y": 0,
+      "trainer_type": "TRAINER_TYPE_NONE",
+      "trainer_sight_or_berry_tree_id": "ITEM_HAWLUCHANITE",
+      "script": "Common_EventScript_FindItem",
+      "flag": "FLAG_ITEM_COOP_MEGA_HAWLUCHANITE"
+    },
+    {
+      "graphics_id": "OBJ_EVENT_GFX_ITEM_BALL",
+      "x": 60,
+      "y": 14,
+      "elevation": 3,
+      "movement_type": "MOVEMENT_TYPE_LOOK_AROUND",
+      "movement_range_x": 0,
+      "movement_range_y": 0,
+      "trainer_type": "TRAINER_TYPE_NONE",
+      "trainer_sight_or_berry_tree_id": "ITEM_SKARMORITE",
+      "script": "Common_EventScript_FindItem",
+      "flag": "FLAG_ITEM_COOP_MEGA_SKARMORITE"
+    },
+    {
+      "graphics_id": "OBJ_EVENT_GFX_ITEM_BALL",
+      "x": 19,
+      "y": 6,
+      "elevation": 3,
+      "movement_type": "MOVEMENT_TYPE_LOOK_AROUND",
+      "movement_range_x": 0,
+      "movement_range_y": 0,
+      "trainer_type": "TRAINER_TYPE_NONE",
+      "trainer_sight_or_berry_tree_id": "ITEM_MUSCLE_BAND",
+      "script": "Common_EventScript_FindItem",
+      "flag": "FLAG_ITEM_COOP_ROUTE113_MUSCLE_BAND"
     }
   ],
   "warp_events": [

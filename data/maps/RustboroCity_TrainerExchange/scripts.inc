@@ -42,6 +42,7 @@ RustboroCity_TrainerExchange_EventScript_BackToMenu::
 	goto_if_eq VAR_TEMP_1, COOP_EXCHANGE_TM, RustboroCity_TrainerExchange_EventScript_MovesMenu
 	goto_if_eq VAR_TEMP_1, COOP_EXCHANGE_TRAIN, RustboroCity_TrainerExchange_EventScript_TrainMenu
 	goto_if_eq VAR_TEMP_1, COOP_EXCHANGE_BREED, RustboroCity_TrainerExchange_EventScript_BreedMenu
+	goto_if_eq VAR_TEMP_1, COOP_EXCHANGE_MEGA, RustboroCity_TrainerExchange_EventScript_MegaMenu
 	goto RustboroCity_TrainerExchange_EventScript_ShopMenu
 	end
 
@@ -340,6 +341,43 @@ RustboroCity_TrainerExchange_EventScript_BreedGuide::
 	goto RustboroCity_TrainerExchange_EventScript_BreedMenu
 	end
 
+@ ---------------------------------------------------------------- 6. Mega
+
+@ MEGA STONES (Battle Guide v2): the bracelet Steven left for a save that
+@ missed his Route 118 scene (5 BADGES), stones by BADGES and every stone
+@ found elsewhere again, and where to find the rest (tools/coop_mega).
+RustboroCity_TrainerExchange_EventScript_MegaClerk::
+	lock
+	faceplayer
+	setvar VAR_TEMP_1, COOP_EXCHANGE_MEGA
+	msgbox RustboroCity_TrainerExchange_Text_MegaIntro, MSGBOX_DEFAULT
+	goto_if_set FLAG_RECEIVED_MEGA_BRACELET, RustboroCity_TrainerExchange_EventScript_MegaMenu
+	goto_if_unset FLAG_BADGE05_GET, RustboroCity_TrainerExchange_EventScript_MegaNoBadge
+	msgbox RustboroCity_TrainerExchange_Text_StevenLeftBracelet, MSGBOX_DEFAULT
+	call Coop_EventScript_GiveMegaBracelet
+	goto_if_eq VAR_RESULT, FALSE, RustboroCity_TrainerExchange_EventScript_MegaMenu
+	msgbox Coop_Text_StevenMegaExplain, MSGBOX_DEFAULT
+	goto RustboroCity_TrainerExchange_EventScript_MegaMenu
+	end
+
+RustboroCity_TrainerExchange_EventScript_MegaNoBadge::
+	msgbox RustboroCity_TrainerExchange_Text_MegaNoBadge, MSGBOX_DEFAULT
+RustboroCity_TrainerExchange_EventScript_MegaMenu::
+	message RustboroCity_TrainerExchange_Text_HowCanIHelp
+	waitmessage
+	dynmultichoice 15, 1, FALSE, 3, 0, DYN_MULTICHOICE_CB_NONE, RustboroCity_TrainerExchange_Text_OptBuy, RustboroCity_TrainerExchange_Text_OptWhere, RustboroCity_TrainerExchange_Text_OptBack
+	switch VAR_RESULT
+	case 0, RustboroCity_TrainerExchange_EventScript_Buy
+	case 1, RustboroCity_TrainerExchange_EventScript_MegaWhere
+	goto RustboroCity_TrainerExchange_EventScript_Bye
+	end
+
+RustboroCity_TrainerExchange_EventScript_MegaWhere::
+	specialvar VAR_RESULT, CoopExchange_BufferMegaHints
+	msgbox gStringVar4, MSGBOX_DEFAULT
+	goto RustboroCity_TrainerExchange_EventScript_MegaMenu
+	end
+
 @ ---------------------------------------------------------------- guide
 
 RustboroCity_TrainerExchange_EventScript_Guide::
@@ -369,6 +407,22 @@ RustboroCity_TrainerExchange_Text_OptSoon:
 	.string "COMING SOON$"
 RustboroCity_TrainerExchange_Text_OptBack:
 	.string "BACK$"
+RustboroCity_TrainerExchange_Text_OptWhere:
+	.string "WHERE TO FIND$"
+
+RustboroCity_TrainerExchange_Text_MegaIntro:
+	.string "MEGA STONES, from DEVON's research.\n"
+	.string "More open with BADGES, and any stone\l"
+	.string "you've found out there, I can sell you\l"
+	.string "again.$"
+
+RustboroCity_TrainerExchange_Text_StevenLeftBracelet:
+	.string "You have the BALANCE BADGE! STEVEN\n"
+	.string "left a MEGA BRACELET here for you.$"
+
+RustboroCity_TrainerExchange_Text_MegaNoBadge:
+	.string "A MEGA BRACELET is waiting for those\n"
+	.string "with the BALANCE BADGE.$"
 RustboroCity_TrainerExchange_Text_OptEvReset:
 	.string "RESET EVs$"
 RustboroCity_TrainerExchange_Text_OptHyper:
@@ -558,4 +612,5 @@ RustboroCity_TrainerExchange_Text_Directory:
 	.string "TRAINER EXCHANGE\n"
 	.string "LEFT: MOVES & TMs  RIGHT: BREEDING\p"
 	.string "FRONT, left to right:\n"
-	.string "BATTLE ITEMS, EVOLUTION, TRAINING$"
+	.string "BATTLE ITEMS, EVOLUTION, TRAINING\p"
+	.string "BACK RIGHT CORNER: MEGA STONES$"

@@ -393,6 +393,7 @@ u16 CoopExchange_Tier(void);
 void CoopExchange_OpenShop(void);
 u16 CoopExchange_CountStock(void);
 u16 CoopExchange_BufferUpcoming(void);
+u16 CoopExchange_BufferMegaHints(void);
 void CoopExchange_RepairSavedPosition(void);
 u16 CoopExchange_PushTutorTypes(void);
 u16 CoopExchange_PushTutorMoves(void);

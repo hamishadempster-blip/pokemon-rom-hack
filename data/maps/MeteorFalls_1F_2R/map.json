@@ -53,6 +53,32 @@
       "trainer_sight_or_berry_tree_id": "1",
       "script": "MeteorFalls_1F_2R_EventScript_Jay",
       "flag": "0"
+    },
+    {
+      "graphics_id": "OBJ_EVENT_GFX_ITEM_BALL",
+      "x": 12,
+      "y": 6,
+      "elevation": 3,
+      "movement_type": "MOVEMENT_TYPE_LOOK_AROUND",
+      "movement_range_x": 0,
+      "movement_range_y": 0,
+      "trainer_type": "TRAINER_TYPE_NONE",
+      "trainer_sight_or_berry_tree_id": "ITEM_CLEFABLITE",
+      "script": "Common_EventScript_FindItem",
+      "flag": "FLAG_ITEM_COOP_MEGA_CLEFABLITE"
+    },
+    {
+      "graphics_id": "OBJ_EVENT_GFX_ITEM_BALL",
+      "x": 11,
+      "y": 8,
+      "elevation": 3,
+      "movement_type": "MOVEMENT_TYPE_LOOK_AROUND",
+      "movement_range_x": 0,
+      "movement_range_y": 0,
+      "trainer_type": "TRAINER_TYPE_NONE",
+      "trainer_sight_or_berry_tree_id": "ITEM_MOON_STONE",
+      "script": "Common_EventScript_FindItem",
+      "flag": "FLAG_ITEM_COOP_METEOR_FALLS_1_F_2_R_MOON_STONE"
     }
   ],
   "warp_events": [

@@ -125,6 +125,7 @@ ShoalCave_EventScript_IslaEntrance::
 	setvar VAR_0x8004, COOP_REWARD_SHOAL_RESCUE
 	specialvar VAR_RESULT, CoopQuest_RewardClaimed
 	goto_if_eq VAR_RESULT, FALSE, ShoalCave_EventScript_IslaThanks
+	call Coop_EventScript_StoneShoal
 	goto_if_set FLAG_DAILY_SHOAL_ICE_STONE, ShoalCave_EventScript_IslaDailyDone
 	msgbox ShoalCave_Text_IslaDaily, MSGBOX_DEFAULT
 	giveitem ITEM_ICE_STONE
@@ -154,6 +155,7 @@ ShoalCave_EventScript_IslaGift::
 	giveitem ITEM_SNOWBALL, 2
 	setvar VAR_0x8004, COOP_REWARD_SHOAL_RESCUE
 	special CoopQuest_ClaimReward
+	call Coop_EventScript_StoneShoal
 	msgbox ShoalCave_Text_IslaAfterGift, MSGBOX_DEFAULT
 	release
 	end

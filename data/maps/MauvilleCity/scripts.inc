@@ -455,6 +455,7 @@ MauvilleCity_EventScript_CompletedNewMauville::
 	setflag FLAG_GOT_TM_THUNDERBOLT_FROM_WATTSON
 	setvar VAR_0x8004, COOP_REWARD_PP_WATTSON
 	special CoopQuest_ClaimReward
+	call Coop_EventScript_StoneWattson
 	msgbox MauvilleCity_Text_WattsonPowerShop, MSGBOX_DEFAULT
 	msgbox MauvilleCity_Text_WattsonYoungTakeCharge, MSGBOX_DEFAULT
 	release
@@ -768,6 +769,7 @@ MauvilleCity_Text_PowerShop:
 	.string "from your sixth on.$"
 
 MauvilleCity_EventScript_ReceivedThunderbolt::
+	call Coop_EventScript_StoneWattson
 	msgbox MauvilleCity_Text_WattsonYoungTakeCharge, MSGBOX_DEFAULT
 	release
 	end

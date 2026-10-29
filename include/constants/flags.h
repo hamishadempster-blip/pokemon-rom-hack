@@ -52,17 +52,17 @@
 #else
 
 #define FLAG_RECEIVED_FEMALE_SALANDIT 0x20 // Lavaridge house: one female Salandit per save
-#define FLAG_UNUSED_0x021    0x21 // Unused Flag
-#define FLAG_UNUSED_0x022    0x22 // Unused Flag
-#define FLAG_UNUSED_0x023    0x23 // Unused Flag
-#define FLAG_UNUSED_0x024    0x24 // Unused Flag
-#define FLAG_UNUSED_0x025    0x25 // Unused Flag
-#define FLAG_UNUSED_0x026    0x26 // Unused Flag
-#define FLAG_UNUSED_0x027    0x27 // Unused Flag
-#define FLAG_UNUSED_0x028    0x28 // Unused Flag
-#define FLAG_UNUSED_0x029    0x29 // Unused Flag
-#define FLAG_UNUSED_0x02A    0x2A // Unused Flag
-#define FLAG_UNUSED_0x02B    0x2B // Unused Flag
+#define FLAG_ITEM_COOP_ROUTE118_SCOPE_LENS                          0x021 // Battle Guide v2 reward (tools/coop_mega/rewards.py)
+#define FLAG_ITEM_COOP_VICTORY_ROAD_B2_F_EXPERT_BELT                0x022 // Battle Guide v2 reward (tools/coop_mega/rewards.py)
+#define FLAG_ITEM_COOP_ROUTE112_PROTEIN                             0x023 // Battle Guide v2 reward (tools/coop_mega/rewards.py)
+#define FLAG_ITEM_COOP_ROUTE120_CARBOS                              0x024 // Battle Guide v2 reward (tools/coop_mega/rewards.py)
+#define FLAG_ITEM_COOP_ROUTE123_CALCIUM                             0x025 // Battle Guide v2 reward (tools/coop_mega/rewards.py)
+#define FLAG_ITEM_COOP_ROUTE122_ZINC                                0x026 // Battle Guide v2 reward (tools/coop_mega/rewards.py)
+#define FLAG_ITEM_COOP_JAGGED_PASS_IRON                             0x027 // Battle Guide v2 reward (tools/coop_mega/rewards.py)
+#define FLAG_ITEM_COOP_RUSTURF_TUNNEL_HP_UP                         0x028 // Battle Guide v2 reward (tools/coop_mega/rewards.py)
+#define FLAG_ITEM_COOP_ROUTE106_PP_UP                               0x029 // Battle Guide v2 reward (tools/coop_mega/rewards.py)
+#define FLAG_ITEM_COOP_ROUTE102_EXP_CANDY_M                         0x02A // Battle Guide v2 reward (tools/coop_mega/rewards.py)
+#define FLAG_ITEM_COOP_ROUTE125_EXP_CANDY_L                         0x02B // Battle Guide v2 reward (tools/coop_mega/rewards.py)
 #define FLAG_UNUSED_0x02C    0x2C // Unused Flag
 #define FLAG_UNUSED_0x02D    0x2D // Unused Flag
 #define FLAG_UNUSED_0x02E    0x2E // Unused Flag
@@ -1237,84 +1237,84 @@
 #define FLAG_CARAVAN_RAIDERS_DUO                                    0x49F // Desert caravan: the raiders beaten as a co-op duo (both saves)
 #define FLAG_TWIN_EXH_WON                                           0x4A0 // Twin arcs: the exhibition won (both saves in co-op)
 #define FLAG_TOURNEY_WON                                            0x4A1 // Twin Trial: the first final won (both saves in co-op)
-#define FLAG_UNUSED_0x4A2                                           0x4A2 // Unused Flag
-#define FLAG_UNUSED_0x4A3                                           0x4A3 // Unused Flag
-#define FLAG_UNUSED_0x4A4                                           0x4A4 // Unused Flag
-#define FLAG_UNUSED_0x4A5                                           0x4A5 // Unused Flag
-#define FLAG_UNUSED_0x4A6                                           0x4A6 // Unused Flag
-#define FLAG_UNUSED_0x4A7                                           0x4A7 // Unused Flag
-#define FLAG_UNUSED_0x4A8                                           0x4A8 // Unused Flag
-#define FLAG_UNUSED_0x4A9                                           0x4A9 // Unused Flag
-#define FLAG_UNUSED_0x4AA                                           0x4AA // Unused Flag
-#define FLAG_UNUSED_0x4AB                                           0x4AB // Unused Flag
-#define FLAG_UNUSED_0x4AC                                           0x4AC // Unused Flag
-#define FLAG_UNUSED_0x4AD                                           0x4AD // Unused Flag
-#define FLAG_UNUSED_0x4AE                                           0x4AE // Unused Flag
-#define FLAG_UNUSED_0x4AF                                           0x4AF // Unused Flag
-#define FLAG_UNUSED_0x4B0                                           0x4B0 // Unused Flag
-#define FLAG_UNUSED_0x4B1                                           0x4B1 // Unused Flag
-#define FLAG_UNUSED_0x4B2                                           0x4B2 // Unused Flag
-#define FLAG_UNUSED_0x4B3                                           0x4B3 // Unused Flag
-#define FLAG_UNUSED_0x4B4                                           0x4B4 // Unused Flag
-#define FLAG_UNUSED_0x4B5                                           0x4B5 // Unused Flag
-#define FLAG_UNUSED_0x4B6                                           0x4B6 // Unused Flag
-#define FLAG_UNUSED_0x4B7                                           0x4B7 // Unused Flag
-#define FLAG_UNUSED_0x4B8                                           0x4B8 // Unused Flag
-#define FLAG_UNUSED_0x4B9                                           0x4B9 // Unused Flag
-#define FLAG_UNUSED_0x4BA                                           0x4BA // Unused Flag
-#define FLAG_UNUSED_0x4BB                                           0x4BB // Unused Flag
-#define FLAG_UNUSED_0x4BC                                           0x4BC // Unused Flag
-#define FLAG_UNUSED_0x4BD                                           0x4BD // Unused Flag
-#define FLAG_UNUSED_0x4BE                                           0x4BE // Unused Flag
-#define FLAG_UNUSED_0x4BF                                           0x4BF // Unused Flag
-#define FLAG_UNUSED_0x4C0                                           0x4C0 // Unused Flag
-#define FLAG_UNUSED_0x4C1                                           0x4C1 // Unused Flag
-#define FLAG_UNUSED_0x4C2                                           0x4C2 // Unused Flag
-#define FLAG_UNUSED_0x4C3                                           0x4C3 // Unused Flag
-#define FLAG_UNUSED_0x4C4                                           0x4C4 // Unused Flag
-#define FLAG_UNUSED_0x4C5                                           0x4C5 // Unused Flag
-#define FLAG_UNUSED_0x4C6                                           0x4C6 // Unused Flag
-#define FLAG_UNUSED_0x4C7                                           0x4C7 // Unused Flag
-#define FLAG_UNUSED_0x4C8                                           0x4C8 // Unused Flag
-#define FLAG_UNUSED_0x4C9                                           0x4C9 // Unused Flag
-#define FLAG_UNUSED_0x4CA                                           0x4CA // Unused Flag
-#define FLAG_UNUSED_0x4CB                                           0x4CB // Unused Flag
-#define FLAG_UNUSED_0x4CC                                           0x4CC // Unused Flag
-#define FLAG_UNUSED_0x4CD                                           0x4CD // Unused Flag
-#define FLAG_UNUSED_0x4CE                                           0x4CE // Unused Flag
-#define FLAG_UNUSED_0x4CF                                           0x4CF // Unused Flag
-#define FLAG_UNUSED_0x4D0                                           0x4D0 // Unused Flag
-#define FLAG_UNUSED_0x4D1                                           0x4D1 // Unused Flag
-#define FLAG_UNUSED_0x4D2                                           0x4D2 // Unused Flag
-#define FLAG_UNUSED_0x4D3                                           0x4D3 // Unused Flag
-#define FLAG_UNUSED_0x4D4                                           0x4D4 // Unused Flag
-#define FLAG_UNUSED_0x4D5                                           0x4D5 // Unused Flag
-#define FLAG_UNUSED_0x4D6                                           0x4D6 // Unused Flag
-#define FLAG_UNUSED_0x4D7                                           0x4D7 // Unused Flag
-#define FLAG_UNUSED_0x4D8                                           0x4D8 // Unused Flag
-#define FLAG_UNUSED_0x4D9                                           0x4D9 // Unused Flag
-#define FLAG_UNUSED_0x4DA                                           0x4DA // Unused Flag
-#define FLAG_UNUSED_0x4DB                                           0x4DB // Unused Flag
-#define FLAG_UNUSED_0x4DC                                           0x4DC // Unused Flag
-#define FLAG_UNUSED_0x4DD                                           0x4DD // Unused Flag
-#define FLAG_UNUSED_0x4DE                                           0x4DE // Unused Flag
-#define FLAG_UNUSED_0x4DF                                           0x4DF // Unused Flag
-#define FLAG_UNUSED_0x4E0                                           0x4E0 // Unused Flag
-#define FLAG_UNUSED_0x4E1                                           0x4E1 // Unused Flag
-#define FLAG_UNUSED_0x4E2                                           0x4E2 // Unused Flag
-#define FLAG_UNUSED_0x4E3                                           0x4E3 // Unused Flag
-#define FLAG_UNUSED_0x4E4                                           0x4E4 // Unused Flag
-#define FLAG_UNUSED_0x4E5                                           0x4E5 // Unused Flag
-#define FLAG_UNUSED_0x4E6                                           0x4E6 // Unused Flag
-#define FLAG_UNUSED_0x4E7                                           0x4E7 // Unused Flag
-#define FLAG_UNUSED_0x4E8                                           0x4E8 // Unused Flag
-#define FLAG_UNUSED_0x4E9                                           0x4E9 // Unused Flag
-#define FLAG_UNUSED_0x4EA                                           0x4EA // Unused Flag
-#define FLAG_UNUSED_0x4EB                                           0x4EB // Unused Flag
-#define FLAG_UNUSED_0x4EC                                           0x4EC // Unused Flag
-#define FLAG_UNUSED_0x4ED                                           0x4ED // Unused Flag
-#define FLAG_UNUSED_0x4EE                                           0x4EE // Unused Flag
-#define FLAG_UNUSED_0x4EF                                           0x4EF // Unused Flag
+#define FLAG_RECEIVED_MEGA_BRACELET                                 0x4A2 // Battle Guide v2: this save has claimed its Mega Bracelet (ITEM_MEGA_RING)
+#define FLAG_ITEM_COOP_MEGA_DRAGALGITE                              0x4A3 // Battle Guide v2 reward (tools/coop_mega/rewards.py)
+#define FLAG_ITEM_COOP_MEGA_GARCHOMPITE                             0x4A4 // Battle Guide v2 reward (tools/coop_mega/rewards.py)
+#define FLAG_ITEM_COOP_MEGA_EELEKTROSSITE                           0x4A5 // Battle Guide v2 reward (tools/coop_mega/rewards.py)
+#define FLAG_ITEM_COOP_MEGA_FROSLASSITE                             0x4A6 // Battle Guide v2 reward (tools/coop_mega/rewards.py)
+#define FLAG_ITEM_COOP_MEGA_BEEDRILLITE                             0x4A7 // Battle Guide v2 reward (tools/coop_mega/rewards.py)
+#define FLAG_ITEM_COOP_MEGA_PIDGEOTITE                              0x4A8 // Battle Guide v2 reward (tools/coop_mega/rewards.py)
+#define FLAG_ITEM_COOP_MEGA_STARAPTITE                              0x4A9 // Battle Guide v2 reward (tools/coop_mega/rewards.py)
+#define FLAG_ITEM_COOP_MEGA_SCOLIPITE                               0x4AA // Battle Guide v2 reward (tools/coop_mega/rewards.py)
+#define FLAG_ITEM_COOP_MEGA_LOPUNNITE                               0x4AB // Battle Guide v2 reward (tools/coop_mega/rewards.py)
+#define FLAG_ITEM_COOP_MEGA_ALAKAZITE                               0x4AC // Battle Guide v2 reward (tools/coop_mega/rewards.py)
+#define FLAG_ITEM_COOP_MEGA_SABLENITE                               0x4AD // Battle Guide v2 reward (tools/coop_mega/rewards.py)
+#define FLAG_ITEM_COOP_MEGA_STEELIXITE                              0x4AE // Battle Guide v2 reward (tools/coop_mega/rewards.py)
+#define FLAG_ITEM_COOP_MEGA_EXCADRITE                               0x4AF // Battle Guide v2 reward (tools/coop_mega/rewards.py)
+#define FLAG_ITEM_COOP_MEGA_GLIMMORANITE                            0x4B0 // Battle Guide v2 reward (tools/coop_mega/rewards.py)
+#define FLAG_ITEM_COOP_MEGA_TYRANITARITE                            0x4B1 // Battle Guide v2 reward (tools/coop_mega/rewards.py)
+#define FLAG_ITEM_COOP_MEGA_VENUSAURITE                             0x4B2 // Battle Guide v2 reward (tools/coop_mega/rewards.py)
+#define FLAG_ITEM_COOP_MEGA_CHARIZARDITE_X                          0x4B3 // Battle Guide v2 reward (tools/coop_mega/rewards.py)
+#define FLAG_ITEM_COOP_MEGA_CHARIZARDITE_Y                          0x4B4 // Battle Guide v2 reward (tools/coop_mega/rewards.py)
+#define FLAG_ITEM_COOP_MEGA_BLASTOISINITE                           0x4B5 // Battle Guide v2 reward (tools/coop_mega/rewards.py)
+#define FLAG_ITEM_COOP_MEGA_GYARADOSITE                             0x4B6 // Battle Guide v2 reward (tools/coop_mega/rewards.py)
+#define FLAG_ITEM_COOP_MEGA_CAMERUPTITE                             0x4B7 // Battle Guide v2 reward (tools/coop_mega/rewards.py)
+#define FLAG_ITEM_COOP_MEGA_AERODACTYLITE                           0x4B8 // Battle Guide v2 reward (tools/coop_mega/rewards.py)
+#define FLAG_ITEM_COOP_MEGA_CLEFABLITE                              0x4B9 // Battle Guide v2 reward (tools/coop_mega/rewards.py)
+#define FLAG_ITEM_COOP_MEGA_FALINKSITE                              0x4BA // Battle Guide v2 reward (tools/coop_mega/rewards.py)
+#define FLAG_ITEM_COOP_MEGA_HAWLUCHANITE                            0x4BB // Battle Guide v2 reward (tools/coop_mega/rewards.py)
+#define FLAG_ITEM_COOP_MEGA_PYROARITE                               0x4BC // Battle Guide v2 reward (tools/coop_mega/rewards.py)
+#define FLAG_ITEM_COOP_MEGA_SCOVILLAINITE                           0x4BD // Battle Guide v2 reward (tools/coop_mega/rewards.py)
+#define FLAG_ITEM_COOP_MEGA_SCRAFTINITE                             0x4BE // Battle Guide v2 reward (tools/coop_mega/rewards.py)
+#define FLAG_ITEM_COOP_MEGA_SKARMORITE                              0x4BF // Battle Guide v2 reward (tools/coop_mega/rewards.py)
+#define FLAG_ITEM_COOP_MEGA_AUDINITE                                0x4C0 // Battle Guide v2 reward (tools/coop_mega/rewards.py)
+#define FLAG_ITEM_COOP_MEGA_CHANDELURITE                            0x4C1 // Battle Guide v2 reward (tools/coop_mega/rewards.py)
+#define FLAG_ITEM_COOP_MEGA_GENGARITE                               0x4C2 // Battle Guide v2 reward (tools/coop_mega/rewards.py)
+#define FLAG_ITEM_COOP_MEGA_CRABOMINITE                             0x4C3 // Battle Guide v2 reward (tools/coop_mega/rewards.py)
+#define FLAG_ITEM_COOP_MEGA_GOLISOPITE                              0x4C4 // Battle Guide v2 reward (tools/coop_mega/rewards.py)
+#define FLAG_ITEM_COOP_MEGA_GOLURKITE                               0x4C5 // Battle Guide v2 reward (tools/coop_mega/rewards.py)
+#define FLAG_ITEM_COOP_MEGA_HERACRONITE                             0x4C6 // Battle Guide v2 reward (tools/coop_mega/rewards.py)
+#define FLAG_ITEM_COOP_MEGA_KANGASKHANITE                           0x4C7 // Battle Guide v2 reward (tools/coop_mega/rewards.py)
+#define FLAG_ITEM_COOP_MEGA_MEOWSTICITE                             0x4C8 // Battle Guide v2 reward (tools/coop_mega/rewards.py)
+#define FLAG_ITEM_COOP_MEGA_PINSIRITE                               0x4C9 // Battle Guide v2 reward (tools/coop_mega/rewards.py)
+#define FLAG_ITEM_COOP_MEGA_RAICHUNITE_X                            0x4CA // Battle Guide v2 reward (tools/coop_mega/rewards.py)
+#define FLAG_ITEM_COOP_MEGA_RAICHUNITE_Y                            0x4CB // Battle Guide v2 reward (tools/coop_mega/rewards.py)
+#define FLAG_ITEM_COOP_MEGA_SCIZORITE                               0x4CC // Battle Guide v2 reward (tools/coop_mega/rewards.py)
+#define FLAG_ITEM_COOP_MEGA_SHARPEDONITE                            0x4CD // Battle Guide v2 reward (tools/coop_mega/rewards.py)
+#define FLAG_ITEM_COOP_MEGA_SLOWBRONITE                             0x4CE // Battle Guide v2 reward (tools/coop_mega/rewards.py)
+#define FLAG_ITEM_COOP_MEGA_VICTREEBELITE                           0x4CF // Battle Guide v2 reward (tools/coop_mega/rewards.py)
+#define FLAG_ITEM_COOP_MEGA_EMBOARITE                               0x4D0 // Battle Guide v2 reward (tools/coop_mega/rewards.py)
+#define FLAG_ITEM_COOP_MEGA_ABOMASITE                               0x4D1 // Battle Guide v2 reward (tools/coop_mega/rewards.py)
+#define FLAG_ITEM_COOP_MEGA_BARBARACITE                             0x4D2 // Battle Guide v2 reward (tools/coop_mega/rewards.py)
+#define FLAG_ITEM_COOP_MEGA_CHESNAUGHTITE                           0x4D3 // Battle Guide v2 reward (tools/coop_mega/rewards.py)
+#define FLAG_ITEM_COOP_MEGA_DRAGONINITE                             0x4D4 // Battle Guide v2 reward (tools/coop_mega/rewards.py)
+#define FLAG_ITEM_COOP_MEGA_GRENINJITE                              0x4D5 // Battle Guide v2 reward (tools/coop_mega/rewards.py)
+#define FLAG_ITEM_COOP_MEGA_STARMINITE                              0x4D6 // Battle Guide v2 reward (tools/coop_mega/rewards.py)
+#define FLAG_ITEM_COOP_MEGA_BAXCALIBRITE                            0x4D7 // Battle Guide v2 reward (tools/coop_mega/rewards.py)
+#define FLAG_ITEM_COOP_MEGA_DRAMPANITE                              0x4D8 // Battle Guide v2 reward (tools/coop_mega/rewards.py)
+#define FLAG_ITEM_COOP_MEGA_MALAMARITE                              0x4D9 // Battle Guide v2 reward (tools/coop_mega/rewards.py)
+#define FLAG_ITEM_COOP_MEGA_MAWILITE                                0x4DA // Battle Guide v2 reward (tools/coop_mega/rewards.py)
+#define FLAG_ITEM_COOP_MEGA_SALAMENCITE                             0x4DB // Battle Guide v2 reward (tools/coop_mega/rewards.py)
+#define FLAG_ITEM_COOP_ROUTE116_GREAT_BALL                          0x4DC // Battle Guide v2 reward (tools/coop_mega/rewards.py)
+#define FLAG_ITEM_COOP_ROUTE117_NET_BALL                            0x4DD // Battle Guide v2 reward (tools/coop_mega/rewards.py)
+#define FLAG_ITEM_COOP_ROUTE124_DIVE_BALL                           0x4DE // Battle Guide v2 reward (tools/coop_mega/rewards.py)
+#define FLAG_ITEM_COOP_GRANITE_CAVE_B2_F_DUSK_BALL                  0x4DF // Battle Guide v2 reward (tools/coop_mega/rewards.py)
+#define FLAG_ITEM_COOP_ROUTE119_QUICK_BALL                          0x4E0 // Battle Guide v2 reward (tools/coop_mega/rewards.py)
+#define FLAG_ITEM_COOP_ROUTE121_TIMER_BALL                          0x4E1 // Battle Guide v2 reward (tools/coop_mega/rewards.py)
+#define FLAG_ITEM_COOP_ROUTE120_ULTRA_BALL                          0x4E2 // Battle Guide v2 reward (tools/coop_mega/rewards.py)
+#define FLAG_ITEM_COOP_ROUTE104_NEST_BALL                           0x4E3 // Battle Guide v2 reward (tools/coop_mega/rewards.py)
+#define FLAG_ITEM_COOP_METEOR_FALLS_1_F_2_R_MOON_STONE              0x4E4 // Battle Guide v2 reward (tools/coop_mega/rewards.py)
+#define FLAG_ITEM_COOP_FIERY_PATH_FIRE_STONE                        0x4E5 // Battle Guide v2 reward (tools/coop_mega/rewards.py)
+#define FLAG_ITEM_COOP_NEW_MAUVILLE_INSIDE_THUNDER_STONE            0x4E6 // Battle Guide v2 reward (tools/coop_mega/rewards.py)
+#define FLAG_ITEM_COOP_ROUTE109_WATER_STONE                         0x4E7 // Battle Guide v2 reward (tools/coop_mega/rewards.py)
+#define FLAG_ITEM_COOP_ROUTE119_LEAF_STONE                          0x4E8 // Battle Guide v2 reward (tools/coop_mega/rewards.py)
+#define FLAG_ITEM_COOP_ROUTE111_SUN_STONE                           0x4E9 // Battle Guide v2 reward (tools/coop_mega/rewards.py)
+#define FLAG_ITEM_COOP_MT_PYRE_3_F_DUSK_STONE                       0x4EA // Battle Guide v2 reward (tools/coop_mega/rewards.py)
+#define FLAG_ITEM_COOP_ROUTE117_OVAL_STONE                          0x4EB // Battle Guide v2 reward (tools/coop_mega/rewards.py)
+#define FLAG_ITEM_COOP_ROUTE114_RAZOR_FANG                          0x4EC // Battle Guide v2 reward (tools/coop_mega/rewards.py)
+#define FLAG_ITEM_COOP_ROUTE110_UPGRADE                             0x4ED // Battle Guide v2 reward (tools/coop_mega/rewards.py)
+#define FLAG_ITEM_COOP_ROUTE113_MUSCLE_BAND                         0x4EE // Battle Guide v2 reward (tools/coop_mega/rewards.py)
+#define FLAG_ITEM_COOP_ROUTE115_WISE_GLASSES                        0x4EF // Battle Guide v2 reward (tools/coop_mega/rewards.py)
 
 #define FLAG_DEFEATED_RUSTBORO_GYM                                  0x4F0
 #define FLAG_DEFEATED_DEWFORD_GYM                                   0x4F1

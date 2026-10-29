@@ -77,6 +77,7 @@ Route109_EventScript_MarlinGift::
 	setvar VAR_0x8004, COOP_REWARD_COAST
 	special CoopQuest_ClaimReward
 Route109_EventScript_MarlinAfter::
+	call Coop_EventScript_StoneCoast
 	msgbox Route109_Text_MarlinAfter, MSGBOX_DEFAULT
 	release
 	end
