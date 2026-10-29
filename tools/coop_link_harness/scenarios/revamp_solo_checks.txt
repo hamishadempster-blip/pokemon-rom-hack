@@ -3,8 +3,9 @@
 # TEST HELPERS (logged): Kai's lead made with test_mon (CHERRIM Lv 30,
 # BEEDRILL Lv 5 so its U-TURN does not end the battle) and healed.
 # DRIVER: force_move picks the move under test.
-# FIXTURES: Route 116 grass all WURMPLE; forced encounter steps; Karen's
-# sight hidden.
+# FIXTURES: Route 116 grass all WURMPLE at Lv 20 (so a critical U-TURN does
+# not knock it out and end the battle before the pivot); forced encounter
+# steps; Karen's sight hidden.
 # 1. CHERRIM uses SUNNY DAY: FLOWER GIFT turns it into the Sunshine form.
 # 2. BEEDRILL (POISON TOUCH) uses U-TURN: it comes back and the next
 #    Pokemon goes in, as a pivot should.
@@ -25,6 +26,18 @@ b no_wild 1
 0 fixture_rom16 gRoute116_LandMons+38 265
 0 fixture_rom16 gRoute116_LandMons+42 265
 0 fixture_rom16 gRoute116_LandMons+46 265
+0 fixture_rom16 gRoute116_LandMons+0 5140
+0 fixture_rom16 gRoute116_LandMons+4 5140
+0 fixture_rom16 gRoute116_LandMons+8 5140
+0 fixture_rom16 gRoute116_LandMons+12 5140
+0 fixture_rom16 gRoute116_LandMons+16 5140
+0 fixture_rom16 gRoute116_LandMons+20 5140
+0 fixture_rom16 gRoute116_LandMons+24 5140
+0 fixture_rom16 gRoute116_LandMons+28 5140
+0 fixture_rom16 gRoute116_LandMons+32 5140
+0 fixture_rom16 gRoute116_LandMons+36 5140
+0 fixture_rom16 gRoute116_LandMons+40 5140
+0 fixture_rom16 gRoute116_LandMons+44 5140
 0 fixture_warp 0 31 23 17
 0 until_field 3000
 0 fixture_obj 17 7 0

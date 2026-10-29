@@ -47,10 +47,7 @@ b shot kai-ready-rosa-not
 # Rosa CANCEL
 0 note_text stepped_back_from_the
 1 note_text You_stepped_back
-1 press DOWN 2
-1 wait 10
-1 press DOWN 2
-1 wait 10
+1 menu_cursor 2
 1 press A 2
 b until_mem gCoopPrepPhase 0 600
 b wait 90

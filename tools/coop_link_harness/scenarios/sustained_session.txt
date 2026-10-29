@@ -46,10 +46,7 @@ b leak_check steady
 1 press A 2
 b until_mem gCoopPrepPhase 1 1500
 b wait 150
-0 press DOWN 2
-0 wait 10
-0 press DOWN 2
-0 wait 10
+0 menu_cursor 2
 0 press A 2
 b until_mem gCoopPrepPhase 0 600
 b wait 90
@@ -71,8 +68,7 @@ b leak_check after-prep-cancel
 b until_mem gCoopPrepPhase 1 1500
 b wait 240
 # Rosa: CHANGE TEAM, slots 1, 2, 5 (both default teams have SHROOMISH).
-1 press DOWN 2
-1 wait 10
+1 menu_cursor 1
 1 press A 2
 1 until_cb2 CB2_UpdatePartyMenu 600
 1 wait 90
@@ -129,8 +125,7 @@ b wait 300
 b leak_check after-two-battles
 # --- 4. CONTINUE, cancelled; CONTINUE, battle 3, stop.
 include duo_desk_continue.inc
-0 press DOWN 2
-0 wait 10
+0 menu_cursor 1
 0 press A 2
 b until_mem gCoopPrepPhase 0 600
 b wait 90

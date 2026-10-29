@@ -51,8 +51,7 @@ b expect gCoopPrepOrder+1 2
 b expect gCoopPrepOrder+2 3
 b shot review-default
 # Kai: CHANGE TEAM
-0 press DOWN 2
-0 wait 10
+0 menu_cursor 1
 0 press A 2
 0 until_cb2 CB2_UpdatePartyMenu 600
 0 wait 90

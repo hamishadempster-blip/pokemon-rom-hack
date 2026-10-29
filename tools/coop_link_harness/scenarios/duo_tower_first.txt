@@ -53,8 +53,7 @@ b expect gCoopPrepPhase 1
 # screens and nothing can start.
 b shot team-clash
 # Rosa: CHANGE TEAM, takes slot 3 out and slot 5 in (1, 2, 5).
-1 press DOWN 2
-1 wait 10
+1 menu_cursor 1
 1 press A 2
 1 until_cb2 CB2_UpdatePartyMenu 600
 1 wait 90

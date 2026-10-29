@@ -57,8 +57,7 @@ b sync
 0 until_mem gCoopPrepPhase 1 3000
 1 until_mem gCoopPrepPhase 1 600
 b wait 60
-0 press DOWN 2
-0 wait 10
+0 menu_cursor 1
 0 press A 2
 0 until_cb2 CB2_UpdatePartyMenu 600
 0 wait 90
@@ -111,8 +110,7 @@ b wait 60
 0 expect gCoopPrepOrder+2 3
 0 shot review-543
 # Rosa: CHANGE TEAM, keep 1, clear 2 and 3, add 5 and 4
-1 press DOWN 2
-1 wait 10
+1 menu_cursor 1
 1 press A 2
 1 until_cb2 CB2_UpdatePartyMenu 600
 1 wait 90

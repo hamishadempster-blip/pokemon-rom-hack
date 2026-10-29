@@ -355,6 +355,7 @@ details in `<name>.visual.txt`).
 | `expectp_same PTRSYM+off:size` | The value read through the same pointer is the same on both games (e.g. the duo run id). |
 | `weak_foes 1\|0` | FIXTURE: on this game (use it on the battle engine's, player 0), the opposing battlers (1 and 3) are held at 1 HP in battle: any hit knocks them out (a flow test's win, not balance). |
 | `expect_not_noted` | After `note_text WORDS`: those words were NOT in any message since. |
+| `menu_cursor N [FRAMES]` | Press DOWN/UP until the open standard menu's cursor (`menu.sMenu.cursorPos`) is on item N (team screens: 1 CHANGE TEAM, 2 CANCEL), so a press the game did not take is repeated instead of A landing on READY |
 | `test_battle_name BATTLER` | In battle, the ROM writes the trainer name a battle message gives that battler (`{B_ATK_TRAINER_NAME}`) into `gStringVar4` (read-only test hook; check with `expect_text gStringVar4 NAME`). `coop_wally_vr_partner` checks both opposing battlers name WALLY on both games (the right one was empty before 0xC017013E). |
 | `leak_note [LABEL]` / `leak_check [LABEL]` | Count this game's active tasks, sprites in use, sprite palette tags held and heap blocks/bytes allocated (walking `gHeap`); `leak_check` fails if any differ from the note. Take both on the field at a quiet point. `LEAK_SPRITES=1` also lists each sprite's palette slot and tag. |
 | `fixture_nick SLOT NAME` | FIXTURE: a nickname for this player's party slot (letters, digits, `_` for a space, 9 at most). Names only; stats untouched. |
