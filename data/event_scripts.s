@@ -1069,6 +1069,7 @@ gStdScripts_End::
 	.include "data/scripts/coop_quest_twins.inc"
 	.include "data/scripts/coop_quest_beacon.inc"
 	.include "data/scripts/coop_mega.inc"
+	.include "data/scripts/coop_boss_pairs.inc"
 	.include "data/scripts/new_game.inc"
 	.include "data/scripts/hall_of_fame.inc"
 	.include "data/scripts/hall_of_fame_frlg.inc"
