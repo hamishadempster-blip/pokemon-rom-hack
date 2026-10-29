@@ -1,0 +1,274 @@
+# Sustained session (build 0xC017013E): nothing left behind after repeated
+# battles, team screens, menus, an outfit change, following and a facility
+# run. j68 saves (both champions), linked, in the Battle Tower lobby.
+# leak_note / leak_check count, on each game, the active tasks, the sprites
+# in use, the sprite palette tags held and the heap blocks and bytes
+# allocated; each check is made on the field at the desk, quiet, and must
+# equal the note taken there at the start.
+# FIXTURES: fixture_warp into the lobby; no random wild battles; driver aid
+# smart_moves; FIXTURE weak_foes 1 and strong_battlers 400 on the battle
+# engine's game (Kai's) in each duo battle (flow, not balance).
+# Sequence:
+# 1. the note; a second look 300 frames later (the field is steady);
+# 2. DUO DESK LV. 50, Rosa YES, team screen, Kai CANCEL (prep cancel);
+# 3. DUO DESK LV. 50 again, Rosa changes her team, battle 1 won, Kai goes on
+#    (YES), battle 2 won, Kai stops (NO);
+# 4. CONTINUE, team screen, Kai CANCEL; CONTINUE, battle 3 won, NO;
+# 5. START menu and CO-OP menu opened and closed; APPEARANCE: an outfit
+#    change and back;
+# 6. FOLLOW: Kai follows Rosa round the lobby and stops;
+# each followed by leak_check on both games; parties and money unchanged.
+include continue.inc
+include relink.inc
+b expect coop.sLinkState 2
+b no_wild 1
+b smart_moves 1
+0 fixture_warp 26 5 21 7
+1 fixture_warp 26 5 22 7
+b until_field 3000
+b sync
+b wait 300
+b note_party
+b note_money
+b leak_note start
+b wait 300
+b leak_check steady
+# --- 2. A team screen, cancelled.
+0 press UP 2
+0 wait 20
+0 press A 2
+0 wait 90
+0 until_task Task_HandleScrollingMultichoiceInput 3000 A
+0 wait 30
+0 press A 2
+1 until_mem coop.sGuestPairPending 1 3000
+1 wait 90
+1 press A 2
+b until_mem gCoopPrepPhase 1 1500
+b wait 150
+0 press DOWN 2
+0 wait 10
+0 press DOWN 2
+0 wait 10
+0 press A 2
+b until_mem gCoopPrepPhase 0 600
+b wait 90
+b mash_field 3000 B
+b sync
+b wait 300
+b leak_check after-prep-cancel
+# --- 3. A new run: battle 1, go on, battle 2, stop.
+0 press UP 2
+0 wait 20
+0 press A 2
+0 wait 90
+0 until_task Task_HandleScrollingMultichoiceInput 3000 A
+0 wait 30
+0 press A 2
+1 until_mem coop.sGuestPairPending 1 3000
+1 wait 90
+1 press A 2
+b until_mem gCoopPrepPhase 1 1500
+b wait 240
+# Rosa: CHANGE TEAM, slots 1, 2, 5 (both default teams have SHROOMISH).
+1 press DOWN 2
+1 wait 10
+1 press A 2
+1 until_cb2 CB2_UpdatePartyMenu 600
+1 wait 90
+1 press DOWN 2
+1 wait 10
+1 press DOWN 2
+1 wait 10
+1 press A 2
+1 wait 20
+1 press A 2
+1 wait 20
+1 press DOWN 2
+1 wait 10
+1 press DOWN 2
+1 wait 10
+1 press A 2
+1 wait 20
+1 press A 2
+1 wait 20
+1 press A 2
+1 until_cb2 CB2_Overworld 600
+1 wait 150
+b until_cb2 BattleMainCB2 6000 A
+0 weak_foes 1
+0 strong_battlers 400
+0 until_field_text Go_on_to_battle_2 40000
+1 until_field_text battle_won 40000
+1 until_mem coop.sGuestPairPending 1 3000 B
+0 until_task Task_HandleYesNoInput 600
+0 wait 20
+0 press A 2
+1 until_mem coop.sGuestPairPending 1 3000
+1 wait 90
+1 press A 2
+b until_mem gCoopPrepPhase 1 1500
+b wait 120
+b until_cb2 BattleMainCB2 6000 A
+0 weak_foes 1
+0 strong_battlers 400
+0 until_field_text Go_on_to_battle_3 40000
+1 mash_field 40000
+0 until_task Task_HandleYesNoInput 600
+0 wait 20
+0 press DOWN 2
+0 wait 10
+0 press A 2
+0 mash_field 3000 B
+b sync
+b mash_field 600 B
+b expectp gSaveBlock3Ptr+422:2 2
+b expect_party_same
+b expect_money_same
+b wait 300
+b leak_check after-two-battles
+# --- 4. CONTINUE, cancelled; CONTINUE, battle 3, stop.
+include duo_desk_continue.inc
+0 press DOWN 2
+0 wait 10
+0 press A 2
+b until_mem gCoopPrepPhase 0 600
+b wait 90
+b mash_field 3000 B
+b sync
+b wait 300
+b leak_check after-fixed-cancel
+include duo_desk_continue.inc
+b until_cb2 BattleMainCB2 6000 A
+0 weak_foes 1
+0 strong_battlers 400
+0 until_field_text Go_on_to_battle_4 40000
+1 mash_field 40000
+0 until_task Task_HandleYesNoInput 600
+0 wait 20
+0 press DOWN 2
+0 wait 10
+0 press A 2
+0 mash_field 3000 B
+b sync
+b mash_field 600 B
+b expectp gSaveBlock3Ptr+422:2 3
+b expect_party_same
+b expect_money_same
+b wait 300
+b leak_check after-facility-run
+# --- 5. Menus and an outfit change (both players).
+b press START 2
+b wait 50
+b press B 2
+b wait 40
+b press START 2
+b wait 50
+b menu_to COOP
+b press A 2
+b wait 60
+b shot coop-menu
+b press B 2
+b mash_field 600 B
+b press START 2
+b wait 50
+b menu_to COOP
+b press A 2
+b wait 60
+b press DOWN 2
+b wait 10
+b press DOWN 2
+b wait 10
+b press DOWN 2
+b wait 10
+b press DOWN 2
+b wait 10
+b press DOWN 2
+b wait 10
+b press DOWN 2
+b wait 10
+b press A 2
+b wait 60
+b press DOWN 2
+b wait 30
+b press A 2
+b wait 60
+b mash_field 2000 B
+b expect coop_outfit.sShownLocal 1
+b press START 2
+b wait 50
+b menu_to COOP
+b press A 2
+b wait 60
+b press DOWN 2
+b wait 10
+b press DOWN 2
+b wait 10
+b press DOWN 2
+b wait 10
+b press DOWN 2
+b wait 10
+b press DOWN 2
+b wait 10
+b press DOWN 2
+b wait 10
+b press A 2
+b wait 60
+b press UP 2
+b wait 30
+b press A 2
+b wait 60
+b mash_field 2000 B
+b expect coop_outfit.sShownLocal 0
+b sync
+b wait 300
+b leak_check after-menus-outfits
+# --- 6. FOLLOW: Kai (facing Rosa) follows her round the lobby.
+0 walk 21 8 2000
+0 walk 21 7 2000
+1 walk 22 8 2000
+1 walk 22 7 2000
+b sync
+b wait 30
+0 press RIGHT 2
+b wait 40
+b sync
+b expect_partner kai-faces-rosa
+0 press A 2
+0 wait 40
+0 shot partner-menu
+0 press DOWN 2
+0 press DOWN 2
+0 press DOWN 2
+0 press DOWN 2
+0 press DOWN 2
+0 press DOWN 2
+0 press A 2
+0 until_field_text Press_any_button 300
+0 mash_field 300 B
+0 wait 20
+0 expect coop_partner.sFollow 2
+b sync
+1 walk 22 8 3000
+1 walk 18 8 3000
+1 walk 18 9 3000
+1 wait 90
+b sync
+0 wait 90
+0 shot following
+0 expect coop_partner.sFollow 2
+0 expect_nz gCoopFollowSteps
+0 press LEFT 2
+0 wait 30
+0 expect coop_partner.sFollow 0
+b sync
+0 walk 21 7 3000
+1 walk 22 7 3000
+0 press UP 2
+1 press UP 2
+b sync
+b wait 300
+b leak_check after-follow
+b expect_party_same
+b expect_money_same
+b expect coop.sLinkState 2

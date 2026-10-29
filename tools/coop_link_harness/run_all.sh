@@ -342,11 +342,11 @@ fi
 # Duo Frontier (0xC017013E) and optional travel, on the champions' saves.
 if [ -n "${J68:-}" ]; then
 	run duo_tower_first SAVE0="$J68/p0.sav" SAVE1="$J68/p1.sav"
-	for s in duo_tower_set duo_tower_abort duo_tower_behind duo_tower_partners; do
+	for s in duo_tower_set duo_tower_abort duo_tower_behind duo_tower_partners duo_tower_decline; do
 		run "$s" SAVE0="$out/duo_tower_first/p0.sav" SAVE1="$out/duo_tower_first/p1.sav"
 	done
 	run duo_tower_set_reload SAVE0="$out/duo_tower_set/p0.sav" SAVE1="$out/duo_tower_set/p1.sav"
-	for s in duo_desks opt_escape_dig opt_travel opt_contest; do
+	for s in duo_desks opt_escape_dig opt_travel opt_contest sustained_session; do
 		run "$s" SAVE0="$J68/p0.sav" SAVE1="$J68/p1.sav"
 	done
 fi

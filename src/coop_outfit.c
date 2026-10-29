@@ -984,6 +984,7 @@ void CoopOutfit_OpenMenu(void)
     struct WindowTemplate template;
     struct ListMenuTemplate list;
     u8 taskId, i, windowId;
+    u16 picSprite;
     u16 pic = PlayerPic();
     u8 base = Base(gSaveBlock2Ptr->playerGender);
 
@@ -1004,6 +1005,11 @@ void CoopOutfit_OpenMenu(void)
     gTasks[taskId].tOriginal = SavedOutfit();
     sPreviewOutfit = SavedOutfit();
     sPreviewActive = TRUE;
+    // No preview sprite yet: ListMenuInit below moves the cursor (and so
+    // refreshes the preview) before it exists. Task data starts at 0, which
+    // is the player's own field sprite, and its palette slot would get the
+    // trainer pic's colours and tag.
+    gTasks[taskId].tPicSprite = MAX_SPRITES;
 
     template = CreateWindowTemplate(0, 1, 1, 12, MENU_ITEMS * 2, 0xF, 0x64);
     windowId = AddWindow(&template);
@@ -1015,11 +1021,12 @@ void CoopOutfit_OpenMenu(void)
     gTasks[taskId].tListTaskId = ListMenuInit(&list, 0, SavedOutfit());
     CopyWindowToVram(windowId, COPYWIN_FULL);
 
-    gTasks[taskId].tPicSprite = CreateTrainerPicSprite(pic, TRUE, 192, 72, 0, GetTrainerPicTag(pic, TRUE));
-    if (gTasks[taskId].tPicSprite == 0xFFFF)
-        gTasks[taskId].tPicSprite = MAX_SPRITES;
+    picSprite = CreateTrainerPicSprite(pic, TRUE, 192, 72, 0, GetTrainerPicTag(pic, TRUE));
+    if (picSprite >= MAX_SPRITES)   // 0xFFFF: no sprite (task data is s16)
+        picSprite = MAX_SPRITES;
     else
-        gSprites[gTasks[taskId].tPicSprite].oam.priority = 0;
+        gSprites[picSprite].oam.priority = 0;
+    gTasks[taskId].tPicSprite = picSprite;
     RefreshPreviewPic(taskId);
 }
 

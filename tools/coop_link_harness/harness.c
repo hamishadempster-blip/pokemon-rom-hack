@@ -23,7 +23,7 @@
 #define MAX_CMDS 4096
 #define MAX_SYMS 500000
 
-enum { C_PARTNER, C_GOTO, C_HEX, C_PRESS, C_WAIT, C_SHOT, C_DUMP, C_BARRIER, C_UNTIL_CB2, C_UNTIL_FIELD, C_EXPECT, C_UNTIL_MEM, C_BATTLE, C_MENU, C_PARTY, C_FIXTURE, C_WRITE, C_LEAD, C_MOVE, C_SIX, C_VAR, C_FLAG, C_VS, C_EXPECT_FLAG, C_EXPECT_VAR, C_NO_OBJECT, C_MAP, C_OBJECT, C_TEXT_SPEED, C_PACE, C_MUTE, C_PARTNER_AT, C_ITEM, C_EXPECT_ITEM, C_UNTIL_TEXT, C_WARP, C_PC_COUNT, C_MONS, C_NO_COPIES, C_NOTE_MONEY, C_MONEY_GAIN, C_FORCE_ENC, C_EXPECT_RANGE, C_WALK, C_NO_WILD, C_CROSS, C_WALK_BATTLE, C_SMART, C_STRONG, C_UNTIL_TASK, C_MIRROR, C_SPECIES, C_NOTE_PARTY, C_SAME_PARTY, C_PATCH_RET, C_SLOT, C_TXN, C_MONEY_SAME, C_DEX, C_SWAP, C_GENDER, C_FILL, C_UNFILL, C_WRITEP, C_TINT, C_UNTIL_FTEXT, C_NICK, C_GRIND, C_CATCH, C_HUNT, C_SWITCH_LEAD, C_PARTY_SLOT, C_HEAL_BELOW, C_TALK_OBJ, C_BOXES, C_TEST_HOOK, C_WATCH, C_EXPECT_WRITES, C_SURF, C_BAG_ITEM, C_FLY_MAP, C_STEP_TO, C_PARTY_ACTION, C_DIVE, C_RIDE, C_LEGEND, C_OWNED, C_PCFILL, C_TASKS, C_ALLOW_RESET, C_ROMWRITE, C_OBJBYTE, C_NPC_SYNC, C_BATTLE_ITEM, C_FIELD_ITEM, C_FISH, C_FORCE_MOVE, C_SCREEN_SAME, C_EXPECT_TEXT, C_MONEY_DELTA, C_SET_MONEY, C_NOTE_TEXT, C_EXPECT_CB2, C_MEGA_NEXT };
+enum { C_PARTNER, C_GOTO, C_HEX, C_PRESS, C_WAIT, C_SHOT, C_DUMP, C_BARRIER, C_UNTIL_CB2, C_UNTIL_FIELD, C_EXPECT, C_UNTIL_MEM, C_BATTLE, C_MENU, C_PARTY, C_FIXTURE, C_WRITE, C_LEAD, C_MOVE, C_SIX, C_VAR, C_FLAG, C_VS, C_EXPECT_FLAG, C_EXPECT_VAR, C_NO_OBJECT, C_MAP, C_OBJECT, C_TEXT_SPEED, C_PACE, C_MUTE, C_PARTNER_AT, C_ITEM, C_EXPECT_ITEM, C_UNTIL_TEXT, C_WARP, C_PC_COUNT, C_MONS, C_NO_COPIES, C_NOTE_MONEY, C_MONEY_GAIN, C_FORCE_ENC, C_EXPECT_RANGE, C_WALK, C_NO_WILD, C_CROSS, C_WALK_BATTLE, C_SMART, C_STRONG, C_UNTIL_TASK, C_MIRROR, C_SPECIES, C_NOTE_PARTY, C_SAME_PARTY, C_PATCH_RET, C_SLOT, C_TXN, C_MONEY_SAME, C_DEX, C_SWAP, C_GENDER, C_FILL, C_UNFILL, C_WRITEP, C_TINT, C_UNTIL_FTEXT, C_NICK, C_GRIND, C_CATCH, C_HUNT, C_SWITCH_LEAD, C_PARTY_SLOT, C_HEAL_BELOW, C_TALK_OBJ, C_BOXES, C_TEST_HOOK, C_WATCH, C_EXPECT_WRITES, C_SURF, C_BAG_ITEM, C_FLY_MAP, C_STEP_TO, C_PARTY_ACTION, C_DIVE, C_RIDE, C_LEGEND, C_OWNED, C_PCFILL, C_TASKS, C_ALLOW_RESET, C_ROMWRITE, C_OBJBYTE, C_NPC_SYNC, C_BATTLE_ITEM, C_FIELD_ITEM, C_FISH, C_FORCE_MOVE, C_SCREEN_SAME, C_EXPECT_TEXT, C_MONEY_DELTA, C_SET_MONEY, C_NOTE_TEXT, C_EXPECT_CB2, C_MEGA_NEXT, C_LEAK };
 
 struct Cmd {
 	unsigned args[8];
@@ -76,6 +76,8 @@ struct Player {
     int lastSent; unsigned lastSentFrame;   // the last replacement chosen (both battlers down)
     unsigned strongBattlers;
     unsigned weakFoes;
+    int leakNote[5];
+    bool leakNoted;
     unsigned offField;
     unsigned noPath;      // walk: consecutive field frames with no path
     unsigned char partyNote[600];
@@ -1479,6 +1481,29 @@ static void battleLog(struct Player* p) {
 static volatile sig_atomic_t sUsr1[2];
 static void onUsr1(int sig) { (void)sig; sUsr1[0] = sUsr1[1] = 1; }
 
+
+// Leak counters on this game: active tasks, sprites in use, sprite palette
+// tags held, heap blocks allocated and their bytes (walking gHeap's chain).
+static void leakCounts(struct Player* p, int* out)
+{
+	unsigned tasks = symAddr("gTasks"), spr = symAddr("gSprites"), tags = symAddr("sSpritePaletteTags");
+	unsigned heap = symAddr("gHeap");
+	int nt = 0, ns = 0, np = 0, nb = 0, bytes = 0;
+	for (int i = 0; i < 16; i++) if (rd8(p, tasks + i * 0x28 + 4)) nt++;
+	for (int i = 0; i < 64; i++) if (rd8(p, spr + i * 0x44 + 0x3E) & 1) ns++;
+	for (int i = 0; i < 16; i++) if (rd16(p, tags + i * 2) != 0xFFFF) np++;
+	unsigned b = heap;
+	for (int k = 0; k < 400; k++) {
+		unsigned w0 = rd32(p, b), w1 = rd32(p, b + 4);
+		if ((w0 >> 16) != 0xA3A3) break;           // magic
+		if (w0 & 1) { nb++; bytes += w1 & 0x3FFFF; }
+		unsigned next = rd32(p, b + 12);
+		if (next == heap || next == b) break;
+		b = next;
+	}
+	out[0] = nt; out[1] = ns; out[2] = np; out[3] = nb; out[4] = bytes;
+}
+
 static bool taskActive(struct Player* p, const char* name) {
 	// gTasks[16]: func at +0, isActive at +4, 0x28 bytes each.
 	unsigned tasks = symAddr("gTasks"), fn = symAddr(name) & ~1u;
@@ -2233,6 +2258,39 @@ static void frameCallback(struct mCoreThread* t) {
             unsigned tinted = diff > 8;
             if (tinted != c->value) { out("[p%d] FAIL tint %s: tinted=%u (%u colours differ), expected %u\n", p->id, c->text, tinted, diff, c->value); sFailures++; }
             else out("[p%d] ok tint %s: tinted=%u (%u colours differ)\n", p->id, c->text, tinted, diff);
+            advance = true;
+            break;
+        }
+        case C_LEAK: {
+            int now[5];
+            static const char* names[5] = { "tasks", "sprites", "sprite palettes", "heap blocks", "heap bytes" };
+            leakCounts(p, now);
+            {
+                unsigned tags = symAddr("sSpritePaletteTags");
+                char tb[160]; int o = 0;
+                for (int i = 0; i < 16; i++) o += snprintf(tb + o, sizeof(tb) - o, "%s%04x", i ? " " : "", rd16(p, tags + i * 2));
+                out("[p%d] leak %s palette tags: %s\n", p->id, c->text, tb);
+                if (getenv("LEAK_SPRITES")) {
+                    unsigned spr = symAddr("gSprites");
+                    for (int i = 0; i < 64; i++) if (rd8(p, spr + i * 0x44 + 0x3E) & 1) {
+                        unsigned t = rd32(p, spr + i * 0x44 + 0x14);
+                        out("[p%d]   sprite %d pal %d tmplTag %04x cb %s\n", p->id, i, rd8(p, spr + i * 0x44 + 5) >> 4, t ? rd16(p, t + 2) : 0xFFFF, symName(rd32(p, spr + i * 0x44 + 0x1C)));
+                    }
+                }
+            }
+            if (!c->value) {
+                memcpy(p->leakNote, now, sizeof(now)); p->leakNoted = true;
+                out("[p%d] leak note %s: tasks %d sprites %d palettes %d heap %d blocks %d bytes\n", p->id, c->text, now[0], now[1], now[2], now[3], now[4]);
+            } else {
+                int bad = 0;
+                for (int k = 0; k < 5; k++) if (now[k] != p->leakNote[k]) bad = 1;
+                if (!p->leakNoted) { out("[p%d] FAIL leak_check without leak_note\n", p->id); sFailures++; }
+                else if (bad) {
+                    out("[p%d] FAIL leak %s:", p->id, c->text);
+                    for (int k = 0; k < 5; k++) if (now[k] != p->leakNote[k]) out(" %s %d -> %d", names[k], p->leakNote[k], now[k]);
+                    out("\n"); sFailures++;
+                } else out("[p%d] ok no leak %s: tasks %d sprites %d palettes %d heap %d blocks %d bytes\n", p->id, c->text, now[0], now[1], now[2], now[3], now[4]);
+            }
             advance = true;
             break;
         }
@@ -4499,6 +4557,13 @@ static void loadScript(const char* path, int depth) {
 			// differ from the unfaded ones, i.e. carry the time-of-day tint.
 			c.kind = C_TINT; c.value = strtoul(a, NULL, 0);
 			strncpy(c.text, n >= 3 ? b : "", sizeof(c.text) - 1);
+		} else if (!strcmp(cmd, "leak_note") || !strcmp(cmd, "leak_check")) {
+			// leak_note: remember this game's tasks, sprites, sprite palette
+			// tags and heap blocks/bytes; leak_check: the same now (on the
+			// field, at a quiet point).
+			c.kind = C_LEAK;
+			c.value = !strcmp(cmd, "leak_check");
+			snprintf(c.text, sizeof(c.text), "%s", n >= 3 ? a : "");
 		} else if (!strcmp(cmd, "writep_other") || !strcmp(cmd, "expectp") || !strcmp(cmd, "expectp_same")) {
 			// FIXTURE writep_other PTRSYM+off:size SRCPTRSYM+off: write through
 			// a pointer a value read through a pointer on the OTHER game

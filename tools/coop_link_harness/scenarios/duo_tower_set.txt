@@ -44,10 +44,9 @@ b expect_mirror gCoopDuoMonIds+8:2 gCoopDuoMonIds+8
 0 note_text You_earned_3_BP
 1 note_text You_earned_3_BP
 0 until_field_text Go_on_to_battle_8 40000
-1 mash_field 40000
+1 until_field_text battle_won 40000
 0 wait 60
 0 expect_noted
-1 expect_noted
 b expectp gSaveBlock3Ptr+422:2 7
 b expectp gSaveBlock3Ptr+530:2 7
 b expectp gSaveBlock3Ptr+432:2 7
@@ -56,8 +55,11 @@ b expect_party_same
 b expect_money_same
 b shot after-7
 # Go on: battle 8.
+0 until_task Task_HandleYesNoInput 600
+0 wait 20
 0 press A 2
-1 until_mem coop.sGuestPairPending 1 3000
+1 until_mem coop.sGuestPairPending 1 3000 B
+1 expect_noted
 1 wait 90
 1 press A 2
 b until_mem gCoopPrepPhase 1 1500

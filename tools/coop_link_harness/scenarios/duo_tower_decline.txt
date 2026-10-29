@@ -1,0 +1,48 @@
+# DUO TOWER (build 0xC017013E): the partner says NO after a won battle.
+# duo_tower_first's saves (one run, 1 win). No random wild battles.
+# FIXTURE: gCoopDuoLastOutcome set to WON on Kai's game, the state a won
+# duo battle leaves for the rest of the session (without fighting one here,
+# so the check does not depend on the driver winning).
+# Checks:
+# - Kai CONTINUEs (battle 2) and Rosa answers NO;
+# - Kai reads that Rosa isn't ready and nothing started, and does NOT read
+#   "battle won!" (before the fix a refused invite after a won battle was
+#   shown as another won battle: the last result was never cleared);
+# - both saves stay at 1 win, the same run; parties and money unchanged.
+include continue.inc
+include relink.inc
+b expect coop.sLinkState 2
+b no_wild 1
+b expectp gSaveBlock3Ptr+422:2 1
+b note_party
+b note_money
+0 write gCoopDuoLastOutcome 1
+b sync
+0 note_text battle_won
+0 press UP 2
+0 wait 20
+0 press A 2
+0 wait 90
+0 until_task Task_HandleScrollingMultichoiceInput 3000 A
+0 wait 30
+0 press A 2
+1 until_mem coop.sGuestPairPending 1 3000
+1 until_task Task_HandleYesNoInput 600
+1 wait 20
+1 shot rosa-asked
+1 press DOWN 2
+1 wait 10
+1 press A 2
+0 until_field_text Nothing_started 3000
+0 shot kai-told
+0 expect_not_noted
+0 mash_field 2000 B
+1 mash_field 2000 B
+b sync
+b wait 60
+b expect gCoopDuoBattle 0
+b expectp gSaveBlock3Ptr+422:2 1
+b expectp gSaveBlock3Ptr+426:1 1
+b expectp_same gSaveBlock3Ptr+418:2
+b expect_party_same
+b expect_money_same

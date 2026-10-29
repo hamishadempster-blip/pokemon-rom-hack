@@ -788,6 +788,10 @@ u16 CoopDuo_PrepareInvite(void)
     struct CoopSave *save = Duo_Save();
     u16 mode = gSpecialVar_0x8004;
 
+    // A new attempt: the last battle's result must not be read as this
+    // one's when the invite fails before any battle (refused, busy).
+    gCoopDuoLastOutcome = COOP_DUO_OUT_NONE;
+    gCoopDuoLastBp = 0;
     if (save == NULL)
         return FALSE;
     if (mode == 0xFF)

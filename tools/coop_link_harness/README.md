@@ -355,6 +355,7 @@ details in `<name>.visual.txt`).
 | `expectp_same PTRSYM+off:size` | The value read through the same pointer is the same on both games (e.g. the duo run id). |
 | `weak_foes 1\|0` | FIXTURE: on this game (use it on the battle engine's, player 0), the opposing battlers (1 and 3) are held at 1 HP in battle: any hit knocks them out (a flow test's win, not balance). |
 | `expect_not_noted` | After `note_text WORDS`: those words were NOT in any message since. |
+| `leak_note [LABEL]` / `leak_check [LABEL]` | Count this game's active tasks, sprites in use, sprite palette tags held and heap blocks/bytes allocated (walking `gHeap`); `leak_check` fails if any differ from the note. Take both on the field at a quiet point. `LEAK_SPRITES=1` also lists each sprite's palette slot and tag. |
 | `fixture_nick SLOT NAME` | FIXTURE: a nickname for this player's party slot (letters, digits, `_` for a space, 9 at most). Names only; stats untouched. |
 | `until_field_text WORDS [timeout]` | Tap A every 24 frames until a field message containing WORDS (`_` for spaces) is expanded into `gStringVar4`. |
 
@@ -518,6 +519,8 @@ Build 0xC017013E scenarios:
 | `duo_tower_behind` | duo_tower_first | One save behind (FIXTURE): Rosa behind - Kai is told her battle and goes back; Kai behind - Rosa's save goes back at the launch; both end at the same battle, no BP change |
 | `duo_tower_partners` | duo_tower_first | A run belongs to one partner (FIXTURE: Rosa's run with another trainer id): refused with a message; Rosa retires it at the desk; then "no such DUO run" |
 | `duo_desks` | j68 | The six other DUO DESKS say their duo mode is not open; the Tower desk unlinked asks for a partner; the stock singles counter still opens its menu |
+| `duo_tower_decline` | duo_tower_first | FIXTURE gCoopDuoLastOutcome = WON (as a won duo battle leaves it); Kai CONTINUEs, Rosa says NO: Kai is told nothing started and is NOT shown "battle won!" (the stale result fixed in 0xC017013E); 1 win on both saves |
+| `sustained_session` | j68 | One session at the Battle Tower desk: a cancelled team screen, a new duo run (battles 1-2), a cancelled fixed-team screen, battle 3, START/CO-OP menus, an outfit change and back, FOLLOW round the lobby; after each, tasks, sprites, sprite palettes and heap equal the first note on both games (0xC017013E). FIXTURES: fixture_warp, no_wild; driver aid smart_moves, weak_foes 1, strong_battlers 400 |
 | `story_not_ready` | lab | Regression (S2 script fall-through): no Pokemon able to fight gives "Heal one first" and never "The link dropped", for the talker and for the asked partner |
 | `opt_escape_dig` | j68 | ESCAPE ROPE (a reusable key item since Gen 8) and DIG out of Granite Cave while linked; the other player unaffected; link up |
 | `opt_travel` | j68 | Cable car up and down (Kai) and boarding the S.S. TIDAL in Lilycove (Rosa; this save's route is to Slateport) while linked; link up; the other game unaffected |
