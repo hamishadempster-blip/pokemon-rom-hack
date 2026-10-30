@@ -1,4 +1,40 @@
-# Collection update, second delivery: build 0xC0170142
+# Bug hunt after the collection update: build 0xC0170143
+
+Branch `coop-doorway-scenes-rivals`, pushed, not merged. **Both players need this build:** it links only with 0xC0170143. Saves from 0xC0170142 and older load unchanged; the save layout is the same. Compatibility: 33/33 PASS.
+
+Test log: [COOP_TESTLOG_C0170143.md](COOP_TESTLOG_C0170143.md)
+
+## The build
+
+- **ROM:** `emerald-coop-C0170143.gba`, from `f0c79a77`.
+  - SHA-1 `9ec429318df5ba97527b3482154113d76a54cde7`
+  - SHA-256 `8d11afa08fac94d3cfb5936de5c19058ef64736b6cf8fc9b3144205ebd4ab7fb`
+- **Fixed** (each reproduced on 0xC0170142 first, with a regression scenario):
+  - the gym-battle crash (`random.c: sum <= 0xFFFF`, trainer AI and Klutz/Truant-type abilities; the D1500003 report);
+  - the missing second-foe HP box against one trainer;
+  - no EXP from the second trainer of a pair (Heath);
+  - ROAR failing against one trainer.
+  - From code review: the AI's reserve count and a Revival Blessing re-send. Also the CONTINUE screen's build/location overlap.
+- **Testing:** final suite on the delivered ROM, 357 scenarios, **355 PASS and 2 FAIL on the first run**:
+  - `wild_places` lost to ABRA's Teleport, which is luck (rerun 2/2 PASS);
+  - `roster_repair` still fails on the known harness `hunt` problem.
+  - The session restarted mid-suite; the remaining runs were resumed by the same script.
+  - 22 random-input sessions: one heap assert seen once, not reproduced (open).
+- **Readiness:** ready for a player playthrough with the stated limitations. Not bug-free.
+
+## Open issues (new)
+
+- The heap assert at the end of a linked solo battle, seen once in random play. Not reproduced; see the test log.
+- Found by code review and not fixed:
+  - the AI's records of the right-hand player alias the host's;
+  - U-turn does not switch when the target trainer's party is empty but its partner's is not;
+  - Sirfetch'd crit counter in co-op;
+  - co-op NPC trainers never use bag items.
+- `roster_repair` (harness), as before.
+
+---
+
+# Previous: collection update, second delivery: build 0xC0170142
 
 Branch `coop-doorway-scenes-rivals`, pushed, not merged. It also includes the D1400001/D1400002 and D1500001/D1500002 fixes, which were merged before this round. **Both players need this build:** it links only with 0xC0170142.
 
