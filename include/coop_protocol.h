@@ -31,7 +31,7 @@ typedef uint32_t u32;
 #endif
 #include "constants/coop.h"
 
-#define COOP_BUILD_ID 0xC0170141u
+#define COOP_BUILD_ID 0xC0170142u
 // Missing application heartbeats mark the partner unavailable. They never
 // revoke the user's link/Beacon choice; valid frames restore availability.
 #define COOP_LINK_QUIET_LIMIT 240
