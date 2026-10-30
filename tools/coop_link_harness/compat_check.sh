@@ -12,6 +12,8 @@
 #   new reload vs relinked    linking touches only link bookkeeping
 # OLD_HB / NEW_HB are harness builds (build.sh) for each ROM; the old one is
 # built from this harness source against the old tree's ELF.
+# Run it from a built tree: compat.py compiles field offsets against
+# include/, which needs the headers make generates (map_groups.h ...).
 set -u
 here="$(cd "$(dirname "$0")" && pwd)"
 : "${OLD_ROM:?}" "${OLD_HB:?}" "${NEW_HB:?}" "${OUT:?}"

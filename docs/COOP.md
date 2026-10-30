@@ -31,6 +31,8 @@ make -j$(nproc)
 
 The ROM image is `pokeemerald.gba` in the repo root. Give each player their own copy and their own `.sav`. Two windows must not share one save file.
 
+**Updating to a new build.** Back up each `.sav` first. Each player replaces their ROM with the new one under the same file name (mGBA loads `name.sav` for `name.gba`), or renames their save to match the new ROM's name. CONTINUE shows the build; both players must run the same build to link. A save from an older build loads on a newer one with nothing lost; a save written by a newer build is not guaranteed to work on an older ROM, so do not go back. Details: [COOP_SAVE_COMPAT.md](COOP_SAVE_COMPAT.md).
+
 `tools/coop_protocol_test.c` checks the link frame on the host compiler, with no GBA tools:
 
 ```sh

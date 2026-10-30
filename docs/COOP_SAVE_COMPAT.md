@@ -1,6 +1,6 @@
 # Save compatibility (Emerald co-op)
 
-How a save made on one build keeps working on later builds, what is reserved for future content (the archipelago), and how to check it. Written for build 0xC017013F.
+How a save made on one build keeps working on later builds, what is reserved for future content (the archipelago), and how to check it. Written for build 0xC017013F; checked again on 0xC0170140 (no save change between them).
 
 ## The rule for players
 
@@ -45,4 +45,6 @@ How a save made on one build keeps working on later builds, what is reserved for
 
 `tools/coop_link_harness/compat_check.sh` loads each save on the previous build and on this one, saves on this one, power-cycles, links, and compares the save data with `compat.py` (field by field, encrypted fields decrypted). Fields rebuilt on every load (map object templates, the map view), the play-time clock and the values the game rerolls on a new day are reported but allowed; the relink step may change only the link bookkeeping (partner Pokédex snapshot, quest partner).
 
-Result for 0xC017013F against 0xC017013D (`1b26b863`), saves from checkpoints j06, j16, j44, j68, seg6, the lab saves and a save written by 0xC017013E: see the test log (section *Save compatibility*).
+Run it from a built tree: `compat.py` compiles the field offsets against `include/`, which needs the headers `make` generates (`map_groups.h` and others); in a bare `git archive` copy the comparisons stop with "offset compile failed".
+
+Result for 0xC0170140 (and 0xC017013F before it) against 0xC017013D (`1b26b863`, the last build before CoopSave layout 4), saves from checkpoints j06, j16, j44, j68, seg6, the lab saves and a save written by 0xC017013E: 21 of 21 comparisons pass; details in the test log (section *Save compatibility*).

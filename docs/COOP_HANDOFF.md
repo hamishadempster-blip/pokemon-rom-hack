@@ -1,4 +1,69 @@
-# Co-op stability, team preparation and Duo Tower: build 0xC017013E
+# Release-readiness pass: build 0xC0170140
+
+Branch `coop-doorway-scenes-rivals` (continued from 0xC017013E), pushed, not merged. A stability pass, no new features. Both players need this build: 0xC017013E and older refuse to link with it. Saves from earlier builds load unchanged (checked field by field, below). Test log: [COOP_TESTLOG_C0170140.md](COOP_TESTLOG_C0170140.md). Save rules for future updates: [COOP_SAVE_COMPAT.md](COOP_SAVE_COMPAT.md).
+
+- ROM `emerald-coop-C0170140.gba` from source `4ac1d749` (no game-code change after it): SHA-1 `a20130970e1caed23b0d7dbfe48bad0134ab29d5`, SHA-256 `6f0f67866deb3dfd31d69b23e0ed632b593a5b8c5e9fe5bbfb6156eb13ec4fc5`. A clone checked out at `4ac1d749` builds the same SHA-1.
+- Commits: developer menus off, build 0xC017013F `38d764f1`; save compatibility tools and docs `cd700e3b`; `roster_b3_battle` retry `e26aea1d`; team-screen message fix, build 0xC0170140 `4ac1d749`; harness `hunt` and `visual_check` fixes `f878f3d8`, `4fe33bc9`, `9a359ae3`; docs after them. 0xC017013F was an intermediate build, never delivered.
+- Testing: full suite on 0xC017013F (283 scenarios, 279 PASS on the first run, 4 FAIL: one game message, three driver); every scenario reaching the 0xC0170140 change rerun on it (57 runs, 54 PASS; the 3 FAIL were driver, fixed in the harness); every `hunt` scenario rerun with the final harness (10 of 10 PASS). Details in the test log.
+- **Readiness: ready for a player playthrough with stated limitations.** No crash, freeze, save damage or progression blocker is known in this build: the full suite, the affected and hunt reruns and the save checks found none that remain (the two game defects found in this pass are fixed, with regressions). The limitations: (1) the first co-op gym beat the driver 9 times in 9, even at the level cap with the best team on hand, so it may be a difficulty wall for two players; only a person can tell; (2) nothing here was played in the mGBA GUI by a person, on hardware or over two-PC netplay; (3) the known open issues below (finding #16 not reproduced; the partner drawn on a tile the other save has blocked; no explanation line for differing personal dialogue; six Frontier facilities without a duo mode). It is not bug-free, and nothing here claims so.
+
+## Updating both ROMs (keep your saves)
+
+1. Each player backs up their `.sav` (copy it somewhere safe).
+2. Each player replaces their ROM file with `emerald-coop-C0170140.gba` **under the same file name as before** (mGBA looks for the save next to the ROM with the ROM's name: `name.gba` uses `name.sav`). Or keep the new name and rename your save to match it.
+3. Open both games (mGBA: one window, File → New Multiplayer Window for the second; two-PC netplay is untested), CONTINUE on each, and check the CONTINUE screen says *Build C0170140*.
+4. CO-OP → LINK UP on both. A partner still on an older build is refused (build mismatch): both must update.
+5. Each player keeps their own save; nothing is copied between them.
+6. Do not go back to an older ROM with a save the new one has written (not guaranteed to work).
+
+## Fixed in this pass
+
+| Defect | First wrong state | Fix | Regression |
+| --- | --- | --- | --- |
+| SELECT at a battle's action menu crashed the game that pressed it in a co-op battle (seen on the partner's game, pc 0x1a8 in `CB2_BattleDebugMenu`); R+START on the field opened the developer menu (flags, variables, Pokémon); SELECT on a summary page other than INFO opened the sprite visualizer | Every ROM was built without `RELEASE`, so pokeemerald-expansion's developer menus (`DISABLED_ON_RELEASE`) were live | `DEBUG_OVERWORLD_MENU`, `DEBUG_BATTLE_MENU`, `DEBUG_POKEMON_SPRITE_VISUALIZER` are FALSE in every build; asserts stay (a crash screen START continues past) | `debug_inputs_off` (crashes on 0xC017013E, passes), `battle_spare_buttons` (R, START, SELECT, L, L+R at the action and move menus, both roles) |
+| When the team screen timed out on the host's game first, the partner read "RED stepped back from the battle" (nothing started; wrong reason only) | The host's withdrawal of its invite reached the partner before the team-screen block carrying the reason; the two cartridge clocks tick at different moments, so either game can time out first | The partner waits up to 60 frames after a withdrawal for that block and uses its reason (and cannot commit meanwhile); with no block it says "stepped back" as before | `prep_timeout_host_first` (fails on 0xC017013F, passes; part 2: a real host CANCEL still reads "stepped back") |
+
+Harness only (no game change): `hunt` stays near its starting row (it drifted out of the grass over many battles); `roster_b3_battle` repeats SUPER FANG until it lands; `roster_b3_catch` gives 40 balls; `roster_b3_play` hunts away from a ledge; `hunt` leaves the bag when a ball is refused (a Pokémon in the air); `visual_check.py` skips a half-printed battle prompt.
+
+## Save compatibility (checked)
+
+`compat_check.sh` (new): saves from checkpoints j06, j16, j44, j68, seg6, the lab saves and a save written by 0xC017013E, loaded on 0xC017013D and on this build, saved here, power-cycled and relinked, compared field by field (on 0xC017013F and again on 0xC0170140: 21/21 comparisons pass each time). Party, PC, bag, money, flags and variables are identical across builds; the only change is the CoopSave `layout` byte (migration to layout 4, new fields zero); a save written here reads back the same; linking changes only the partner Pokédex snapshot and quest partner. Allowed differences: map object templates and the map view (rebuilt from the ROM on every load), the play-time and berry clocks, the daily seed and the two lottery variables the game rerolls on a new day. Free flags, variables and CoopSave space for future content, and the rules for future updates: [COOP_SAVE_COMPAT.md](COOP_SAVE_COMPAT.md).
+
+## Difficulty sample (no fixtures, driver picks each battler's most effective move)
+
+- **First co-op gym (Roxanne + Heath, Lv 16–18, Oran Berries, smart AI): 9 losses in 9 runs** with the j13 checkpoint teams: as played (3 runs, 0–1 of 6 foes fainted), each player's best three from the boxes chosen on the team screen (3 runs, 1–4 fainted), and the same six raised to the Lv 18 cap (3 runs, 2 fainted each). The driver uses no items, never switches and has no strategy, so this does not show the gym is unwinnable, but it is a steep first step for two players at or below the cap. **Needs a human playtest before release to players.**
+- **Duo Tower LV50 battle 1 with the j68 parties: 3 wins in 3.**
+- One earlier data point: `prep_slots456`'s team lost to Norman unassisted.
+
+## Remaining issues (not intended)
+
+- **Early difficulty** (above): possible wall at the first co-op gym; untested by a person.
+- **Finding #16** (an invalid opponent-name assertion after a co-op wild battle into trainer detection): still not reproduced; not declared fixed.
+- **Assert on the partner's game in a one-trainer co-op fight** (0xC017013E pass 1, once): the name lookup was fixed in 0xC017013E; why only the partner's game asserted is not proven. The battle developer menu is gone now, which removes one conceivable route, but that is not shown to be the cause.
+- **Partner drawn on tiles blocked by the other save's puzzle state** (a boulder pushed on one save): unchanged.
+- **Shared dialogue with different personal progress**: still no explanation line when the partner's version differs.
+- **Visual refinements not done:** rival art; party, bag and battle menu restyling.
+- **Duo Frontier:** six facilities have no duo mode (each desk says so); no Mega-disabled bracket; no duo Frontier Brains.
+- **Not played:** berry planting/harvest, Trick House, Illusion, Repel prompts around scripts and transitions, joined conversations with mismatched progress, postgame rematches with mismatched progress, team-screen battles with Mega Evolution or move learning from slots 4–6.
+- **Not tested at all:** mGBA GUI at normal speed by a person, real hardware, two-PC netplay. Harness success is not netplay evidence. The clips are harness recordings.
+
+## Intended differences (not bugs)
+
+- A badge, win or quest earned unlinked stays on that save after relinking.
+- The partner's own puzzle objects (boulders) and personal rooms (Secret Bases, Pyramid and Trainer Hill floors) are not shared.
+- Wild Pokémon and ordinary trainers use your first three Pokémon (no team screen); slots 4–6 sit out there.
+- FOLLOW stops before grass, cave floors, other warps and scene tiles by design.
+- Duo Tower battles give no EXP, prize money, bag use or catches; healed copies fight.
+- SELECT, R+START and L+R do nothing developer-side any more (the developer menus are off).
+
+## Where things are (work environment, not committed)
+
+- Final suite (0xC017013F) `/home/claude/journey/final13F/suite_run`; affected run (0xC0170140) `/home/claude/journey/final140/affected`; hunt run `/home/claude/journey/final140/hunt`; compatibility runs `/home/claude/journey/compat13F_b`, `/home/claude/journey/compat140` (+ `compat140_cmp.txt`); difficulty sample `/home/claude/journey/diff13F` (scenarios in `/tmp/claude-0/zzkeep`); clips `/home/claude/journey/clips13F`.
+- Full suite: as for 0xC017013E (`OUT=… ROM=… HARNESS_OUT=… LONG=1 SEG6=… J06=… … J68=… OLD13C_COAST=… tools/coop_link_harness/run_all.sh`); compatibility check: `OLD_ROM=… OLD_HB=… NEW_HB=… OUT=… tools/coop_link_harness/compat_check.sh NAME:SAVEDIR …` from a built tree.
+
+# Previous build: 0xC017013E
+
+## Co-op stability, team preparation and Duo Tower: build 0xC017013E
 
 Branch `coop-doorway-scenes-rivals` (continued from 0xC017013D), pushed, not merged. Both players need this build: 0xC017013D and older refuse to link with it. Older saves load: the co-op save block grows (layout 4); the new fields start empty and nothing already saved moves. Test log: [COOP_TESTLOG_C017013E.md](COOP_TESTLOG_C017013E.md). Player-facing rules: [COOP.md](COOP.md) (Asking each other, Playing apart and relinking, Team preparation, Duo Frontier, Field kit).
 
