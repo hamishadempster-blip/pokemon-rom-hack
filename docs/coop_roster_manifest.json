@@ -1154,6 +1154,7 @@
        "item": "ITEM_MOON_STONE",
        "sources": [
         "item ball: MeteorFalls_1F_1R",
+        "item ball: MeteorFalls_1F_2R",
         "shop: FallarborTown_Mart",
         "shop: LilycoveCity_DepartmentStore_3F",
         "shop: MauvilleCity",
@@ -1263,6 +1264,7 @@
        "item": "ITEM_MOON_STONE",
        "sources": [
         "item ball: MeteorFalls_1F_1R",
+        "item ball: MeteorFalls_1F_2R",
         "shop: FallarborTown_Mart",
         "shop: LilycoveCity_DepartmentStore_3F",
         "shop: MauvilleCity",
@@ -1349,6 +1351,7 @@
        "item": "ITEM_MOON_STONE",
        "sources": [
         "item ball: MeteorFalls_1F_1R",
+        "item ball: MeteorFalls_1F_2R",
         "shop: FallarborTown_Mart",
         "shop: LilycoveCity_DepartmentStore_3F",
         "shop: MauvilleCity",
@@ -1567,6 +1570,7 @@
        "item": "ITEM_MOON_STONE",
        "sources": [
         "item ball: MeteorFalls_1F_1R",
+        "item ball: MeteorFalls_1F_2R",
         "shop: FallarborTown_Mart",
         "shop: LilycoveCity_DepartmentStore_3F",
         "shop: MauvilleCity",
@@ -3322,6 +3326,7 @@
        "item": "ITEM_WATER_STONE",
        "sources": [
         "item ball: AbandonedShip_HiddenFloorRooms",
+        "item ball: Route109",
         "shop: LilycoveCity_DepartmentStore_3F",
         "shop: MauvilleCity",
         "shop: PacifidlogTown_PokemonCenter_1F"
@@ -6293,6 +6298,7 @@
        "item": "ITEM_WATER_STONE",
        "sources": [
         "item ball: AbandonedShip_HiddenFloorRooms",
+        "item ball: Route109",
         "shop: LilycoveCity_DepartmentStore_3F",
         "shop: MauvilleCity",
         "shop: PacifidlogTown_PokemonCenter_1F"
@@ -7199,6 +7205,7 @@
       {
        "item": "ITEM_OVAL_STONE",
        "sources": [
+        "item ball: Route117",
         "shop: LilycoveCity_DepartmentStore_3F",
         "shop: MauvilleCity"
        ],
@@ -7216,6 +7223,7 @@
       {
        "item": "ITEM_OVAL_STONE",
        "sources": [
+        "item ball: Route117",
         "shop: LilycoveCity_DepartmentStore_3F",
         "shop: MauvilleCity"
        ],
@@ -7953,6 +7961,7 @@
        "item": "ITEM_WATER_STONE",
        "sources": [
         "item ball: AbandonedShip_HiddenFloorRooms",
+        "item ball: Route109",
         "shop: LilycoveCity_DepartmentStore_3F",
         "shop: MauvilleCity",
         "shop: PacifidlogTown_PokemonCenter_1F"
@@ -9749,6 +9758,7 @@
        "item": "ITEM_WATER_STONE",
        "sources": [
         "item ball: AbandonedShip_HiddenFloorRooms",
+        "item ball: Route109",
         "shop: LilycoveCity_DepartmentStore_3F",
         "shop: MauvilleCity",
         "shop: PacifidlogTown_PokemonCenter_1F"
@@ -11504,6 +11514,7 @@
        "item": "ITEM_SUN_STONE",
        "sources": [
         "given: MossdeepCity_SpaceCenter_1F",
+        "item ball: Route111",
         "shop: LilycoveCity_DepartmentStore_3F",
         "shop: MauvilleCity",
         "shop: VerdanturfTown_Mart"
@@ -12081,6 +12092,7 @@
        "item": "ITEM_SUN_STONE",
        "sources": [
         "given: MossdeepCity_SpaceCenter_1F",
+        "item ball: Route111",
         "shop: LilycoveCity_DepartmentStore_3F",
         "shop: MauvilleCity",
         "shop: VerdanturfTown_Mart"
@@ -13829,6 +13841,7 @@
        "item": "ITEM_UP_GRADE",
        "sources": [
         "item ball: NewMauville_Inside",
+        "item ball: Route110",
         "shop: LilycoveCity_DepartmentStore_3F",
         "shop: MauvilleCity"
        ],
@@ -13847,6 +13860,7 @@
        "item": "ITEM_UP_GRADE",
        "sources": [
         "item ball: NewMauville_Inside",
+        "item ball: Route110",
         "shop: LilycoveCity_DepartmentStore_3F",
         "shop: MauvilleCity"
        ],
@@ -15202,6 +15216,7 @@
        "item": "ITEM_WATER_STONE",
        "sources": [
         "item ball: AbandonedShip_HiddenFloorRooms",
+        "item ball: Route109",
         "shop: LilycoveCity_DepartmentStore_3F",
         "shop: MauvilleCity",
         "shop: PacifidlogTown_PokemonCenter_1F"
@@ -17155,6 +17170,7 @@
        "item": "ITEM_MOON_STONE",
        "sources": [
         "item ball: MeteorFalls_1F_1R",
+        "item ball: MeteorFalls_1F_2R",
         "shop: FallarborTown_Mart",
         "shop: LilycoveCity_DepartmentStore_3F",
         "shop: MauvilleCity",
@@ -23819,6 +23835,7 @@
       {
        "item": "ITEM_DUSK_STONE",
        "sources": [
+        "item ball: MtPyre_3F",
         "shop: LilycoveCity_DepartmentStore_3F",
         "shop: MauvilleCity"
        ],
@@ -23860,6 +23877,7 @@
       {
        "item": "ITEM_DUSK_STONE",
        "sources": [
+        "item ball: MtPyre_3F",
         "shop: LilycoveCity_DepartmentStore_3F",
         "shop: MauvilleCity"
        ],
@@ -25445,6 +25463,7 @@
       {
        "item": "ITEM_RAZOR_FANG",
        "sources": [
+        "item ball: Route114",
         "shop: LilycoveCity_DepartmentStore_3F",
         "shop: MauvilleCity"
        ],
@@ -25462,6 +25481,7 @@
       {
        "item": "ITEM_RAZOR_FANG",
        "sources": [
+        "item ball: Route114",
         "shop: LilycoveCity_DepartmentStore_3F",
         "shop: MauvilleCity"
        ],
@@ -26535,6 +26555,7 @@
        "item": "ITEM_WATER_STONE",
        "sources": [
         "item ball: AbandonedShip_HiddenFloorRooms",
+        "item ball: Route109",
         "shop: LilycoveCity_DepartmentStore_3F",
         "shop: MauvilleCity",
         "shop: PacifidlogTown_PokemonCenter_1F"
@@ -26611,6 +26632,7 @@
        "item": "ITEM_MOON_STONE",
        "sources": [
         "item ball: MeteorFalls_1F_1R",
+        "item ball: MeteorFalls_1F_2R",
         "shop: FallarborTown_Mart",
         "shop: LilycoveCity_DepartmentStore_3F",
         "shop: MauvilleCity",
@@ -27678,6 +27700,7 @@
        "item": "ITEM_SUN_STONE",
        "sources": [
         "given: MossdeepCity_SpaceCenter_1F",
+        "item ball: Route111",
         "shop: LilycoveCity_DepartmentStore_3F",
         "shop: MauvilleCity",
         "shop: VerdanturfTown_Mart"
@@ -27755,6 +27778,7 @@
        "item": "ITEM_SUN_STONE",
        "sources": [
         "given: MossdeepCity_SpaceCenter_1F",
+        "item ball: Route111",
         "shop: LilycoveCity_DepartmentStore_3F",
         "shop: MauvilleCity",
         "shop: VerdanturfTown_Mart"
@@ -27774,6 +27798,7 @@
        "item": "ITEM_SUN_STONE",
        "sources": [
         "given: MossdeepCity_SpaceCenter_1F",
+        "item ball: Route111",
         "shop: LilycoveCity_DepartmentStore_3F",
         "shop: MauvilleCity",
         "shop: VerdanturfTown_Mart"
@@ -29994,6 +30019,7 @@
       {
        "item": "ITEM_DUSK_STONE",
        "sources": [
+        "item ball: MtPyre_3F",
         "shop: LilycoveCity_DepartmentStore_3F",
         "shop: MauvilleCity"
        ],
@@ -32159,6 +32185,7 @@
       {
        "item": "ITEM_DUSK_STONE",
        "sources": [
+        "item ball: MtPyre_3F",
         "shop: LilycoveCity_DepartmentStore_3F",
         "shop: MauvilleCity"
        ],
@@ -32740,6 +32767,7 @@
        "item": "ITEM_SUN_STONE",
        "sources": [
         "given: MossdeepCity_SpaceCenter_1F",
+        "item ball: Route111",
         "shop: LilycoveCity_DepartmentStore_3F",
         "shop: MauvilleCity",
         "shop: VerdanturfTown_Mart"

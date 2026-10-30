@@ -12,7 +12,7 @@ sys.path.insert(0, os.path.join(ROOT, 'tools/coop_roster'))
 import audit as SRC  # noqa: E402
 
 TITLE = {'BATCH1': 'First roster batch (build 0xC0170137)', 'BATCH2': 'Second roster batch (build 0xC0170138)',
-         'BATCH3': 'Third and final roster batch (build 0xC0170139)', 'ALL': 'Whole roster (build 0xC0170139)'}
+         'BATCH3': 'Third and final roster batch (build 0xC0170139)', 'ALL': 'Whole roster (regenerated on build 0xC0170141)'}
 
 
 def nice(c):
