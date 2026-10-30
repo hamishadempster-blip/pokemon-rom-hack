@@ -1237,8 +1237,12 @@ void InitLinkBattleVsScreen(u8 taskId)
 
         if (gTasks[taskId].data[2] != 0)
         {
-            gTasks[taskId].data[2] -= 2;
-            gTasks[taskId].data[1] += 2;
+            // Presentation only: keep every party/link exchange intact.
+            // Both initial angles are multiples of six, so the same end
+            // position is reached exactly without an underflow/extra wait.
+            s16 step = (gBattleTypeFlags & BATTLE_TYPE_COOP) ? 6 : 2;
+            gTasks[taskId].data[2] -= step;
+            gTasks[taskId].data[1] += step;
         }
         else
         {

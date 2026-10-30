@@ -31,7 +31,7 @@ typedef uint32_t u32;
 #endif
 #include "constants/coop.h"
 
-#define COOP_BUILD_ID 0xC0170140u
+#define COOP_BUILD_ID 0xD1400001u // Isolated visual/crash fixes; not Claude's active release sequence.
 // Missing application heartbeats mark the partner unavailable. They never
 // revoke the user's link/Beacon choice; valid frames restore availability.
 #define COOP_LINK_QUIET_LIMIT 240

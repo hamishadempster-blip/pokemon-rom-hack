@@ -33,6 +33,7 @@
 #include "field_player_avatar.h"
 #include "link.h"
 #include "list_menu.h"
+#include "overworld.h"
 #include "main.h"
 #include "malloc.h"
 #include "menu.h"
@@ -757,6 +758,14 @@ void CoopOutfit_FieldFrame(void)
     struct Sprite *partner;
     s16 px, py, dx, dy;
     bool8 busy, havePos;
+
+    // CB1_Overworld can still run during the battle/map transition. Never
+    // create field sprites (or reload their palettes) on another screen.
+    if (gMain.inBattle || gMain.callback2 != CB2_Overworld)
+    {
+        HideAll();
+        return;
+    }
 
     partnerSprite = Coop_PartnerSpriteId(&gender);
     if (partnerSprite < MAX_SPRITES && gender != sPartnerGender)

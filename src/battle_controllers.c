@@ -704,7 +704,10 @@ static void Task_HandleSendLinkBuffersData(u8 taskId)
     switch (gTasks[taskId].tState)
     {
     case SENDTASK_STATE_INITIALIZE:
-        gTasks[taskId].tInitialDelayTimer = 100;
+        // Co-op reuses an established cable and completes its party/state
+        // exchange before commands run. Keep the player-count and block
+        // readiness checks below; omit only the stock connection grace wait.
+        gTasks[taskId].tInitialDelayTimer = (gBattleTypeFlags & BATTLE_TYPE_COOP) ? 8 : 100;
         gTasks[taskId].tState++;
         break;
     case SENDTASK_STATE_INITIAL_DELAY:

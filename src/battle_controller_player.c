@@ -937,11 +937,13 @@ void HandleInputChooseMove(enum BattlerId battler)
         if (JOY_NEW(B_MOVE_DESCRIPTION_BUTTON) || JOY_NEW(A_BUTTON) || JOY_NEW(B_BUTTON))
         {
             gBattleStruct->descriptionSubmenu = FALSE;
-            if (gCategoryIconSpriteId != 0xFF)
+            if (gCategoryIconSpriteId < MAX_SPRITES
+             && gSprites[gCategoryIconSpriteId].inUse
+             && gSprites[gCategoryIconSpriteId].template == &gSpriteTemplate_CategoryIcons)
             {
                 DestroySprite(&gSprites[gCategoryIconSpriteId]);
-                gCategoryIconSpriteId = 0xFF;
             }
+            gCategoryIconSpriteId = 0xFF;
 
             FillWindowPixelBuffer(B_WIN_MOVE_DESCRIPTION, PIXEL_FILL(0));
             ClearStdWindowAndFrame(B_WIN_MOVE_DESCRIPTION, FALSE);
@@ -1909,7 +1911,7 @@ static const u8 *MoveInspectorTarget(enum MoveTarget target)
 // What decides a power the move data leaves at 0 or 1.
 static const u8 *MoveInspectorPowerNote(enum Move move)
 {
-    if (GetMovePower(move) >= 2 || GetBattleMoveCategory(move) == DAMAGE_CATEGORY_STATUS)
+    if (GetMovePower(move) >= 2 || GetMoveCategory(move) == DAMAGE_CATEGORY_STATUS)
         return COMPOUND_STRING("");
     switch (GetMoveEffect(move))
     {
@@ -1949,7 +1951,9 @@ static void MoveSelectionDisplayMoveDescription(enum BattlerId battler)
     enum Move move = moveInfo->moves[gMoveSelectionCursor[battler]];
     u16 pwr = GetMovePower(move);
     u16 acc = GetMoveAccuracy(move);
-    enum DamageCategory cat = GetBattleMoveCategory(move);
+    // The engine's dynamic category describes the last resolved move, not
+    // necessarily the move highlighted here (and the guest has no engine).
+    enum DamageCategory cat = GetMoveCategory(move);
 
     if (GetActiveGimmick(battler) == GIMMICK_DYNAMAX || IsGimmickSelected(battler, GIMMICK_DYNAMAX))
     {
@@ -1970,7 +1974,7 @@ static void MoveSelectionDisplayMoveDescription(enum BattlerId battler)
     // Power that depends on the battle reads "var." (explained below), not
     // a dash or a misleading number; a move that never misses reads "sure".
     if (pwr < 2)
-        StringCopy(pwr_num, (GetBattleMoveCategory(move) == DAMAGE_CATEGORY_STATUS) ? gText_BattleSwitchWhich5 : COMPOUND_STRING("var."));
+        StringCopy(pwr_num, (cat == DAMAGE_CATEGORY_STATUS) ? gText_BattleSwitchWhich5 : COMPOUND_STRING("var."));
     else
         ConvertIntToDecimalStringN(pwr_num, pwr, STR_CONV_MODE_LEFT_ALIGN, 3);
     if (acc < 2)
@@ -2000,10 +2004,14 @@ static void MoveSelectionDisplayMoveDescription(enum BattlerId battler)
     WrapFontIdToFit(descStart, descEnd, FONT_NORMAL, WindowWidthPx(B_WIN_MOVE_DESCRIPTION));
     BattlePutTextOnWindow(gDisplayedStringBattle, B_WIN_MOVE_DESCRIPTION);
 
-    if (gCategoryIconSpriteId == 0xFF)
+    if (gCategoryIconSpriteId >= MAX_SPRITES
+     || !gSprites[gCategoryIconSpriteId].inUse
+     || gSprites[gCategoryIconSpriteId].template != &gSpriteTemplate_CategoryIcons)
         gCategoryIconSpriteId = CreateSprite(&gSpriteTemplate_CategoryIcons, 38, 64, 1);
 
-    StartSpriteAnim(&gSprites[gCategoryIconSpriteId], cat);
+    // CreateSprite returns MAX_SPRITES when full; never index that slot.
+    if (gCategoryIconSpriteId < MAX_SPRITES)
+        StartSpriteAnim(&gSprites[gCategoryIconSpriteId], cat);
 
     CopyWindowToVram(B_WIN_MOVE_DESCRIPTION, COPYWIN_FULL);
 }

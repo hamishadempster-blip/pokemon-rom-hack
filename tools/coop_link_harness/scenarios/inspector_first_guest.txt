@@ -1,0 +1,29 @@
+# First inspector in the first co-op battle: no earlier inspector state.
+include rescue_start.inc
+b sync
+b shot before-inspector
+b expect gCategoryIconSpriteId:1 255
+b expect gCoopMarkerShown:1 0
+b press A 2
+0 until_mem gBattlerControllerFuncs:4 HandleInputChooseMove 3000 A
+1 until_mem gBattlerControllerFuncs+8:4 HandleInputChooseMove 3000 A
+b sync
+b wait 20
+1 press L 2
+b wait 60
+b shot guest-first-inspector
+b expect_cb2 BattleMainCB2
+1 press B 2
+b wait 30
+0 press L 2
+b wait 60
+b shot host-first-inspector
+b expect_cb2 BattleMainCB2
+0 press B 2
+b wait 30
+b press B 2
+b wait 30
+b sync
+b mash_field 25000
+b expect_cb2 CB2_Overworld
+b expect coop.sLinkState 2

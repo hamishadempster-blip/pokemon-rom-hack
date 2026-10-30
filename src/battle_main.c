@@ -580,6 +580,9 @@ static void CB2_InitBattleInternal(void)
     InitBattleBgsVideo();
     LoadBattleTextboxAndBackground();
     ResetSpriteData();
+    // Both clients reset sprites here. The guest never executes
+    // BattleStartClearSetData, so its inspector ID must be reset here too.
+    gCategoryIconSpriteId = 0xFF;
     ResetTasks();
     // Mark the fight before the co-op task is restored. Restoring it must
     // not wipe the cable: the party exchange is about to use that cable.
