@@ -48,7 +48,9 @@ Save layout unchanged; no migration.
   BOX 1, and nothing crashed, on D1400002 and on D1500002. Their saves pass
   compat_check from D1400002 to D1500002.
   The first incorrect state could not be found, so the root cause
-  is **not confirmed**. The user's build ID is also unknown.
+  is **not confirmed**. Gaps left: mGBA 0.10.3's own two-window link (the
+  harness uses its own link and mGBA 0.10.2), and whatever the players did
+  between this save and the crash.
 
 ## Changes
 
@@ -111,6 +113,7 @@ Save layout unchanged; no migration.
   Fly and Flash were checked as menu entries only.
 - `field_kit` needs the j13 checkpoint (five Pokémon), which is not available.
   On lab saves it fails on empty slots. Not counted.
-- Co-op wild doubles: the harness's ball throws did not catch in a quick
-  co-op attempt (not investigated). Co-op catches do not use the changed menu.
+- Co-op wild doubles: `catch` backs out of the ball's target screen, so its
+  throws never land there (a harness limit, seen on screenshots, not a game
+  bug). Co-op catches do not use the changed menu.
 - Not checked on mGBA GUI, two-PC netplay or hardware.
