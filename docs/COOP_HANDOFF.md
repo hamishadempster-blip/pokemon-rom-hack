@@ -13,7 +13,7 @@ Docs:
 
 ## The build
 
-- **ROM:** `emerald-coop-C0170141.gba` from source `712d7dc3`. No game-code change after it.
+- **ROM:** `emerald-coop-C0170141.gba` from source `712d7dc3`. No game-code change after it, and a clean clone checked out at `712d7dc3` builds the same SHA-1.
   - SHA-1 `dc7c31b978c6b3572a752a3a9793e401c2ff78ac`
   - SHA-256 `3334223a8868bc1815e500303ffe1bd236edc336a7f24798e239389f384880b6`
 - **Commits:**
