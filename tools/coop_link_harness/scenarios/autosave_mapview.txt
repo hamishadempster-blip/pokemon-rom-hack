@@ -1,0 +1,24 @@
+# Autosave after a manual SAVE elsewhere in the same session (lab saves).
+# The start menu's SAVE stores the tiles around the player (the map view
+# CONTINUE restores); the autosave must store its own, not leave the one
+# from the last manual SAVE. FIXTURES: the 30 s autosave interval
+# (gCoopAutosaveTestInterval), fixture_warp onto Route 101 (a map entry).
+# Both players SAVE in the lab; player 0 then autosaves on Route 101.
+# autosave_mapview_reload continues from it and compares the screen with
+# player 1 standing on the same tile.
+include continue.inc
+b no_wild 1
+b mash_field 300 B
+0 write gCoopAutosaveTestInterval:4 1800
+include save_again.inc
+0 expect_map 1 4
+0 wait 1900
+0 note_text Autosaving
+0 fixture_warp 0 16 10 6
+0 until_field 3000
+0 until_mem gCoopAutosaveCount 1 1200
+0 mash_field 600 B
+0 expect_noted
+0 until_field 3000
+0 wait 60
+0 shot autosaved

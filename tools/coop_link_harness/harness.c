@@ -1547,9 +1547,11 @@ static void frameCallback(struct mCoreThread* t) {
 				if (d[s + 0xFF8] != 0x25 || d[s + 0xFF9] != 0x20 || d[s + 0xFFA] != 0x01 || d[s + 0xFFB] != 0x08) partial++;
 			}
 		int want = sCutArmed[p->id] - 1;
-		if ((sCutClean[p->id] && changed == want && !partial) || (sCutClean[p->id] && changed > want)
-		 || (!sCutClean[p->id] && changed >= want)) {
-			if (sCutClean[p->id] && changed > want) out("[f%06d p%d] (no clean boundary at %d sectors)\n", p->frame, p->id, want);
+		int clean = sCutClean[p->id] == 1, signedOnly = sCutClean[p->id] == 2;
+		if ((clean && changed == want && !partial) || (clean && changed > want)
+		 || (signedOnly && changed - partial >= want)
+		 || (!clean && !signedOnly && changed >= want)) {
+			if (clean && changed > want) out("[f%06d p%d] (no clean boundary at %d sectors)\n", p->frame, p->id, want);
 			sCutImage[p->id] = malloc(sCutSize[p->id]); memcpy(sCutImage[p->id], d, sCutSize[p->id]);
 			out("[f%06d p%d] POWER CUT after %d changed flash sectors (%d partial)\n", p->frame, p->id, changed, partial);
 			sCutStop = 1;
@@ -4758,7 +4760,10 @@ static void loadScript(const char* path, int depth) {
 			// has its signature) and the next has not begun.
 			c.kind = C_CUT;
 			c.value = (unsigned)atoi(a);
-			c.size = n >= 4 && !strcmp(b, "clean");
+			// arm_cut N signed: once N changed sectors are complete, however
+			// many others have changed without a signature (sectors a save
+			// invalidated before writing, or the one being programmed).
+			c.size = n >= 4 && !strcmp(b, "clean") ? 1 : n >= 4 && !strcmp(b, "signed") ? 2 : 0;
 		} else if (!strcmp(cmd, "save_dump")) {
 			// save_dump LABEL: write this game's SaveBlock1/2/3, PC storage
 			// and party RAM to OUT/pN_LABEL_{sb1,sb2,sb3,pc,party}.bin (save

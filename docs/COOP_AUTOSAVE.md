@@ -21,6 +21,10 @@ The cartridge has two save slots. One always holds the player's newest **manual 
 
 A power cut during an autosave leaves the manual save; during a manual save, the other slot. In either case the next power-on says "The save file is corrupted. The previous save file will be loaded." as before.
 
+A save into a slot that an earlier power cut left incomplete first clears a signature byte of each sector left there, so a second power cut can never combine the old leftovers and the new write into a slot that looks whole but mixes two saves. An autosave also stores the tiles around the player (the map view CONTINUE restores) as the start menu's SAVE does; and NEW GAME clears the "autosave newer than your last SAVE" note made at power-on, so the question is only asked after CONTINUE.
+
+Save counters are compared without wraparound handling; the counter would need billions of saves to wrap (not handled, not tested).
+
 ## When it does not autosave
 
 - In battle; during a script, a message, a menu or a fade; while moving.
@@ -51,6 +55,9 @@ The 30-second interval in the tests is a fixture (`gCoopAutosaveTestInterval`); 
 | `autosave_load_manual` (+ `_reload`) | NO, YES: the lab's manual save loads; the next manual SAVE replaces the autosave slot (slot 0, counter 6), keeps the loaded save (slot 1, counter 1); CONTINUE then asks nothing |
 | `autosave_go_back_autosave` (+ `_reload`) | After going back, the next autosave replaces the abandoned autosave, not the manual save; CONTINUE loads it and asks |
 | `autosave_power_cut` (+ `_load`) | Power cut after 7 sectors of an autosave: the corrupted message, the manual save loads (no marker, PC as it was, no question), a manual save then writes |
+| `autosave_power_cut_twice` (+ `_load`) | From the cut slot: a manual SAVE cut again after 10 new sectors (`arm_cut 10 signed`, past where the first cut stopped). The slot keeps its leftovers' signatures cleared and stays refused; the manual save loads (no marker, PC as it was). Fix found in review on build 0xC0170142's first suite candidate |
+| `autosave_mapview` (+ `_reload`) | SAVE in the lab, then an autosave on Route 101. CONTINUE from it: the screen matches player 1 on the same tile (with the lab's stored view, the ground around the player was the lab's floor: reproduced on ROM 0006c5686410, fixed) |
+| `autosave_new_game_over` | The newest slot an autosave; NEW GAME (developer start): no "This is your AUTOSAVE" question (reproduced on ROM 0006c5686410, where it was asked; fixed) |
 | `autosave_off` | The setting line; OFF: no autosave; ON again: autosaves |
 | `autosave_coop` | Linked: each player autosaves on entering Oldale Town while the other waits; both still linked and visible afterwards |
 

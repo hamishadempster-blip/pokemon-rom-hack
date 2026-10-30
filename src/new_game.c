@@ -236,6 +236,7 @@ void NewGameInitData(void)
     ResetDexNav();
     ClearFollowerNPCData();
     CoopNotes_ClearBaseline();   // a new game after a loaded one starts its FIELD NOTES from nothing
+    gSaveLoadedAutosaveOverManual = FALSE;   // the boot-time load's autosave question is not for a new game
 }
 
 static void ResetMiniGamesRecords(void)

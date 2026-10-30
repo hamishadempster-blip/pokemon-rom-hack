@@ -22,6 +22,7 @@
 // Hall of Fame, and must be the player's). CO-OP > SETTINGS > AUTOSAVE
 // turns it off.
 #include "global.h"
+#include "fieldmap.h"
 #include "battle_pike.h"
 #include "battle_pyramid.h"
 #include "coop.h"
@@ -138,6 +139,7 @@ void CoopAutosave_Poll(void)
 // once "Autosaving..." is on screen. VAR_RESULT: TRUE when saved.
 void CoopAutosave_Write(void)
 {
+    SaveMapView();   // as the start menu's SAVE does: the view CONTINUE restores around the player
     gSaveWritingAutosave = TRUE;
     gSpecialVar_Result = (TrySavingData(SAVE_NORMAL) == SAVE_STATUS_OK);
     gSaveWritingAutosave = FALSE;

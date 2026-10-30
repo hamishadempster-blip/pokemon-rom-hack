@@ -110,9 +110,12 @@ EWRAM_DATA struct SaveSector gSaveDataBuffer = {0}; // Buffer used for reading/w
 //   - a manual save: the slot that is not the newest (stock alternation);
 //   - an autosave: the slot that is not the newest manual save.
 // The counter becomes the highest on the flash plus one or two (its parity
-// selects the slot), so the newest write always loads first. The slot's
-// sector rotation advances by one from what that slot holds, so a write cut
-// off part-way always leaves an id missing (never a complete mixture).
+// selects the slot), so the newest write always loads first. A write cut
+// off part-way must leave an id missing (never a complete mixture of two
+// saves): into a complete slot the sector rotation advances by one from what
+// that slot holds; a slot left incomplete by an earlier cut first has its
+// leftover sectors' signatures cleared (one byte each), so nothing of an
+// older write can complete a newer one.
 EWRAM_DATA bool8 gSaveWritingAutosave = FALSE;
 EWRAM_DATA u32 gSaveLastWriteVBlank = 0;   // gMain.vblankCounter1 at the last save or load
 // Kept in IWRAM: ReloadSave() clears EWRAM before it loads.
@@ -132,6 +135,7 @@ struct SaveSlotInfo
     bool8 complete;
     u8 kind;
     u8 rotation;    // physical index of the sector with id 0
+    u16 validSectors;   // physical sectors (bit i: the slot's i-th) that are valid
     u32 counter;
 };
 
@@ -143,6 +147,7 @@ static void ReadSaveSlotInfo(u32 slot, struct SaveSlotInfo *info)
     info->complete = FALSE;
     info->kind = COOP_SAVE_KIND_MANUAL;
     info->rotation = 0;
+    info->validSectors = 0;
     info->counter = 0;
     for (i = 0; i < NUM_SECTORS_PER_SLOT; i++)
     {
@@ -155,6 +160,7 @@ static void ReadSaveSlotInfo(u32 slot, struct SaveSlotInfo *info)
         if (gReadWriteSector->checksum != CalculateChecksum(gReadWriteSector->data, gRamSaveSectorLocations[id].size))
             continue;
         valid |= 1 << id;
+        info->validSectors |= 1 << i;
         info->counter = gReadWriteSector->counter;
         if (id == 0)
             info->rotation = i;
@@ -215,7 +221,20 @@ static void ChooseSaveSlotForWrite(void)
         counter++;
     gSaveCounter = counter - 1;
     if (slot[target].complete)
-        gLastWrittenSector = slot[target].rotation;
+    {
+        gLastWrittenSector = slot[target].rotation;   // the caller adds one
+    }
+    else
+    {
+        u32 i;
+
+        // Leftovers of a cut write (and of the save it was replacing): clear
+        // a signature byte of each, so a later cut of this write can never
+        // be completed by them. Programming only clears bits: no erase.
+        for (i = 0; i < NUM_SECTORS_PER_SLOT; i++)
+            if (slot[target].validSectors & (1 << i))
+                ProgramFlashByte(i + NUM_SECTORS_PER_SLOT * target, SECTOR_SIGNATURE_OFFSET, 0);
+    }
 }
 
 // The newest complete slot is an autosave and the other a complete manual

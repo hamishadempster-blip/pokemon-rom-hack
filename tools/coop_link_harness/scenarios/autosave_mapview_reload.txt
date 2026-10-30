@@ -1,0 +1,12 @@
+# After autosave_mapview: player 0 continues from the autosave on Route 101
+# (YES at the question); player 1 continues from the lab and is put on the
+# same tile (FIXTURE fixture_warp). The top of the two screens must match:
+# with the lab's stored view the ground around player 0 was the lab's.
+include continue_autosave_yes.inc
+0 expect_map 0 16
+1 fixture_warp 0 16 10 6
+1 until_field 3000
+b wait 360
+b shot continued
+b expect_screen_same 0 0 240 56
+b expect_screen_same 0 100 240 60

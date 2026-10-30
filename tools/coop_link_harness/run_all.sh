@@ -339,17 +339,22 @@ for s in story_consent story_beacon_off story_cancel story_unanswered story_simu
 	run "$s" SAVE0="$lab0" SAVE1="$lab1"
 done
 # Autosave (after 0xC0170141): slot roles, the question after CONTINUE,
-# going back to the manual save, power cut, setting, linked.
+# going back to the manual save, power cut (once and twice), setting,
+# linked, NEW GAME over an autosave, the map view an autosave stores.
 run autosave_basic SAVE0="$lab0" SAVE1="$lab1"
-for s in autosave_reload autosave_load_manual autosave_power_cut autosave_go_back_autosave; do
+for s in autosave_reload autosave_load_manual autosave_power_cut autosave_go_back_autosave autosave_new_game_over; do
 	run "$s" SAVE0="$out/autosave_basic/p0.sav" SAVE1="$out/autosave_basic/p1.sav"
 done
 run autosave_load_manual_reload SAVE0="$out/autosave_load_manual/p0.sav" SAVE1="$out/autosave_load_manual/p1.sav"
 run autosave_power_cut_load SAVE0="$out/autosave_power_cut/p0.sav" SAVE1="$out/autosave_power_cut/p1.sav"
+run autosave_power_cut_twice SAVE0="$out/autosave_power_cut/p0.sav" SAVE1="$out/autosave_power_cut/p1.sav"
+run autosave_power_cut_twice_load SAVE0="$out/autosave_power_cut_twice/p0.sav" SAVE1="$out/autosave_power_cut_twice/p1.sav"
 run autosave_go_back_autosave_reload SAVE0="$out/autosave_go_back_autosave/p0.sav" SAVE1="$out/autosave_go_back_autosave/p1.sav"
 for s in autosave_off autosave_coop; do
 	run "$s" SAVE0="$lab0" SAVE1="$lab1"
 done
+run autosave_mapview SAVE0="$lab0" SAVE1="$lab1"
+run autosave_mapview_reload SAVE0="$out/autosave_mapview/p0.sav" SAVE1="$out/autosave_mapview/p1.sav"
 # Waiting at a Pokemon Center (after 0xC0170141).
 run centre_wait_solo SAVE0="$lab0" SAVE1="$lab1"
 run centre_wait_solo_reload SAVE0="$out/centre_wait_solo/p0.sav" SAVE1="$out/centre_wait_solo/p1.sav"

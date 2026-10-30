@@ -1,0 +1,35 @@
+# A second power cut, into the slot the first one left incomplete
+# (autosave_power_cut saves: that slot holds part of the cut autosave over
+# an older autosave; the lab's manual save is whole). Rosa continues from
+# the manual save, changes the marker, fills her PC and SAVEs; the power is
+# cut once 10 new sectors are complete, past where the first write stopped
+# (arm_cut signed: the leftovers whose signature the save clears first do
+# not count). The slot must still have an id missing and be refused (never
+# a complete mixture of two saves).
+# FIXTURES: fixture_var, fixture_fill_pc (as in autosave_power_cut).
+# autosave_power_cut_twice_load loads the result.
+b wait 1100
+b press START 2
+b wait 300
+b press A 2
+b wait 250
+b press A 2
+b until_cb2 CB2_ContinueSavedGame 4000 A
+b mash_field 3000 B
+b until_field 5000
+b wait 120
+0 expect gSaveCounter:4 1
+0 fixture_var 0x40F8 4661
+0 fixture_fill_pc
+0 press START 2
+0 wait 60
+0 menu_to SAVE
+0 press A 2
+0 wait 50
+0 press A 2
+0 wait 120
+0 arm_cut 10 signed
+0 press A 2
+0 wait 600
+# (The run ends at the cut; reaching here means the save never wrote.)
+0 expect gSaveCounter:4 0

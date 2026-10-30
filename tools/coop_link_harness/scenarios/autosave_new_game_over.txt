@@ -1,0 +1,47 @@
+# NEW GAME on a cartridge whose newest save is an autosave (autosave_basic
+# saves: an autosave on Route 101, the lab's manual save older). Power-on
+# reads the flash and notes "autosave newer than the last SAVE" for
+# CONTINUE's question; a NEW GAME must not ask it (answering it could load
+# the old file over the new game). Player 0 starts a new game through the
+# developer start (as boot.inc, with NEW GAME second in the menu).
+b wait 1100
+0 expect gSaveLoadedAutosaveOverManual 1
+0 note_text This_is_your_AUTOSAVE
+b write gCoopTestStartArmed:4 0x57A27ED0
+b until_cb2 CB2_MainMenu 3000 START
+b wait 90
+b press DOWN 2
+b wait 30
+b shot main-menu
+b press A 2
+b wait 150
+b press A 2
+b wait 150
+b press A 2
+b wait 200
+1 press DOWN 2
+b press A 2
+b wait 200
+b press UP 50
+b press A 2
+b wait 90
+b press A 2
+b wait 90
+b press A 2
+b wait 120
+b press UP 4
+b wait 20
+b press A 2
+b wait 120
+b press UP 4
+b wait 20
+b press A 2
+b wait 120
+b mash_field 3000
+
+0 expect gSaveLoadedAutosaveOverManual 0
+0 wait 600
+0 mash_field 300 B
+0 expect_not_noted
+0 expect gDifferentSaveFile 1
+0 shot new-game
