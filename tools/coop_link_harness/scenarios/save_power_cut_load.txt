@@ -1,0 +1,23 @@
+# After save_power_cut: the half-written slot is refused (two of its sector
+# ids are missing: the sector rotation guarantees that for any cut), the
+# main menu says "The save file is corrupted. The previous save file will
+# be loaded.", and CONTINUE loads the previous complete save: no marker,
+# the PC as it was. Then a normal save writes again (save counter +1).
+b wait 1100
+b press START 2
+b wait 300
+b press A 2
+b wait 250
+0 expect gSaveFileStatus:2 255
+1 expect gSaveFileStatus:2 1
+0 shot recovery-message
+b press A 2
+b until_cb2 CB2_ContinueSavedGame 4000 A
+b mash_field 3000 B
+b until_field 5000
+b wait 60
+0 expect_var 0x40F8 0
+0 expect_pc_count 0
+0 expect gSaveCounter:4 13
+include save_again.inc
+0 expect gSaveCounter:4 14

@@ -95,7 +95,6 @@
 // need time to say yes. 30 seconds at 60 frames.
 #define COOP_LINK_WAIT_LIMIT 1800
 #define COOP_CASE_NONE    0xFF
-#define COOP_SAVE_LAYOUT  4
 // A ledger is re-sent this often while linked, so a dropped block heals.
 #define COOP_STORY_RESEND 300
 
@@ -360,12 +359,61 @@ static EWRAM_DATA u16 sPartnerBusyFrames = 0;
 // The partner who chose UNLINK, for the message after the link is gone.
 static EWRAM_DATA u8 sUnlinkName[PLAYER_NAME_LENGTH + 1] = {0};
 
+// The CoopSave layouts (docs/COOP_STORAGE_PLAN.md). Layout 4 ended at
+// offset 560; layout 5 appends struct CoopSaveV5 and must stay within the
+// budget, leaving the rest of SaveBlock3 for later updates.
+STATIC_ASSERT(offsetof(struct CoopSave, v5) == 560, CoopSaveLayout4End);
+STATIC_ASSERT(sizeof(struct CoopSaveV5) <= 380, CoopSaveV5Budget);
+STATIC_ASSERT(sizeof(struct SaveBlock3) + 680 <= 1624, CoopSaveReserve);
+
+// A CoopSave this build does not understand (a newer layout, or neither the
+// co-op magic nor the zero of a save from before co-op): it is never
+// migrated, repaired or rewritten. Readers get this default copy instead,
+// and CONTINUE refuses the save (Coop_SaveSchemaSupported).
+static EWRAM_DATA struct CoopSave sUnsupportedCoopSave = {0};
+
+bool8 Coop_SaveSchemaSupported(void)
+{
+    const struct CoopSave *save;
+
+    if (gSaveBlock3Ptr == NULL)
+        return TRUE;
+    save = &gSaveBlock3Ptr->coop;
+    if (save->magic == 0)
+        return TRUE;    // a save from before co-op (or a fresh one): set up below
+    if (save->magic != COOP_SAVE_MAGIC)
+        return FALSE;
+    if (save->layout > COOP_SAVE_LAYOUT)
+        return FALSE;
+    // A layout-5 block records its own size: another size is a variant this
+    // build does not know (a development build's save).
+    if (save->layout == 5 && save->v5.size != sizeof(struct CoopSaveV5))
+        return FALSE;
+    return TRUE;
+}
+
 static struct CoopSave *CoopSave(void)
 {
     struct CoopSave *save;
 
     if (gSaveBlock3Ptr == NULL)
         return NULL;
+    if (!Coop_SaveSchemaSupported())
+    {
+        if (sUnsupportedCoopSave.magic != COOP_SAVE_MAGIC)
+        {
+            memset(&sUnsupportedCoopSave, 0, sizeof(sUnsupportedCoopSave));
+            sUnsupportedCoopSave.magic = COOP_SAVE_MAGIC;
+            sUnsupportedCoopSave.layout = COOP_SAVE_LAYOUT;
+            sUnsupportedCoopSave.caseId = COOP_CASE_NONE;
+            sUnsupportedCoopSave.rivalId = COOP_RIVAL_NONE;
+            sUnsupportedCoopSave.deal.outSlot = 0xFF;
+            sUnsupportedCoopSave.legendaryOwner[0] = COOP_OWNER_NONE;
+            sUnsupportedCoopSave.legendaryOwner[1] = COOP_OWNER_NONE;
+            sUnsupportedCoopSave.legendaryOwner[2] = COOP_OWNER_NONE;
+        }
+        return &sUnsupportedCoopSave;
+    }
     save = &gSaveBlock3Ptr->coop;
     if (save->magic != COOP_SAVE_MAGIC)
     {
@@ -470,6 +518,16 @@ static struct CoopSave *CoopSave(void)
         save->duoSymbols = 0;
         memset(save->duoTeamPid, 0, sizeof(save->duoTeamPid));
         memset(save->duoBestOpen, 0, sizeof(save->duoBestOpen));
+    }
+    // Layout 5 (this update): Trainer Bond, settings, time, habitats,
+    // towns, headquarters. Everything starts empty: no partner and no Bond
+    // history (Pokémon records are not touched), settings on their
+    // defaults, nothing found or claimed yet. Only these bytes change.
+    if (save->layout < 5)
+    {
+        save->layout = 5;
+        memset(&save->v5, 0, sizeof(save->v5));
+        save->v5.size = sizeof(save->v5);
     }
     return save;
 }

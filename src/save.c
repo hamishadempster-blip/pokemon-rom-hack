@@ -748,13 +748,13 @@ u8 HandleSavingData(u8 saveType)
         break;
     case SAVE_LINK:
     case SAVE_EREADER: // Dummied, now duplicate of SAVE_LINK
-        // Used by link / Battle Frontier
-        // Write only SaveBlocks 1 and 2 (skips the PC)
+        // Used by link / Battle Frontier. Co-op: a full slot write like a
+        // normal save, not the stock rewrite of sectors 0-4 in place, which
+        // left SaveBlock3's chunks in sectors 5-13 from the previous save
+        // (docs/COOP_STORAGE_PLAN.md). An interrupted write now leaves the
+        // previous complete slot, as for any normal save.
         CopyPartyAndObjectsToSave();
-        for (i = SECTOR_ID_SAVEBLOCK2; i <= SECTOR_ID_SAVEBLOCK1_END; i++)
-            HandleReplaceSector(i, gRamSaveSectorLocations);
-        for (i = SECTOR_ID_SAVEBLOCK2; i <= SECTOR_ID_SAVEBLOCK1_END; i++)
-            WriteSectorSignatureByte_NoOffset(i, gRamSaveSectorLocations);
+        WriteSaveSectorOrSlot(FULL_SAVE_SLOT, gRamSaveSectorLocations);
         break;
     case SAVE_OVERWRITE_DIFFERENT_FILE:
         // Erase Hall of Fame
@@ -833,47 +833,31 @@ bool8 LinkFullSave_SetLastSectorSignature(void)
     return FALSE;
 }
 
+// Co-op: the linked Berry Blender's save. The stock version rewrote the
+// current slot's sectors 0-4 in place, one per call, leaving SaveBlock3's
+// chunks in sectors 5-13 from the previous save and a half-rewritten slot
+// if interrupted. It is now the incremental full-slot write the link
+// trades use (LinkFullSave_*): WriteSaveBlock2 starts it, then each
+// WriteSaveBlock1Sector call writes one sector; TRUE when done
+// (docs/COOP_STORAGE_PLAN.md).
 bool8 WriteSaveBlock2(void)
 {
     if (gFlashMemoryPresent != TRUE)
         return TRUE;
 
-    UpdateSaveAddresses();
-    CopyPartyAndObjectsToSave();
-    RestoreSaveBackupVars(gRamSaveSectorLocations);
-
-    // Because RestoreSaveBackupVars is called immediately prior, gIncrementalSectorId will always be 0 below,
-    // so this function only saves the first sector (SECTOR_ID_SAVEBLOCK2)
-    HandleReplaceSectorAndVerify(gIncrementalSectorId + 1, gRamSaveSectorLocations);
+    LinkFullSave_Init();
     return FALSE;
 }
 
-// Used in conjunction with WriteSaveBlock2 to write both for certain link saves.
-// This will be called repeatedly in a task, writing each sector of SaveBlock1 incrementally.
-// It returns TRUE when finished.
 bool8 WriteSaveBlock1Sector(void)
 {
-    bool32 finished = FALSE;
-    u16 sectorId = ++gIncrementalSectorId; // Because WriteSaveBlock2 will have been called prior, this will be SECTOR_ID_SAVEBLOCK1_START
-    if (sectorId <= SECTOR_ID_SAVEBLOCK1_END)
-    {
-        // Write a single sector of SaveBlock1
-        HandleReplaceSectorAndVerify(gIncrementalSectorId + 1, gRamSaveSectorLocations);
-        WriteSectorSignatureByte(sectorId, gRamSaveSectorLocations);
-    }
-    else
-    {
-        // Beyond SaveBlock1, don't write the sector.
-        // Does write 1 byte of the next sector's signature field, but as these
-        // are the same for all valid sectors it doesn't matter.
-        WriteSectorSignatureByte(sectorId, gRamSaveSectorLocations);
-        finished = TRUE;
-    }
-
-    if (gDamagedSaveSectors)
-        DoSaveFailedScreen(SAVE_LINK);
-
-    return finished;
+    if (gFlashMemoryPresent != TRUE)
+        return TRUE;
+    if (!LinkFullSave_WriteSector())
+        return FALSE;
+    LinkFullSave_ReplaceLastSector();
+    LinkFullSave_SetLastSectorSignature();
+    return TRUE;
 }
 
 u8 LoadGameSave(u8 saveType)

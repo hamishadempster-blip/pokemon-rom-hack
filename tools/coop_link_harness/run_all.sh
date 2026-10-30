@@ -380,5 +380,22 @@ if [ -n "${ZIG_AFFECTED:-}" ]; then
 	run zigzagoon_reload SAVE0="$ZIG_AFFECTED/p0.sav" SAVE1="$ZIG_AFFECTED/p1.sav"
 fi
 
+# Save storage (collection update, docs/COOP_STORAGE_PLAN.md): a power cut
+# halfway through a save, and a save from a newer build (fixture copies).
+if [ -n "${J16:-}" ]; then
+	run save_power_cut SAVE0="$J16/p0.sav" SAVE1="$J16/p1.sav"
+	run save_power_cut_load SAVE0="$out/save_power_cut/p0.sav" SAVE1="$out/save_power_cut/p1.sav"
+fi
+if [ -n "${J68:-}" ]; then
+	mkdir -p "$out/fx_newer"
+	python3 "$here/sav_poke.py" "$J68/p0.sav" "$out/fx_newer/p0.sav" 13 6
+	python3 "$here/sav_poke.py" "$J68/p1.sav" "$out/fx_newer/p1.sav" 4 0x5A
+	run save_schema_newer SAVE0="$out/fx_newer/p0.sav" SAVE1="$out/fx_newer/p1.sav"
+	for i in 0 1; do
+		cmp -s "$out/fx_newer/p$i.sav" "$out/save_schema_newer/p$i.sav" \
+			|| { echo "save_schema_newer: p$i.sav was changed" | tee -a "$summary"; failed=$((failed + 1)); }
+	done
+fi
+
 echo "failed scenarios: $failed; visual-check failures: $visualFailed" | tee -a "$summary"
 exit $failed

@@ -1,0 +1,21 @@
+# A save from a newer build (S1, docs/COOP_STORAGE_PLAN.md). FIXTURE:
+# copies of the j68 saves made by sav_poke.py: Kai's CoopSave layout byte
+# set to 6 (a newer layout), Rosa's co-op magic to 0x5A (unknown). The main
+# menu says "This save is from a newer build. It was not changed. Use that
+# ROM."; after A the menu opens, and CONTINUE goes back to the title
+# screen instead of loading. Nothing is written (compare the .sav files
+# with the fixtures afterwards; run_all does).
+b wait 1100
+b press START 2
+b wait 300
+b press A 2
+b wait 250
+b press A 2
+b wait 200
+b shot refused
+b expect_tasks Task_WaitForSaveFileErrorWindow 1
+b press A 2
+b wait 150
+b expect_tasks Task_WaitForSaveFileErrorWindow 0
+b press A 2
+b until_cb2 CB2_InitTitleScreen 900

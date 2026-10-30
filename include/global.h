@@ -278,6 +278,62 @@ struct CoopDealRecord
 #define COOP_DEX_FLAG_BYTES 132
 #define COOP_LEGEND_SLOTS 6     // COOP_ENC_COUNT - 1 (include/constants/coop.h)
 
+// CoopSave layout 5 (docs/COOP_STORAGE_PLAN.md). All of it starts zeroed on
+// an older save, so zero is every field's default.
+#define COOP_SAVE_LAYOUT 5                 // the newest layout this build knows
+
+struct CoopBondSave
+{
+    u32 pid;                // the active Partner Pokémon: personality ...
+    u32 otId;               // ... and original trainer id (pid 0 + otId 0: none)
+    u8 active;              // TRUE while a partner is chosen
+    u8 flags;               // COOP_BOND_F_* (src/coop_bond.c)
+    u8 noticeRank;          // a rank reached that has not been announced yet (+1)
+    u8 noticePending;       // Bond XP gained since the last notice (capped display)
+    u16 firstWins;          // one-time major-victory awards already given (bits)
+    u16 stepTally;          // steps toward the next walking award
+    u16 friendTally;        // friendship points gained toward the next award
+    u16 reserved0;
+    u32 reserved1[3];
+};
+
+struct CoopHabitatSave
+{
+    u8 found;               // entrances discovered (bit per habitat)
+    u8 complete;            // habitats completed
+    u8 rewarded;            // completion rewards paid
+    u8 cluesHeard;          // NPC clues heard (journal)
+    u8 interactions;        // one-time interactions done (bit per habitat)
+    u8 claims;              // unique finds claimed (bit per habitat)
+    u8 newNotes;            // journal entries not yet read
+    u8 reserved[9];
+};
+
+struct CoopPendingReward
+{
+    u16 item;               // ITEM_* (0: empty)
+    u8 quantity;
+    u8 source;              // COOP_REWARD_SRC_*
+};
+
+struct CoopSaveV5
+{
+    u16 size;               // sizeof(struct CoopSaveV5) when written (0: never)
+    u16 reserved;
+    u8 settings;            // COOP_SET_* bits (0: the defaults)
+    u8 settings2;
+    u16 reservedSettings;
+    u8 periodShift;         // encounter-period shift (src/coop_time.c)
+    u8 periodFlags;
+    u16 reservedPeriod;
+    struct CoopBondSave bond;
+    struct CoopHabitatSave habitat;
+    u8 collectionClaimed[8];                // collection reward bits
+    struct CoopPendingReward pending[4];    // rewards waiting for room
+    u8 town[6][6];                          // town specialities (src/coop_town.c)
+    u8 hq[256];                             // expedition headquarters (src/coop_hq.c)
+};
+
 struct CoopSave
 {
     u8 magic;
@@ -349,6 +405,8 @@ struct CoopSave
     u32 duoTeamPid[3];             // this player's run team (personalities)
     u16 duoBestOpen[7];            // best duo streak per facility, OPEN LEVEL
                                    // (duoBest: LV. 50)
+    // Layout 5: Trainer Bond, settings, time, habitats, towns, headquarters.
+    struct CoopSaveV5 v5;
 };
 
 struct SaveBlock3

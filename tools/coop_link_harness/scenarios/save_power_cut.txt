@@ -1,0 +1,23 @@
+# Power cut in the middle of a save (S0 storage preflight). j16 saves.
+# Kai sets a marker (variable 0x40F8 = 4660) and fills his PC, then saves;
+# the power is cut once 7 of the 14 sectors of the slot being written are
+# complete (arm_cut 7 clean: the .sav is the flash exactly at that frame).
+# FIXTURES: fixture_var, fixture_fill_pc (they only make the new save
+# different from the old one in many sectors). save_power_cut_load
+# continues from these saves.
+include continue_quiet.inc
+b wait 60
+0 fixture_var 0x40F8 4660
+0 fixture_fill_pc
+0 press START 2
+0 wait 60
+0 menu_to SAVE
+0 press A 2
+0 wait 50
+0 press A 2
+0 wait 120
+0 arm_cut 7 clean
+0 press A 2
+0 wait 600
+# (The run ends at the cut; reaching here means the save never wrote.)
+0 expect gSaveCounter:4 0

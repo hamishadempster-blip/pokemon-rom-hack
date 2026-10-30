@@ -43,6 +43,7 @@
 #include "title_screen.h"
 #include "window.h"
 #include "mystery_gift_menu.h"
+#include "coop.h"
 
 /*
  * Main menu state machine
@@ -264,6 +265,7 @@ static const u16 sBirchSpeechBgGradientPal[] = INCGFX_U16("graphics/birch_speech
 
 static const u8 gText_SaveFileCorrupted[] = _("The save file is corrupted. The\nprevious save file will be loaded.");
 static const u8 gText_SaveFileErased[] = _("The save file has been erased\ndue to corruption or damage.");
+static const u8 gText_CoopSaveFromOtherBuild[] = _("This save is from a newer build.\nIt was not changed. Use that ROM.");
 static const u8 gJPText_No1MSubCircuit[] = _("1Mサブきばんが ささっていません！");
 static const u8 gText_BatteryRunDry[] = _("The internal battery has run dry.\nThe game can be played.\pHowever, clock-based events will\nno longer occur.");
 
@@ -671,6 +673,14 @@ static void Task_MainMenuCheckSaveFile(u8 taskId)
             if (IsMysteryGiftEnabled())
                 tMenuType++;
             gTasks[taskId].func = Task_MainMenuCheckBattery;
+            // Co-op: a save from a newer (or unknown) build is never loaded,
+            // migrated or rewritten (docs/COOP_STORAGE_PLAN.md): say so here;
+            // CONTINUE then goes back to the title screen.
+            if (!Coop_SaveSchemaSupported())
+            {
+                CreateMainMenuErrorWindow(gText_CoopSaveFromOtherBuild);
+                gTasks[taskId].func = Task_WaitForSaveFileErrorWindow;
+            }
             break;
         case SAVE_STATUS_CORRUPT:
             CreateMainMenuErrorWindow(gText_SaveFileErased);
@@ -1105,6 +1115,16 @@ static void Task_HandleMainMenuAPressed(u8 taskId)
                 gTasks[taskId].func = Task_NewGameBirchSpeech_Init;
             break;
         case ACTION_CONTINUE:
+            // Co-op: a save from a newer (or unknown) build is never loaded,
+            // migrated or rewritten here (docs/COOP_STORAGE_PLAN.md).
+            if (!Coop_SaveSchemaSupported())
+            {
+                // (The main menu said why when it opened; back to the title
+                // screen, which shows it again on the next visit.)
+                PlaySE(SE_FAILURE);
+                gTasks[taskId].func = Task_HandleMainMenuBPressed;
+                break;
+            }
             gPlttBufferUnfaded[0] = RGB_BLACK;
             gPlttBufferFaded[0] = RGB_BLACK;
             SetMainCallback2(CB2_ContinueSavedGame);

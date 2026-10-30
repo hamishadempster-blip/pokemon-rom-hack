@@ -212,6 +212,7 @@ bool8 Coop_PartnerFrameInfo(u8 *mapGroup, u8 *mapNum, u8 *activity);
 bool8 Coop_PartnerViewCoords(s16 *x, s16 *y);
 bool8 Coop_PartnerLastSeen(s16 *x, s16 *y);
 bool8 Coop_PartnerIsFollowing(void);
+bool8 Coop_SaveSchemaSupported(void);
 bool8 Coop_SendPing(void);
 u16 Coop_PingCooldownSeconds(void);
 bool8 Coop_PartnerTalkInfo(u8 *localId, bool8 *joinable);
