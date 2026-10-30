@@ -1,4 +1,5 @@
 #include "global.h"
+#include "coop_learn.h"
 #include "item_menu.h"
 #include "coop.h"
 #include "coop_deal.h"
@@ -94,6 +95,7 @@ enum {
     ACTION_BY_TYPE,
     ACTION_BY_AMOUNT,
     ACTION_BY_INDEX,
+    ACTION_CAN_LEARN,
     ACTION_DUMMY,
 };
 
@@ -205,6 +207,8 @@ static void ItemMenu_Cancel(u8);
 static void ItemMenu_UseInBattle(u8);
 static void ItemMenu_CheckTag(u8);
 static void ItemMenu_Show(u8);
+static void ItemMenu_CanLearn(u8);
+static void Task_CanLearnPage(u8);
 static void ItemMenu_GiveFavorLady(u8);
 static void ItemMenu_ConfirmQuizLady(u8);
 static void Task_ItemContext_Normal(u8);
@@ -311,6 +315,7 @@ static const struct MenuAction sItemMenuActions[] = {
     [ACTION_BY_TYPE]           = {COMPOUND_STRING("Type"),      {ItemMenu_SortByType}},
     [ACTION_BY_AMOUNT]         = {COMPOUND_STRING("Amount"),    {ItemMenu_SortByAmount}},
     [ACTION_BY_INDEX]          = {COMPOUND_STRING("Index"),     {ItemMenu_SortByIndex}},
+    [ACTION_CAN_LEARN]         = {COMPOUND_STRING("CAN LEARN"), {ItemMenu_CanLearn}},
     [ACTION_DUMMY]             = {gText_EmptyString2, {NULL}}
 };
 
@@ -333,7 +338,7 @@ static const u8 sContextMenuItems_BallsPocket[] = {
 
 static const u8 sContextMenuItems_TmHmPocket[] = {
     ACTION_USE,         ACTION_GIVE,
-    ACTION_DUMMY,       ACTION_CANCEL
+    ACTION_CAN_LEARN,   ACTION_CANCEL
 };
 
 static const u8 sContextMenuItems_BerriesPocket[] = {
@@ -2590,6 +2595,33 @@ static void Task_WallyTutorialBagMenu(u8 taskId)
 
 // This action is used to show the Apprentice an item when
 // they ask what item they should make their Pokémon hold
+// CAN LEARN on a TM or HM (src/coop_learn.c): how many of this save's
+// Pokémon, party and PC, can learn its move, then where, a page at a time.
+// A: next page; B: back to the bag. Read only.
+static void ItemMenu_CanLearn(u8 taskId)
+{
+    RemoveContextWindow();
+    CoopLearn_Begin(GetItemTMHMMoveId(gSpecialVar_ItemId));
+    CoopLearn_Summary(gStringVar4);
+    DisplayItemMessage(taskId, FONT_NORMAL, gStringVar4, Task_CanLearnPage);
+}
+
+static void Task_CanLearnPage(u8 taskId)
+{
+    s16 *data = gTasks[taskId].data;
+
+    if (!JOY_NEW(A_BUTTON | B_BUTTON))
+        return;
+    PlaySE(SE_SELECT);
+    if (JOY_NEW(B_BUTTON) || !CoopLearn_NextPage(gStringVar4))
+    {
+        CloseItemMessage(taskId);
+        return;
+    }
+    FillWindowPixelBuffer(tMsgWindowId, PIXEL_FILL(1));
+    DisplayMessageAndContinueTask(taskId, tMsgWindowId, 10, 13, FONT_NORMAL, GetPlayerTextSpeedDelay(), gStringVar4, Task_CanLearnPage);
+}
+
 static void ItemMenu_Show(u8 taskId)
 {
     gSpecialVar_0x8005 = gSpecialVar_ItemId;

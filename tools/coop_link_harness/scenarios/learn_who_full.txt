@@ -1,0 +1,50 @@
+# "Who can learn this?" with a full PC (checkpoint 52 saves, player 0).
+# FIXTURES: every empty PC slot filled with a copy of party slot 0, a
+# WHISCASH (fixture_fill_pc: 417 copies); TM26 (EARTHQUAKE) in the first
+# TM/HM row; the BAG opened on that pocket. The rest is play.
+# Checks: "418 of your POKeMON can learn Earthquake (1 in the party)." (of
+# the party and the three Pokemon already boxed, only WHISCASH can learn
+# it, and none knows it); the party page; BOX1's page, its second page is
+# "BOX1, more: ..." (a box does not fit one page); B stops at once and the
+# BAG is back; nothing changes.
+include continue.inc
+b no_wild 1
+b mash_field 300 B
+0 fixture_item 2 607 1 0
+0 fixture_fill_pc
+0 note_party
+0 write gBagPosition+5:1 2
+0 write gBagPosition+12:2 0
+0 write gBagPosition+22:2 0
+0 press START 2
+0 wait 40
+0 menu_to BAG
+0 press A 2
+0 until_cb2 CB2_BagMenuRun 2500
+0 wait 80
+0 press A 2
+0 wait 30
+0 press DOWN 2
+0 wait 10
+0 press A 2
+0 wait 150
+0 expect_text gStringVar4 418_of_your
+0 expect_text gStringVar4 1_in_the_party
+0 press A 2
+0 wait 120
+0 expect_text gStringVar4 PARTY:_
+0 press A 2
+0 wait 120
+0 expect_text gStringVar4 BOX1:_
+0 shot box1-page
+0 press A 2
+0 wait 120
+0 expect_text gStringVar4 BOX1,_more:_
+0 shot box1-more
+0 press B 2
+0 wait 60
+0 expect_cb2 CB2_BagMenuRun
+0 press B 2
+0 mash_field 600 B
+0 expect_party_same
+0 fixture_unfill_pc

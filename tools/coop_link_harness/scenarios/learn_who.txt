@@ -1,0 +1,60 @@
+# "Who can learn this?" (checkpoint 52 saves, player 0 alone). FIXTURES:
+# TM28 (DIG) put in the first TM/HM row (fixture_item); the BAG opened on
+# the TM/HM pocket at its top (gBagPosition). The rest is play: the item's
+# CAN LEARN, A through every page, then B.
+# Checks: the summary "4 of your POKeMON can learn Dig (2 in the party)."
+# and the pages "PARTY: Aaaaaaaaaaaa, Nincada" (COMBUSKEN, NINCADA) and
+# "BOX1: Poochyena, Buizel", then A closes it; nothing in the party or bag
+# changes. Expected from the party and PC dumped here (`party`, `boxes`)
+# and the species' teachable learnsets (src/data/pokemon/
+# teachable_learnsets.h): of WHISCASH, COMBUSKEN, SHROOMISH, NINCADA,
+# WATTREL, ZUBAT / POOCHYENA, BUIZEL, CASTFORM, DIG is teachable to
+# COMBUSKEN, NINCADA, POOCHYENA and BUIZEL, none of which knows it.
+include continue.inc
+b no_wild 1
+b mash_field 300 B
+0 fixture_item 2 609 1 0
+0 party
+0 boxes
+0 note_party
+0 write gBagPosition+5:1 2
+0 write gBagPosition+12:2 0
+0 write gBagPosition+22:2 0
+0 press START 2
+0 wait 40
+0 menu_to BAG
+0 press A 2
+0 until_cb2 CB2_BagMenuRun 2500
+0 wait 80
+0 expect gBagPosition+5:1 2
+0 press A 2
+0 wait 30
+0 shot context
+0 press DOWN 2
+0 wait 10
+0 note_text can_learn_DIG
+0 press A 2
+0 wait 150
+0 shot summary
+0 expect_text gStringVar4 4_of_your_POK
+0 expect_text gStringVar4 2_in_the_party
+0 press A 2
+0 wait 120
+0 shot page1
+0 expect_text gStringVar4 PARTY:_Aaaaaaaaaaaa,_Nincada
+0 press A 2
+0 wait 120
+0 shot page2
+0 expect_text gStringVar4 BOX1:_Poochyena,_Buizel
+0 press A 2
+0 wait 120
+0 press A 2
+0 wait 120
+0 press B 2
+0 wait 60
+0 expect_cb2 CB2_BagMenuRun
+0 shot back-in-bag
+0 press B 2
+0 mash_field 600 B
+0 expect_party_same
+0 expect_item 2 609 1

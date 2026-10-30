@@ -207,6 +207,8 @@ fi
 # Teleport, a building transition between battles).
 if [ -n "${J52:-}" ]; then
 	run visitors_weather_fish SAVE0="$J52/p0.sav" SAVE1="$J52/p1.sav"
+	run learn_who SAVE0="$J52/p0.sav" SAVE1="$J52/p1.sav"
+	run learn_who_full SAVE0="$J52/p0.sav" SAVE1="$J52/p1.sav"
 	run late_wild_tour SAVE0="$J52/p0.sav" SAVE1="$J52/p1.sav"
 	run revamp_trainers_late SAVE0="$J52/p0.sav" SAVE1="$J52/p1.sav"
 	run exchange_stock_t3 SAVE0="$J52/p0.sav" SAVE1="$J52/p1.sav"

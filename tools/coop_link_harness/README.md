@@ -560,6 +560,7 @@ Build 0xC017013E scenarios:
 | `centre_wait_solo` (+`_reload`) | lab | WAIT HERE only in a Center; "already NIGHT"; rest until MORNING (outdoor tint, shift saved, clock unchanged); after power-on still MORNING; REAL TIME back to NIGHT (docs/COOP_TIME.md) |
 | `visitors_time` | lab | FIXTURE `gCoopVisitorTestChance` 100: a Route 101 encounter at NIGHT is a night visitor; the WILDLIFE REPORT in Oldale's Center (rumor for unseen); after resting until MORNING the visitor is LEDYBA; by DAY none (docs/COOP_ENCOUNTERS.md) |
 | `visitors_weather_fish` | j52 | Same FIXTURE: SUPER ROD on Route 122 at night gives FRILLISH; Route 113 grass in falling ash (FIXTURE saved weather) gives a visitor (VULPIX), in sunshine none |
+| `learn_who` (+`_full`) | j52 | BAG > TMs & HMs > CAN LEARN: the count, party and box pages, "more" pages with a full PC (FIXTURE fixture_fill_pc), B back to the BAG, nothing changed (docs/COOP_LEARN.md) |
 | `centre_wait_coop` | lab, `RTC_EPOCH0` 23:00 / `RTC_EPOCH1` 12:00 | Linked rest: the partner is asked; YES: both MORNING; NO: "said no", nothing changes; partner outside: "meet first"; after UNLINK both keep MORNING on their own clocks |
 
 New verbs: `expect_mon SLOT hp VALUE`, `expect_mon ... >@K` (more than note
