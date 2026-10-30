@@ -1,0 +1,7 @@
+# The CONTINUE screen's top row: "Build C0170142" and the saved location,
+# right-aligned, must not overlap, also for long names (RUSTURF TUNNEL,
+# LITTLEROOT TOWN). Visual check of the shots; run on several saves.
+b wait 1100
+b until_cb2 CB2_MainMenu 3000 START
+b wait 120
+b shot continue-screen

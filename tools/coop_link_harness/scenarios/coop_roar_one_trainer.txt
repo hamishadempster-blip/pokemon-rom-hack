@@ -1,0 +1,34 @@
+# ROAR in a co-op battle against ONE trainer with four Pokemon (Petalburg
+# Woods' LYLE). Turn 1: Kai's EMBER knocks out the left WURMPLE (slot 1);
+# Lyle sends slot 3. Turn 2: Kai's ROAR on that WURMPLE must drag out slot
+# 4, the only healthy one not in battle. Before the fix the co-op battle
+# used the link multi rule (slots 1-3 only) and ROAR failed.
+# Linked, Beacon on, lab saves. TEST HELPERS (logged): leads made with
+# test_mon (Kai: TORCHIC Lv 30, EMBER and ROAR; Rosa: PIKACHU Lv 30, GROWL
+# only). DRIVER: force_move picks the moves and targets.
+include beacon_battle.txt
+b mash_field 2000 B
+b write sWildEncountersDisabled 1
+0 test_mon 0 255 30 52 46 0 0 0
+1 test_mon 0 25 30 45 0 0 0 0
+b test_heal
+0 fixture_warp 24 11 7 34
+1 fixture_warp 24 11 8 34
+b until_cb2 BattleMainCB2 12000 A
+b expect gBattlersCount 4
+b until_battle_text What_will 9000
+0 force_move 0 1
+1 force_move 0 1
+b until_battle_text fainted 20000 auto
+b until_battle_text What_will 9000 auto
+b shot before-roar
+0 force_move 1 1
+b until_battle_text used_Roar 9000 auto
+b until_battle_text dragged_out 3000
+b shot after-roar
+0 force_move -1
+1 force_move -1
+b smart_moves 1
+b mash_field 30000
+b expect gBattleOutcome 1
+b expect_mons_intact

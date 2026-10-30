@@ -1,0 +1,40 @@
+# A co-op battle against ONE trainer with two Pokemon (Rustboro Gym's JOSH:
+# ROGGENROLA and DWEBBLE). The battle is flagged MULTI, and the left foe's
+# controller sends both out; before the fix only ROGGENROLA's HP box was
+# shown, on both screens (players' report, D1500003). Linked, Beacon on,
+# from lab saves. FIXTURES: level-70 leads with strong cached stats, as
+# boss_pair_coop; fixture_warp into Josh's sight.
+# Checks: both foes' HP boxes are in use and visible on both screens at the
+# first action menu (gHealthboxSpriteIds[1] and [3]; screenshots).
+include beacon_battle.txt
+b mash_field 2000 B
+b write sWildEncountersDisabled 1
+0 fixture_lead 255 70 344960
+1 fixture_lead 228 70 428750
+0 fixture_warp 11 3 5 14
+1 fixture_warp 11 3 4 14
+b write gParties+86:2 999
+b write gParties+88:2 999
+b write gParties+90:2 600
+b write gParties+92:2 600
+b write gParties+94:2 600
+b write gParties+96:2 600
+b write gParties+98:2 600
+# (Josh sees Kai on arrival and walks up; his intro starts the battle.)
+b until_cb2 BattleMainCB2 9000 A
+b expect coop.sInBattle 1
+b expect gBattlersCount 4
+b until_battle_text What_will 9000
+b wait 60
+b shot first-menu
+b hex gHealthboxSpriteIds 4
+# The foes' boxes are sprites 4 and 8 here (the line above); flags byte
+# 0x3E: 01 in use and visible, 05 in use but invisible (DWEBBLE's box
+# before the fix, on both screens).
+b expect gHealthboxSpriteIds+1:1 4
+b expect gHealthboxSpriteIds+3:1 8
+b expect gSprites+334:1 1
+b expect gSprites+606:1 1
+b mash_field 30000
+b expect gBattleOutcome 1
+b expect_mons_intact

@@ -562,6 +562,11 @@ Build 0xC017013E scenarios:
 | `visitors_weather_fish` | j52 | Same FIXTURE: SUPER ROD on Route 122 at night gives FRILLISH; Route 113 grass in falling ash (FIXTURE saved weather) gives a visitor (VULPIX), in sunshine none |
 | `learn_who` (+`_full`) | j52 | BAG > TMs & HMs > CAN LEARN: the count, party and box pages, "more" pages with a full PC (FIXTURE fixture_fill_pc), B back to the BAG, nothing changed (docs/COOP_LEARN.md) |
 | `notes_rewards` (+`_reload`) | lab | FIELD NOTES rewards: paid once at a calm moment, waiting for room (pending queue) and delivered later, not again after a reload; the notebook pages. FIXTURES dex_caught, fixture_fill_pocket, gCoopNotesCheck (docs/COOP_NOTES.md) |
+| `ai_ability_klutz_coop` | lab | Co-op battle against Roxanne and Heath with BUNEARY and LOPUNNY leads (Klutz in their ability list, rating -1): the trainer AI's ability guess no longer stops the game on random.c's `sum <= 0xFFFF` assert (it did on 0xC0170142). FIXTURES: fixture_lead, cached stats, fixture_warp |
+| `coop_one_trainer_hpbox` | lab | Co-op battle against JOSH alone (two Pokemon): both foes' HP boxes in use and visible on both screens (DWEBBLE's was invisible on 0xC0170142) |
+| `coop_one_trainer_replace` | lab | Co-op battle against LYLE alone (four Pokemon): after replacements both foe boxes are visible again |
+| `coop_roar_one_trainer` | lab | ROAR against a one-trainer co-op foe drags out the trainer's slot 4 when it is the only one left (failed on 0xC0170142). TEST HELPERS test_mon; DRIVER force_move |
+| `continue_screen_names` | any | Shots of the CONTINUE screen's top row: the build and a long location must not overlap (checked by eye on the lab, j16, j52 and j68 saves) |
 | `notes_catchup` (+`_collect`, `_reload`) | j68 | FIELD NOTES on a save that reached rewards before loading: nothing paid on the first steps; CO-OP > JOURNAL > FIELD NOTES asks to collect them and hands them over; not again after a reload. FIXTURE dex_caught 1-30 (docs/COOP_NOTES.md) |
 | `habitat_moss` | j16 | MOSS HOLLOW: entrance, first visit, encounter, marker, find once, exit, completion reward once (FIXTURE dex_caught), FIELD NOTES pages, Petalburg's rumor (docs/COOP_HABITATS.md) |
 | `habitat_tour` | j68 | The other four habitats: entrance, first visit, marker, find, an encounter (a SUPER ROD bite in TIDE GROTTO), exit |

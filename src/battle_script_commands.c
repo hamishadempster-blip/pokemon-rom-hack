@@ -5706,6 +5706,22 @@ static void Cmd_forcerandomswitch(void)
             battler2PartyId = gBattlerPartyIndexes[gBattlerTarget];
             battler1PartyId = gBattlerPartyIndexes[GetPartnerBattler(gBattlerTarget)];
         }
+        else if (gBattleTypeFlags & BATTLE_TYPE_COOP)
+        {
+            // Co-op: each human brings up to three (slots 0-2), but an NPC
+            // trainer's whole party can come in, and the two battlers of a
+            // side share a party only against ONE trainer. The link multi
+            // rule below excluded the partner's index from a different
+            // party and the foe's slots 3-5 (ROAR on a one-trainer co-op
+            // battle failed with healthy Pokemon left).
+            firstMonId = 0;
+            lastMonId = IsOnPlayerSide(gBattlerTarget) ? PARTY_SIZE / 2 : PARTY_SIZE;
+            battler2PartyId = gBattlerPartyIndexes[gBattlerTarget];
+            if (BattlersShareParty(gBattlerTarget, GetPartnerBattler(gBattlerTarget)))
+                battler1PartyId = gBattlerPartyIndexes[GetPartnerBattler(gBattlerTarget)];
+            else
+                battler1PartyId = battler2PartyId;
+        }
         else if ((gBattleTypeFlags & BATTLE_TYPE_MULTI && gBattleTypeFlags & BATTLE_TYPE_LINK)
                  || (gBattleTypeFlags & BATTLE_TYPE_MULTI && gBattleTypeFlags & BATTLE_TYPE_RECORDED_LINK))
         {

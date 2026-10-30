@@ -115,12 +115,22 @@ static void LinkOpponentBufferRunCommand(enum BattlerId battler)
     }
 }
 
+// Whether the left opponent's intro also shows its partner: a double that
+// is not a multi battle, or a co-op battle against ONE trainer (flagged
+// MULTI, but TwoMonsAtSendOut sends both of that trainer's Pokemon).
+static bool32 LinkOpponentIntroShowsPartner(enum BattlerId battler)
+{
+    if (IsCoopSingleTrainerBattle())
+        return TwoOpponentIntroMons(battler);
+    return IsDoubleBattle() && !(gBattleTypeFlags & BATTLE_TYPE_MULTI);
+}
+
 static void Intro_WaitForShinyAnimAndHealthbox(enum BattlerId battler)
 {
     bool32 healthboxAnimDone = FALSE;
     bool32 twoMons = FALSE;
 
-    if (!IsDoubleBattle() || (IsDoubleBattle() && (gBattleTypeFlags & BATTLE_TYPE_MULTI)))
+    if (!LinkOpponentIntroShowsPartner(battler))
     {
         if (gSprites[gHealthboxSpriteIds[battler]].callback == SpriteCallbackDummy)
             healthboxAnimDone = TRUE;
@@ -179,7 +189,7 @@ static void Intro_TryShinyAnimShowHealthbox(enum BattlerId battler)
     {
         TryShinyAnimation(battler, GetBattlerMon(battler));
     }
-    if (!(gBattleTypeFlags & BATTLE_TYPE_MULTI)
+    if ((!(gBattleTypeFlags & BATTLE_TYPE_MULTI) || LinkOpponentIntroShowsPartner(battler))
         && !gBattleSpritesDataPtr->healthBoxesData[GetPartnerBattler(battler)].ballAnimActive
         && !gBattleSpritesDataPtr->healthBoxesData[GetPartnerBattler(battler)].triedShinyMonAnim
         && !gBattleSpritesDataPtr->healthBoxesData[GetPartnerBattler(battler)].finishedShinyMonAnim)
@@ -191,7 +201,7 @@ static void Intro_TryShinyAnimShowHealthbox(enum BattlerId battler)
     {
         if (!gBattleSpritesDataPtr->healthBoxesData[battler].healthboxSlideInStarted)
         {
-            if (IsDoubleBattle() && !(gBattleTypeFlags & BATTLE_TYPE_MULTI))
+            if (LinkOpponentIntroShowsPartner(battler))
             {
                 UpdateHealthboxAttribute(gHealthboxSpriteIds[GetPartnerBattler(battler)], GetBattlerMon(GetPartnerBattler(battler)), HEALTHBOX_ALL);
                 StartHealthboxSlideIn(GetPartnerBattler(battler));
@@ -238,7 +248,7 @@ static void Intro_TryShinyAnimShowHealthbox(enum BattlerId battler)
                 gBattleSpritesDataPtr->healthBoxesData[battler].introEndDelay = 0;
             }
 
-            if (IsDoubleBattle() && !(gBattleTypeFlags & BATTLE_TYPE_MULTI))
+            if (LinkOpponentIntroShowsPartner(battler))
             {
                 DestroySprite(&gSprites[gBattleControllerData[GetPartnerBattler(battler)]]);
                 SetBattlerShadowSpriteCallback(GetPartnerBattler(battler), GetMonData(GetBattlerMon(GetPartnerBattler(battler)), MON_DATA_SPECIES));

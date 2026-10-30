@@ -2240,21 +2240,38 @@ static void CreateMainMenuErrorWindow(const u8 *str)
 // players' saves (and builds) are told apart before CONTINUE.
 static void MainMenu_FormatSavegameWhere(void)
 {
+    u8 build[0x14];
     u8 str[0x20];
     const struct MapHeader *header = Overworld_GetMapHeaderByGroupAndId(gSaveBlock1Ptr->location.mapGroup, gSaveBlock1Ptr->location.mapNum);
-    u8 *end;
-    u32 fontId;
+    u8 *hex;
+    u32 fontId, buildEnd, mapX;
 
-    end = StringCopy(str, COMPOUND_STRING("Build "));
+    hex = StringCopy(build, COMPOUND_STRING("Build "));
     // In halves: the converter works on signed values.
-    end = ConvertIntToHexStringN(end, COOP_BUILD_ID >> 16, STR_CONV_MODE_LEADING_ZEROS, 4);
-    ConvertIntToHexStringN(end, COOP_BUILD_ID & 0xFFFF, STR_CONV_MODE_LEADING_ZEROS, 4);
-    AddTextPrinterParameterized3(2, FONT_SMALL, 62, 3, sTextColor_MenuInfo, TEXT_SKIP_DRAW, str);
+    ConvertIntToHexStringN(ConvertIntToHexStringN(hex, COOP_BUILD_ID >> 16, STR_CONV_MODE_LEADING_ZEROS, 4),
+                           COOP_BUILD_ID & 0xFFFF, STR_CONV_MODE_LEADING_ZEROS, 4);
     if (header == NULL)
+    {
+        AddTextPrinterParameterized3(2, FONT_SMALL, 62, 3, sTextColor_MenuInfo, TEXT_SKIP_DRAW, build);
         return;
+    }
+    // The location sits right-aligned after the build. A long name (RUSTURF
+    // TUNNEL, LITTLEROOT TOWN) used to run into "Build C0170142": the build
+    // drops its "Build " when that is not enough, and the name takes a
+    // narrower font to fit what is left.
     GetMapName(str, header->regionMapSectionId, 0);
     fontId = GetFontIdToFit(str, FONT_NORMAL, 0, 0xD0 - 118);
-    AddTextPrinterParameterized3(2, fontId, GetStringRightAlignXOffset(fontId, str, 0xD0), 1, sTextColor_MenuInfo, TEXT_SKIP_DRAW, str);
+    mapX = GetStringRightAlignXOffset(fontId, str, 0xD0);
+    buildEnd = 62 + GetStringWidth(FONT_SMALL, build, 0) + 3;
+    if (buildEnd > mapX)
+    {
+        StringCopy(build, hex);
+        buildEnd = 62 + GetStringWidth(FONT_SMALL, build, 0) + 3;
+        fontId = GetFontIdToFit(str, FONT_NORMAL, 0, 0xD0 - buildEnd);
+        mapX = GetStringRightAlignXOffset(fontId, str, 0xD0);
+    }
+    AddTextPrinterParameterized3(2, FONT_SMALL, 62, 3, sTextColor_MenuInfo, TEXT_SKIP_DRAW, build);
+    AddTextPrinterParameterized3(2, fontId, mapX, 1, sTextColor_MenuInfo, TEXT_SKIP_DRAW, str);
 }
 
 static void MainMenu_FormatSavegameText(void)

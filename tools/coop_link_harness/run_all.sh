@@ -360,6 +360,12 @@ run centre_wait_solo SAVE0="$lab0" SAVE1="$lab1"
 run centre_wait_solo_reload SAVE0="$out/centre_wait_solo/p0.sav" SAVE1="$out/centre_wait_solo/p1.sav"
 run centre_wait_coop SAVE0="$lab0" SAVE1="$lab1" RTC_EPOCH0=1699963200 RTC_EPOCH1=1699923600
 run visitors_time SAVE0="$lab0" SAVE1="$lab1"
+# After 0xC0170142: the trainer AI's ability guess with a negative rating
+# (Roxanne's crash), one-trainer co-op HP boxes and replacements, ROAR in
+# a one-trainer co-op battle, the CONTINUE screen's top row (shots).
+for s in ai_ability_klutz_coop coop_one_trainer_hpbox coop_one_trainer_replace coop_roar_one_trainer continue_screen_names; do
+	run "$s" SAVE0="$lab0" SAVE1="$lab1"
+done
 run notes_rewards SAVE0="$lab0" SAVE1="$lab1"
 run notes_rewards_reload SAVE0="$out/notes_rewards/p0.sav" SAVE1="$out/notes_rewards/p1.sav"
 # The same expiry by the wall clock while the harness runs faster than real

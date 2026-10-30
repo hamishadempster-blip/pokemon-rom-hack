@@ -1,0 +1,41 @@
+# The trainer AI guessing a Pokemon's ability (Weigh Ability Prediction,
+# Roxanne's AI) with a signed rating in the guess (Klutz is -1): before the
+# fix the weight wrapped to 65,535 and the game stopped on random.c's
+# "sum <= 0xFFFF" assert (players' report D1500003, Roxanne vs a BUNEARY).
+# Linked co-op battle against Roxanne and Heath, from lab saves, as
+# boss_pair_coop. FIXTURES: level-70 BUNEARY (Kai) and LOPUNNY (Rosa) leads
+# (Run Away/Klutz/Limber, Cute Charm/Klutz/Limber) with strong cached stats
+# (flow, not balance); fixture_warp below the pair.
+include beacon_battle.txt
+b mash_field 2000 B
+b write sWildEncountersDisabled 1
+0 fixture_lead 427 70 343000
+1 fixture_lead 428 70 343000
+0 fixture_warp 11 3 6 3
+1 fixture_warp 11 3 5 3
+b until_field 3000
+b sync
+b wait 40
+b sync
+b write gParties+86:2 999
+b write gParties+88:2 999
+b write gParties+90:2 600
+b write gParties+92:2 600
+b write gParties+94:2 600
+b write gParties+96:2 600
+b write gParties+98:2 600
+0 press UP 2
+0 wait 20
+b note_money
+0 note_text ROXANNE_and_I_battle_as_a_pair
+0 press A 2
+b until_cb2 BattleMainCB2 9000 A
+0 expect_noted
+b expect coop.sInBattle 1
+b expect gBattlersCount 4
+b expect gTrainerBattleParameter+2:2 265
+b shot klutz-coop
+b mash_field 30000
+b expect gBattleOutcome 1
+b expect_flag 0x867 1
+b expect_mons_intact

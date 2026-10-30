@@ -1,0 +1,43 @@
+# A co-op battle against ONE trainer with more than two Pokemon (Petalburg
+# Woods' bug catcher LYLE, four): after a foe faints, the trainer's next
+# Pokemon comes in on that side and its HP box shows, on both screens (the
+# case D1500003 left untested). Linked, Beacon on, from lab saves.
+# FIXTURES: level-70 leads with strong cached stats, as boss_pair_coop;
+# fixture_warp into Lyle's sight.
+# Checks: the battle starts with both foe boxes visible; after the first
+# replacement, at the next action menu, both foe boxes are visible again
+# (sprite flags byte 0x3E: 01); the win.
+include beacon_battle.txt
+b mash_field 2000 B
+b write sWildEncountersDisabled 1
+b smart_moves 1
+0 fixture_lead 255 70 344960
+1 fixture_lead 228 70 428750
+0 fixture_warp 24 11 7 34
+1 fixture_warp 24 11 8 34
+b write gParties+86:2 999
+b write gParties+88:2 999
+b write gParties+90:2 600
+b write gParties+92:2 600
+b write gParties+94:2 600
+b write gParties+96:2 600
+b write gParties+98:2 600
+# (Lyle turns and sees Kai; his intro starts the battle.)
+b until_cb2 BattleMainCB2 12000 A
+b expect coop.sInBattle 1
+b expect gBattlersCount 4
+b until_battle_text What_will 9000
+b wait 60
+b shot first-menu
+b hex gHealthboxSpriteIds 4
+b expect gSprites+334:1 1
+b expect gSprites+606:1 1
+b until_battle_text sent_out 20000 auto
+b until_battle_text What_will 9000
+b wait 60
+b shot after-replacement
+b expect gSprites+334:1 1
+b expect gSprites+606:1 1
+b mash_field 30000
+b expect gBattleOutcome 1
+b expect_mons_intact
