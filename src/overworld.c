@@ -1,4 +1,5 @@
 #include "global.h"
+#include "coop_bond.h"
 #include "overworld.h"
 #include "coop_deal.h"
 #include "battle_pyramid.h"
@@ -942,6 +943,7 @@ void LoadMapFromCameraTransition(u8 mapGroup, u8 mapNum)
     // Shared story the partner finished elsewhere lands before this map's
     // own scripts read it.
     Coop_ApplyPendingStory();
+    CoopBond_RefreshParty(); // the bond bonus that applies on this map
     RunOnTransitionMapScript();
     InitMap();
     CopySecondaryTilesetToVramUsingHeap(gMapHeader.mapLayout);
@@ -1015,6 +1017,7 @@ static void LoadMapFromWarp(bool32 a1)
     // Shared story the partner finished elsewhere lands before this map's
     // own scripts read it.
     Coop_ApplyPendingStory();
+    CoopBond_RefreshParty(); // the bond bonus that applies on this map
     RunOnTransitionMapScript();
     UpdateLocationHistoryForRoamer();
     MoveAllRoamersToOtherLocationSets();
@@ -2773,6 +2776,9 @@ static void ResumeMap(bool32 a1)
     // Continue restores active objects from the save and bypasses transition
     // scripts. Repair completed story actors before those objects respawn.
     Coop_ApplyPendingStory();
+    // Trainer Bond: settle a battle that just ended; the right bonus for
+    // here (src/coop_bond.c).
+    CoopBond_FieldResume();
     RunOnResumeMapScript();
     TryStartMirageTowerPulseBlendEffect();
     // ResetTasks above removed the co-op task in the middle of a door,

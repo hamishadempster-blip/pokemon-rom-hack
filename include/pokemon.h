@@ -125,7 +125,14 @@ enum MonData {
     MON_DATA_GIGANTAMAX_FACTOR,
     MON_DATA_TERA_TYPE,
     MON_DATA_EVOLUTION_TRACKER,
+    MON_DATA_BOND_XP,       // Co-op Trainer Bond XP (0-32767), src/coop_bond.c
+    MON_DATA_BOND_FLAGS,    // COOP_BOND_MON_* (history, active)
+    MON_DATA_BOND_APPLIED,  // bond rank whose bonus the stored stats include
 };
+
+#define COOP_BOND_MON_HISTORY 1
+#define COOP_BOND_MON_ACTIVE  2
+#define COOP_BOND_XP_MAX      32767
 
 #define BLOCK_AI_DYNAMAX 15 // Used as dynamax level value by the AI to indicate this mon shouldn't dynamax
 
@@ -134,15 +141,17 @@ struct PokemonSubstruct0
     enum Species species:11; // 2047 species.
     enum Type teraType:5; // 30 types.
     enum Item heldItem:10; // 1023 items.
-    u16 unused_02:6;
+    u16 bondXpLo:6; // Co-op Trainer Bond (docs/COOP_STORAGE_PLAN.md): Bond XP bits 0-5. Was unused_02.
     u32 experience:21;
     u32 nickname11:8; // 11th character of nickname.
-    u32 unused_04:3;
+    u32 bondApplied:2; // Co-op: the bond rank whose bonus the stored stats include. Was unused_04 (3 bits).
+    u32 bondActive:1;  // Co-op: this is its owner's active Partner Pokémon.
     u8 ppBonuses;
     u8 friendship;
     u16 pokeball:6; // 63 balls.
     u16 nickname12:8; // 12th character of nickname.
-    u16 unused_0A:2;
+    u16 bondHistory:1; // Co-op: has been a Partner Pokémon (a history even at 0 Bond XP). Was unused_0A (2 bits).
+    u16 unused_0A:1;
 };
 
 struct PokemonSubstruct1
@@ -152,9 +161,9 @@ struct PokemonSubstruct1
     enum Move move2:11; // 2047 moves.
     u16 evolutionTracker2:5;
     enum Move move3:11; // 2047 moves.
-    u16 unused_04:5;
+    u16 bondXpMid:5; // Co-op: Bond XP bits 6-10. Was unused_04.
     enum Move move4:11; // 2047 moves.
-    u16 unused_06:3;
+    u16 bondXpHi:3; // Co-op: Bond XP bits 11-13. Was unused_06.
     u16 hyperTrainedHP:1;
     u16 hyperTrainedAttack:1;
     u8 pp1:7; // 127 PP.
@@ -217,7 +226,7 @@ struct PokemonSubstruct3
     u32 earthRibbon:1;    // Given to teams that have beaten Mt. Battle's 100-battle challenge in Colosseum/XD.
     u32 worldRibbon:1;    // Distributed during Pokémon Festa '04 and '05 to tournament winners.
     u32 isShadow:1;
-    u32 unused_0B:1;
+    u32 bondXpTop:1; // Co-op: Bond XP bit 14. Was unused_0B.
     u32 abilityNum:2;
 
     // The functionality of this bit changed in FRLG:

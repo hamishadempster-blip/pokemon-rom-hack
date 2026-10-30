@@ -1,4 +1,5 @@
 #include "global.h"
+#include "coop_bond.h"
 #include "battle.h"
 #include "coop.h"
 #include "coop_protocol.h"
@@ -480,6 +481,10 @@ void CB2_InitBattle(void)
 {
     if (gBattleTypeFlags & BATTLE_TYPE_COOP)
         Coop_NoteStartTime(COOP_START_INIT);
+    // Trainer Bond: the party's stats for this battle's rules (no bonus in
+    // PvP, Frontier, practice), before any party data is exchanged.
+    CoopBond_RefreshPartyForBattle();
+    CoopBond_BattleStart();
     if (!gTestRunnerEnabled)
         MoveSaveBlocks_ResetHeap();
     AllocateBattleResources();

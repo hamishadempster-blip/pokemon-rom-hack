@@ -1061,6 +1061,7 @@ gStdScripts_End::
 	.include "data/scripts/coop_starter_guests.inc"
 	.include "data/scripts/coop_deal.inc"
 	.include "data/scripts/coop_frontier.inc"
+	.include "data/scripts/coop_bond.inc"
 	.include "data/scripts/coop_talk.inc"
 	.include "data/scripts/coop_breeding.inc"
 	.include "data/scripts/coop_outfit.inc"

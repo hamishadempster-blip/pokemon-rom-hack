@@ -7,6 +7,7 @@
 // the game's own creation, stat and move functions. It never touches story
 // flags, badges, trainers or key items.
 #include "global.h"
+#include "coop_bond.h"
 #include "coop_testhook.h"
 #include "coop.h"
 #include "coop_teams.h"
@@ -298,6 +299,26 @@ void CoopTest_Poll(void)
                 for (k = 0; k < NUM_STATS; k++)
                     SetMonData(mon, MON_DATA_HYPER_TRAINED_HP + k, &v);
                 CalculateMonStats(mon);
+                ok = TRUE;
+            }
+            else if (gCoopTestMailbox.arg[3] == 9)
+            {
+                // 9: designate this slot as the Partner Pokémon (FIXTURE: the
+                // mentor's choice without the conversation); v 0 clears.
+                if (v)
+                    ok = CoopBond_Designate(gCoopTestMailbox.arg[0]);
+                else
+                {
+                    CoopBond_ClearDesignation();
+                    ok = TRUE;
+                }
+            }
+            else if (gCoopTestMailbox.arg[3] == 8 && v <= COOP_BOND_XP_MAX)
+            {
+                // 8: Trainer Bond XP (a FIXTURE for rank boundaries); the
+                // bonus follows at once, as after a rank-up.
+                SetMonData(mon, MON_DATA_BOND_XP, &v);
+                CoopBond_RefreshParty();
                 ok = TRUE;
             }
             else if (gCoopTestMailbox.arg[3] == 6 && v < 0x10000)

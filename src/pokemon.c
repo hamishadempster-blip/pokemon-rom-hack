@@ -1,4 +1,5 @@
 #include "global.h"
+#include "coop_bond.h"
 #include "malloc.h"
 #include "apprentice.h"
 #include "battle.h"
@@ -1381,6 +1382,12 @@ void CalculateMonStatsCont(struct Pokemon *mon, bool32 updateSpeedStat)
 {
     s32 oldMaxHP = GetMonData(mon, MON_DATA_MAX_HP);
     s32 currentHP = GetMonData(mon, MON_DATA_HP);
+    // Co-op Trainer Bond (src/coop_bond.c): the rank whose flat bonus these
+    // stats carry now, and the one the stored stats were calculated with.
+    u32 bondRank = CoopBond_EffectiveRank(mon);
+    u32 bondOldRank = GetMonData(mon, MON_DATA_BOND_APPLIED);
+    s32 bondBonus = gCoopBondBonus[bondRank];
+    s32 bondOldBonus = gCoopBondBonus[bondOldRank];
     enum Species species = GetMonData(mon, MON_DATA_SPECIES);
     u8 friendship = GetMonData(mon, MON_DATA_FRIENDSHIP);
     s32 level = GetLevelFromMonExp(mon);
@@ -1416,6 +1423,7 @@ void CalculateMonStatsCont(struct Pokemon *mon, bool32 updateSpeedStat)
         n = ModifyStatByNature(nature, n, i);
         if (B_FRIENDSHIP_BOOST == TRUE)
             n = n + ((n * 10 * friendship) / (MAX_FRIENDSHIP * 100));
+        n += bondBonus; // flat, after the ordinary value (not an EV or IV)
         SetMonData(mon, MON_DATA_MAX_HP + i, &n);
     }
 
@@ -1427,6 +1435,7 @@ void CalculateMonStatsCont(struct Pokemon *mon, bool32 updateSpeedStat)
     if (HasShedinjaHPHandling(species))
     {
         newMaxHP = 1;
+        bondBonus = bondOldBonus = 0; // fixed HP: no bond points on HP
     }
     else
     {
@@ -1434,24 +1443,47 @@ void CalculateMonStatsCont(struct Pokemon *mon, bool32 updateSpeedStat)
         newMaxHP = (((n + ev[STAT_HP] / 4) * level) / 100) + level + 10;
     }
 
-    gBattleScripting.levelUpHP = newMaxHP - oldMaxHP;
-    if (gBattleScripting.levelUpHP == 0)
-        gBattleScripting.levelUpHP = 1;
-    SetMonData(mon, MON_DATA_MAX_HP, &newMaxHP);
+    {
+        // Ordinary change first (level-up, evolution, EVs) at the bonus the
+        // stored stats already had, then a change of bond bonus mapped in
+        // proportion (rounded down, so switching it on and off never heals;
+        // full stays full; fainted stays fainted). With no bond change this
+        // is exactly the stock rule.
+        s32 maxAtOldBonus = newMaxHP + bondOldBonus;
+        s32 finalMaxHP = newMaxHP + bondBonus;
+        u32 applied = bondRank;
 
-    // Since a Pokémon's maxHP data could either not have
-    // been initialized at this point or this Pokémon is
-    // just fainted, the check for oldMaxHP is important.
-    if (currentHP == 0 && oldMaxHP != 0)
-        return;
+        gBattleScripting.levelUpHP = finalMaxHP - oldMaxHP;
+        if (gBattleScripting.levelUpHP == 0)
+            gBattleScripting.levelUpHP = 1;
+        SetMonData(mon, MON_DATA_MAX_HP, &finalMaxHP);
+        SetMonData(mon, MON_DATA_BOND_APPLIED, &applied);
 
-    // Only add to currentHP if newMaxHP went up.
-    if (newMaxHP > oldMaxHP)
-        currentHP += newMaxHP - oldMaxHP;
+        // Since a Pokémon's maxHP data could either not have
+        // been initialized at this point or this Pokémon is
+        // just fainted, the check for oldMaxHP is important.
+        if (currentHP == 0 && oldMaxHP != 0)
+            return;
 
-    // Ensure currentHP does not surpass newMaxHP.
-    if (currentHP > newMaxHP)
-        currentHP = newMaxHP;
+        // Only add to currentHP if newMaxHP went up.
+        if (maxAtOldBonus > oldMaxHP)
+            currentHP += maxAtOldBonus - oldMaxHP;
+
+        // Ensure currentHP does not surpass newMaxHP.
+        if (currentHP > maxAtOldBonus)
+            currentHP = maxAtOldBonus;
+
+        if (bondBonus != bondOldBonus && oldMaxHP != 0 && maxAtOldBonus > 0)
+        {
+            s32 mapped = (currentHP * finalMaxHP) / maxAtOldBonus;
+
+            if (mapped < 1 && currentHP > 0)
+                mapped = 1;
+            currentHP = mapped;
+        }
+        if (currentHP > finalMaxHP)
+            currentHP = finalMaxHP;
+    }
 
     SetMonData(mon, MON_DATA_HP, &currentHP);
 }
@@ -1459,6 +1491,7 @@ void CalculateMonStatsCont(struct Pokemon *mon, bool32 updateSpeedStat)
 void BoxMonToMon(const struct BoxPokemon *src, struct Pokemon *dest)
 {
     u32 value = 0;
+    u32 bondOldRank;
     dest->box = *src;
     dest->status = GetBoxMonData(&dest->box, MON_DATA_STATUS);
     dest->hp = 0;
@@ -1466,8 +1499,28 @@ void BoxMonToMon(const struct BoxPokemon *src, struct Pokemon *dest)
     value = MAIL_NONE;
     SetMonData(dest, MON_DATA_MAIL, &value);
     value = GetBoxMonData(&dest->box, MON_DATA_HP_LOST);
+    bondOldRank = GetBoxMonData(&dest->box, MON_DATA_BOND_APPLIED);
     CalculateMonStats(dest);
-    value = GetMonData(dest, MON_DATA_MAX_HP) - value;
+    {
+        // The HP lost was counted against the max HP of its last bond bonus;
+        // if the bonus changed since (or this copy gets none), map the HP in
+        // proportion as CalculateMonStatsCont does (never healing).
+        s32 newMax = GetMonData(dest, MON_DATA_MAX_HP);
+        s32 oldMax = newMax - gCoopBondBonus[GetMonData(dest, MON_DATA_BOND_APPLIED)] + gCoopBondBonus[bondOldRank];
+        s32 hp = oldMax - (s32)value;
+
+        if (oldMax != newMax && oldMax > 0 && hp > 0)
+        {
+            hp = (hp * newMax) / oldMax;
+            if (hp < 1)
+                hp = 1;
+        }
+        if (hp < 0)
+            hp = 0;
+        if (hp > newMax)
+            hp = newMax;
+        value = hp;
+    }
     SetMonData(dest, MON_DATA_HP, &value);
 }
 
@@ -2433,6 +2486,19 @@ u32 GetBoxMonData3(struct BoxPokemon *boxMon, s32 field, u8 *data)
                 }
             }
             break;
+        case MON_DATA_BOND_XP:
+            retVal = GetSubstruct0(boxMon)->bondXpLo
+                   | (GetSubstruct1(boxMon)->bondXpMid << 6)
+                   | (GetSubstruct1(boxMon)->bondXpHi << 11)
+                   | (GetSubstruct3(boxMon)->bondXpTop << 14);
+            break;
+        case MON_DATA_BOND_FLAGS:
+            retVal = (GetSubstruct0(boxMon)->bondHistory ? COOP_BOND_MON_HISTORY : 0)
+                   | (GetSubstruct0(boxMon)->bondActive ? COOP_BOND_MON_ACTIVE : 0);
+            break;
+        case MON_DATA_BOND_APPLIED:
+            retVal = GetSubstruct0(boxMon)->bondApplied;
+            break;
         case MON_DATA_EVOLUTION_TRACKER:
             {
                 struct PokemonSubstruct1 *substruct1 = GetSubstruct1(boxMon);
@@ -2874,6 +2940,29 @@ void SetBoxMonData(struct BoxPokemon *boxMon, s32 field, const void *dataArg)
             substruct1->evolutionTracker2 = evoTracker.tracker2;
             break;
         }
+        case MON_DATA_BOND_XP:
+        {
+            u32 xp;
+            SET16(xp);
+            if (xp > COOP_BOND_XP_MAX)
+                xp = COOP_BOND_XP_MAX;
+            GetSubstruct0(boxMon)->bondXpLo = xp & 0x3F;
+            GetSubstruct1(boxMon)->bondXpMid = (xp >> 6) & 0x1F;
+            GetSubstruct1(boxMon)->bondXpHi = (xp >> 11) & 0x7;
+            GetSubstruct3(boxMon)->bondXpTop = (xp >> 14) & 1;
+            break;
+        }
+        case MON_DATA_BOND_FLAGS:
+        {
+            u32 flags;
+            SET8(flags);
+            GetSubstruct0(boxMon)->bondHistory = (flags & COOP_BOND_MON_HISTORY) != 0;
+            GetSubstruct0(boxMon)->bondActive = (flags & COOP_BOND_MON_ACTIVE) != 0;
+            break;
+        }
+        case MON_DATA_BOND_APPLIED:
+            SET8(GetSubstruct0(boxMon)->bondApplied);
+            break;
         default:
             break;
         }
@@ -4899,6 +4988,8 @@ void AdjustFriendship(struct Pokemon *mon, u8 event)
                 return;
         }
 
+        s32 before = friendship;
+
         mod = sFriendshipEventModifiers[event][friendshipLevel];
         friendship += CalculateFriendshipBonuses(mon,mod,holdEffect);
 
@@ -4908,6 +4999,10 @@ void AdjustFriendship(struct Pokemon *mon, u8 event)
             friendship = MAX_FRIENDSHIP;
 
         SetMonData(mon, MON_DATA_FRIENDSHIP, &friendship);
+        // Trainer Bond: genuine gains only (walking, levels, league battles;
+        // not items or TMs, which can be repeated at will).
+        if (event == FRIENDSHIP_EVENT_WALKING || event == FRIENDSHIP_EVENT_GROW_LEVEL || event == FRIENDSHIP_EVENT_LEAGUE_BATTLE)
+            CoopBond_OnFriendshipGain(mon, friendship - before);
     }
 }
 

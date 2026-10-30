@@ -1,4 +1,5 @@
 #include "global.h"
+#include "coop_bond.h"
 #include "coop.h"
 #include "coop_prep.h"
 #include "coop_frontier.h"
@@ -5658,6 +5659,7 @@ static void Coop_CB2_AbortToField(void)
     bool8 rescue = sBattleKind == COOP_KIND_RESCUE;
     bool8 rescueGuest = rescue && sIsGuest;
 
+    CoopBond_BattleAborted();   // no Bond XP from a dropped battle
     Coop_RestoreParty(TRUE);
     Coop_ClearCatchState();
     sAborting = FALSE;

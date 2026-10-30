@@ -4205,7 +4205,7 @@ static void loadScript(const char* path, int depth) {
         		sscanf(line, "%*s %*s %u %31s %u", &slot, field, &val);
         		memset(c.args, 0, sizeof(c.args));
         		c.args[0] = slot; c.args[1] = val; c.args[2] = 2;
-        		c.args[3] = !strcmp(field, "hp") ? 1 : !strcmp(field, "tracker") ? 2 : !strcmp(field, "evs") ? 3 : !strcmp(field, "ivs") ? 4 : !strcmp(field, "clear") ? 5 : !strcmp(field, "dcsteps") ? 6 : !strcmp(field, "hyper") ? 7 : 0;
+        		c.args[3] = !strcmp(field, "hp") ? 1 : !strcmp(field, "tracker") ? 2 : !strcmp(field, "evs") ? 3 : !strcmp(field, "ivs") ? 4 : !strcmp(field, "clear") ? 5 : !strcmp(field, "dcsteps") ? 6 : !strcmp(field, "hyper") ? 7 : !strcmp(field, "bondxp") ? 8 : !strcmp(field, "bonddesignate") ? 9 : 0;
         	}
         	snprintf(c.text, sizeof(c.text), "%s", cmd);
         	c.frames = 600;

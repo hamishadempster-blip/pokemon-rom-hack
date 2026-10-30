@@ -721,6 +721,13 @@ gSpecials::
 	def_special CanTeachLevelUpMove
 	def_special CoopDeal_CanStart
 	def_special CoopDeal_BufferPartnerName
+	def_special CoopBond_ScriptMetMentor
+	def_special CoopBond_ScriptBusy
+	def_special CoopBond_ScriptCurrent
+	def_special CoopBond_ScriptCheckChoice
+	def_special CoopBond_ScriptCheckChoiceName
+	def_special CoopBond_ScriptDesignate
+	def_special CoopBond_ScriptCheckBond
 	def_special CoopDeal_CheckOfferMon
 	def_special CoopDeal_CheckGiftItem
 	def_special CoopDeal_BufferItemCount

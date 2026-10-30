@@ -1,0 +1,86 @@
+# Trainer Bond: rank boundaries, the flat bonus, HP through changes of
+# eligibility, switching partners. bond_mentor's saves (Kai's lead, a
+# Combusken Lv16, is his Partner Pokemon at 0 Bond XP; its stats HP 52,
+# Atk 35, Def 24, Spe 25, SpA 36, SpD 28).
+# FIXTURES (test_data): Bond XP set to each boundary; HP set; the second
+# Pokemon designated and the first again without the mentor's conversation.
+# Checks: 2,499 XP no bonus; 2,500 +5 on every stat; 9,999 still +5;
+# 10,000 +10; 24,999 +10; 25,000 +15; 32,767 (the record's limit) +15.
+# Bonuses replace each other (never +30). Full HP stays full at each step.
+# Hurt (20/67 at +15): XP back to 0 gives 15/52 (20*52/67 rounded down),
+# then 25,000 again gives 19/67 (15*67/52 down): switching never heals.
+# Fainted stays fainted both ways. Another partner: the first keeps 25,000
+# XP and its history but loses the bonus; choosing it again brings +15 back.
+include continue.inc
+b no_wild 1
+b mash_field 300 B
+0 expect gCoopBondTest+30:1 1
+0 expect gCoopBondTest+31:1 0
+0 test_data 0 bondxp 2499
+0 expect_mon 0 stat 52 0
+0 expect_mon 0 stat 35 1
+0 test_data 0 bondxp 2500
+0 expect gCoopBondTest+24:1 1
+0 expect_mon 0 stat 57 0
+0 expect_mon 0 stat 40 1
+0 expect_mon 0 stat 29 2
+0 expect_mon 0 stat 30 3
+0 expect_mon 0 stat 41 4
+0 expect_mon 0 stat 33 5
+0 expect_mon 0 hp 57
+0 test_data 0 bondxp 9999
+0 expect_mon 0 stat 57 0
+0 test_data 0 bondxp 10000
+0 expect gCoopBondTest+24:1 2
+0 expect_mon 0 stat 62 0
+0 expect_mon 0 stat 45 1
+0 expect_mon 0 stat 34 2
+0 expect_mon 0 stat 35 3
+0 expect_mon 0 stat 46 4
+0 expect_mon 0 stat 38 5
+0 expect_mon 0 hp 62
+0 test_data 0 bondxp 24999
+0 expect_mon 0 stat 62 0
+0 test_data 0 bondxp 25000
+0 expect gCoopBondTest+24:1 3
+0 expect_mon 0 stat 67 0
+0 expect_mon 0 stat 50 1
+0 expect_mon 0 stat 39 2
+0 expect_mon 0 stat 40 3
+0 expect_mon 0 stat 51 4
+0 expect_mon 0 stat 43 5
+0 expect_mon 0 hp 67
+0 test_data 0 bondxp 32767
+0 expect_mon 0 stat 67 0
+0 expect gCoopBondTest:2 32767
+# HP through eligibility changes
+0 test_data 0 bondxp 25000
+0 test_data 0 hp 20
+0 test_data 0 bondxp 0
+0 expect_mon 0 stat 52 0
+0 expect_mon 0 hp 15
+0 test_data 0 bondxp 25000
+0 expect_mon 0 hp 19
+0 test_data 0 hp 0
+0 test_data 0 bondxp 0
+0 expect_mon 0 hp 0
+0 test_data 0 bondxp 25000
+0 expect_mon 0 hp 0
+0 test_heal
+0 expect_mon 0 hp 67
+# Another partner, then back
+0 test_data 1 bonddesignate 1
+0 expect gCoopBondTest+31:1 1
+0 expect gCoopBondTest+12:1 1
+0 expect gCoopBondTest+13:1 3
+0 expect gCoopBondTest:2 25000
+0 expect_mon 0 stat 52 0
+0 expect_mon 0 stat 35 1
+0 expect_mon 0 hp 52
+0 test_data 0 bonddesignate 1
+0 expect gCoopBondTest+31:1 0
+0 expect gCoopBondTest+12:1 3
+0 expect gCoopBondTest+13:1 1
+0 expect_mon 0 stat 67 0
+0 expect_mon 0 hp 67
+include save_again.inc

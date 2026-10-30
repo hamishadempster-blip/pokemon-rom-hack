@@ -1,4 +1,5 @@
 #include "global.h"
+#include "coop_bond.h"
 #include "coop_outfit.h"
 #include "battle.h"
 #include "battle_ai_main.h"
@@ -2672,6 +2673,8 @@ void BtlController_HandleFaintAnimation(enum BattlerId battler)
     SetHealthboxSpriteInvisible(gHealthboxSpriteIds[battler]);
     if (gBattleSpritesDataPtr->healthBoxesData[battler].animationState == 0)
     {
+        // Trainer Bond: a foe fainted (every game runs this once per faint).
+        CoopBond_BattleKnockout(battler);
         if (gBattleSpritesDataPtr->battlerData[battler].behindSubstitute)
             InitAndLaunchSpecialAnimation(battler, battler, battler, B_ANIM_SUBSTITUTE_TO_MON);
         gBattleSpritesDataPtr->healthBoxesData[battler].animationState++;
@@ -2836,6 +2839,9 @@ void BtlController_HandleHealthBarUpdate(enum BattlerId battler)
 
     if (hpVal != INSTANT_HP_BAR_DROP)
     {
+        // Trainer Bond: damage dealt or an ally healed (the attacker is in
+        // the link buffer on the partner's game).
+        CoopBond_BattleDamage(gBattlerAttacker, battler, hpVal);
         SetBattleBarStruct(battler, gHealthboxSpriteIds[battler], maxHP, curHP, hpVal);
         TestRunner_Battle_RecordHP(battler, curHP, min(maxHP, max(0, curHP - hpVal)));
     }

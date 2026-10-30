@@ -258,16 +258,6 @@ static u32 RestoreSaveBackupVarsAndIncrement(const struct SaveSectorLocation *lo
     return 0;
 }
 
-static u32 RestoreSaveBackupVars(const struct SaveSectorLocation *locations)
-{
-    gReadWriteSector = &gSaveDataBuffer;
-    gLastKnownGoodSector = gLastWrittenSector;
-    gLastSaveCounter = gSaveCounter;
-    gIncrementalSectorId = 0;
-    gDamagedSaveSectors = 0;
-    return 0;
-}
-
 static u8 HandleWriteIncrementalSector(u16 numSectors, const struct SaveSectorLocation *locations)
 {
     u8 status;
@@ -370,7 +360,7 @@ static u8 HandleReplaceSector(u16 sectorId, const struct SaveSectorLocation *loc
         status = SAVE_STATUS_OK;
 
         // Write signature (skipping the first byte) and counter fields.
-        // The byte of signature that is skipped is instead written by WriteSectorSignatureByte or WriteSectorSignatureByte_NoOffset
+        // The byte of signature that is skipped is instead written by CopySectorSignatureByte
         for (i = 0; i < SECTOR_SIZE - (SECTOR_SIGNATURE_OFFSET + 1); i++)
         {
             if (ProgramFlashByte(sector, SECTOR_SIGNATURE_OFFSET + 1 + i, ((u8 *)gReadWriteSector)[SECTOR_SIGNATURE_OFFSET + 1 + i]))
@@ -395,31 +385,6 @@ static u8 HandleReplaceSector(u16 sectorId, const struct SaveSectorLocation *loc
     }
 }
 
-static u8 WriteSectorSignatureByte_NoOffset(u16 sectorId, const struct SaveSectorLocation *locations)
-{
-    // Adjust sector id for current save slot
-    // This first line lacking -1 is the only difference from WriteSectorSignatureByte
-    u16 sector = sectorId + gLastWrittenSector;
-    sector %= NUM_SECTORS_PER_SLOT;
-    sector += NUM_SECTORS_PER_SLOT * (gSaveCounter % NUM_SAVE_SLOTS);
-
-    // Write just the first byte of the signature field, which was skipped by HandleReplaceSector
-    if (ProgramFlashByte(sector, SECTOR_SIGNATURE_OFFSET, SECTOR_SIGNATURE & 0xFF))
-    {
-        // Sector is damaged, so enable the bit in gDamagedSaveSectors and restore the last written sector and save counter.
-        SetDamagedSectorBits(ENABLE, sector);
-        gLastWrittenSector = gLastKnownGoodSector;
-        gSaveCounter = gLastSaveCounter;
-        return SAVE_STATUS_ERROR;
-    }
-    else
-    {
-        // Succeeded
-        SetDamagedSectorBits(DISABLE, sector);
-        return SAVE_STATUS_OK;
-    }
-}
-
 static u8 CopySectorSignatureByte(u16 sectorId, const struct SaveSectorLocation *locations)
 {
     // Adjust sector id for current save slot
@@ -429,30 +394,6 @@ static u8 CopySectorSignatureByte(u16 sectorId, const struct SaveSectorLocation 
 
     // Copy just the first byte of the signature field from the read/write buffer
     if (ProgramFlashByte(sector, SECTOR_SIGNATURE_OFFSET, ((u8 *)gReadWriteSector)[SECTOR_SIGNATURE_OFFSET]))
-    {
-        // Sector is damaged, so enable the bit in gDamagedSaveSectors and restore the last written sector and save counter.
-        SetDamagedSectorBits(ENABLE, sector);
-        gLastWrittenSector = gLastKnownGoodSector;
-        gSaveCounter = gLastSaveCounter;
-        return SAVE_STATUS_ERROR;
-    }
-    else
-    {
-        // Succeeded
-        SetDamagedSectorBits(DISABLE, sector);
-        return SAVE_STATUS_OK;
-    }
-}
-
-static u8 WriteSectorSignatureByte(u16 sectorId, const struct SaveSectorLocation *locations)
-{
-    // Adjust sector id for current save slot
-    u16 sector = sectorId + gLastWrittenSector - 1;
-    sector %= NUM_SECTORS_PER_SLOT;
-    sector += NUM_SECTORS_PER_SLOT * (gSaveCounter % NUM_SAVE_SLOTS);
-
-    // Write just the first byte of the signature field, which was skipped by HandleReplaceSector
-    if (ProgramFlashByte(sector, SECTOR_SIGNATURE_OFFSET, SECTOR_SIGNATURE & 0xFF))
     {
         // Sector is damaged, so enable the bit in gDamagedSaveSectors and restore the last written sector and save counter.
         SetDamagedSectorBits(ENABLE, sector);

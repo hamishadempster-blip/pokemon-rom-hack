@@ -1,4 +1,5 @@
 #include "global.h"
+#include "coop_bond.h"
 #include "coop.h"
 #include "coop_deal.h"
 #include "main.h"
@@ -3620,12 +3621,56 @@ static bool32 CoopEvo_IsOwnMon(void)
     return !gCoopViewingPartnerTeam;
 }
 
+// The INFO page's SELECT pages: 0 the memo, 1..n how it evolves (a
+// Pokémon that doesn't evolve has one page saying so), then its BOND page
+// (Trainer Bond, src/coop_bond.c).
+static u32 CoopEvo_EvoPages(void)
+{
+    u32 pages = CoopEvo_PageCount(&sMonSummaryScreen->currentMon);
+
+    return pages == 0 ? 1 : pages;
+}
+
+static bool32 CoopEvo_OnBondPage(void)
+{
+    return sCoopEvoPage != 0 && sCoopEvoPage == CoopEvo_EvoPages() + 1;
+}
+
 static void PrintCoopEvoTitle(void)
 {
     FillWindowPixelBuffer(PSS_LABEL_WINDOW_POKEMON_INFO_TITLE, PIXEL_FILL(0));
     PrintTextOnWindow(PSS_LABEL_WINDOW_POKEMON_INFO_TITLE,
-                      sCoopEvoPage != 0 ? COMPOUND_STRING("EVOLUTION") : gText_PkmnInfo, 2, 1, 0, 1);
+                      CoopEvo_OnBondPage() ? COMPOUND_STRING("BOND")
+                      : sCoopEvoPage != 0 ? COMPOUND_STRING("EVOLUTION") : gText_PkmnInfo, 2, 1, 0, 1);
     CopyWindowToVram(PSS_LABEL_WINDOW_POKEMON_INFO_TITLE, COPYWIN_GFX);
+}
+
+// The BOND page: its bond history and, under the text, the progress bar
+// within the current rank (5,500 XP as a Companion: 3,000 of 7,500).
+static void PrintCoopBondPage(u8 windowId, struct Pokemon *mon, u8 *buf)
+{
+    u32 flags = GetMonData(mon, MON_DATA_BOND_FLAGS);
+    u32 done, span, width;
+
+    if (!(flags & (COOP_BOND_MON_HISTORY | COOP_BOND_MON_ACTIVE)))
+    {
+        StringCopy(buf, gCoopViewingPartnerTeam
+                   ? COMPOUND_STRING("Not a Partner POKéMON.")
+                   : COMPOUND_STRING("Not a Partner POKéMON yet.\nThe BOND MENTOR in RUSTBORO's\nPOKéMON CENTER explains it."));
+        PrintTextOnWindowWithFont(windowId, buf, 0, 1, 3, 0, FONT_SMALL_NARROW);
+        return;
+    }
+    CoopBond_DescribeMon(buf, mon, sMonSummaryScreen->isBoxMon ? COOP_BOND_DESC_BOXED : COOP_BOND_DESC_SUMMARY);
+    PrintTextOnWindowWithFont(windowId, buf, 0, 1, 3, 0, FONT_SMALL_NARROW);
+    // The bar after "Bond XP n" (second line).
+    CoopBond_RankProgress(mon, &done, &span);
+    width = (done * 60) / (span ? span : 1);
+    if (width > 60)
+        width = 60;
+    FillWindowPixelRect(windowId, PIXEL_FILL(2), 100, 15, 62, 6);
+    FillWindowPixelRect(windowId, PIXEL_FILL(0), 101, 16, 60, 4);
+    if (width)
+        FillWindowPixelRect(windowId, PIXEL_FILL(3), 101, 16, width, 4);
 }
 
 static void PrintMonTrainerMemo(void)
@@ -3635,6 +3680,12 @@ static void PrintMonTrainerMemo(void)
     const u8 *lastLine;
     u8 *buf;
 
+    if (CoopEvo_OnBondPage() && !sMonSummaryScreen->summary.isEgg && (buf = Alloc(400)) != NULL)
+    {
+        PrintCoopBondPage(windowId, mon, buf);
+        Free(buf);
+        return;
+    }
     if (sCoopEvoPage != 0 && !sMonSummaryScreen->summary.isEgg && (buf = Alloc(400)) != NULL)
     {
         CoopEvo_BufferHint(mon, sCoopEvoPage - 1, buf, CoopEvo_IsOwnMon());
@@ -3654,7 +3705,7 @@ static void PrintMonTrainerMemo(void)
                 lastLine = buf + 1;
         }
         {
-            const u8 *cue = COMPOUND_STRING("{SELECT_BUTTON}EVO");
+            const u8 *cue = COMPOUND_STRING("{SELECT_BUTTON}EVO/BOND");
             s32 x = GetWindowAttribute(windowId, WINDOW_WIDTH) * 8 - GetStringWidth(FONT_SMALL_NARROW, cue, 0) - 10;
 
             if (GetStringWidth(FONT_NORMAL, lastLine, 0) < x - 1)
@@ -3666,14 +3717,11 @@ static void PrintMonTrainerMemo(void)
 // SELECT on the INFO page: memo -> evolution 1 -> ... -> memo.
 static void CoopEvo_NextPage(void)
 {
-    u32 pages = CoopEvo_PageCount(&sMonSummaryScreen->currentMon);
+    u32 pages = CoopEvo_EvoPages() + 1; // + the BOND page
     u8 windowId;
 
     if (sMonSummaryScreen->summary.isEgg)
         return;
-    // A Pokemon that doesn't evolve has one page saying so.
-    if (pages == 0)
-        pages = 1;
     sCoopEvoPage = sCoopEvoPage >= pages ? 0 : sCoopEvoPage + 1;
     PlaySE(SE_SELECT);
     windowId = AddWindowFromTemplateList(sPageInfoTemplate, PSS_DATA_WINDOW_INFO_MEMO);

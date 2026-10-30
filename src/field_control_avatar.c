@@ -1,4 +1,5 @@
 #include "global.h"
+#include "coop_bond.h"
 #include "coop_npc.h"
 #include "coop.h"
 #include "battle_setup.h"
@@ -775,6 +776,9 @@ static bool8 TryStartStepCountScript(u16 metatileBehavior)
     UpdateFriendshipStepCounter();
     UpdateFarawayIslandStepCounter();
     UpdateFollowerStepCounter();
+    // Trainer Bond: a step the player took (not forced movement).
+    if (!(gPlayerAvatar.flags & PLAYER_AVATAR_FLAG_FORCED_MOVE) && !MetatileBehavior_IsForcedMovementTile(metatileBehavior))
+        CoopBond_OnStep();
 
     if (!(gPlayerAvatar.flags & PLAYER_AVATAR_FLAG_FORCED_MOVE) && !MetatileBehavior_IsForcedMovementTile(metatileBehavior))
     {

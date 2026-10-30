@@ -1,4 +1,5 @@
 #include "global.h"
+#include "coop_bond.h"
 #include "coop_protocol.h"
 #include "malloc.h"
 #include "battle.h"
@@ -2608,7 +2609,24 @@ static void DisplayPartyPokemonNickname(struct Pokemon *mon, struct PartyMenuBox
         if (c == 1)
             menuBox->infoRects->blitFunc(menuBox->windowId, menuBox->infoRects->dimensions[0] >> 3, menuBox->infoRects->dimensions[1] >> 3, menuBox->infoRects->dimensions[2] >> 3, menuBox->infoRects->dimensions[3] >> 3, FALSE);
         GetMonNickname(mon, nickname);
-        DisplayPartyPokemonBarDetailToFit(menuBox->windowId, nickname, 0, menuBox->infoRects->dimensions, 50);
+        // Trainer Bond: the active Partner Pokémon has a heart after its
+        // name (a shape, not a colour; not the shiny star). Its name fits
+        // a little narrower to leave room.
+        if (CoopBond_IsActivePartner(mon))
+        {
+            u8 heart[4];
+
+            heart[0] = menuBox->infoRects->dimensions[0] + 44;
+            heart[1] = menuBox->infoRects->dimensions[1];
+            heart[2] = 8;
+            heart[3] = menuBox->infoRects->dimensions[3];
+            DisplayPartyPokemonBarDetailToFit(menuBox->windowId, nickname, 0, menuBox->infoRects->dimensions, 43);
+            DisplayPartyPokemonBarDetail(menuBox->windowId, COMPOUND_STRING("{EMOJI_HEART}"), 0, heart);
+        }
+        else
+        {
+            DisplayPartyPokemonBarDetailToFit(menuBox->windowId, nickname, 0, menuBox->infoRects->dimensions, 50);
+        }
     }
 }
 

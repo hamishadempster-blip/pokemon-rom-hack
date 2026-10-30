@@ -1,0 +1,13 @@
+# After bond_ranks: power on, CONTINUE. Kai's lead is still the Partner
+# Pokemon with 25,000 Bond XP and +15 (HP 67/67); the second Pokemon keeps
+# its history at 0 XP and no flag of its own.
+include continue.inc
+b mash_field 300 B
+0 expect gCoopBondTest+30:1 1
+0 expect gCoopBondTest+31:1 0
+0 expect gCoopBondTest:2 25000
+0 expect gCoopBondTest+12:1 3
+0 expect gCoopBondTest+13:1 1
+0 expect_mon 0 stat 67 0
+0 expect_mon 0 stat 50 1
+0 expect_mon 0 hp 67
