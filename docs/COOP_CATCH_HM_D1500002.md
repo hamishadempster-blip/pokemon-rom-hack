@@ -39,6 +39,14 @@ Save layout unchanged; no migration.
   D1500002. The mGBA dialog "Unimplemented BIOS call" means execution reached
   a BIOS call mGBA does not emulate; the game makes none on purpose (the only
   one, `swi 0x2A` in m4a.c, is unused), so it is a crash into bad code or data.
+  Then the reporters sent their ROMs and saves: both ROMs are D1400002 (the
+  battle-intro build, SHA-256 d14da3f3…, rebuilt byte-identical from
+  fixes/battle-intro-speed 217c6640), not D1500001. From their own saves,
+  relinked, in Petalburg Woods (`diag_user_*`): a Venipede with NO at the
+  prompt, YES with slot 2, and YES to a nickname then YES with slot 2. The menu
+  listed their six real Pokémon, the party order was valid, the catch reached
+  BOX 1, and nothing crashed, on D1400002 and on D1500002. Their saves pass
+  compat_check from D1400002 to D1500002.
   The first incorrect state could not be found, so the root cause
   is **not confirmed**. The user's build ID is also unknown.
 
