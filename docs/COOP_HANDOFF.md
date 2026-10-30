@@ -1,4 +1,82 @@
-# Collection update, first delivery: build 0xC0170141
+# Collection update, second delivery: build 0xC0170142
+
+Branch `coop-doorway-scenes-rivals`, pushed, not merged. It also includes the D1400001/D1400002 and D1500001/D1500002 fixes, which were merged before this round. **Both players need this build:** it links only with 0xC0170142.
+
+Saves from 0xC0170141 and older load unchanged. The save layout is the same (layout 5); the new features use its reserved space. Compatibility: 33/33 comparisons PASS on 11 save pairs.
+
+Docs:
+- Test log: [COOP_TESTLOG_C0170142.md](COOP_TESTLOG_C0170142.md)
+- Autosave: [COOP_AUTOSAVE.md](COOP_AUTOSAVE.md)
+- Waiting at a Center: [COOP_TIME.md](COOP_TIME.md)
+- Visitors: [COOP_ENCOUNTERS.md](COOP_ENCOUNTERS.md)
+- CAN LEARN: [COOP_LEARN.md](COOP_LEARN.md)
+- FIELD NOTES: [COOP_NOTES.md](COOP_NOTES.md)
+- Habitats: [COOP_HABITATS.md](COOP_HABITATS.md)
+- Towns: [COOP_TOWNS.md](COOP_TOWNS.md)
+- HQ plan (not implemented): [COOP_HQ_PLAN.md](COOP_HQ_PLAN.md)
+
+## The build
+
+- **ROM:** `emerald-coop-C0170142.gba`, from game code `6f18870e`. A clean clone builds the same SHA-1, given the Makefile dependency fix `bbe18c3e`.
+  - SHA-1 `fcbb6be8b1ec270091db9b5805ded3126599b1f2`
+  - SHA-256 `4f7e6ee558d8657b5b4a2961d6294e9a15cd3c0530838329b03757206e9a85b6`
+- **Commits:**
+  - autosave `e7132728`
+  - Center wait `e36a9412`
+  - visitors `a8b3268e`
+  - CAN LEARN `7a2af586`
+  - FIELD NOTES `c0dcefe0`, `6a705e04`, `1c5545f7`
+  - habitats `54adb312`
+  - towns `e5ab831d`
+  - build id `331ed831`
+  - review fixes `6f18870e`
+  - Makefile `bbe18c3e`
+  - scenario fixes and docs after the suite
+- **Testing:**
+  - Final suite on the delivered ROM: 350 scenarios, **337 PASS and 13 FAIL on the first run**:
+    - 11 of the failures were the new 10-kind FIELD NOTES reward appearing in unrelated scenarios on journey saves. The game behaved correctly; the scenarios now switch the payout off and pass on rerun.
+    - `late_wild_tour` and `coop_bag_battle_tasks` failed on luck or timing; both were made robust and pass on rerun.
+    - `roster_repair` still fails: the known harness `hunt` problem from 0xC0170140.
+  - Power cuts: once and twice in a row; the previous save loaded each time.
+  - Compatibility: 33/33 comparisons PASS.
+- **Readiness:** ready for a player playthrough, with the stated limitations.
+  - The Expedition HQ is not implemented.
+  - No crash, freeze, save damage or progression blocker is known in this build.
+  - Four defects were found and fixed before delivery:
+    - stale map view after an autosave;
+    - New Game asked the autosave question;
+    - a rare double-power-cut mixture;
+    - old rewards announced on the first steps.
+  - Not bug-free; nothing here claims so.
+
+## Status of the collection request (by section)
+
+| Section | Status |
+| --- | --- |
+| Autosave (added to this round) | **Implemented and tested**: separate slots; an autosave never overwrites the newest manual SAVE; the question after CONTINUE; going back to the last SAVE; setting; linked; power cuts |
+| 2 Encounter variety | **Implemented and tested** (visitors: 21 kinds, 57 appearances, 26 maps; the Center REPORT). The engine's own time-of-day tables stay off (reason in COOP_ENCOUNTERS.md) |
+| 3 Five hidden habitats | **Implemented and tested** (all five entered; MOSS HOLLOW's completion reward played) |
+| 4 Notebook and collection rewards | **Implemented and tested** (FIELD NOTES; 10 rewards; queue; catch-up on older saves) |
+| 8 Waiting for a time of day | **Implemented and tested** (solo, reload, linked) |
+| 9 Expedition HQ | **Not implemented**: staged design in COOP_HQ_PLAN.md; 256 bytes stay reserved |
+| 11 "Who can learn this?" | **Implemented and tested** |
+| 12 Town specialities | **Implemented and tested** (six specialists, first track rewards) |
+| 14, 5, 6, 7, 10, 15, 1 | As in 0xC0170141 (below) |
+
+## Open issues (new or still open)
+
+- **Expedition HQ:** not implemented.
+- **CONTINUE screen:** "Build C0170142" runs into long location names (pre-existing since save identification; seen in 0xC0170141 clips). Not fixed in this delivery, so that the delivered ROM is the one tested.
+- **Harness:**
+  - `roster_repair` (`hunt` regression since 0xC0170140);
+  - `wild_simultaneous` and the `partner_menu` FOLLOW failure are intermittent (both passed in this suite).
+- **Save counters:** compared without wraparound handling. A wrap would need billions of saves.
+- **Balance:** visitor rates and reward sizes are not tuned with unassisted play.
+- **Not tested at all:** the mGBA GUI by a person, real hardware, two-PC netplay.
+
+---
+
+# Previous: collection update, first delivery: build 0xC0170141
 
 Branch `coop-doorway-scenes-rivals` (continued from 0xC0170140), pushed, not merged. Both players need this build: 0xC0170140 and older refuse to link with it.
 
