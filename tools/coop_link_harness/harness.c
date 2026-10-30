@@ -2556,6 +2556,10 @@ static void frameCallback(struct mCoreThread* t) {
                 unsigned st = rd8(p, bc + 0);
                 static unsigned partyCbS;
                 if (!partyCbS) partyCbS = symFind("CB2_UpdatePartyMenu") & ~1u;
+                if (cb2 == partyCbS && taskActive(p, "Task_HandleChooseMonInput") && c->args[0] == 7) {
+                    keys = (p->step % 24) < 2 ? 2 : 0;   // SWAP 7: back out of the menu with B
+                    break;
+                }
                 if (cb2 == partyCbS && taskActive(p, "Task_HandleChooseMonInput")) {
                     int slot = (signed char)rd8(p, symAddr("gPartyMenu") + 9);
                     unsigned t = p->step % 16;
@@ -4477,7 +4481,7 @@ static void loadScript(const char* path, int depth) {
             c.frames = n >= 4 ? atoi(b) : 20000;
             c.size = n >= 5 ? atoi(d) : 0;   // the ball's item id (0: the first row)
             c.addr = n >= 6 ? (unsigned)atoi(e) : 0;   // action menus to fight first
-            c.args[0] = n >= 7 ? (unsigned)atoi(f7) : 0;   // SWAP: with a full party answer YES and send this slot (1-6) to the PC
+            c.args[0] = n >= 7 ? (unsigned)atoi(f7) : 0;   // SWAP: with a full party answer YES and send this slot (1-6) to the PC; 7 backs out with B
         } else if (!strcmp(cmd, "grind")) {
             // grind N PCT [timeout]
             c.kind = C_GRIND;

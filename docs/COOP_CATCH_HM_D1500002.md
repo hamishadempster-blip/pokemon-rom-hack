@@ -31,7 +31,15 @@ Save layout unchanged; no migration.
   Pokémon (one knowing Rock Smash): solo, solo while linked (Beacon on), after
   fighting first, with the catch EXP causing a level-up (Marshtomp 17 to 18),
   and after switching Pokémon in battle. In every case the menu and the party
-  were correct. The first incorrect state could not be found, so the root cause
+  were correct. Later, against the user's second screenshot (a Venipede, "It
+  was placed in BOX", "Player 1 of 2"): the delivered D1500001 ROM rebuilt
+  byte-identical from 2e9cdd84 caught a Venipede in Rusturf Tunnel with that
+  party (NO at the prompt) solo and linked, and backed out of the swap menu
+  with B (`catch_full_party_cancel`). No crash in any run, on D1500001 or
+  D1500002. The mGBA dialog "Unimplemented BIOS call" means execution reached
+  a BIOS call mGBA does not emulate; the game makes none on purpose (the only
+  one, `swi 0x2A` in m4a.c, is unused), so it is a crash into bad code or data.
+  The first incorrect state could not be found, so the root cause
   is **not confirmed**. The user's build ID is also unknown.
 
 ## Changes
@@ -65,13 +73,15 @@ Save layout unchanged; no migration.
 - `catch ... [SWAP]`: the 7th argument (slot 1-6) answers YES to the swap prompt
   and picks that slot. `CATCH_SHOTS=1` saves a screenshot at each throw.
 - New scenarios (lab saves, in `run_all.sh`): `catch_full_party_solo`,
+  `catch_full_party_cancel`,
   `catch_full_party_linked_solo`, `hm_no_mon`, `hm_party_menu`.
 
 ## Evidence (D1500002, final source and harness, lab saves)
 
 | Scenario | Result |
 | --- | --- |
-| catch_full_party_solo, catch_full_party_linked_solo | PASS |
+| catch_full_party_solo, catch_full_party_cancel, catch_full_party_linked_solo | PASS |
+| diag_venipede_full on D1500001 and D1500002 (+ a linked variant on D1500001) | no crash |
 | hm_no_mon (rock refused without HM06, refused without badge, smashed with both) | PASS, screenshots checked |
 | hm_party_menu (FLASH/FLY listed only with HMs and badges) | PASS, screenshots checked |
 | catch_before_dex, solo_six | PASS |
