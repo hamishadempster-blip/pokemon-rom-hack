@@ -711,11 +711,13 @@ Coop_EventScript_MenuWait::
 	message Coop_Text_WaitAsk
 	waitmessage
 	goto_if_eq VAR_RESULT, TRUE, Coop_EventScript_MenuWaitShifted
-	dynmultichoice 18, 1, FALSE, 5, 0, DYN_MULTICHOICE_CB_NONE, Coop_Text_OptMorning, Coop_Text_OptDay, Coop_Text_OptEvening, Coop_Text_OptNight, Coop_Text_OptCancelWait
+	dynmultichoice 18, 1, FALSE, 6, 0, DYN_MULTICHOICE_CB_NONE, Coop_Text_OptMorning, Coop_Text_OptDay, Coop_Text_OptEvening, Coop_Text_OptNight, Coop_Text_OptReport, Coop_Text_OptCancelWait
+	goto_if_eq VAR_RESULT, 4, Coop_EventScript_WildlifeReport
 	goto_if_ge VAR_RESULT, 4, Coop_EventScript_MenuWaitCancel
 	goto Coop_EventScript_MenuWaitChosen
 Coop_EventScript_MenuWaitShifted::
-	dynmultichoice 18, 1, FALSE, 6, 0, DYN_MULTICHOICE_CB_NONE, Coop_Text_OptMorning, Coop_Text_OptDay, Coop_Text_OptEvening, Coop_Text_OptNight, Coop_Text_OptRealTime, Coop_Text_OptCancelWait
+	dynmultichoice 18, 1, FALSE, 7, 0, DYN_MULTICHOICE_CB_NONE, Coop_Text_OptMorning, Coop_Text_OptDay, Coop_Text_OptEvening, Coop_Text_OptNight, Coop_Text_OptRealTime, Coop_Text_OptReport, Coop_Text_OptCancelWait
+	goto_if_eq VAR_RESULT, 5, Coop_EventScript_WildlifeReport
 	goto_if_ge VAR_RESULT, 5, Coop_EventScript_MenuWaitCancel
 Coop_EventScript_MenuWaitChosen::
 	copyvar VAR_0x8006, VAR_RESULT
@@ -726,6 +728,26 @@ Coop_EventScript_MenuWaitChosen::
 	case 2, Coop_EventScript_WaitMeetFirst
 	case 3, Coop_EventScript_WaitAlready
 	goto Coop_EventScript_MenuWaitCancel
+
+@ WILDLIFE REPORT: the visitors of the maps near this town, by time of
+@ day and weather (src/coop_encounters.c), one page each.
+Coop_EventScript_WildlifeReport::
+	msgbox Coop_Text_ReportIntro, MSGBOX_DEFAULT
+	setvar VAR_0x8004, 0
+	specialvar VAR_RESULT, CoopVisitor_ReportPage
+	goto_if_eq VAR_RESULT, FALSE, Coop_EventScript_ReportNone
+Coop_EventScript_ReportLoop::
+	msgbox gStringVar4, MSGBOX_DEFAULT
+	addvar VAR_0x8004, 1
+	specialvar VAR_RESULT, CoopVisitor_ReportPage
+	goto_if_eq VAR_RESULT, TRUE, Coop_EventScript_ReportLoop
+	msgbox Coop_Text_ReportEnd, MSGBOX_DEFAULT
+	releaseall
+	end
+Coop_EventScript_ReportNone::
+	msgbox Coop_Text_ReportNone, MSGBOX_DEFAULT
+	releaseall
+	end
 
 Coop_EventScript_MenuWaitCancel::
 	closemessage
@@ -786,6 +808,17 @@ Coop_Text_OptNight:
 	.string "NIGHT$"
 Coop_Text_OptRealTime:
 	.string "REAL TIME$"
+Coop_Text_OptReport:
+	.string "REPORT$"
+Coop_Text_ReportIntro:
+	.string "WILDLIFE REPORT: POKéMON that visit\n"
+	.string "nearby only at times or in weather.$"
+Coop_Text_ReportEnd:
+	.string "Rest here to meet them at another\n"
+	.string "time. Weather changes by itself.$"
+Coop_Text_ReportNone:
+	.string "There's no news of visiting\n"
+	.string "POKéMON around here.$"
 Coop_Text_OptCancelWait:
 	.string "CANCEL$"
 Coop_Text_Waited:

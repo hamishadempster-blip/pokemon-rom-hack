@@ -1,0 +1,151 @@
+{
+  "_doc": "Encounter variety (collection update section 2): wild visitors that appear at a time of day or in a weather, on top of a map's own table. Source of src/data/coop_visitors.h (tools/coop_encounters/visitors_to_header.py, run by make) and of the acquisition manifest (tools/coop_roster_audit/roster.py). A visitor replaces the species of 1 in 4 encounters in its area while its condition holds; the level is the table slot's own level. area: land, surf, fish (rod: old, good, super or any), rock. when: morning, day, evening, night, rain, sand, ash. hint: what the WILDLIFE REPORT says until the species has been seen (24 characters at most). reports: which maps each Pokemon Center's report covers, by the Center's town.",
+  "chance_percent": 25,
+  "visitors": [
+    {"map": "MAP_ROUTE101", "area": "land", "when": "night", "species": "SPECIES_HOOTHOOT"},
+    {"map": "MAP_ROUTE101", "area": "land", "when": "night", "species": "SPECIES_SPINARAK"},
+    {"map": "MAP_ROUTE101", "area": "land", "when": "morning", "species": "SPECIES_LEDYBA"},
+    {"map": "MAP_ROUTE102", "area": "land", "when": "night", "species": "SPECIES_ODDISH"},
+    {"map": "MAP_ROUTE102", "area": "land", "when": "night", "species": "SPECIES_HOOTHOOT"},
+    {"map": "MAP_ROUTE102", "area": "land", "when": "morning", "species": "SPECIES_HOPPIP"},
+    {"map": "MAP_ROUTE102", "area": "land", "when": "evening", "species": "SPECIES_VOLBEAT"},
+    {"map": "MAP_ROUTE102", "area": "land", "when": "evening", "species": "SPECIES_ILLUMISE"},
+    {"map": "MAP_ROUTE103", "area": "land", "when": "night", "species": "SPECIES_HOOTHOOT"},
+    {"map": "MAP_ROUTE103", "area": "land", "when": "night", "species": "SPECIES_PURRLOIN"},
+    {"map": "MAP_ROUTE103", "area": "surf", "when": "night", "species": "SPECIES_CHINCHOU"},
+    {"map": "MAP_ROUTE104", "area": "land", "when": "night", "species": "SPECIES_SPINARAK"},
+    {"map": "MAP_ROUTE104", "area": "land", "when": "night", "species": "SPECIES_ZUBAT"},
+    {"map": "MAP_ROUTE104", "area": "land", "when": "morning", "species": "SPECIES_LEDYBA"},
+    {"map": "MAP_ROUTE104", "area": "surf", "when": "night", "species": "SPECIES_CHINCHOU"},
+    {"map": "MAP_PETALBURG_WOODS", "area": "land", "when": "night", "species": "SPECIES_HOOTHOOT"},
+    {"map": "MAP_PETALBURG_WOODS", "area": "land", "when": "night", "species": "SPECIES_ODDISH"},
+    {"map": "MAP_PETALBURG_WOODS", "area": "land", "when": "night", "species": "SPECIES_SPINARAK"},
+    {"map": "MAP_ROUTE116", "area": "land", "when": "night", "species": "SPECIES_ZUBAT"},
+    {"map": "MAP_ROUTE116", "area": "land", "when": "night", "species": "SPECIES_PURRLOIN"},
+    {"map": "MAP_ROUTE116", "area": "land", "when": "morning", "species": "SPECIES_LEDYBA"},
+    {"map": "MAP_ROUTE105", "area": "surf", "when": "night", "species": "SPECIES_CHINCHOU"},
+    {"map": "MAP_ROUTE106", "area": "fish", "rod": "good", "when": "night", "species": "SPECIES_CHINCHOU"},
+    {"map": "MAP_ROUTE107", "area": "surf", "when": "night", "species": "SPECIES_CHINCHOU"},
+    {"map": "MAP_ROUTE109", "area": "fish", "rod": "super", "when": "evening", "species": "SPECIES_REMORAID"},
+    {"map": "MAP_ROUTE110", "area": "land", "when": "night", "species": "SPECIES_HOOTHOOT"},
+    {"map": "MAP_ROUTE110", "area": "land", "when": "night", "species": "SPECIES_SPINARAK"},
+    {"map": "MAP_ROUTE117", "area": "land", "when": "night", "species": "SPECIES_GASTLY"},
+    {"map": "MAP_ROUTE117", "area": "land", "when": "night", "species": "SPECIES_ZUBAT"},
+    {"map": "MAP_ROUTE112", "area": "land", "when": "night", "species": "SPECIES_ZUBAT"},
+    {"map": "MAP_ROUTE112", "area": "land", "when": "morning", "species": "SPECIES_HOPPIP"},
+    {"map": "MAP_ROUTE113", "area": "land", "when": "ash", "species": "SPECIES_VULPIX"},
+    {"map": "MAP_ROUTE113", "area": "land", "when": "ash", "species": "SPECIES_NUMEL"},
+    {"map": "MAP_ROUTE114", "area": "land", "when": "night", "species": "SPECIES_MURKROW"},
+    {"map": "MAP_ROUTE114", "area": "land", "when": "night", "species": "SPECIES_ZUBAT"},
+    {"map": "MAP_ROUTE114", "area": "land", "when": "morning", "species": "SPECIES_HOPPIP"},
+    {"map": "MAP_ROUTE115", "area": "land", "when": "night", "species": "SPECIES_HOOTHOOT"},
+    {"map": "MAP_ROUTE115", "area": "land", "when": "night", "species": "SPECIES_NOIBAT"},
+    {"map": "MAP_ROUTE118", "area": "land", "when": "night", "species": "SPECIES_HOOTHOOT"},
+    {"map": "MAP_ROUTE118", "area": "land", "when": "night", "species": "SPECIES_NOIBAT"},
+    {"map": "MAP_ROUTE119", "area": "land", "when": "rain", "species": "SPECIES_LOTAD"},
+    {"map": "MAP_ROUTE119", "area": "land", "when": "rain", "species": "SPECIES_WOOPER"},
+    {"map": "MAP_ROUTE119", "area": "surf", "when": "rain", "species": "SPECIES_SURSKIT"},
+    {"map": "MAP_ROUTE119", "area": "land", "when": "night", "species": "SPECIES_MURKROW"},
+    {"map": "MAP_ROUTE120", "area": "land", "when": "rain", "species": "SPECIES_WOOPER"},
+    {"map": "MAP_ROUTE120", "area": "land", "when": "night", "species": "SPECIES_MISDREAVUS"},
+    {"map": "MAP_ROUTE120", "area": "land", "when": "night", "species": "SPECIES_MURKROW"},
+    {"map": "MAP_ROUTE121", "area": "land", "when": "night", "species": "SPECIES_GASTLY"},
+    {"map": "MAP_ROUTE121", "area": "land", "when": "night", "species": "SPECIES_MURKROW"},
+    {"map": "MAP_ROUTE122", "area": "fish", "rod": "super", "when": "night", "species": "SPECIES_FRILLISH"},
+    {"map": "MAP_ROUTE123", "area": "land", "when": "rain", "species": "SPECIES_LOTAD"},
+    {"map": "MAP_ROUTE123", "area": "land", "when": "night", "species": "SPECIES_GASTLY"},
+    {"map": "MAP_ROUTE123", "area": "land", "when": "night", "species": "SPECIES_MISDREAVUS"},
+    {"map": "MAP_ROUTE124", "area": "surf", "when": "night", "species": "SPECIES_CHINCHOU"},
+    {"map": "MAP_ROUTE125", "area": "fish", "rod": "super", "when": "night", "species": "SPECIES_CHINCHOU"},
+    {"map": "MAP_ROUTE126", "area": "surf", "when": "night", "species": "SPECIES_CHINCHOU"},
+    {"map": "MAP_ROUTE128", "area": "fish", "rod": "super", "when": "evening", "species": "SPECIES_REMORAID"}
+  ],
+  "hints": {
+    "SPECIES_HOOTHOOT": "an owl that hoots",
+    "SPECIES_SPINARAK": "a spider that spins",
+    "SPECIES_LEDYBA": "a ladybug in the sun",
+    "SPECIES_ODDISH": "a weed that walks",
+    "SPECIES_HOPPIP": "a puff on the breeze",
+    "SPECIES_VOLBEAT": "a light at dusk",
+    "SPECIES_ILLUMISE": "a light at dusk",
+    "SPECIES_PURRLOIN": "a cat on the prowl",
+    "SPECIES_CHINCHOU": "lights in the sea",
+    "SPECIES_ZUBAT": "a bat out of a cave",
+    "SPECIES_REMORAID": "a fish that shoots",
+    "SPECIES_GASTLY": "a gas in the dark",
+    "SPECIES_VULPIX": "a fox in the ash",
+    "SPECIES_NUMEL": "a camel in the ash",
+    "SPECIES_MURKROW": "a dark bird",
+    "SPECIES_NOIBAT": "a bat with big ears",
+    "SPECIES_LOTAD": "a lily pad in the rain",
+    "SPECIES_WOOPER": "a fish out in the rain",
+    "SPECIES_SURSKIT": "a skater in the rain",
+    "SPECIES_MISDREAVUS": "a shriek in the dark",
+    "SPECIES_FRILLISH": "a ghostly jellyfish"
+  },
+  "reports": {
+    "MAPSEC_OLDALE_TOWN": [
+      "MAP_ROUTE101",
+      "MAP_ROUTE102",
+      "MAP_ROUTE103"
+    ],
+    "MAPSEC_PETALBURG_CITY": [
+      "MAP_ROUTE102",
+      "MAP_ROUTE104",
+      "MAP_PETALBURG_WOODS"
+    ],
+    "MAPSEC_RUSTBORO_CITY": [
+      "MAP_ROUTE104",
+      "MAP_PETALBURG_WOODS",
+      "MAP_ROUTE116"
+    ],
+    "MAPSEC_DEWFORD_TOWN": [
+      "MAP_ROUTE105",
+      "MAP_ROUTE106",
+      "MAP_ROUTE107"
+    ],
+    "MAPSEC_SLATEPORT_CITY": [
+      "MAP_ROUTE109",
+      "MAP_ROUTE110"
+    ],
+    "MAPSEC_MAUVILLE_CITY": [
+      "MAP_ROUTE110",
+      "MAP_ROUTE117",
+      "MAP_ROUTE118"
+    ],
+    "MAPSEC_VERDANTURF_TOWN": [
+      "MAP_ROUTE117",
+      "MAP_ROUTE116"
+    ],
+    "MAPSEC_LAVARIDGE_TOWN": [
+      "MAP_ROUTE112",
+      "MAP_ROUTE113"
+    ],
+    "MAPSEC_FALLARBOR_TOWN": [
+      "MAP_ROUTE113",
+      "MAP_ROUTE114",
+      "MAP_ROUTE115"
+    ],
+    "MAPSEC_FORTREE_CITY": [
+      "MAP_ROUTE119",
+      "MAP_ROUTE120"
+    ],
+    "MAPSEC_LILYCOVE_CITY": [
+      "MAP_ROUTE121",
+      "MAP_ROUTE122",
+      "MAP_ROUTE123",
+      "MAP_ROUTE120"
+    ],
+    "MAPSEC_MOSSDEEP_CITY": [
+      "MAP_ROUTE124",
+      "MAP_ROUTE125"
+    ],
+    "MAPSEC_SOOTOPOLIS_CITY": [
+      "MAP_ROUTE126",
+      "MAP_ROUTE124"
+    ],
+    "MAPSEC_EVER_GRANDE_CITY": [
+      "MAP_ROUTE128"
+    ]
+  }
+}

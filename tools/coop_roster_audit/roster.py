@@ -153,6 +153,44 @@ for e in enc['wild_encounter_groups'][0]['encounters']:
                      'rate_percent': p['rate'], 'table_encounter_rate': v.get('encounter_rate'),
                      'requires': '; '.join(reqs) or 'unknown', 'badges': badges, 'renewable': True})
 
+# Visitors by time of day and weather (src/data/coop_visitors.json,
+# src/coop_encounters.c): 1 in 4 encounters of their area while their
+# condition holds, at the table slot's levels.
+VIS = json.load(open(os.path.join(ROOT, 'src/data/coop_visitors.json')))
+_VKIND = {'land': 'land', 'surf': 'water', 'fish': 'fishing', 'rock': 'rock_smash'}
+_VROD = {'old': (0, 2), 'good': (2, 5), 'super': (5, 10), 'any': (0, 10)}
+_VWHEN = {'morning': 'in the morning', 'day': 'by day', 'evening': 'in the evening', 'night': 'at night',
+          'rain': 'in rain', 'sand': 'in a sandstorm', 'ash': 'in falling ash'}
+_ENC = {e.get('map'): e for e in enc['wild_encounter_groups'][0]['encounters'] if e.get('map') and e['base_label'].startswith('g')}
+for v in VIS['visitors']:
+    m = v['map']
+    if m not in REACH:
+        continue
+    kind = _VKIND[v['area']]
+    slots = _ENC[m][kind + '_mons']['mons']
+    rod = v.get('rod', 'any')
+    if kind == 'fishing':
+        lo_i, hi_i = _VROD[rod]
+        slots = slots[lo_i:hi_i]
+        method = rod + ' rod' if rod != 'any' else 'fishing'
+    else:
+        method = KIND[kind]
+    lo = min(x['min_level'] for x in slots)
+    hi = max(x['max_level'] for x in slots)
+    gb, gt = map_gate(m)
+    reqs = [gt] if gt else []
+    badges = gb if gb is not None else -1
+    if method in METHOD_GATE:
+        mb, mt = METHOD_GATE[method]
+        reqs.append(mt)
+        badges = max(badges, mb)
+    add(v['species'], {'method': 'wild', 'encounter': '%s, visitor %s' % (method, _VWHEN[v['when']]),
+                       'location': nice_map(m), 'map': m,
+                       'levels': '%d-%d' % (lo, hi) if lo != hi else str(lo),
+                       'rate_percent': VIS.get('chance_percent', 25), 'visitor': v['when'],
+                       'requires': '; '.join(reqs + ['visitor ' + _VWHEN[v['when']]]),
+                       'badges': badges, 'renewable': True})
+
 # Gifts, static encounters, eggs (scripts and C), with their file.
 GIFT_RE = re.compile(r'\b(givemon|setwildbattle|createmon|givecustommon|seteggmon|giveegg|seteventmon|ScriptGiveMon|CreateScriptedWildMon|CreateScriptedDoubleWildMon|setdynamicwildbattle)\b[^\n]*?\b(SPECIES_[A-Z0-9_]+)')
 files = glob.glob(os.path.join(ROOT, 'data/maps/*/scripts.inc')) + glob.glob(os.path.join(ROOT, 'data/scripts/*.inc')) + glob.glob(os.path.join(ROOT, 'src/*.c'))

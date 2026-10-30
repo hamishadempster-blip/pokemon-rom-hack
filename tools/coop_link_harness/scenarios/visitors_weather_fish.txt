@@ -1,0 +1,63 @@
+# Wild visitors in a weather and on a rod (checkpoint 52 saves, solo; the
+# clock at 21:00: NIGHT). FIXTURES: gCoopVisitorTestChance 100 (every
+# encounter is a visitor while one is here; the game's is 25 in 100); the
+# SUPER ROD (fixture_item, as easy_fishing); fixture_warp onto Route 121's
+# bank and onto Route 113's ash-covered grass; the saved weather set to
+# VOLCANIC ASH and back to SUNNY (as walking into and out of the ash would);
+# force_encounter.
+# Checks: a SUPER ROD bite on Route 122 at night is FRILLISH (the only
+# night rod visitor there); in Route 113's grass in falling ash a visitor is
+# VULPIX or NUMEL; in sunshine there is none.
+include continue.inc
+b mash_field 300 B
+b no_wild 1
+0 write gCoopVisitorTestChance 100
+0 fixture_item 4 711 1
+0 writep gSaveBlock1Ptr+0x496:2 711
+0 fixture_warp 0 36 30 18
+0 until_field 3000
+0 surf DOWN
+0 cross DOWN 0 37 3000
+0 walk 10 3 2000
+b no_wild 0
+0 fish 9000
+0 until_cb2 BattleMainCB2 3000
+b no_wild 1
+0 expect gCoopVisitorLast:2 592
+0 until_mem gBattlerControllerFuncs:4 HandleInputChooseAction 6000 A
+0 wait 30
+0 press RIGHT 2
+0 wait 6
+0 press DOWN 2
+0 wait 6
+0 press A 2
+0 mash_field 12000 B
+# Falling ash on Route 113.
+0 fixture_warp 0 28 45 3
+0 until_field 3000
+0 wait 30
+0 writep gSaveBlock1Ptr+46:1 7
+0 force_encounter 1
+0 no_wild 0
+0 pace_until_battle 3000
+0 force_encounter 0
+0 no_wild 1
+0 until_cb2 BattleMainCB2 3000
+0 hex gCoopVisitorLast 2
+0 expect_range gCoopVisitorLast:2 37 322
+0 until_mem gBattlerControllerFuncs:4 HandleInputChooseAction 6000 A
+0 wait 30
+0 press RIGHT 2
+0 wait 6
+0 press DOWN 2
+0 wait 6
+0 press A 2
+0 mash_field 12000 B
+0 writep gSaveBlock1Ptr+46:1 2
+0 force_encounter 1
+0 no_wild 0
+0 pace_until_battle 3000
+0 force_encounter 0
+0 no_wild 1
+0 until_cb2 BattleMainCB2 3000
+0 expect gCoopVisitorLast:2 0

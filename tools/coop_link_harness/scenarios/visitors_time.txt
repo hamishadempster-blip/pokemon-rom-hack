@@ -1,0 +1,69 @@
+# Wild visitors by time of day (lab saves, solo; the clock at 21:00: NIGHT).
+# FIXTURES: gCoopVisitorTestChance 100 (every encounter is a visitor while
+# one is here; the game's chance is 25 in 100); force_encounter;
+# fixture_warp between Route 101's grass and Oldale's Pokemon Center. The
+# rests at the Center are play (CO-OP > WAIT HERE).
+# Checks: at NIGHT a Route 101 encounter is a night visitor (HOOTHOOT or
+# SPINARAK; gCoopVisitorLast); the WILDLIFE REPORT in Oldale's Center lists
+# it by name and the unseen ones as ??? or by rumor; after resting until
+# MORNING the visitor is LEDYBA (the only morning one); after resting until
+# DAY there is none (the table's own species).
+include continue.inc
+b no_wild 1
+b mash_field 300 B
+0 write gCoopVisitorTestChance 100
+include visitor_encounter.inc
+0 expect_nz gCoopVisitorLast:2
+# The report in Oldale's Center.
+0 fixture_warp 2 2 7 5
+0 until_field 3000
+0 wait 30
+include centre_wait_wait.inc
+0 until_task Task_HandleScrollingMultichoiceInput 2000
+0 wait 30
+0 press DOWN 2
+0 wait 8
+0 press DOWN 2
+0 wait 8
+0 press DOWN 2
+0 wait 8
+0 press DOWN 2
+0 wait 8
+0 note_text WILDLIFE_REPORT
+0 press A 2
+0 until_field_text WILDLIFE 600
+0 shot report-intro
+0 press A 2
+0 wait 60
+0 shot report-page1
+0 note_text ROUTE_101,_MORNING
+0 press A 2
+0 wait 60
+0 shot report-page2
+0 mash_field 3000 B
+0 expect_noted
+# MORNING.
+include centre_wait_wait.inc
+0 until_task Task_HandleScrollingMultichoiceInput 2000
+0 wait 30
+0 press A 2
+0 until_field_text rested 600
+0 mash_field 600 B
+0 expect gTimeOfDay 0
+include visitor_encounter.inc
+0 expect gCoopVisitorLast:2 165
+# DAY.
+0 fixture_warp 2 2 7 5
+0 until_field 3000
+0 wait 30
+include centre_wait_wait.inc
+0 until_task Task_HandleScrollingMultichoiceInput 2000
+0 wait 30
+0 press DOWN 2
+0 wait 8
+0 press A 2
+0 until_field_text rested 600
+0 mash_field 600 B
+0 expect gTimeOfDay 1
+include visitor_encounter.inc
+0 expect gCoopVisitorLast:2 0

@@ -558,6 +558,8 @@ Build 0xC017013E scenarios:
 | `prep_solo_lead` | j13 | Unlinked gym: lead screen, CANCEL starts nothing, CHANGE LEAD to slot 5, the battle starts with it |
 | `autosave_*` (11) | lab, fresh | Autosave: slot roles, the question after CONTINUE, going back to the manual save, power cut, setting, linked, new game (docs/COOP_AUTOSAVE.md). FIXTURE `gCoopAutosaveTestInterval` 1,800 frames |
 | `centre_wait_solo` (+`_reload`) | lab | WAIT HERE only in a Center; "already NIGHT"; rest until MORNING (outdoor tint, shift saved, clock unchanged); after power-on still MORNING; REAL TIME back to NIGHT (docs/COOP_TIME.md) |
+| `visitors_time` | lab | FIXTURE `gCoopVisitorTestChance` 100: a Route 101 encounter at NIGHT is a night visitor; the WILDLIFE REPORT in Oldale's Center (rumor for unseen); after resting until MORNING the visitor is LEDYBA; by DAY none (docs/COOP_ENCOUNTERS.md) |
+| `visitors_weather_fish` | j52 | Same FIXTURE: SUPER ROD on Route 122 at night gives FRILLISH; Route 113 grass in falling ash (FIXTURE saved weather) gives a visitor (VULPIX), in sunshine none |
 | `centre_wait_coop` | lab, `RTC_EPOCH0` 23:00 / `RTC_EPOCH1` 12:00 | Linked rest: the partner is asked; YES: both MORNING; NO: "said no", nothing changes; partner outside: "meet first"; after UNLINK both keep MORNING on their own clocks |
 
 New verbs: `expect_mon SLOT hp VALUE`, `expect_mon ... >@K` (more than note

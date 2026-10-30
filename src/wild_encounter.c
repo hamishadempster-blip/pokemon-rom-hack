@@ -3,6 +3,7 @@
 #include "battle_setup.h"
 #include "battle_pike.h"
 #include "battle_pyramid.h"
+#include "coop_encounters.h"
 #include "event_data.h"
 #include "fieldmap.h"
 #include "fishing.h"
@@ -530,6 +531,7 @@ bool8 TryGenerateWildMon(const struct WildPokemonInfo *wildMonInfo, enum WildPok
 {
     u8 wildMonIndex = 0;
     u8 level;
+    u16 species;
 
     switch (area)
     {
@@ -580,7 +582,15 @@ bool8 TryGenerateWildMon(const struct WildPokemonInfo *wildMonInfo, enum WildPok
     if (gMapHeader.mapLayoutId != LAYOUT_BATTLE_FRONTIER_BATTLE_PIKE_ROOM_WILD_MONS && flags & WILD_CHECK_KEEN_EYE && !IsAbilityAllowingEncounter(level))
         return FALSE;
 
-    CreateWildMon(wildMonInfo->wildPokemon[wildMonIndex].species, level);
+    species = wildMonInfo->wildPokemon[wildMonIndex].species;
+    // A visitor of this time of day or weather, now and then (src/coop_encounters.c).
+    if (area == WILD_AREA_LAND)
+        species = CoopVisitor_Species(COOP_VISIT_LAND, COOP_ROD_ANY, species);
+    else if (area == WILD_AREA_WATER)
+        species = CoopVisitor_Species(COOP_VISIT_SURF, COOP_ROD_ANY, species);
+    else if (area == WILD_AREA_ROCKS)
+        species = CoopVisitor_Species(COOP_VISIT_ROCK, COOP_ROD_ANY, species);
+    CreateWildMon(species, level);
     return TRUE;
 }
 
@@ -633,11 +643,14 @@ void Coop_ApplyWildPair(void)
     gParties[B_TRAINER_OPPONENT_A][1] = kept;
 }
 
-static u16 GenerateFishingWildMon(const struct WildPokemonInfo *wildMonInfo, u8 rod)
+static u16 GenerateFishingWildMon(const struct WildPokemonInfo *wildMonInfo, u8 rod, bool8 visitors)
 {
     u8 wildMonIndex = ChooseWildMonIndex_Fishing(rod);
     enum Species wildMonSpecies = wildMonInfo->wildPokemon[wildMonIndex].species;
     u8 level = ChooseWildMonLevel(wildMonInfo->wildPokemon, wildMonIndex, WILD_AREA_FISHING);
+
+    if (visitors)   // src/coop_encounters.c
+        wildMonSpecies = CoopVisitor_Species(COOP_VISIT_FISH, rod + COOP_ROD_OLD, wildMonSpecies);
 
     UpdateChainFishingStreak();
     CreateWildMon(wildMonSpecies, level);
@@ -1040,12 +1053,13 @@ void FishingWildEncounter(u8 rod)
     else
     {
         const struct WildPokemonInfo *info = CoopQuest_FishingOverride();
+        bool8 visitors = (info == NULL);   // never in a quest's own fishing
 
         headerId = GetCurrentMapWildMonHeaderId();
         timeOfDay = GetTimeOfDayForEncounters(headerId, WILD_AREA_FISHING);
         if (info == NULL)
             info = gWildMonHeaders[headerId].encounterTypes[timeOfDay].fishingMonsInfo;
-        species = GenerateFishingWildMon(info, rod);
+        species = GenerateFishingWildMon(info, rod, visitors);
     }
 
     IncrementGameStat(GAME_STAT_FISHING_ENCOUNTERS);

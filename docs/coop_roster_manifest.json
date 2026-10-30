@@ -1375,7 +1375,7 @@
    "species": "SPECIES_VULPIX",
    "national_dex": 37,
    "hoenn_dex": 163,
-   "earliest_badges_with_evolution": 5,
+   "earliest_badges_with_evolution": 3,
    "name": "Vulpix",
    "types": [
     "Fire"
@@ -1395,6 +1395,18 @@
      "table_encounter_rate": 10,
      "requires": "Surf (after the Petalburg Gym)",
      "badges": 5,
+     "renewable": true
+    },
+    {
+     "method": "wild",
+     "encounter": "grass/cave, visitor in falling ash",
+     "location": "Route 113",
+     "map": "MAP_ROUTE113",
+     "levels": "14-16",
+     "rate_percent": 25,
+     "visitor": "ash",
+     "requires": "Route 111 north (after the Mauville Gym); visitor in falling ash",
+     "badges": 3,
      "renewable": true
     },
     {
@@ -1433,7 +1445,7 @@
    "evolution": [],
    "renewable": true,
    "solo": true,
-   "earliest_badges": 5,
+   "earliest_badges": 3,
    "dex_area": "wild areas shown",
    "issues": [],
    "verification": "source-checked (audit), not played"
@@ -1442,7 +1454,7 @@
    "species": "SPECIES_NINETALES",
    "national_dex": 38,
    "hoenn_dex": 164,
-   "earliest_badges_with_evolution": 5,
+   "earliest_badges_with_evolution": 3,
    "name": "Ninetales",
    "types": [
     "Fire"
@@ -1594,7 +1606,7 @@
    "species": "SPECIES_ZUBAT",
    "national_dex": 41,
    "hoenn_dex": 68,
-   "earliest_badges_with_evolution": 1,
+   "earliest_badges_with_evolution": 0,
    "name": "Zubat",
    "types": [
     "Flying",
@@ -1939,12 +1951,72 @@
      "requires": "after the Hall of Fame",
      "badges": 9,
      "renewable": true
+    },
+    {
+     "method": "wild",
+     "encounter": "grass/cave, visitor at night",
+     "location": "Route 104",
+     "map": "MAP_ROUTE104",
+     "levels": "3-5",
+     "rate_percent": 25,
+     "visitor": "night",
+     "requires": "Petalburg/Rustboro reached; visitor at night",
+     "badges": 0,
+     "renewable": true
+    },
+    {
+     "method": "wild",
+     "encounter": "grass/cave, visitor at night",
+     "location": "Route 116",
+     "map": "MAP_ROUTE116",
+     "levels": "6-8",
+     "rate_percent": 25,
+     "visitor": "night",
+     "requires": "Petalburg/Rustboro reached; visitor at night",
+     "badges": 0,
+     "renewable": true
+    },
+    {
+     "method": "wild",
+     "encounter": "grass/cave, visitor at night",
+     "location": "Route 117",
+     "map": "MAP_ROUTE117",
+     "levels": "13-14",
+     "rate_percent": 25,
+     "visitor": "night",
+     "requires": "Slateport (after the Dewford Gym); visitor at night",
+     "badges": 2,
+     "renewable": true
+    },
+    {
+     "method": "wild",
+     "encounter": "grass/cave, visitor at night",
+     "location": "Route 112",
+     "map": "MAP_ROUTE112",
+     "levels": "14-16",
+     "rate_percent": 25,
+     "visitor": "night",
+     "requires": "Route 111 north (after the Mauville Gym); visitor at night",
+     "badges": 3,
+     "renewable": true
+    },
+    {
+     "method": "wild",
+     "encounter": "grass/cave, visitor at night",
+     "location": "Route 114",
+     "map": "MAP_ROUTE114",
+     "levels": "15-17",
+     "rate_percent": 25,
+     "visitor": "night",
+     "requires": "Route 111 north (after the Mauville Gym); visitor at night",
+     "badges": 3,
+     "renewable": true
     }
    ],
    "evolution": [],
    "renewable": true,
    "solo": true,
-   "earliest_badges": 1,
+   "earliest_badges": 0,
    "dex_area": "wild areas shown",
    "issues": [],
    "verification": "source-checked (audit), not played"
@@ -1953,7 +2025,7 @@
    "species": "SPECIES_GOLBAT",
    "national_dex": 42,
    "hoenn_dex": 69,
-   "earliest_badges_with_evolution": 1,
+   "earliest_badges_with_evolution": 0,
    "name": "Golbat",
    "types": [
     "Flying",
@@ -2369,7 +2441,7 @@
    "species": "SPECIES_ODDISH",
    "national_dex": 43,
    "hoenn_dex": 94,
-   "earliest_badges_with_evolution": 2,
+   "earliest_badges_with_evolution": 0,
    "name": "Oddish",
    "types": [
     "Grass",
@@ -2450,12 +2522,36 @@
      "requires": "Surf (after the Petalburg Gym)",
      "badges": 5,
      "renewable": true
+    },
+    {
+     "method": "wild",
+     "encounter": "grass/cave, visitor at night",
+     "location": "Route 102",
+     "map": "MAP_ROUTE102",
+     "levels": "3-4",
+     "rate_percent": 25,
+     "visitor": "night",
+     "requires": "start; visitor at night",
+     "badges": 0,
+     "renewable": true
+    },
+    {
+     "method": "wild",
+     "encounter": "grass/cave, visitor at night",
+     "location": "Petalburg Woods",
+     "map": "MAP_PETALBURG_WOODS",
+     "levels": "5-6",
+     "rate_percent": 25,
+     "visitor": "night",
+     "requires": "Petalburg/Rustboro reached; visitor at night",
+     "badges": 0,
+     "renewable": true
     }
    ],
    "evolution": [],
    "renewable": true,
    "solo": true,
-   "earliest_badges": 2,
+   "earliest_badges": 0,
    "dex_area": "wild areas shown",
    "issues": [],
    "verification": "source-checked (audit), not played"
@@ -2464,7 +2560,7 @@
    "species": "SPECIES_GLOOM",
    "national_dex": 44,
    "hoenn_dex": 95,
-   "earliest_badges_with_evolution": 2,
+   "earliest_badges_with_evolution": 0,
    "name": "Gloom",
    "types": [
     "Grass",
@@ -2556,7 +2652,7 @@
    "species": "SPECIES_VILEPLUME",
    "national_dex": 45,
    "hoenn_dex": 96,
-   "earliest_badges_with_evolution": 2,
+   "earliest_badges_with_evolution": 0,
    "name": "Vileplume",
    "types": [
     "Grass",
@@ -6321,7 +6417,7 @@
    "species": "SPECIES_GASTLY",
    "national_dex": 92,
    "hoenn_dex": 692,
-   "earliest_badges_with_evolution": 5,
+   "earliest_badges_with_evolution": 2,
    "name": "Gastly",
    "types": [
     "Ghost",
@@ -6342,12 +6438,48 @@
      "requires": "Surf (after the Petalburg Gym)",
      "badges": 5,
      "renewable": true
+    },
+    {
+     "method": "wild",
+     "encounter": "grass/cave, visitor at night",
+     "location": "Route 117",
+     "map": "MAP_ROUTE117",
+     "levels": "13-14",
+     "rate_percent": 25,
+     "visitor": "night",
+     "requires": "Slateport (after the Dewford Gym); visitor at night",
+     "badges": 2,
+     "renewable": true
+    },
+    {
+     "method": "wild",
+     "encounter": "grass/cave, visitor at night",
+     "location": "Route 121",
+     "map": "MAP_ROUTE121",
+     "levels": "25-28",
+     "rate_percent": 25,
+     "visitor": "night",
+     "requires": "Surf (after the Petalburg Gym); visitor at night",
+     "badges": 5,
+     "renewable": true
+    },
+    {
+     "method": "wild",
+     "encounter": "grass/cave, visitor at night",
+     "location": "Route 123",
+     "map": "MAP_ROUTE123",
+     "levels": "25-28",
+     "rate_percent": 25,
+     "visitor": "night",
+     "requires": "Surf (after the Petalburg Gym); visitor at night",
+     "badges": 5,
+     "renewable": true
     }
    ],
    "evolution": [],
    "renewable": true,
    "solo": true,
-   "earliest_badges": 5,
+   "earliest_badges": 2,
    "dex_area": "wild areas shown",
    "issues": [],
    "verification": "source-checked (audit), not played"
@@ -6356,7 +6488,7 @@
    "species": "SPECIES_HAUNTER",
    "national_dex": 93,
    "hoenn_dex": 693,
-   "earliest_badges_with_evolution": 5,
+   "earliest_badges_with_evolution": 2,
    "name": "Haunter",
    "types": [
     "Ghost",
@@ -6388,7 +6520,7 @@
    "species": "SPECIES_GENGAR",
    "national_dex": 94,
    "hoenn_dex": 694,
-   "earliest_badges_with_evolution": 5,
+   "earliest_badges_with_evolution": 2,
    "name": "Gengar",
    "types": [
     "Ghost",
@@ -10747,6 +10879,90 @@
      "requires": "after the Hall of Fame (National Dex areas)",
      "badges": 9,
      "renewable": true
+    },
+    {
+     "method": "wild",
+     "encounter": "grass/cave, visitor at night",
+     "location": "Route 101",
+     "map": "MAP_ROUTE101",
+     "levels": "2-3",
+     "rate_percent": 25,
+     "visitor": "night",
+     "requires": "start; visitor at night",
+     "badges": 0,
+     "renewable": true
+    },
+    {
+     "method": "wild",
+     "encounter": "grass/cave, visitor at night",
+     "location": "Route 102",
+     "map": "MAP_ROUTE102",
+     "levels": "3-4",
+     "rate_percent": 25,
+     "visitor": "night",
+     "requires": "start; visitor at night",
+     "badges": 0,
+     "renewable": true
+    },
+    {
+     "method": "wild",
+     "encounter": "grass/cave, visitor at night",
+     "location": "Route 103",
+     "map": "MAP_ROUTE103",
+     "levels": "2-4",
+     "rate_percent": 25,
+     "visitor": "night",
+     "requires": "start; visitor at night",
+     "badges": 0,
+     "renewable": true
+    },
+    {
+     "method": "wild",
+     "encounter": "grass/cave, visitor at night",
+     "location": "Petalburg Woods",
+     "map": "MAP_PETALBURG_WOODS",
+     "levels": "5-6",
+     "rate_percent": 25,
+     "visitor": "night",
+     "requires": "Petalburg/Rustboro reached; visitor at night",
+     "badges": 0,
+     "renewable": true
+    },
+    {
+     "method": "wild",
+     "encounter": "grass/cave, visitor at night",
+     "location": "Route 110",
+     "map": "MAP_ROUTE110",
+     "levels": "12-13",
+     "rate_percent": 25,
+     "visitor": "night",
+     "requires": "Slateport (after the Dewford Gym); visitor at night",
+     "badges": 2,
+     "renewable": true
+    },
+    {
+     "method": "wild",
+     "encounter": "grass/cave, visitor at night",
+     "location": "Route 115",
+     "map": "MAP_ROUTE115",
+     "levels": "23-26",
+     "rate_percent": 25,
+     "visitor": "night",
+     "requires": "Route 111 north (after the Mauville Gym); visitor at night",
+     "badges": 3,
+     "renewable": true
+    },
+    {
+     "method": "wild",
+     "encounter": "grass/cave, visitor at night",
+     "location": "Route 118",
+     "map": "MAP_ROUTE118",
+     "levels": "24-27",
+     "rate_percent": 25,
+     "visitor": "night",
+     "requires": "Surf (after the Petalburg Gym); visitor at night",
+     "badges": 5,
+     "renewable": true
     }
    ],
    "evolution": [],
@@ -10837,6 +11053,42 @@
      "table_encounter_rate": 25,
      "requires": "after the Hall of Fame (National Dex areas)",
      "badges": 9,
+     "renewable": true
+    },
+    {
+     "method": "wild",
+     "encounter": "grass/cave, visitor in the morning",
+     "location": "Route 101",
+     "map": "MAP_ROUTE101",
+     "levels": "2-3",
+     "rate_percent": 25,
+     "visitor": "morning",
+     "requires": "start; visitor in the morning",
+     "badges": 0,
+     "renewable": true
+    },
+    {
+     "method": "wild",
+     "encounter": "grass/cave, visitor in the morning",
+     "location": "Route 104",
+     "map": "MAP_ROUTE104",
+     "levels": "3-5",
+     "rate_percent": 25,
+     "visitor": "morning",
+     "requires": "Petalburg/Rustboro reached; visitor in the morning",
+     "badges": 0,
+     "renewable": true
+    },
+    {
+     "method": "wild",
+     "encounter": "grass/cave, visitor in the morning",
+     "location": "Route 116",
+     "map": "MAP_ROUTE116",
+     "levels": "6-8",
+     "rate_percent": 25,
+     "visitor": "morning",
+     "requires": "Petalburg/Rustboro reached; visitor in the morning",
+     "badges": 0,
      "renewable": true
     }
    ],
@@ -10929,6 +11181,54 @@
      "requires": "after the Hall of Fame (National Dex areas)",
      "badges": 9,
      "renewable": true
+    },
+    {
+     "method": "wild",
+     "encounter": "grass/cave, visitor at night",
+     "location": "Route 101",
+     "map": "MAP_ROUTE101",
+     "levels": "2-3",
+     "rate_percent": 25,
+     "visitor": "night",
+     "requires": "start; visitor at night",
+     "badges": 0,
+     "renewable": true
+    },
+    {
+     "method": "wild",
+     "encounter": "grass/cave, visitor at night",
+     "location": "Route 104",
+     "map": "MAP_ROUTE104",
+     "levels": "3-5",
+     "rate_percent": 25,
+     "visitor": "night",
+     "requires": "Petalburg/Rustboro reached; visitor at night",
+     "badges": 0,
+     "renewable": true
+    },
+    {
+     "method": "wild",
+     "encounter": "grass/cave, visitor at night",
+     "location": "Petalburg Woods",
+     "map": "MAP_PETALBURG_WOODS",
+     "levels": "5-6",
+     "rate_percent": 25,
+     "visitor": "night",
+     "requires": "Petalburg/Rustboro reached; visitor at night",
+     "badges": 0,
+     "renewable": true
+    },
+    {
+     "method": "wild",
+     "encounter": "grass/cave, visitor at night",
+     "location": "Route 110",
+     "map": "MAP_ROUTE110",
+     "levels": "12-13",
+     "rate_percent": 25,
+     "visitor": "night",
+     "requires": "Slateport (after the Dewford Gym); visitor at night",
+     "badges": 2,
+     "renewable": true
     }
    ],
    "evolution": [],
@@ -10975,7 +11275,7 @@
    "species": "SPECIES_CROBAT",
    "national_dex": 169,
    "hoenn_dex": 70,
-   "earliest_badges_with_evolution": 1,
+   "earliest_badges_with_evolution": 0,
    "name": "Crobat",
    "types": [
     "Flying",
@@ -11039,6 +11339,102 @@
      "table_encounter_rate": 4,
      "requires": "Surf (after the Petalburg Gym); Surf",
      "badges": 5,
+     "renewable": true
+    },
+    {
+     "method": "wild",
+     "encounter": "surf, visitor at night",
+     "location": "Route 103",
+     "map": "MAP_ROUTE103",
+     "levels": "5-35",
+     "rate_percent": 25,
+     "visitor": "night",
+     "requires": "start; Surf; visitor at night",
+     "badges": 5,
+     "renewable": true
+    },
+    {
+     "method": "wild",
+     "encounter": "surf, visitor at night",
+     "location": "Route 104",
+     "map": "MAP_ROUTE104",
+     "levels": "10-30",
+     "rate_percent": 25,
+     "visitor": "night",
+     "requires": "Petalburg/Rustboro reached; Surf; visitor at night",
+     "badges": 5,
+     "renewable": true
+    },
+    {
+     "method": "wild",
+     "encounter": "surf, visitor at night",
+     "location": "Route 105",
+     "map": "MAP_ROUTE105",
+     "levels": "5-35",
+     "rate_percent": 25,
+     "visitor": "night",
+     "requires": "Slateport (after the Dewford Gym); Surf; visitor at night",
+     "badges": 5,
+     "renewable": true
+    },
+    {
+     "method": "wild",
+     "encounter": "good rod, visitor at night",
+     "location": "Route 106",
+     "map": "MAP_ROUTE106",
+     "levels": "10-30",
+     "rate_percent": 25,
+     "visitor": "night",
+     "requires": "Slateport (after the Dewford Gym); Good Rod (Route 118); visitor at night",
+     "badges": 5,
+     "renewable": true
+    },
+    {
+     "method": "wild",
+     "encounter": "surf, visitor at night",
+     "location": "Route 107",
+     "map": "MAP_ROUTE107",
+     "levels": "5-35",
+     "rate_percent": 25,
+     "visitor": "night",
+     "requires": "Slateport (after the Dewford Gym); Surf; visitor at night",
+     "badges": 5,
+     "renewable": true
+    },
+    {
+     "method": "wild",
+     "encounter": "surf, visitor at night",
+     "location": "Route 124",
+     "map": "MAP_ROUTE124",
+     "levels": "5-35",
+     "rate_percent": 25,
+     "visitor": "night",
+     "requires": "Surf (after the Petalburg Gym); Surf; visitor at night",
+     "badges": 5,
+     "renewable": true
+    },
+    {
+     "method": "wild",
+     "encounter": "super rod, visitor at night",
+     "location": "Route 125",
+     "map": "MAP_ROUTE125",
+     "levels": "25-45",
+     "rate_percent": 25,
+     "visitor": "night",
+     "requires": "Mossdeep (after the Fortree Gym); Super Rod (Mossdeep); visitor at night",
+     "badges": 7,
+     "renewable": true
+    },
+    {
+     "method": "wild",
+     "encounter": "surf, visitor at night",
+     "location": "Route 126",
+     "map": "MAP_ROUTE126",
+     "levels": "5-35",
+     "rate_percent": 25,
+     "visitor": "night",
+     "requires": "Mossdeep (after the Fortree Gym); Surf; visitor at night",
+     "badges": 7,
      "renewable": true
     }
    ],
@@ -11494,7 +11890,7 @@
    "species": "SPECIES_BELLOSSOM",
    "national_dex": 182,
    "hoenn_dex": 97,
-   "earliest_badges_with_evolution": 2,
+   "earliest_badges_with_evolution": 0,
    "name": "Bellossom",
    "types": [
     "Grass"
@@ -11865,6 +12261,42 @@
      "requires": "Petalburg/Rustboro reached",
      "badges": 0,
      "renewable": true
+    },
+    {
+     "method": "wild",
+     "encounter": "grass/cave, visitor in the morning",
+     "location": "Route 102",
+     "map": "MAP_ROUTE102",
+     "levels": "3-4",
+     "rate_percent": 25,
+     "visitor": "morning",
+     "requires": "start; visitor in the morning",
+     "badges": 0,
+     "renewable": true
+    },
+    {
+     "method": "wild",
+     "encounter": "grass/cave, visitor in the morning",
+     "location": "Route 112",
+     "map": "MAP_ROUTE112",
+     "levels": "14-16",
+     "rate_percent": 25,
+     "visitor": "morning",
+     "requires": "Route 111 north (after the Mauville Gym); visitor in the morning",
+     "badges": 3,
+     "renewable": true
+    },
+    {
+     "method": "wild",
+     "encounter": "grass/cave, visitor in the morning",
+     "location": "Route 114",
+     "map": "MAP_ROUTE114",
+     "levels": "15-17",
+     "rate_percent": 25,
+     "visitor": "morning",
+     "requires": "Route 111 north (after the Mauville Gym); visitor in the morning",
+     "badges": 3,
+     "renewable": true
     }
    ],
    "evolution": [],
@@ -12175,6 +12607,30 @@
     },
     {
      "method": "wild",
+     "encounter": "grass/cave, visitor in rain",
+     "location": "Route 119",
+     "map": "MAP_ROUTE119",
+     "levels": "24-27",
+     "rate_percent": 25,
+     "visitor": "rain",
+     "requires": "Surf (after the Petalburg Gym); visitor in rain",
+     "badges": 5,
+     "renewable": true
+    },
+    {
+     "method": "wild",
+     "encounter": "grass/cave, visitor in rain",
+     "location": "Route 120",
+     "map": "MAP_ROUTE120",
+     "levels": "25-27",
+     "rate_percent": 25,
+     "visitor": "rain",
+     "requires": "Surf (after the Petalburg Gym); visitor in rain",
+     "badges": 5,
+     "renewable": true
+    },
+    {
+     "method": "wild",
      "encounter": "surf",
      "location": "Petalburg City",
      "map": "MAP_PETALBURG_CITY",
@@ -12198,7 +12654,7 @@
    "species": "SPECIES_QUAGSIRE",
    "national_dex": 195,
    "hoenn_dex": 652,
-   "earliest_badges_with_evolution": 9,
+   "earliest_badges_with_evolution": 5,
    "name": "Quagsire",
    "types": [
     "Ground",
@@ -12304,7 +12760,7 @@
    "species": "SPECIES_MURKROW",
    "national_dex": 198,
    "hoenn_dex": 512,
-   "earliest_badges_with_evolution": 5,
+   "earliest_badges_with_evolution": 3,
    "name": "Murkrow",
    "types": [
     "Dark",
@@ -12325,12 +12781,60 @@
      "requires": "Surf (after the Petalburg Gym)",
      "badges": 5,
      "renewable": true
+    },
+    {
+     "method": "wild",
+     "encounter": "grass/cave, visitor at night",
+     "location": "Route 114",
+     "map": "MAP_ROUTE114",
+     "levels": "15-17",
+     "rate_percent": 25,
+     "visitor": "night",
+     "requires": "Route 111 north (after the Mauville Gym); visitor at night",
+     "badges": 3,
+     "renewable": true
+    },
+    {
+     "method": "wild",
+     "encounter": "grass/cave, visitor at night",
+     "location": "Route 119",
+     "map": "MAP_ROUTE119",
+     "levels": "24-27",
+     "rate_percent": 25,
+     "visitor": "night",
+     "requires": "Surf (after the Petalburg Gym); visitor at night",
+     "badges": 5,
+     "renewable": true
+    },
+    {
+     "method": "wild",
+     "encounter": "grass/cave, visitor at night",
+     "location": "Route 120",
+     "map": "MAP_ROUTE120",
+     "levels": "25-27",
+     "rate_percent": 25,
+     "visitor": "night",
+     "requires": "Surf (after the Petalburg Gym); visitor at night",
+     "badges": 5,
+     "renewable": true
+    },
+    {
+     "method": "wild",
+     "encounter": "grass/cave, visitor at night",
+     "location": "Route 121",
+     "map": "MAP_ROUTE121",
+     "levels": "25-28",
+     "rate_percent": 25,
+     "visitor": "night",
+     "requires": "Surf (after the Petalburg Gym); visitor at night",
+     "badges": 5,
+     "renewable": true
     }
    ],
    "evolution": [],
    "renewable": true,
    "solo": true,
-   "earliest_badges": 5,
+   "earliest_badges": 3,
    "dex_area": "wild areas shown",
    "issues": [],
    "verification": "source-checked (audit), not played"
@@ -12434,6 +12938,30 @@
      "rate_percent": 10,
      "table_encounter_rate": 10,
      "requires": "Surf (after the Petalburg Gym)",
+     "badges": 5,
+     "renewable": true
+    },
+    {
+     "method": "wild",
+     "encounter": "grass/cave, visitor at night",
+     "location": "Route 120",
+     "map": "MAP_ROUTE120",
+     "levels": "25-27",
+     "rate_percent": 25,
+     "visitor": "night",
+     "requires": "Surf (after the Petalburg Gym); visitor at night",
+     "badges": 5,
+     "renewable": true
+    },
+    {
+     "method": "wild",
+     "encounter": "grass/cave, visitor at night",
+     "location": "Route 123",
+     "map": "MAP_ROUTE123",
+     "levels": "25-28",
+     "rate_percent": 25,
+     "visitor": "night",
+     "requires": "Surf (after the Petalburg Gym); visitor at night",
      "badges": 5,
      "renewable": true
     }
@@ -13457,6 +13985,30 @@
      "table_encounter_rate": 35,
      "requires": "after the Hall of Fame (National Dex areas); Super Rod (Mossdeep)",
      "badges": 9,
+     "renewable": true
+    },
+    {
+     "method": "wild",
+     "encounter": "super rod, visitor in the evening",
+     "location": "Route 109",
+     "map": "MAP_ROUTE109",
+     "levels": "25-45",
+     "rate_percent": 25,
+     "visitor": "evening",
+     "requires": "Slateport (after the Dewford Gym); Super Rod (Mossdeep); visitor in the evening",
+     "badges": 7,
+     "renewable": true
+    },
+    {
+     "method": "wild",
+     "encounter": "super rod, visitor in the evening",
+     "location": "Route 128",
+     "map": "MAP_ROUTE128",
+     "levels": "30-45",
+     "rate_percent": 25,
+     "visitor": "evening",
+     "requires": "the eighth badge (Waterfall); Super Rod (Mossdeep); visitor in the evening",
+     "badges": 8,
      "renewable": true
     }
    ],
@@ -15137,6 +15689,30 @@
      "requires": "Route 111 north (after the Mauville Gym)",
      "badges": 3,
      "renewable": true
+    },
+    {
+     "method": "wild",
+     "encounter": "grass/cave, visitor in rain",
+     "location": "Route 119",
+     "map": "MAP_ROUTE119",
+     "levels": "24-27",
+     "rate_percent": 25,
+     "visitor": "rain",
+     "requires": "Surf (after the Petalburg Gym); visitor in rain",
+     "badges": 5,
+     "renewable": true
+    },
+    {
+     "method": "wild",
+     "encounter": "grass/cave, visitor in rain",
+     "location": "Route 123",
+     "map": "MAP_ROUTE123",
+     "levels": "25-28",
+     "rate_percent": 25,
+     "visitor": "rain",
+     "requires": "Surf (after the Petalburg Gym); visitor in rain",
+     "badges": 5,
+     "renewable": true
     }
    ],
    "evolution": [],
@@ -16449,6 +17025,18 @@
      "table_encounter_rate": 20,
      "requires": "start",
      "badges": 0,
+     "renewable": true
+    },
+    {
+     "method": "wild",
+     "encounter": "surf, visitor in rain",
+     "location": "Route 119",
+     "map": "MAP_ROUTE119",
+     "levels": "5-35",
+     "rate_percent": 25,
+     "visitor": "rain",
+     "requires": "Surf (after the Petalburg Gym); Surf; visitor in rain",
+     "badges": 5,
      "renewable": true
     }
    ],
@@ -17775,7 +18363,7 @@
    "species": "SPECIES_VOLBEAT",
    "national_dex": 313,
    "hoenn_dex": 92,
-   "earliest_badges_with_evolution": 2,
+   "earliest_badges_with_evolution": 0,
    "name": "Volbeat",
    "types": [
     "Bug"
@@ -17797,6 +18385,18 @@
      "renewable": true
     },
     {
+     "method": "wild",
+     "encounter": "grass/cave, visitor in the evening",
+     "location": "Route 102",
+     "map": "MAP_ROUTE102",
+     "levels": "3-4",
+     "rate_percent": 25,
+     "visitor": "evening",
+     "requires": "start; visitor in the evening",
+     "badges": 0,
+     "renewable": true
+    },
+    {
      "method": "co-op wild pair",
      "encounter": "grass/cave",
      "location": "Route 117",
@@ -17807,12 +18407,24 @@
      "badges": 2,
      "renewable": true,
      "coop_only": true
+    },
+    {
+     "method": "co-op wild pair",
+     "encounter": "grass/cave, visitor in the evening",
+     "location": "Route 102",
+     "map": "MAP_ROUTE102",
+     "levels": "3-4",
+     "rate_percent": 25,
+     "requires": "start; visitor in the evening; both players on the same tile when a wild Illumise appears",
+     "badges": 0,
+     "renewable": true,
+     "coop_only": true
     }
    ],
    "evolution": [],
    "renewable": true,
    "solo": true,
-   "earliest_badges": 2,
+   "earliest_badges": 0,
    "dex_area": "wild areas shown",
    "issues": [],
    "verification": "source-checked (audit), not played"
@@ -17821,7 +18433,7 @@
    "species": "SPECIES_ILLUMISE",
    "national_dex": 314,
    "hoenn_dex": 93,
-   "earliest_badges_with_evolution": 2,
+   "earliest_badges_with_evolution": 0,
    "name": "Illumise",
    "types": [
     "Bug"
@@ -17843,6 +18455,18 @@
      "renewable": true
     },
     {
+     "method": "wild",
+     "encounter": "grass/cave, visitor in the evening",
+     "location": "Route 102",
+     "map": "MAP_ROUTE102",
+     "levels": "3-4",
+     "rate_percent": 25,
+     "visitor": "evening",
+     "requires": "start; visitor in the evening",
+     "badges": 0,
+     "renewable": true
+    },
+    {
      "method": "co-op wild pair",
      "encounter": "grass/cave",
      "location": "Route 117",
@@ -17853,12 +18477,24 @@
      "badges": 2,
      "renewable": true,
      "coop_only": true
+    },
+    {
+     "method": "co-op wild pair",
+     "encounter": "grass/cave, visitor in the evening",
+     "location": "Route 102",
+     "map": "MAP_ROUTE102",
+     "levels": "3-4",
+     "rate_percent": 25,
+     "requires": "start; visitor in the evening; both players on the same tile when a wild Volbeat appears",
+     "badges": 0,
+     "renewable": true,
+     "coop_only": true
     }
    ],
    "evolution": [],
    "renewable": true,
    "solo": true,
-   "earliest_badges": 2,
+   "earliest_badges": 0,
    "dex_area": "wild areas shown",
    "issues": [],
    "verification": "source-checked (audit), not played"
@@ -19099,6 +19735,18 @@
      "rate_percent": 20,
      "table_encounter_rate": 20,
      "requires": "Route 111 north (after the Mauville Gym)",
+     "badges": 3,
+     "renewable": true
+    },
+    {
+     "method": "wild",
+     "encounter": "grass/cave, visitor in falling ash",
+     "location": "Route 113",
+     "map": "MAP_ROUTE113",
+     "levels": "14-16",
+     "rate_percent": 25,
+     "visitor": "ash",
+     "requires": "Route 111 north (after the Mauville Gym); visitor in falling ash",
      "badges": 3,
      "renewable": true
     }
@@ -23857,7 +24505,7 @@
    "species": "SPECIES_HONCHKROW",
    "national_dex": 430,
    "hoenn_dex": 513,
-   "earliest_badges_with_evolution": 5,
+   "earliest_badges_with_evolution": 3,
    "name": "Honchkrow",
    "types": [
     "Dark",
@@ -26302,6 +26950,30 @@
      "rate_percent": 10,
      "table_encounter_rate": 20,
      "requires": "Petalburg/Rustboro reached",
+     "badges": 0,
+     "renewable": true
+    },
+    {
+     "method": "wild",
+     "encounter": "grass/cave, visitor at night",
+     "location": "Route 103",
+     "map": "MAP_ROUTE103",
+     "levels": "2-4",
+     "rate_percent": 25,
+     "visitor": "night",
+     "requires": "start; visitor at night",
+     "badges": 0,
+     "renewable": true
+    },
+    {
+     "method": "wild",
+     "encounter": "grass/cave, visitor at night",
+     "location": "Route 116",
+     "map": "MAP_ROUTE116",
+     "levels": "6-8",
+     "rate_percent": 25,
+     "visitor": "night",
+     "requires": "Petalburg/Rustboro reached; visitor at night",
      "badges": 0,
      "renewable": true
     }
@@ -29416,6 +30088,18 @@
      "rate_percent": 15,
      "table_encounter_rate": 30,
      "requires": "Mossdeep (after the Fortree Gym); Super Rod (Mossdeep)",
+     "badges": 7,
+     "renewable": true
+    },
+    {
+     "method": "wild",
+     "encounter": "super rod, visitor at night",
+     "location": "Route 122",
+     "map": "MAP_ROUTE122",
+     "levels": "25-45",
+     "rate_percent": 25,
+     "visitor": "night",
+     "requires": "Surf (after the Petalburg Gym); Super Rod (Mossdeep); visitor at night",
      "badges": 7,
      "renewable": true
     }
@@ -33506,6 +34190,30 @@
      "table_encounter_rate": 10,
      "requires": "Route 111 north (after the Mauville Gym)",
      "badges": 3,
+     "renewable": true
+    },
+    {
+     "method": "wild",
+     "encounter": "grass/cave, visitor at night",
+     "location": "Route 115",
+     "map": "MAP_ROUTE115",
+     "levels": "23-26",
+     "rate_percent": 25,
+     "visitor": "night",
+     "requires": "Route 111 north (after the Mauville Gym); visitor at night",
+     "badges": 3,
+     "renewable": true
+    },
+    {
+     "method": "wild",
+     "encounter": "grass/cave, visitor at night",
+     "location": "Route 118",
+     "map": "MAP_ROUTE118",
+     "levels": "24-27",
+     "rate_percent": 25,
+     "visitor": "night",
+     "requires": "Surf (after the Petalburg Gym); visitor at night",
+     "badges": 5,
      "renewable": true
     }
    ],

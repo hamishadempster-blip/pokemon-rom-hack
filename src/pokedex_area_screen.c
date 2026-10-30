@@ -1,4 +1,5 @@
 #include "global.h"
+#include "coop_encounters.h"
 #include "bg.h"
 #include "decompress.h"
 #include "event_data.h"
@@ -382,7 +383,9 @@ static void FindMapsWithMon(enum Species species)
         if (GetRegionMapType(headerSectionId) != currentRegionMapType)
             continue;
 
-        if (MapHasSpecies(&gWildMonHeaders[i].encounterTypes[gAreaTimeOfDay], headerSectionId, species))
+        // Visitors by time of day and weather count too (src/coop_encounters.c).
+        if (MapHasSpecies(&gWildMonHeaders[i].encounterTypes[gAreaTimeOfDay], headerSectionId, species)
+         || CoopVisitor_MapHasSpecies(gWildMonHeaders[i].mapGroup, gWildMonHeaders[i].mapNum, species))
         {
             switch (gWildMonHeaders[i].mapGroup)
             {
