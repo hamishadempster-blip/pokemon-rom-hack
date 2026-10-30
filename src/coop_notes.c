@@ -86,32 +86,33 @@ static void Notes_SetClaimed(struct CoopSaveV5 *v5, u32 i)
     v5->collectionClaimed[i / 8] |= 1 << (i % 8);
 }
 
-static u16 Notes_Progress(u8 kind, u16 *target)
+// The progress counts, worked out once per payout check: each count reads
+// a thousand Pokédex flags, and doing it per reward cost about a frame.
+struct NotesCounts
 {
-    u16 total;
-    u16 caught;
+    u16 dex;
+    u16 visitors;
+    u16 visitorKinds;
+};
 
-    switch (kind)
-    {
-    case NOTES_DEX:
-        return GetNationalPokedexCount(FLAG_GET_CAUGHT);
-    case NOTES_VISITORS:
-        return CoopVisitor_CountCaught(&total);
-    case NOTES_VISITORS_ALL:
-        caught = CoopVisitor_CountCaught(&total);
-        if (target != NULL)
-            *target = total;
-        return caught;
-    }
-    return 0;
+static void Notes_Count(struct NotesCounts *c)
+{
+    c->dex = GetNationalPokedexCount(FLAG_GET_CAUGHT);
+    c->visitors = CoopVisitor_CountCaught(&c->visitorKinds);
 }
 
-static bool8 Notes_Earned(u32 i)
+static bool8 Notes_Earned(u32 i, const struct NotesCounts *c)
 {
-    u16 need = sRewards[i].need;
-    u16 progress = Notes_Progress(sRewards[i].kind, &need);
-
-    return progress >= need;
+    switch (sRewards[i].kind)
+    {
+    case NOTES_DEX:
+        return c->dex >= sRewards[i].need;
+    case NOTES_VISITORS:
+        return c->visitors >= sRewards[i].need;
+    case NOTES_VISITORS_ALL:
+        return c->visitorKinds != 0 && c->visitors >= c->visitorKinds;
+    }
+    return FALSE;
 }
 
 static bool8 Notes_PendingValid(const struct CoopPendingReward *r)
@@ -170,6 +171,7 @@ static EWRAM_DATA bool8 sNotesPendingPageShown = FALSE;
 static u8 Notes_Pay(void)
 {
     struct CoopSaveV5 *v5 = Notes_Save();
+    struct NotesCounts counts;
     u32 i;
 
     if (v5 == NULL)
@@ -193,12 +195,12 @@ static u8 Notes_Pay(void)
         memset(r, 0, sizeof(*r));
         return PAY_DELIVERED;
     }
+    Notes_Count(&counts);
     for (i = 0; i < ARRAY_COUNT(sRewards); i++)
     {
         const struct NotesReward *r = &sRewards[i];
-        u16 total;
 
-        if (Notes_Claimed(v5, i) || !Notes_Earned(i))
+        if (Notes_Claimed(v5, i) || !Notes_Earned(i, &counts))
             continue;
         switch (r->kind)
         {
@@ -211,9 +213,8 @@ static u8 Notes_Pay(void)
             StringAppend(gStringVar1, COMPOUND_STRING(" visitors caught!"));
             break;
         case NOTES_VISITORS_ALL:
-            CoopVisitor_CountCaught(&total);
             StringCopy(gStringVar1, COMPOUND_STRING("all "));
-            ConvertIntToDecimalStringN(gStringVar1 + 4, total, STR_CONV_MODE_LEFT_ALIGN, 3);
+            ConvertIntToDecimalStringN(gStringVar1 + 4, counts.visitorKinds, STR_CONV_MODE_LEFT_ALIGN, 3);
             StringAppend(gStringVar1, COMPOUND_STRING(" visitors!"));
             break;
         }
@@ -301,7 +302,7 @@ u16 CoopNotes_BufferPage(void)
     switch (gSpecialVar_0x8004)
     {
     case 0:
-        caught = Notes_Progress(NOTES_DEX, NULL);
+        caught = GetNationalPokedexCount(FLAG_GET_CAUGHT);
         p = StringCopy(p, COMPOUND_STRING("Caught: "));
         p = ConvertIntToDecimalStringN(p, caught, STR_CONV_MODE_LEFT_ALIGN, 4);
         p = StringCopy(p, COMPOUND_STRING(" kinds of POKéMON.\n"));
