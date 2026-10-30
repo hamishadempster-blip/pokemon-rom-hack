@@ -932,6 +932,7 @@ const u8 *const gBattleStringsTable[STRINGID_COUNT] =
     [STRINGID_BELCHCANTUSE]                         = COMPOUND_STRING("{B_ATK_NAME_WITH_PREFIX} hasn't eaten any held Berries, so it can't possibly belch!\p"),
     [STRINGID_COOPTHREWBALL]                        = COMPOUND_STRING("{B_ATK_TRAINER_NAME} threw a {B_LAST_ITEM}!"),
     [STRINGID_COOPGOTCHA]                           = COMPOUND_STRING("Gotcha! {B_ATK_TRAINER_NAME} caught {B_DEF_NAME}!\p"),
+    [STRINGID_COOPCATCHRESULT]                      = COMPOUND_STRING("{B_COPY_VAR_1}\p{B_COPY_VAR_2}\p"),
     [STRINGID_COOPBALLMISSED]                       = COMPOUND_STRING("The {B_LAST_ITEM} missed! That Pokémon is already gone."),
     [STRINGID_COOPRUNNEEDSBOTH]                     = COMPOUND_STRING("{B_ATK_TRAINER_NAME} wants to run. Both players have to pick RUN on the same turn."),
 };

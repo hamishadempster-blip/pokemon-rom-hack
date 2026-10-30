@@ -481,6 +481,7 @@ void CB2_InitBattle(void)
 {
     if (gBattleTypeFlags & BATTLE_TYPE_COOP)
         Coop_NoteStartTime(COOP_START_INIT);
+    ResetLowHpEpisodes(); // co-op LOW HP ALARM: 3 BEEPS starts afresh
     // Trainer Bond: the party's stats for this battle's rules (no bonus in
     // PvP, Frontier, practice), before any party data is exchanged.
     CoopBond_RefreshPartyForBattle();

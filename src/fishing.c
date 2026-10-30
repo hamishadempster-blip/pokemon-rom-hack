@@ -1,4 +1,5 @@
 #include "global.h"
+#include "coop.h"
 #include "main.h"
 #include "event_object_movement.h"
 #include "fieldmap.h"
@@ -294,6 +295,13 @@ static bool32 Fishing_GotBite(struct Task *task)
 
 static bool32 Fishing_ChangeMinigame(struct Task *task)
 {
+    // Co-op setting EASY FISHING: the bite waits for A (B lets it go);
+    // the rod, the map's fishing Pokemon and the encounter are unchanged.
+    if (Coop_SettingOn(COOP_SET_EASY_FISHING))
+    {
+        task->tStep = FISHING_A_PRESS_NO_MINIGAME;
+        return TRUE;
+    }
     switch (I_FISHING_MINIGAME)
     {
     case GEN_1:
@@ -331,6 +339,8 @@ static bool32 Fishing_APressNoMinigame(struct Task *task)
     AlignFishingAnimationFrames();
     if (JOY_NEW(A_BUTTON))
         task->tStep = FISHING_MON_ON_HOOK;
+    else if (JOY_NEW(B_BUTTON) && Coop_SettingOn(COOP_SET_EASY_FISHING))
+        task->tStep = FISHING_GOT_AWAY;
     return FALSE;
 }
 

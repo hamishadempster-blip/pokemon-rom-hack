@@ -1,0 +1,72 @@
+# Catch result in a solo wild battle (lab saves, not linked). FIXTURES: a
+# MASTER BALL put in the bag (test_item); gCoopTestForceShiny makes the
+# wild Pokemon shiny; fixture_warp into Route 116's grass; force_encounter.
+# DRIVER: catch (throws the MASTER BALL, then mashes through the messages).
+# Checks: after "Gotcha!", the result says the species with its star, that
+# it is NEW in this save's Pokedex, its nature and ability, then "It will
+# join your party."; the stock Pokedex page and nickname question follow;
+# the Pokemon joins the party as before. Then CATCH RESULT set OFF in
+# CO-OP > SETTINGS (real menu input) and a second catch shows no result.
+include continue.inc
+b no_wild 1
+b mash_field 300 B
+0 test_item 4 2
+0 fixture_warp 0 31 12 8
+b until_field 3000
+0 write gCoopTestForceShiny:4 0x5A1A7E57
+0 force_encounter 1
+b no_wild 0
+0 pace_until_battle 3000
+0 force_encounter 0
+b no_wild 1
+0 write gCoopTestForceShiny:4 0
+0 note_text POKeDEX!
+0 catch 1 20000 4
+0 until_field 3000
+0 expect_noted
+0 expect_mon 1 species -
+0 expect_mon 1 dexcaught 1
+0 shot caught-1
+# CO-OP > SETTINGS > CATCH RESULT: OFF (the fourth line).
+0 press START 2
+0 wait 40
+0 menu_to COOP
+0 press A 2
+0 until_task Task_HandleScrollingMultichoiceInput 2000
+0 wait 20
+0 press DOWN 2
+0 wait 10
+0 press DOWN 2
+0 wait 10
+0 press DOWN 2
+0 wait 10
+0 press DOWN 2
+0 wait 10
+0 press DOWN 2
+0 wait 10
+0 press A 2
+0 wait 30
+0 until_task Task_HandleScrollingMultichoiceInput 2000
+0 wait 20
+0 press DOWN 2
+0 wait 10
+0 press DOWN 2
+0 wait 10
+0 press DOWN 2
+0 wait 10
+0 shot settings
+0 press A 2
+0 until_task Task_HandleScrollingMultichoiceInput 2000
+0 wait 20
+0 shot settings-after
+0 press B 2
+0 mash_field 600 B
+0 force_encounter 1
+b no_wild 0
+0 pace_until_battle 3000
+0 force_encounter 0
+b no_wild 1
+0 note_text join
+0 catch 1 20000 4
+0 until_field 3000
+0 expect_not_noted

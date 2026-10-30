@@ -1,0 +1,80 @@
+# LOW HP ALARM (solo; lab saves, not linked). FIXTURES: Kai's lead hurt to
+# 1 HP (test_data hp, the red bar); fixture_warp into Route 116's grass;
+# force_encounter. The setting is changed through CO-OP > SETTINGS (real
+# menu input).
+# Checks on SE player 3 (gMPlayInfo_SE3: song header, status word; the
+# alarm SE_LOW_HEALTH is four 36-frame beeps when left to play out):
+# 1. Default 3 BEEPS: the alarm starts at the send-out and is stopped about
+#    100 frames later (three beeps: the frames of the two hex lines), and
+#    closing the BAG does not start it again (same episode).
+# 2. LOW HP ALARM: OFF: a new battle with the same red bar plays no alarm
+#    (the status stays stopped through the send-out and the action menu).
+include continue.inc
+b no_wild 1
+b mash_field 300 B
+0 test_data 0 hp 1
+0 fixture_warp 0 31 12 8
+b until_field 3000
+0 force_encounter 1
+b no_wild 0
+0 pace_until_battle 3000
+0 force_encounter 0
+b no_wild 1
+0 until_mem gMPlayInfo_SE3:4 se_low_health 3000 A
+0 hex gMPlayInfo_SE3 8
+0 until_mem gMPlayInfo_SE3+7:1 128 400
+0 hex gMPlayInfo_SE3 8
+0 until_mem gBattlerControllerFuncs:4 HandleInputChooseAction 9000 A
+0 wait 60
+0 press RIGHT 2
+0 wait 10
+0 press A 2
+0 wait 150
+0 press B 2
+0 until_mem gBattlerControllerFuncs:4 HandleInputChooseAction 3000
+0 wait 20
+0 expect gMPlayInfo_SE3+7:1 128
+0 press DOWN 2
+0 wait 10
+0 press A 2
+0 mash_field 4000 B
+# CO-OP > SETTINGS > LOW HP ALARM (the first line): OFF.
+0 press START 2
+0 wait 40
+0 menu_to COOP
+0 press A 2
+0 until_task Task_HandleScrollingMultichoiceInput 2000
+0 wait 20
+0 press DOWN 2
+0 wait 10
+0 press DOWN 2
+0 wait 10
+0 press DOWN 2
+0 wait 10
+0 press DOWN 2
+0 wait 10
+0 press DOWN 2
+0 wait 10
+0 press A 2
+0 wait 30
+0 until_task Task_HandleScrollingMultichoiceInput 2000
+0 wait 20
+0 press A 2
+0 wait 30
+0 until_task Task_HandleScrollingMultichoiceInput 2000
+0 wait 20
+0 shot lowhp-setting
+0 press B 2
+0 mash_field 600 B
+0 fixture_warp 0 31 12 8
+b until_field 3000
+0 force_encounter 1
+b no_wild 0
+0 pace_until_battle 3000
+0 force_encounter 0
+b no_wild 1
+0 until_mem gBattlerControllerFuncs:4 HandleInputChooseAction 9000 A
+0 expect gMPlayInfo_SE3+7:1 128
+0 wait 40
+0 expect gMPlayInfo_SE3+7:1 128
+0 shot lowhp-red-bar

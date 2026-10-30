@@ -1,4 +1,5 @@
 #include "global.h"
+#include "coop_catch.h"
 #include "coop_deal.h"
 #include "constants/coop.h"
 #include "battle.h"
@@ -11027,6 +11028,18 @@ void BS_PalaceTryEscapeStatus(void)
     if (BattlePalace_TryEscapeStatus(gBattlerAttacker))
         return;
     gBattlescriptCurrInstr = cmd->nextInstr;
+}
+
+// Catch result (src/coop_catch.c): buffered for STRINGID_COOPCATCHRESULT,
+// or skipped when the CATCH RESULT setting is off.
+void BS_CoopCatchResult(void)
+{
+    NATIVE_ARGS(const u8 *skipInstr);
+
+    if (CoopCatch_BufferBattleResult(GetBattlerMon(gBattlerTarget)))
+        gBattlescriptCurrInstr = cmd->nextInstr;
+    else
+        gBattlescriptCurrInstr = cmd->skipInstr;
 }
 
 // Co-op wild: a catch takes that Pokémon off the field the way a wild

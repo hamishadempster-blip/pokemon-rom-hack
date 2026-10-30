@@ -27,6 +27,7 @@ void BattleLoadSubstituteOrMonSpriteGfx(enum BattlerId battler, bool8 loadMonSpr
 void LoadBattleMonGfxAndAnimate(enum BattlerId battler, bool8 loadMonSprite, u8 spriteId);
 void TrySetBehindSubstituteSpriteBit(enum BattlerId battler, enum Move move);
 void ClearBehindSubstituteBit(enum BattlerId battler);
+void ResetLowHpEpisodes(void);
 void HandleLowHpMusicChange(struct Pokemon *mon, enum BattlerId battler);
 void BattleStopLowHpSound(void);
 void HandleBattleLowHpMusicChange(void);

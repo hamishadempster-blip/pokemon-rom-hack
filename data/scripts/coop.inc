@@ -334,14 +334,49 @@ Coop_EventScript_Menu::
 	@ Not linked: LINK UP first, so A, A still links as it always has.
 	special Coop_BufferUnlinkedMenu
 	messageinstant gStringVar4
-	dynmultichoice 18, 1, FALSE, 6, 0, DYN_MULTICHOICE_CB_NONE, Coop_Text_OptLinkUp, Coop_Text_OptJournal, Coop_Text_OptPartnerDex, Coop_Text_OptLevelCap, Coop_Text_OptAppearance, Coop_Text_OptBack
+	dynmultichoice 18, 1, FALSE, 7, 0, DYN_MULTICHOICE_CB_NONE, Coop_Text_OptLinkUp, Coop_Text_OptJournal, Coop_Text_OptPartnerDex, Coop_Text_OptLevelCap, Coop_Text_OptAppearance, Coop_Text_OptSettings, Coop_Text_OptBack
 	switch VAR_RESULT
 	case 0, Coop_EventScript_MenuLinkUp
 	case 1, Coop_EventScript_MenuJournal
 	case 2, Coop_EventScript_MenuOfflineDex
 	case 3, Coop_EventScript_AskToggleCap
 	case 4, Coop_EventScript_MenuAppearance
+	case 5, Coop_EventScript_MenuSettings
 	goto Coop_EventScript_MenuBack
+
+@ SETTINGS: this save's personal conveniences (COOP_SET_*, src/coop.c);
+@ A changes the one under the cursor. Never sent to the partner.
+Coop_EventScript_MenuSettings::
+	setvar VAR_0x8006, 0
+Coop_EventScript_MenuSettingsShow::
+	messageinstant Coop_Text_SettingsHelp
+	setvar VAR_0x8004, 0
+	special Coop_BufferSettingLabel
+	dynmultipush Coop_Text_SettingLabel, 0
+	setvar VAR_0x8004, 1
+	special Coop_BufferSettingLabel
+	dynmultipush Coop_Text_SettingLabel, 1
+	setvar VAR_0x8004, 2
+	special Coop_BufferSettingLabel
+	dynmultipush Coop_Text_SettingLabel, 2
+	setvar VAR_0x8004, 3
+	special Coop_BufferSettingLabel
+	dynmultipush Coop_Text_SettingLabel, 3
+	dynmultipush Coop_Text_OptBack, 4
+	dynmultistack 8, 1, FALSE, 5, FALSE, VAR_0x8006, DYN_MULTICHOICE_CB_NONE
+	goto_if_ge VAR_RESULT, 4, Coop_EventScript_MenuBack
+	copyvar VAR_0x8004, VAR_RESULT
+	copyvar VAR_0x8006, VAR_RESULT
+	special Coop_ToggleSetting
+	goto Coop_EventScript_MenuSettingsShow
+
+Coop_Text_SettingLabel:
+	.string "{STR_VAR_1}$"
+Coop_Text_SettingsHelp:
+	.string "Your own settings (not your partner's).\n"
+	.string "A changes one.$"
+Coop_Text_OptSettings:
+	.string "SETTINGS$"
 
 @ APPEARANCE: the bedroom wardrobe's outfit list, from anywhere (0xC017013E).
 Coop_EventScript_MenuAppearance::
@@ -434,10 +469,10 @@ Coop_EventScript_MenuLinked::
 	specialvar VAR_RESULT, Coop_BufferMenuExplain
 	messageinstant gStringVar4
 	goto_if_eq VAR_RESULT, TRUE, Coop_EventScript_MenuLinkedBeaconOn
-	dynmultichoice 18, 1, FALSE, 8, 0, DYN_MULTICHOICE_CB_NONE, Coop_Text_OptBeaconOn, Coop_Text_OptUnlink, Coop_Text_OptPartnerDex, Coop_Text_OptJournal, Coop_Text_OptNameTag, Coop_Text_OptPing, Coop_Text_OptAppearance, Coop_Text_OptBack
+	dynmultichoice 18, 1, FALSE, 8, 0, DYN_MULTICHOICE_CB_NONE, Coop_Text_OptBeaconOn, Coop_Text_OptUnlink, Coop_Text_OptPartnerDex, Coop_Text_OptJournal, Coop_Text_OptNameTag, Coop_Text_OptPing, Coop_Text_OptAppearance, Coop_Text_OptSettings, Coop_Text_OptBack
 	goto Coop_EventScript_MenuLinkedChoice
 Coop_EventScript_MenuLinkedBeaconOn::
-	dynmultichoice 18, 1, FALSE, 8, 0, DYN_MULTICHOICE_CB_NONE, Coop_Text_OptBeaconOff, Coop_Text_OptUnlink, Coop_Text_OptPartnerDex, Coop_Text_OptJournal, Coop_Text_OptNameTag, Coop_Text_OptPing, Coop_Text_OptAppearance, Coop_Text_OptBack
+	dynmultichoice 18, 1, FALSE, 8, 0, DYN_MULTICHOICE_CB_NONE, Coop_Text_OptBeaconOff, Coop_Text_OptUnlink, Coop_Text_OptPartnerDex, Coop_Text_OptJournal, Coop_Text_OptNameTag, Coop_Text_OptPing, Coop_Text_OptAppearance, Coop_Text_OptSettings, Coop_Text_OptBack
 Coop_EventScript_MenuLinkedChoice::
 	switch VAR_RESULT
 	case 0, Coop_EventScript_MenuBeacon
@@ -447,6 +482,7 @@ Coop_EventScript_MenuLinkedChoice::
 	case 4, Coop_EventScript_MenuNameTag
 	case 5, Coop_EventScript_MenuPing
 	case 6, Coop_EventScript_MenuAppearance
+	case 7, Coop_EventScript_MenuSettings
 	goto Coop_EventScript_MenuBack
 
 @ PING from anywhere (the partner menu has it too): a sound, a note and the
@@ -1093,6 +1129,9 @@ Coop_EventScript_CaughtNicknameNext::
 	specialvar VAR_RESULT, Coop_NextCaughtNickname
 	goto_if_eq VAR_RESULT, SPECIES_NONE, Coop_EventScript_CaughtNicknameDone
 	msgbox Coop_Text_YouCaught, MSGBOX_DEFAULT
+	@ The catch result (CO-OP > SETTINGS > CATCH RESULT; gStringVar1 kept).
+	specialvar VAR_RESULT, Coop_BufferCatchResult
+	call_if_eq VAR_RESULT, TRUE, Coop_EventScript_ShowCatchResult
 	msgbox Coop_Text_NicknameCaught, MSGBOX_YESNO
 	goto_if_eq VAR_RESULT, NO, Coop_EventScript_CaughtNicknameNext
 	fadescreen FADE_TO_BLACK
@@ -1102,6 +1141,10 @@ Coop_EventScript_CaughtNicknameNext::
 Coop_EventScript_CaughtNicknameDone::
 	releaseall
 	end
+
+Coop_EventScript_ShowCatchResult::
+	msgbox gStringVar4, MSGBOX_DEFAULT
+	return
 
 @ Stage 5. Called from inside the engaged trainer's own battle script, so
 @ it returns there and the stock post-battle text runs after either fight.

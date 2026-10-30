@@ -45,6 +45,12 @@ extern struct CoopTestMailbox gCoopTestMailbox;
 #define COOP_TEST_START_ARMED 0x57A27ED0
 extern u32 gCoopTestStartArmed;
 
+// Test fixture: while the harness has written COOP_TEST_FORCE_SHINY here,
+// newly made wild and gift Pokemon are shiny (src/pokemon.c). Nothing in the
+// game writes it.
+#define COOP_TEST_FORCE_SHINY 0x5A1A7E57
+extern u32 gCoopTestForceShiny;
+
 void CoopTest_Poll(void);
 
 #endif // GUARD_COOP_TESTHOOK_H

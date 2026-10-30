@@ -90,6 +90,8 @@ struct Player {
     int itemPhase;        // battle_item: step within the bag
     int healPct, healState, healsLeft, healTarget, healUses; unsigned healFrame;
     char noteText[64]; int noteSeen;   // note_text / expect_noted
+    int noteShotFrame, noteShots;      // a screenshot 45 frames after a note matched
+    int fishBite, fishGotAway;         // fish DELAY: frames since the bite; casts lost
     unsigned monNote[8]; int monNoteSet[8];   // expect_mon ... @K
 };
 
@@ -1845,12 +1847,24 @@ static void frameCallback(struct mCoreThread* t) {
             p->vsFlags = rd16(p, task + 14);
     }
 
+	// A note's screenshot (noted-N), once the message has had time to print.
+	if (p->noteShotFrame && p->frame >= p->noteShotFrame) {
+		char name[32];
+		snprintf(name, sizeof(name), "noted-%d", ++p->noteShots);
+		writePng(p, name);
+		p->noteShotFrame = 0;
+	}
 	// note_text: watch gStringVar4 every frame for the words (a message
 	// that a later one replaces before any command could look).
 	if (p->noteText[0] && !p->noteSeen) {
 		char text[440];
 		gameText(p, symAddr("gStringVar4"), text, sizeof(text));
-		if (strstr(text, p->noteText)) { p->noteSeen = 1; out("[f%06d p%d] noted \"%s\"\n", p->frame, p->id, text); }
+		if (strstr(text, p->noteText)) { p->noteSeen = 1; p->noteShotFrame = p->frame + 45; out("[f%06d p%d] noted \"%s\"\n", p->frame, p->id, text); }
+		// Battle messages too (a battle string never reaches gStringVar4).
+		else if (symFind("gDisplayedStringBattle")) {
+			gameText(p, symAddr("gDisplayedStringBattle"), text, sizeof(text));
+			if (strstr(text, p->noteText)) { p->noteSeen = 1; p->noteShotFrame = p->frame + 45; out("[f%06d p%d] noted (battle) \"%s\"\n", p->frame, p->id, text); }
+		}
 	}
 	unsigned keys = 0;
 	while (!p->done) {
@@ -3176,8 +3190,8 @@ static void frameCallback(struct mCoreThread* t) {
             // fish [T]: the registered rod (SELECT) while facing water, again
             // after "Not even a nibble"; A for the bite and the messages.
             // Done when a battle starts.
-            if (rd8(p, sMain + 0x439) & 2) { out("[f%06d p%d] fish: a bite (%d casts)\n", p->frame, p->id, p->grindCount); p->grindCount = 0; p->step = 0; advance = true; break; }
-            if (++p->step >= c->frames) { out("[p%d] FAIL fish: no battle after %d casts\n", p->id, p->grindCount); sFailures++; p->grindCount = 0; p->step = 0; advance = true; break; }
+            if (rd8(p, sMain + 0x439) & 2) { out("[f%06d p%d] fish: a battle (%d casts, %d got away, A %d frames after the bite)\n", p->frame, p->id, p->grindCount, p->fishGotAway, p->fishBite); p->grindCount = 0; p->step = 0; p->fishBite = 0; p->fishGotAway = 0; advance = true; break; }
+            if (++p->step >= c->frames) { out("[p%d] FAIL fish: no battle after %d casts (%d got away)\n", p->id, p->grindCount, p->fishGotAway); sFailures++; p->grindCount = 0; p->step = 0; p->fishBite = 0; p->fishGotAway = 0; advance = true; break; }
             if (taskActive(p, "ExecuteMatchCall")) keys = (p->step % 8) < 2 ? 1 : 0;
             else if (taskActive(p, "Task_Fishing")) {
                 // A only from the bite on (FISHING_WAIT_FOR_A = 8 and later):
@@ -3185,7 +3199,14 @@ static void frameCallback(struct mCoreThread* t) {
                 unsigned tasks = symAddr("gTasks"), fn = symAddr("Task_Fishing") & ~1u; int st = -1;
                 for (int t = 0; t < 16; t++)
                     if (rd8(p, tasks + t * 0x28 + 4) && (rd32(p, tasks + t * 0x28) & ~1u) == fn) st = (int16_t)rd16(p, tasks + t * 0x28 + 8);
-                if (st >= 8) keys = (p->step & 1) ? 1 : 0;
+                // fish T DELAY: wait DELAY frames after the bite (states 8
+                // WAIT_FOR_A, 9 A_PRESS_NO_MINIGAME) before A, as a slow
+                // player would (EASY FISHING); 14 GOT_AWAY is counted.
+                if (st == 14 && p->fishBite) { out("[f%06d p%d] fish: it got away (%d frames after the bite)\n", p->frame, p->id, p->fishBite); p->fishBite = 0; p->fishGotAway++; }
+                if (st == 8 || st == 9) {
+                    if (p->fishBite++ == 0) out("[f%06d p%d] fish: a bite, state %d\n", p->frame, p->id, st);
+                    if (p->fishBite > (int)c->value) keys = (p->step & 1) ? 1 : 0;
+                } else if (st >= 8) keys = (p->step & 1) ? 1 : 0;
             } else if (inField(p)) { if ((p->step % 120) == 60) { keys = 1u << 2; p->grindCount++; } }
             else keys = (p->step % 8) < 2 ? 1 : 0;
             break;
@@ -4343,6 +4364,7 @@ static void loadScript(const char* path, int depth) {
         } else if (!strcmp(cmd, "fish")) {
             c.kind = C_FISH;
             c.frames = n >= 3 ? atoi(a) : 6000;
+            c.value = n >= 4 ? (unsigned)atoi(b) : 0;   // fish T DELAY
             snprintf(c.text, sizeof(c.text), "fish");
         } else if (!strcmp(cmd, "field_item")) {
             c.kind = C_FIELD_ITEM;

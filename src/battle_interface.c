@@ -1798,6 +1798,11 @@ void UpdateNickInHealthbox(u8 healthboxSpriteId, struct Pokemon *mon)
     if (GetBattlerSide(gSprites[healthboxSpriteId].hMain_Battler) == B_SIDE_OPPONENT && IsGhostBattleWithoutScope())
         gender = 100;
 
+    // Co-op: a shiny Pokemon keeps a small star after its name for the whole
+    // battle (both sides; the Illusion's disguise shows the disguise's).
+    if (IsMonShiny(mon))
+        ptr = StringCopy(ptr, COMPOUND_STRING("{STAR}"));
+
     switch (gender)
     {
     default:

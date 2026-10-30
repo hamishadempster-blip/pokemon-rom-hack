@@ -1,4 +1,5 @@
 #include "global.h"
+#include "coop.h"
 #include "battle.h"
 #include "battle_controllers.h"
 #include "battle_ai_main.h"
@@ -1042,33 +1043,62 @@ void ClearBehindSubstituteBit(enum BattlerId battler)
     gBattleSpritesDataPtr->battlerData[battler].behindSubstitute = 0;
 }
 
+// Co-op LOW HP ALARM (collection update, section 7). The stock alarm
+// (SE_LOW_HEALTH) is four two-tone beeps, 36 frames each. Here it stops
+// after the third, and plays once per low-health episode of each Pokemon on
+// the field: a new Pokemon in the red, or the same one after recovering,
+// starts a new episode; a battle start resets them. The setting OFF
+// (COOP_SET_LOWHP_SILENT) plays none. The red bar is unchanged either way;
+// nothing here touches battle state or the RNG.
+#define LOW_HP_THREE_BEEPS_FRAMES 100
+static EWRAM_DATA u32 sLowHpEpisodePid[MAX_BATTLERS_COUNT] = {0};
+
+void ResetLowHpEpisodes(void)
+{
+    memset(sLowHpEpisodePid, 0, sizeof(sLowHpEpisodePid));
+}
+
+static void Task_StopLowHpAfterThreeBeeps(u8 taskId)
+{
+    if (++gTasks[taskId].data[0] >= LOW_HP_THREE_BEEPS_FRAMES)
+    {
+        m4aSongNumStop(SE_LOW_HEALTH);
+        DestroyTask(taskId);
+    }
+}
+
+static void StartLowHpThreeBeeps(void)
+{
+    u8 taskId = FindTaskIdByFunc(Task_StopLowHpAfterThreeBeeps);
+
+    m4aSongNumStop(SE_LOW_HEALTH);
+    PlaySE(SE_LOW_HEALTH);
+    if (taskId == TASK_NONE)
+        taskId = CreateTask(Task_StopLowHpAfterThreeBeeps, 80);
+    gTasks[taskId].data[0] = 0;
+}
+
 void HandleLowHpMusicChange(struct Pokemon *mon, enum BattlerId battler)
 {
     u16 hp = GetMonData(mon, MON_DATA_HP);
     u16 maxHP = GetMonData(mon, MON_DATA_MAX_HP);
+    u32 pid = GetMonData(mon, MON_DATA_PERSONALITY);
 
-    if (GetHPBarLevel(hp, maxHP) == HP_BAR_RED)
+    if (GetHPBarLevel(hp, maxHP) == HP_BAR_RED && hp != 0)
     {
-        if (!gBattleSpritesDataPtr->battlerData[battler].lowHpSong)
-        {
-            if (!gBattleSpritesDataPtr->battlerData[GetPartnerBattler(battler)].lowHpSong)
-                PlaySE(SE_LOW_HEALTH);
-            gBattleSpritesDataPtr->battlerData[battler].lowHpSong = 1;
-        }
+        // A new episode only (not lowHpSong alone: the bag and party menus
+        // clear it, and coming back from them is the same episode).
+        if (sLowHpEpisodePid[battler] != pid && !Coop_SettingOn(COOP_SET_LOWHP_SILENT))
+            StartLowHpThreeBeeps();
+        gBattleSpritesDataPtr->battlerData[battler].lowHpSong = 1;
+        sLowHpEpisodePid[battler] = pid;
     }
     else
     {
         gBattleSpritesDataPtr->battlerData[battler].lowHpSong = 0;
-        if (!IsDoubleBattle())
-        {
+        sLowHpEpisodePid[battler] = 0;
+        if (!IsDoubleBattle() || !gBattleSpritesDataPtr->battlerData[GetPartnerBattler(battler)].lowHpSong)
             m4aSongNumStop(SE_LOW_HEALTH);
-            return;
-        }
-        if (IsDoubleBattle() && !gBattleSpritesDataPtr->battlerData[GetPartnerBattler(battler)].lowHpSong)
-        {
-            m4aSongNumStop(SE_LOW_HEALTH);
-            return;
-        }
     }
 }
 

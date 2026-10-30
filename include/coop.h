@@ -165,6 +165,11 @@ u16 Coop_PartnerOnSameTile(void);
 u16 Coop_SessionActive(void);
 u16 Coop_CableUp(void);
 u16 Coop_IsLevelCapOn(void);
+// Personal settings (COOP_SET_* in global.h; CO-OP > SETTINGS).
+bool8 Coop_SettingOn(u8 bit);
+u16 Coop_BufferCatchResult(void);
+void Coop_BufferSettingLabel(void);
+void Coop_ToggleSetting(void);
 u32 Coop_DisplayedLevelCap(void);
 u16 Coop_CaseChosen(void);
 u16 Coop_StartGymBattle(void);

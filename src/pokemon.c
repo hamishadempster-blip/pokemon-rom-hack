@@ -1,4 +1,5 @@
 #include "global.h"
+#include "coop_testhook.h"
 #include "coop_bond.h"
 #include "malloc.h"
 #include "apprentice.h"
@@ -873,6 +874,9 @@ bool32 ComputePlayerShinyOdds(u32 personality, u32 value)
         return FALSE;
 
     if (FlagGet(P_FLAG_FORCE_SHINY))
+        return TRUE;
+
+    if (gCoopTestForceShiny == COOP_TEST_FORCE_SHINY) // harness fixture only
         return TRUE;
 
     if (P_ONLY_OBTAINABLE_SHINIES && (CurrentBattlePyramidLocation() != PYRAMID_LOCATION_NONE || (FlagGet(WE_FLAG_NO_CATCHING))))

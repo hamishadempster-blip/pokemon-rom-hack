@@ -1,0 +1,39 @@
+# Shiny visibility and the SHINY CHECK in a co-op wild double (lab saves,
+# Route 101, linked, Beacon ON; as bond_coop_wild). FIXTURE:
+# gCoopTestForceShiny on Kai's game only (the master, which makes the wild
+# Pokemon), so a shiny on Rosa's screen proves both games use the same
+# Pokemon. DRIVER: smart_moves after the question.
+# Checks: both screens show the star on the same wild Pokemon
+# (screenshots); Rosa (the guest) picks RUN: only her screen asks "A shiny
+# Pokemon is still here. Leave?"; B returns her to the action menu while
+# Kai waits normally (no frozen wait); the battle then finishes normally.
+include wild_route101_start.inc
+b smart_moves 1
+0 write gCoopTestForceShiny:4 0x5A1A7E57
+0 write sWildEncountersDisabled 0
+0 pace_until_battle 9000
+0 write sWildEncountersDisabled 1
+0 write gCoopTestForceShiny:4 0
+0 until_cb2 BattleMainCB2 12000 A
+1 until_cb2 BattleMainCB2 12000 A
+1 until_mem gBattlerControllerFuncs+8:4 HandleInputChooseAction 9000 A
+b wait 30
+b shot coop-shiny
+1 press RIGHT 2
+1 wait 10
+1 press DOWN 2
+1 wait 10
+1 press A 2
+1 until_battle_text shiny_Pok 600
+1 until_mem gBattlerControllerFuncs+8:4 CoopShiny_HandleLeaveInput 600
+1 wait 10
+1 shot coop-shiny-ask
+1 press B 2
+1 until_mem gBattlerControllerFuncs+8:4 HandleInputChooseAction 300
+1 shot coop-shiny-back
+1 press LEFT 2
+1 wait 10
+1 press UP 2
+1 wait 10
+b mash_field 30000
+b expect gBattleOutcome 1

@@ -398,6 +398,13 @@ if [ -n "${J68:-}" ]; then
 	done
 fi
 
+# Polish (docs/COOP_POLISH.md): personal settings, shiny star and SHINY
+# CHECK, catch result, low-HP alarm (lab saves); EASY FISHING (J52).
+for s in shiny_run shiny_coop catch_result lowhp_beeps; do
+	run "$s" SAVE0="$lab0" SAVE1="$lab1"
+done
+[ -n "${J52:-}" ] && run easy_fishing SAVE0="$J52/p0.sav" SAVE1="$J52/p1.sav"
+
 # Trainer Bond (docs/COOP_BOND.md). Lab saves: co-op XP and agreement,
 # support XP (solo and the guest), the badge's one-time bonus. J16 (a save
 # from before the update): the mentor, ranks and reload, wild XP. SEG6:

@@ -1,0 +1,50 @@
+# EASY FISHING (solo; checkpoint 52 saves, not linked). FIXTURES: Kai gets
+# the SUPER ROD, registered to SELECT (fixture_item, writep), as in
+# late_wild_tour; fixture_warp to Route 121's bank. The setting is changed
+# through CO-OP > SETTINGS (real menu input); the rest is play: SURF south
+# onto Route 122's water, then fishing.
+# Checks: with EASY FISHING ON, a bite waits: the driver presses A only 200
+# frames after "Oh! A bite!" (the stock limit is 30 frames for the SUPER
+# ROD, after which it gets away) and the battle still starts.
+include continue.inc
+b mash_field 300 B
+0 fixture_item 4 711 1
+0 writep gSaveBlock1Ptr+0x496:2 711
+0 press START 2
+0 wait 40
+0 menu_to COOP
+0 press A 2
+0 until_task Task_HandleScrollingMultichoiceInput 2000
+0 wait 20
+0 press DOWN 2
+0 wait 10
+0 press DOWN 2
+0 wait 10
+0 press DOWN 2
+0 wait 10
+0 press DOWN 2
+0 wait 10
+0 press DOWN 2
+0 wait 10
+0 press A 2
+0 wait 30
+0 until_task Task_HandleScrollingMultichoiceInput 2000
+0 wait 20
+0 press DOWN 2
+0 wait 10
+0 press A 2
+0 wait 30
+0 until_task Task_HandleScrollingMultichoiceInput 2000
+0 wait 20
+0 shot easy-fishing-on
+0 press B 2
+0 mash_field 600 B
+b no_wild 1
+0 fixture_warp 0 36 30 18
+0 until_field 3000
+0 surf DOWN
+0 cross DOWN 0 37 3000
+0 walk 10 3 2000
+b no_wild 0
+0 fish 9000 200
+0 mash_field 25000

@@ -316,6 +316,14 @@ struct CoopPendingReward
     u8 source;              // COOP_REWARD_SRC_*
 };
 
+// CoopSaveV5.settings: personal convenience settings (0 = the defaults,
+// so a migrated save behaves as before until the player changes them).
+#define COOP_SET_LOWHP_SILENT    (1 << 0)   // low-HP alarm off (default: 3 beeps per episode)
+#define COOP_SET_EASY_FISHING    (1 << 1)   // a bite waits for A (B cancels)
+#define COOP_SET_NO_SHINY_ASK    (1 << 2)   // don't ask before running from a shiny
+#define COOP_SET_NO_CATCH_RESULT (1 << 3)   // don't show the catch result card
+#define COOP_SETTINGS_COUNT      4
+
 struct CoopSaveV5
 {
     u16 size;               // sizeof(struct CoopSaveV5) when written (0: never)

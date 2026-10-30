@@ -240,6 +240,105 @@ static enum Item GetNextBall(enum Item ballId)
     return ballId;
 }
 
+// Co-op SHINY CHECK (CO-OP > SETTINGS, on by default): RUN in a wild battle
+// while a shiny foe is still on the field asks "A shiny POKeMON is still
+// here. Leave?" on this player's screen only. YES sends RUN as usual; NO or
+// B goes back to the action menu. Nothing is sent before the answer, so the
+// partner just sees this player still choosing; forced escapes (Roar,
+// Teleport, a fleeing foe) are not affected.
+static bool8 CoopShiny_ShouldAskBeforeRun(void)
+{
+    u32 b;
+
+    if (Coop_SettingOn(COOP_SET_NO_SHINY_ASK))
+        return FALSE;
+    if (gBattleTypeFlags & (BATTLE_TYPE_TRAINER | BATTLE_TYPE_SAFARI | BATTLE_TYPE_FRONTIER | BATTLE_TYPE_RECORDED | BATTLE_TYPE_RECORDED_LINK))
+        return FALSE;
+    // Party data, not gBattleMons: the co-op guest does not run the engine,
+    // but its controllers keep each battler's Pokemon and HP up to date.
+    for (b = 0; b < gBattlersCount; b++)
+    {
+        struct Pokemon *mon;
+
+        if (IsOnPlayerSide(b))
+            continue;
+        mon = GetBattlerMon(b);
+        if (mon != NULL && GetMonData(mon, MON_DATA_HP) != 0 && IsMonShiny(mon))
+            return TRUE;
+    }
+    return FALSE;
+}
+
+static void HandleInputChooseAction(enum BattlerId battler);
+
+static void CoopShiny_BackToActions(enum BattlerId battler)
+{
+    HandleBattleWindow(YESNOBOX_X_Y, WINDOW_CLEAR);
+    gBattle_BG0_Y = DISPLAY_HEIGHT;
+    TryRestoreLastUsedBall();
+    gBattlerControllerFuncs[battler] = HandleInputChooseAction;
+}
+
+static void CoopShiny_HandleLeaveInput(enum BattlerId battler)
+{
+    if (JOY_NEW(DPAD_UP) && gMultiUsePlayerCursor != 0)
+    {
+        PlaySE(SE_SELECT);
+        BattleDestroyYesNoCursorAt(gMultiUsePlayerCursor);
+        gMultiUsePlayerCursor = 0;
+        BattleCreateYesNoCursorAt(0);
+    }
+    if (JOY_NEW(DPAD_DOWN) && gMultiUsePlayerCursor == 0)
+    {
+        PlaySE(SE_SELECT);
+        BattleDestroyYesNoCursorAt(gMultiUsePlayerCursor);
+        gMultiUsePlayerCursor = 1;
+        BattleCreateYesNoCursorAt(1);
+    }
+    if (JOY_NEW(A_BUTTON))
+    {
+        PlaySE(SE_SELECT);
+        if (gMultiUsePlayerCursor == 0)
+        {
+            HandleBattleWindow(YESNOBOX_X_Y, WINDOW_CLEAR);
+            BtlController_EmitTwoReturnValues(battler, B_COMM_TO_ENGINE, B_ACTION_RUN, 0);
+            CoopTurn_NoteAction(battler, B_ACTION_RUN);
+            BtlController_Complete(battler);
+        }
+        else
+        {
+            CoopShiny_BackToActions(battler);
+        }
+    }
+    else if (JOY_NEW(B_BUTTON))
+    {
+        PlaySE(SE_SELECT);
+        CoopShiny_BackToActions(battler);
+    }
+}
+
+// The YES/NO box only once the question is printed: text printers share
+// one colour table, so a box drawn mid-print would recolour the question.
+static void CoopShiny_WaitForMessage(enum BattlerId battler)
+{
+    if (IsTextPrinterActiveOnWindow(B_WIN_MSG))
+        return;
+    HandleBattleWindow(YESNOBOX_X_Y, 0);
+    BattlePutTextOnWindow(gText_BattleYesNoChoice, B_WIN_YESNO);
+    gMultiUsePlayerCursor = 1;
+    BattleCreateYesNoCursorAt(1);
+    gBattlerControllerFuncs[battler] = CoopShiny_HandleLeaveInput;
+}
+
+static void CoopShiny_AskBeforeRun(enum BattlerId battler)
+{
+    gBattle_BG0_X = 0;
+    gBattle_BG0_Y = 0;
+    StringCopy(gDisplayedStringBattle, COMPOUND_STRING("A shiny Pokémon is still here.\nLeave?"));
+    BattlePutTextOnWindow(gDisplayedStringBattle, B_WIN_MSG);
+    gBattlerControllerFuncs[battler] = CoopShiny_WaitForMessage;
+}
+
 static void HandleInputChooseAction(enum BattlerId battler)
 {
     enum Item itemId = gBattleResources->bufferA[battler][2] | (gBattleResources->bufferA[battler][3] << 8);
@@ -331,6 +430,12 @@ static void HandleInputChooseAction(enum BattlerId battler)
             BtlController_EmitTwoReturnValues(battler, B_COMM_TO_ENGINE, B_ACTION_SWITCH, 0);
             break;
         case 3: // Bottom right
+            // Co-op SHINY CHECK: ask before leaving a wild shiny behind.
+            if (CoopShiny_ShouldAskBeforeRun())
+            {
+                CoopShiny_AskBeforeRun(battler);
+                return;
+            }
             BtlController_EmitTwoReturnValues(battler, B_COMM_TO_ENGINE, B_ACTION_RUN, 0);
             break;
         }

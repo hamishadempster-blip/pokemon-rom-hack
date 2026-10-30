@@ -26,6 +26,7 @@
 
 EWRAM_DATA struct CoopTestMailbox gCoopTestMailbox = {0};
 EWRAM_DATA u32 gCoopTestStartArmed = 0;
+EWRAM_DATA u32 gCoopTestForceShiny = 0;
 
 #define TEST_HOOK_MET_LEVEL 5
 

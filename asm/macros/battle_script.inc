@@ -1769,6 +1769,12 @@
 	.byte \battler
 	.endm
 
+	@ Co-op catch result (src/coop_catch.c): buffers it, or jumps when off.
+	.macro coopcatchresult skipInstr:req
+	callnative BS_CoopCatchResult
+	.4byte \skipInstr
+	.endm
+
 	.macro coopaftercatch battleOverInstr:req
 	callnative BS_CoopAfterCatch
 	.4byte \battleOverInstr

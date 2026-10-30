@@ -729,6 +729,9 @@ gSpecials::
 	def_special CoopBond_ScriptDesignate
 	def_special CoopBond_ScriptCheckBond
 	def_special CoopBond_ScriptSlotIsPartner
+	def_special Coop_BufferSettingLabel
+	def_special Coop_ToggleSetting
+	def_special Coop_BufferCatchResult
 	def_special CoopDeal_CheckOfferMon
 	def_special CoopDeal_CheckGiftItem
 	def_special CoopDeal_BufferItemCount

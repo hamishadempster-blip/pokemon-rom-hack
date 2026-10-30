@@ -1,6 +1,8 @@
 #include "global.h"
 #include "coop_bond.h"
 #include "coop.h"
+#include "coop_catch.h"
+#include "pokedex.h"
 #include "coop_prep.h"
 #include "coop_frontier.h"
 #include "coop_teams.h"
@@ -258,6 +260,7 @@ struct CoopNickTarget
     u8 slot;
     u8 box;
     u8 pos;
+    u8 isNew;   // not caught in this save's Pokedex before (catch result)
 };
 
 EWRAM_DATA u8 gCoopBallTarget = 0;
@@ -536,6 +539,56 @@ static struct CoopSave *CoopSave(void)
 struct CoopSave *Coop_GetSave(void)
 {
     return CoopSave();
+}
+
+bool8 Coop_SettingOn(u8 bit)
+{
+    return (CoopSave()->v5.settings & bit) != 0;
+}
+
+static const u8 *const sCoopSettingNames[COOP_SETTINGS_COUNT] = {
+    COMPOUND_STRING("LOW HP ALARM: "),
+    COMPOUND_STRING("EASY FISHING: "),
+    COMPOUND_STRING("SHINY CHECK: "),
+    COMPOUND_STRING("CATCH RESULT: "),
+};
+
+// The label of setting VAR_0x8004 with its current value, in gStringVar1
+// (CO-OP > SETTINGS, data/scripts/coop.inc).
+void Coop_BufferSettingLabel(void)
+{
+    u32 i = gSpecialVar_0x8004;
+    u8 *p;
+    bool8 on;
+
+    if (i >= COOP_SETTINGS_COUNT)
+    {
+        gStringVar1[0] = EOS;
+        return;
+    }
+    on = Coop_SettingOn(1 << i);
+    p = StringCopy(gStringVar1, sCoopSettingNames[i]);
+    switch (i)
+    {
+    case 0:
+        StringCopy(p, on ? COMPOUND_STRING("OFF") : COMPOUND_STRING("3 BEEPS"));
+        break;
+    case 1:
+        StringCopy(p, on ? COMPOUND_STRING("ON") : COMPOUND_STRING("OFF"));
+        break;
+    default: // the bit turns a default-on feature off (as case 0)
+        StringCopy(p, on ? COMPOUND_STRING("OFF") : COMPOUND_STRING("ON"));
+        break;
+    }
+}
+
+// Toggle setting VAR_0x8004 (this save only; never sent to the partner).
+void Coop_ToggleSetting(void)
+{
+    u32 i = gSpecialVar_0x8004;
+
+    if (i < COOP_SETTINGS_COUNT && Coop_SaveSchemaSupported())
+        CoopSave()->v5.settings ^= 1 << i;
 }
 
 u16 Coop_IsLevelCapOn(void)
@@ -5555,6 +5608,7 @@ static void Coop_DeliverCatches(void)
             if (GetMonData(&gParties[B_TRAINER_PLAYER][slot], MON_DATA_SPECIES) == SPECIES_NONE)
                 break;
         }
+        target->isNew = !GetSetPokedexFlag(SpeciesToNationalPokedexNum(GetMonData(mon, MON_DATA_SPECIES)), FLAG_GET_CAUGHT);
         HandleSetPokedexFlagFromMon(mon, FLAG_SET_SEEN);
         HandleSetPokedexFlagFromMon(mon, FLAG_SET_CAUGHT);
         // The link master's game made both wild Pokémon, with its own OT id
@@ -5932,6 +5986,39 @@ u16 Coop_NextPartnerCatch(void)
         return SPECIES_NONE;
     StringCopy(gStringVar1, GetSpeciesName(species));
     return species;
+}
+
+// The catch result for the catch Coop_NextCaughtNickname just named, in
+// gStringVar4 (FALSE: CATCH RESULT is off). This player's own catch only.
+u16 Coop_BufferCatchResult(void)
+{
+    struct CoopNickTarget *target;
+    struct Pokemon mon;
+    u8 *p;
+
+    if (Coop_SettingOn(COOP_SET_NO_CATCH_RESULT) || sNickIndex == 0 || sNickIndex > COOP_WILD_SLOTS)
+        return FALSE;
+    target = &sNickTargets[sNickIndex - 1];
+    if (target->inParty)
+        mon = gParties[B_TRAINER_PLAYER][target->slot];
+    else
+        BoxMonAtToMon(target->box, target->pos, &mon);
+    if (GetMonData(&mon, MON_DATA_SPECIES) == SPECIES_NONE)
+        return FALSE;
+    CoopCatch_BufferSummary(gStringVar4, &mon, target->isNew);
+    p = gStringVar4 + StringLength(gStringVar4);
+    *p++ = CHAR_PROMPT_CLEAR;
+    if (target->inParty)
+    {
+        StringCopy(p, COMPOUND_STRING("It joined your party."));
+    }
+    else
+    {
+        p = StringCopy(p, COMPOUND_STRING("Your party was full, so it went\nto "));
+        p = StringCopy(p, GetBoxNamePtr(target->box));
+        StringCopy(p, COMPOUND_STRING(" in the PC."));
+    }
+    return TRUE;
 }
 
 u16 Coop_NextCaughtNickname(void)

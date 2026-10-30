@@ -214,6 +214,10 @@ BattleScript_SuccessBallThrow::
 	sethword gBattle_BG2_X, 0
 BattleScript_TryPrintCaughtMonInfo:
 	jumpifbattletype BATTLE_TYPE_RECORDED, BattleScript_GiveCaughtMonEnd
+	coopcatchresult BattleScript_TryCaughtMonDexFlags
+	printstring STRINGID_COOPCATCHRESULT
+	waitmessage B_WAIT_TIME_LONG
+BattleScript_TryCaughtMonDexFlags:
 	trysetcaughtmondexflags BattleScript_TryNicknameCaughtMon
 	printstring STRINGID_PKMNDATAADDEDTODEX
 	waitstate

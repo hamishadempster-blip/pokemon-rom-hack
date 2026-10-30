@@ -1,0 +1,48 @@
+# Shiny visibility and the SHINY CHECK (solo; lab saves, not linked).
+# FIXTURES: Kai's lead made a Lv 30 PIKACHU (test_mon) so escaping always
+# works; gCoopTestForceShiny makes the next wild Pokemon shiny;
+# fixture_warp into Route 116's grass; force_encounter.
+# Checks: the wild Pokemon is shiny and its healthbox shows a star after its
+# name (screenshot). RUN asks "A shiny Pokemon is still here. Leave?" with
+# NO selected; B goes back to the action menu (still in battle, nothing
+# sent). RUN again, YES: the battle ends by running (outcome RAN).
+include continue.inc
+b no_wild 1
+b mash_field 300 B
+0 test_mon 0 25 30 84 0 0 0 0
+0 fixture_warp 0 31 12 8
+b until_field 3000
+0 write gCoopTestForceShiny:4 0x5A1A7E57
+0 force_encounter 1
+b no_wild 0
+0 pace_until_battle 3000
+0 force_encounter 0
+b no_wild 1
+0 write gCoopTestForceShiny:4 0
+0 until_mem gBattlerControllerFuncs:4 HandleInputChooseAction 9000 A
+0 wait 30
+0 shot shiny-healthbox
+0 press RIGHT 2
+0 wait 10
+0 press DOWN 2
+0 wait 10
+0 press A 2
+0 wait 30
+0 until_battle_text shiny_Pok 600
+0 until_mem gBattlerControllerFuncs:4 CoopShiny_HandleLeaveInput 600
+0 shot shiny-ask
+0 wait 60
+0 shot shiny-ask-later
+0 press B 2
+0 wait 30
+0 until_mem gBattlerControllerFuncs:4 HandleInputChooseAction 300
+0 shot shiny-back
+0 press A 2
+0 wait 30
+0 until_battle_text shiny_Pok 600
+0 until_mem gBattlerControllerFuncs:4 CoopShiny_HandleLeaveInput 600
+0 press UP 2
+0 wait 10
+0 press A 2
+0 mash_field 6000 B
+0 expect gBattleOutcome 4
