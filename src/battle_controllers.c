@@ -2780,6 +2780,19 @@ void BtlController_HandlePrintString(enum BattlerId battler)
     gBattle_BG0_Y = 0;
     stringId = (u16 *)(&gBattleResources->bufferA[battler][2]);
     BufferStringBattle(*stringId, battler);
+    // Trainer Bond support XP: a screen or speed control set up by this
+    // player's partner. The message goes to the user's controller on each
+    // game of a link battle once, so each game counts its own partner.
+    switch (*stringId)
+    {
+    case STRINGID_PKMNRAISEDDEF:
+    case STRINGID_PKMNRAISEDSPDEF:
+    case STRINGID_PKMNAURORAVEIL:
+    case STRINGID_TAILWINDBLEW:
+    case STRINGID_PKMNTWISTEDDIMENSIONS:
+        CoopBond_BattleSupport(battler, *stringId);
+        break;
+    }
 
     if (gTestRunnerEnabled)
     {

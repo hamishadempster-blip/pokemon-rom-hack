@@ -574,11 +574,20 @@ static u16 Bond_MajorFlags(void)
     return bits;
 }
 
+static void Bond_TestSupports(u8 n);
+
+static EWRAM_DATA bool8 sMajorWatch = FALSE;
+static EWRAM_DATA u16 sMajorBefore = 0;
+
 void CoopBond_BattleStart(void)
 {
     struct Pokemon *mon;
 
+    // The last won battle's flags are settled before a new one starts.
+    CoopBond_SettleMajors();
+    sMajorWatch = FALSE;
     memset(&sBattle, 0, sizeof(sBattle));
+    Bond_TestSupports(0);
     sBattle.pending = TRUE;
     if (Bond_BattleSuppresses())
         return;
@@ -653,12 +662,16 @@ void CoopBond_BattleDamage(u8 attacker, u8 target, s32 damage)
     }
 }
 
-void CoopBond_BattleSupport(u8 battler, u16 move)
+void CoopBond_BattleSupport(u8 battler, u16 what)
 {
-    // A useful support effect the engine confirmed for this player's
-    // partner (screens, speed control): counted once each, capped.
+    // A support effect the engine confirmed for this player's partner
+    // (Reflect, Light Screen, Aurora Veil, Tailwind, Trick Room: their
+    // success messages), counted per use, capped per battle.
     if (Bond_PartnerBattler() == battler && sBattle.supports < BOND_SUPPORT_CAP)
+    {
         sBattle.supports++;
+        Bond_TestSupports(sBattle.supports);
+    }
 }
 
 void CoopBond_BattleKnockout(u8 target)
@@ -674,8 +687,6 @@ void CoopBond_BattleKnockout(u8 target)
 void CoopBond_BattleEnd(u8 outcome)
 {
     u32 xp = 0;
-    u16 majorsAfter, newMajors;
-    struct CoopBondSave *bond = Bond_Save();
 
     if (!sBattle.eligible)
         return;
@@ -701,23 +712,37 @@ void CoopBond_BattleEnd(u8 outcome)
         return;    // an aborted (link) battle: nothing
     sForBattle = FALSE;
     CoopBond_Award(COOP_BOND_SRC_KO, xp);
-    // First major victories (one-time each, on this save).
-    majorsAfter = Bond_MajorFlags();
-    newMajors = majorsAfter & ~sBattle.majorsBefore;
-    if (bond != NULL && outcome == B_OUTCOME_WON && newMajors)
+    // First major victories: the script that follows a gym leader, an Elite
+    // Four member or the champion sets the badge or flag after the battle,
+    // so watch for it until the next battle (Bond_SettleMajors).
+    if (outcome == B_OUTCOME_WON && (gBattleTypeFlags & BATTLE_TYPE_TRAINER))
     {
-        u32 i, count = 0;
-
-        for (i = 0; i < 16; i++)
-        {
-            if ((newMajors & (1 << i)) && !(bond->firstWins & (1 << i)))
-            {
-                bond->firstWins |= 1 << i;
-                count++;
-            }
-        }
-        CoopBond_Award(COOP_BOND_SRC_MAJOR, count * BOND_MAJOR_XP);
+        sMajorWatch = TRUE;
+        sMajorBefore = sBattle.majorsBefore;
     }
+}
+
+// A badge, Elite Four or champion flag set since the start of the battle
+// the partner won: its one-time bonus (each bit once per save, ever).
+void CoopBond_SettleMajors(void)
+{
+    struct CoopBondSave *bond = Bond_Save();
+    u16 newMajors;
+    u32 i, count = 0;
+
+    if (!sMajorWatch || bond == NULL)
+        return;
+    newMajors = Bond_MajorFlags() & ~sMajorBefore;
+    for (i = 0; i < 16; i++)
+    {
+        if ((newMajors & (1 << i)) && !(bond->firstWins & (1 << i)))
+        {
+            bond->firstWins |= 1 << i;
+            count++;
+        }
+    }
+    if (count != 0)
+        CoopBond_Award(COOP_BOND_SRC_MAJOR, count * BOND_MAJOR_XP);
 }
 
 void CoopBond_CatchHelped(void)
@@ -1005,7 +1030,7 @@ u16 CoopBond_ScriptCheckChoiceName(void)
     return 0;
 }
 
-// Test visibility (the harness reads it): per party slot its Bond XP,
+// Test visibility (the harness reads it, +33 supports): per party slot its Bond XP,
 // flags, applied rank and effective rank; the save's designation.
 struct CoopBondTest
 {
@@ -1016,10 +1041,15 @@ struct CoopBondTest
     u8 active;
     u8 activeSlot;
     u8 suppressed;
-    u8 pad;
+    u8 supports;    // support uses counted in the current/last battle
     u32 pid;
 };
 EWRAM_DATA struct CoopBondTest gCoopBondTest = {0};
+
+static void Bond_TestSupports(u8 n)
+{
+    gCoopBondTest.supports = n;
+}
 
 void CoopBond_PublishTest(void)
 {
@@ -1049,6 +1079,8 @@ void CoopBond_FieldPoll(void)
     struct Pokemon *mon;
     u8 *p;
 
+    if (sMajorWatch && gMain.callback2 == CB2_Overworld && !ScriptContext_IsEnabled())
+        CoopBond_SettleMajors();
     if (sNoticeGain == 0 && sNoticeRank == 0)
         return;
     if (gMain.callback2 != CB2_Overworld || ArePlayerFieldControlsLocked() || ScriptContext_IsEnabled()

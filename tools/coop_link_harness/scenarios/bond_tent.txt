@@ -1,0 +1,37 @@
+# Trainer Bond off in a Battle Tent (checkpoint 29: Slateport Pokemon
+# Centre; journey saves). FIXTURES: Kai's lead (Lv 22, 52 Max HP without a
+# bonus) designated as his Partner Pokemon without the mentor and given
+# 25,000 Bond XP (Ace Partner, +15). The rest is walking.
+# Checks: +15 in town (67 Max HP); walking into the Slateport Battle Tent
+# the bonus is off (suppressed, 52 Max HP, full HP stays full); walking out
+# it is back (67, full). Bond XP unchanged.
+include continue.inc
+0 test_data 0 bonddesignate 1
+0 test_data 0 bondxp 25000
+0 expect gCoopBondTest+24:1 3
+0 expect gParties+88:2 67
+0 expect gParties+86:2 67
+0 walk 7 8 3000
+0 press DOWN 2
+0 until_map 0 1 3000
+0 wait 30
+0 walk 10 13 6000
+0 walk 10 12 2000
+0 until_map 9 2 3000
+0 wait 60
+0 shot tent-lobby
+0 expect gCoopBondTest+32:1 1
+0 expect gCoopBondTest+24:1 0
+0 expect gCoopBondTest+18:1 0
+0 expect gParties+88:2 52
+0 expect gParties+86:2 52
+0 walk 6 9 3000
+0 press DOWN 2
+0 until_map 0 1 3000
+0 wait 60
+0 expect gCoopBondTest+32:1 0
+0 expect gCoopBondTest+24:1 3
+0 expect gCoopBondTest+18:1 3
+0 expect gParties+88:2 67
+0 expect gParties+86:2 67
+0 expect gCoopBondTest:2 25000

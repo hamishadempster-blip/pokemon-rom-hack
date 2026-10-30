@@ -1,0 +1,34 @@
+# Trainer Bond support XP in a solo wild battle (lab saves, not linked).
+# FIXTURES: Kai's lead made a Lv 30 PIKACHU knowing REFLECT, LIGHT SCREEN,
+# TAILWIND and TACKLE (test_mon), designated as his Partner Pokemon without
+# the mentor (0 XP); fixture_warp into Route 116's grass; force_encounter.
+# DRIVER: force_move picks REFLECT, LIGHT SCREEN, TAILWIND, then TACKLE.
+# Checks: each support message counts for the partner (10 each, 3 at most
+# per battle), plus the knockout (40), the damage (50) and the wild win
+# (30): 150, and at most a few points for the steps it walked leading.
+include continue.inc
+b no_wild 1
+b mash_field 300 B
+0 test_mon 0 25 30 115 113 366 33 0
+0 test_data 0 bonddesignate 1
+0 expect gCoopBondTest:2 0
+0 fixture_warp 0 31 12 8
+b until_field 3000
+0 force_encounter 1
+b no_wild 0
+0 force_move 0
+0 pace_until_battle 3000
+0 force_encounter 0
+b no_wild 1
+0 until_battle_text Reflect_made 20000 auto
+0 force_move 1
+0 until_battle_text Light_Screen_made 20000 auto
+0 force_move 2
+0 until_battle_text tailwind_started 20000 auto
+0 force_move 3
+0 mash_field 20000
+0 force_move -1
+0 expect gBattleOutcome 1
+0 expect_range gCoopBondTest:2 150 153
+0 wait 120
+0 shot bond-support

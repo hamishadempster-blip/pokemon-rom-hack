@@ -1,0 +1,71 @@
+# Trainer Bond through Mega Evolution in a co-op double (as mega_hp_same:
+# j57 saves, Mossdeep, linked, Beacon ON, against Tate & Liza). TEST HELPERS
+# and FIXTURES as mega_hp_same (Lv 54, 31 IVs, no EVs; the nature drawn
+# out neutral for Kai's BANETTE), plus: each lead designated as its player's
+# Partner Pokemon without the mentor; Kai's given 2,500 Bond XP (+5),
+# Rosa's none (New Partner, +0). DRIVER: mega_next 1, smart_moves;
+# strong_battlers ends the fight (not a balance result).
+# Checks: after both Mega Evolve, each Mega's party stats include its
+# owner's bonus (Kai's Mega BANETTE Attack 204 = 199 calculated + 5), the master's battle
+# data has the same Attack for both Megas, and each game's copy of the
+# other's Mega has the owner's Max HP (Kai's game also the Attack; Rosa's
+# game, the guest, keeps the partner's pre-Mega party copy: the engine runs
+# on the master, as before the Bond). After the battle each lead is its own
+# species with the Max HP it had before, the +5 still on Kai's, and each
+# partner gained Bond XP from the battle. (Attack after the battle is not
+# compared: the battle's EVs may raise it.)
+include continue.inc
+include relink.inc
+b expect coop.sLinkState 2
+include beacon_on_p1.inc
+b mash_field 2000 B
+b no_wild 1
+0 test_mon 0 354 54 0 0 0 0 0
+1 test_mon 0 358 54 0 0 0 0 0
+0 test_held 0 325
+1 test_held 0 860
+b test_item 703 1
+b test_heal
+0 test_data 0 bonddesignate 1
+1 test_data 0 bonddesignate 1
+0 test_data 0 bondxp 2500
+0 expect gCoopBondTest+24:1 1
+1 expect gCoopBondTest+24:1 0
+b expect_mon 0 stat @4 0
+b expect_mon 0 stat @6 1
+0 fixture_warp 14 0 23 8
+1 fixture_warp 14 0 24 8
+b until_field 3000
+b sync
+b mega_next 1
+b smart_moves 1
+0 press UP 2
+0 wait 20
+0 press A 2
+b until_cb2 BattleMainCB2 12000 A
+b expect gBattlersCount 4
+b until_battle_text has_Mega_Evolved 30000 auto
+0 until_mem gBattleMons:2 939 6000
+0 until_mem gBattleMons+280:2 1555 6000
+b wait 120
+b expect_mon 0 species @5
+b expect_mon 0 stat @4 0
+0 expect_mirror gParties+1288:2 gParties+88
+1 expect_mirror gParties+1288:2 gParties+88
+0 expect_mirror gParties+1290:2 gParties+90
+0 expect gBattleMons+2:2 204
+0 expect gBattleMons+282:2 67
+b shot mega-hp
+b expect gCoopMegaRejected 0
+b strong_battlers 400
+b mash_field 40000
+b expect gBattleOutcome 1
+b until_field 3000
+0 expect_mon 0 species 354
+1 expect_mon 0 species 358
+b expect_mon 0 stat @4 0
+b expect_mon 0 stat @4 0
+0 expect gCoopBondTest+24:1 1
+1 expect gCoopBondTest+24:1 0
+0 expect_range gCoopBondTest:2 2501 3500
+1 expect_range gCoopBondTest:2 1 1000

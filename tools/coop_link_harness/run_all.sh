@@ -13,6 +13,7 @@
 #   Wally and roster evolutions; shared legendaries)
 #   J46 J50 J51 J57 J58 J66 OLD13C_COAST=dir: Battle Guide v2 checks (see the
 #   block near the end)
+#   J29=dir: checkpoint 29 (Slateport Centre): Trainer Bond PC and tent
 #   SEG6=/path/dir run_all.sh                     # also the story_seg6-based
 #                                                 # partner menu, QoL, and quest runs
 #   AFFECTED=/path/dir run_all.sh                 # also run mays_house_recovery
@@ -396,6 +397,33 @@ if [ -n "${J68:-}" ]; then
 			|| { echo "save_schema_newer: p$i.sav was changed" | tee -a "$summary"; failed=$((failed + 1)); }
 	done
 fi
+
+# Trainer Bond (docs/COOP_BOND.md). Lab saves: co-op XP and agreement,
+# support XP (solo and the guest), the badge's one-time bonus. J16 (a save
+# from before the update): the mentor, ranks and reload, wild XP. SEG6:
+# trade, practice. J29 (Slateport Centre): the PC, a Battle Tent. J65:
+# evolution and SHEDINJA. J57: Mega Evolution in a co-op double.
+for s in bond_coop_wild bond_support bond_coop_support bond_major; do
+	run "$s" SAVE0="$lab0" SAVE1="$lab1"
+done
+if [ -n "${J16:-}" ]; then
+	run bond_mentor SAVE0="$J16/p0.sav" SAVE1="$J16/p1.sav"
+	run bond_ranks SAVE0="$out/bond_mentor/p0.sav" SAVE1="$out/bond_mentor/p1.sav"
+	run bond_ranks_reload SAVE0="$out/bond_ranks/p0.sav" SAVE1="$out/bond_ranks/p1.sav"
+	run bond_xp_wild SAVE0="$out/bond_mentor/p0.sav" SAVE1="$out/bond_mentor/p1.sav"
+fi
+if [ -n "${SEG6:-}" ]; then
+	for s in bond_trade bond_practice; do
+		run "$s" SAVE0="$SEG6/p0.sav" SAVE1="$SEG6/p1.sav"
+	done
+fi
+if [ -n "${J29:-}" ]; then
+	for s in bond_box bond_tent; do
+		run "$s" SAVE0="$J29/p0.sav" SAVE1="$J29/p1.sav"
+	done
+fi
+[ -n "${J65:-}" ] && run bond_evolve SAVE0="$J65/p0.sav" SAVE1="$J65/p1.sav"
+[ -n "${J57:-}" ] && run bond_mega SAVE0="$J57/p0.sav" SAVE1="$J57/p1.sav"
 
 echo "failed scenarios: $failed; visual-check failures: $visualFailed" | tee -a "$summary"
 exit $failed

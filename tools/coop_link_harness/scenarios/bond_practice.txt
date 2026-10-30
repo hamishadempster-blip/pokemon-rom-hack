@@ -1,0 +1,58 @@
+# Trainer Bond in a practice battle (Practice COACH, Rustboro Pokemon
+# Centre; story_seg6 saves, linked). FIXTURES as practice.txt (six-Pokemon
+# parties, strong_battlers, smart_moves), plus: Kai's lead designated as his
+# Partner Pokemon without the mentor and given 2,500 Bond XP (+5).
+# Checks: during the practice battle the bonus is off (suppressed context,
+# effective rank 0); afterwards the party is exactly as before (stats, HP,
+# Bond XP: no XP from practice) and the +5 is back.
+include deal_setup.inc
+0 fixture_six
+0 fixture_slot 1 263
+0 fixture_slot 2 261
+0 fixture_slot 3 252
+0 fixture_slot 4 258
+0 fixture_slot 5 265
+1 fixture_six
+1 fixture_slot 1 263
+0 walk 16 39 2000
+0 walk 16 38 2000
+0 until_map 11 5 3000
+0 walk 10 5 2000
+0 walk 11 5 2000
+0 test_data 0 bonddesignate 1
+0 test_data 0 bondxp 2500
+0 expect gCoopBondTest+24:1 1
+0 note_party
+0 note_money
+0 smart_moves 1
+0 strong_battlers 500
+# 1. Own team, singles, own levels.
+0 press A 2
+0 wait 60
+0 press A 2
+0 wait 60
+0 press A 2
+0 wait 90
+0 shot coach-which
+0 press A 2
+0 wait 90
+0 press A 2
+0 wait 90
+0 press A 2
+0 until_cb2 BattleMainCB2 3000 A
+0 wait 300
+0 shot practice-own
+0 expect coop_deal.gCoopPracticeBattle 1
+0 expect gCoopBondTest+32:1 1
+0 expect gCoopBondTest+24:1 0
+0 until_cb2 CB2_Overworld 40000 A
+0 wait 60
+0 shot practice-own-after
+0 mash_field 2000 B
+0 expect_party_same
+0 expect_money_same
+0 expect coop_deal.gCoopPracticeBattle 0
+b expect coop.sLinkState 2
+0 expect gCoopBondTest:2 2500
+0 expect gCoopBondTest+24:1 1
+0 expect gCoopBondTest+32:1 0

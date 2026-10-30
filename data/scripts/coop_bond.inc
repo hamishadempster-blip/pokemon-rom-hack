@@ -160,8 +160,11 @@ Coop_Text_BondAway:
 Coop_Text_BondHow:
 	.string "Your partner earns BOND XP for helping\n"
 	.string "knock out foes, damage dealt, wins,\l"
-	.string "catches it helped with, healing an\l"
-	.string "ally, and walking at the front.\p"
+	.string "catches it helped with, and walking\l"
+	.string "at the front.\p"
+	.string "Support counts too: healing an ally,\n"
+	.string "screens such as REFLECT, TAILWIND\l"
+	.string "or TRICK ROOM.\p"
 	.string "Each badge, ELITE FOUR win and the\n"
 	.string "title gives a big bonus once.\p"
 	.string "Ranks: COMPANION at 2,500 XP gives\n"

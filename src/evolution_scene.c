@@ -587,6 +587,11 @@ static void CreateShedinja(enum Species preEvoSpecies, enum Species postEvoSpeci
             SetMonData(&gParties[B_TRAINER_PLAYER][gPartiesCount[B_TRAINER_PLAYER]], MON_DATA_STATUS, &data);
             data = MAIL_NONE;
             SetMonData(&gParties[B_TRAINER_PLAYER][gPartiesCount[B_TRAINER_PLAYER]], MON_DATA_MAIL, &data);
+            // Trainer Bond: the bond stays with the Pokemon that evolved;
+            // the copy starts with none (it is never a second partner).
+            data = 0;
+            SetMonData(&gParties[B_TRAINER_PLAYER][gPartiesCount[B_TRAINER_PLAYER]], MON_DATA_BOND_XP, &data);
+            SetMonData(&gParties[B_TRAINER_PLAYER][gPartiesCount[B_TRAINER_PLAYER]], MON_DATA_BOND_FLAGS, &data);
 
             CalculateMonStats(&gParties[B_TRAINER_PLAYER][gPartiesCount[B_TRAINER_PLAYER]]);
             CalculatePlayerPartyCount();

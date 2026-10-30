@@ -8,6 +8,7 @@
 #include "overworld.h"
 #include "script_pokemon_util.h"
 #include "tv.h"
+#include "coop_bond.h"
 #include "constants/heal_locations.h"
 
 int GameClear(void)
@@ -19,6 +20,9 @@ int GameClear(void)
         u8 count;
     } ribbonCounts[6];
 
+    // Trainer Bond: the champion's one-time bonus (the flag was set just
+    // now, after the battle).
+    CoopBond_SettleMajors();
     HealPlayerParty();
 
     if (FlagGet(FLAG_SYS_GAME_CLEAR) == TRUE)

@@ -75,9 +75,12 @@ void CoopBond_Award(u8 source, u32 amount);
 void CoopBond_BattleStart(void);
 void CoopBond_BattleDamage(u8 attacker, u8 target, s32 damage);
 void CoopBond_BattleKnockout(u8 target);
-void CoopBond_BattleSupport(u8 battler, u16 move);
+void CoopBond_BattleSupport(u8 battler, u16 what);
 void CoopBond_BattleEnd(u8 outcome);
 void CoopBond_CatchHelped(void);
+// First major victories (badges, Elite Four, champion) after a won battle:
+// polled in the field and called by GameClear (the champion's flag).
+void CoopBond_SettleMajors(void);
 void CoopBond_BattleAborted(void);
 void CoopBond_FieldResume(void);
 // Field hooks.
