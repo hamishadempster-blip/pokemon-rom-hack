@@ -1,0 +1,29 @@
+# After centre_wait_solo: the rest to MORNING was saved (CoopSave
+# periodShift) and the clock was not changed, so after power-on it is still
+# MORNING in the Center; REAL TIME (the fifth line now) goes back to the
+# clock's NIGHT and clears the shift.
+include continue.inc
+b no_wild 1
+b mash_field 300 B
+0 expect_map 2 2
+0 expect gTimeOfDay 0
+0 hex gSaveblock3 2 572
+0 note_text follows_your
+include centre_wait_wait.inc
+0 until_task Task_HandleScrollingMultichoiceInput 2000
+0 wait 30
+0 shot wait-menu-shifted
+0 press DOWN 2
+0 wait 8
+0 press DOWN 2
+0 wait 8
+0 press DOWN 2
+0 wait 8
+0 press DOWN 2
+0 wait 8
+0 press A 2
+0 until_field_text follows 600
+0 mash_field 600 B
+0 expect_noted
+0 expect gTimeOfDay 3
+0 expect gSaveblock3+572:2 0

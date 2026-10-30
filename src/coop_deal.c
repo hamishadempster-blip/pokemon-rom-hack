@@ -58,6 +58,7 @@
 #include "constants/battle_frontier.h"
 #include "constants/coop.h"
 #include "coop_bond.h"
+#include "coop_time.h"
 #include "constants/items.h"
 #include "constants/songs.h"
 #include "constants/species.h"
@@ -853,6 +854,10 @@ static void Deal_HandleRequest(const struct CoopDealMsg *msg)
         refuse = COOP_DEAL_NO_ROOM;
     else if (msg->kind == COOP_DEAL_GIVE_ITEM && (!CoopDeal_ItemGiftable(msg->item) || !CheckBagHasSpace(msg->item, msg->qty)))
         refuse = COOP_DEAL_NO_ROOM;
+    else if (msg->kind == COOP_DEAL_WAIT && (!CoopTime_TargetValid(msg->arg2) || !CoopTime_InCentre()))
+        refuse = COOP_DEAL_INVALID;
+    else if (msg->kind < COOP_DEAL_BATTLE || msg->kind > COOP_DEAL_WAIT)
+        refuse = COOP_DEAL_INVALID;
 
     if (refuse != 0xFF)
     {
@@ -1073,7 +1078,9 @@ void CoopDeal_HandleBlock(u32 playerId, const u16 *words)
                 sDeal.partnerConfirmed = TRUE;
                 sDeal.partnerConfirmKnown = TRUE;
             }
-            sDeal.state = sDeal.kind == COOP_DEAL_BATTLE ? DS_TEAM : DS_NEGOTIATE;
+            // A wait is settled by the answer itself (src/coop_time.c).
+            if (sDeal.kind != COOP_DEAL_WAIT)
+                sDeal.state = sDeal.kind == COOP_DEAL_BATTLE ? DS_TEAM : DS_NEGOTIATE;
         }
         break;
     case DMSG_CONFIRM:
@@ -1165,7 +1172,7 @@ static void Deal_PollWait(void)
         {
             u8 answer = sDeal.answer;
             Deal_EndWait(answer);
-            if (answer != COOP_DEAL_OK)
+            if (answer != COOP_DEAL_OK || sDeal.kind == COOP_DEAL_WAIT)
                 Deal_Reset();
             return;
         }
@@ -1251,23 +1258,28 @@ static EWRAM_DATA bool8 sClockWasShared = FALSE;
 
 static void Clock_Poll(void)
 {
+    s32 hours, minutes;
+
     if (!IsLinkMaster())
         return;
     if (++sClockTimer < 30)
         return;
     sClockTimer = 0;
     RtcCalcLocalTime();
-    if (sClockSent && gLocalTime.hours == sClockSentHours && gLocalTime.minutes == sClockSentMinutes)
+    hours = gLocalTime.hours;
+    minutes = gLocalTime.minutes;
+    CoopTime_AdjustClock(&hours, &minutes);   // the master's waits count (src/coop_time.c)
+    if (sClockSent && hours == sClockSentHours && minutes == sClockSentMinutes)
         return;
     if (sLink.count + 1 >= DEAL_QUEUE_SIZE)
         return;
     {
-        struct CoopDealMsg *msg = Deal_Push(DMSG_CLOCK, gLocalTime.hours, 0xFFFF, COOP_DEAL_NONE);
-        msg->arg2 = gLocalTime.minutes;
+        struct CoopDealMsg *msg = Deal_Push(DMSG_CLOCK, hours, 0xFFFF, COOP_DEAL_NONE);
+        msg->arg2 = minutes;
     }
     sClockSent = TRUE;
-    sClockSentHours = gLocalTime.hours;
-    sClockSentMinutes = gLocalTime.minutes;
+    sClockSentHours = hours;
+    sClockSentMinutes = minutes;
 }
 
 bool8 CoopDeal_SharedClock(s32 *hours, s32 *minutes)
@@ -1948,6 +1960,11 @@ u16 CoopDeal_StartRequest(void)
         sDeal.mySlot = gSpecialVar_0x8004;
         sDeal.myPersonality = GetMonData(&gParties[B_TRAINER_PLAYER][sDeal.mySlot], MON_DATA_PERSONALITY);
         break;
+    case COOP_DEAL_WAIT:
+        if (!CoopTime_TargetValid(gSpecialVar_0x8006) || !CoopTime_InCentre())
+            return COOP_DEAL_INVALID;
+        sDeal.rules = gSpecialVar_0x8006;
+        break;
     case COOP_DEAL_GIVE_ITEM:
         if (!CoopDeal_ItemGiftable(gSpecialVar_ItemId) || gSpecialVar_0x8007 == 0
          || !CheckBagHasItem(gSpecialVar_ItemId, gSpecialVar_0x8007))
@@ -2027,6 +2044,11 @@ u16 CoopDeal_BufferIncoming(void)
         Deal_BufferItem(sDeal.partnerItem, sDeal.partnerQty, gStringVar2);
         gStringVar3[0] = EOS;
         break;
+    case COOP_DEAL_WAIT:
+        gSpecialVar_0x8006 = sDeal.rules;
+        CoopTime_BufferTarget(sDeal.rules, gStringVar2);
+        gStringVar3[0] = EOS;
+        break;
     }
     return sDeal.kind;
 }
@@ -2100,6 +2122,19 @@ u16 CoopDeal_Answer(void)
         gCoopFriendlyRules = sDeal.rules;
         Deal_Send(DMSG_ANSWER, COOP_DEAL_OK);
         sDeal.state = DS_TEAM;
+        break;
+    case COOP_DEAL_WAIT:
+        // Settled by this answer: the script rests now (CoopTime_ApplyWait
+        // with VAR_0x8006); the asking game rests when the answer arrives.
+        if (!CoopTime_InCentre())
+        {
+            Deal_Send(DMSG_ANSWER, COOP_DEAL_INVALID);
+            Deal_Reset();
+            return COOP_DEAL_INVALID;
+        }
+        gSpecialVar_0x8006 = sDeal.rules;
+        Deal_Send(DMSG_ANSWER, COOP_DEAL_OK);
+        Deal_Reset();
         break;
     }
     return COOP_DEAL_OK;

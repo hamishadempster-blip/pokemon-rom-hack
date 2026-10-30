@@ -1,0 +1,63 @@
+# Waiting at a Pokemon Center, alone (lab saves, not linked; the clock at
+# its default start, 21:00: NIGHT). FIXTURE: fixture_warp into Oldale
+# Town's Pokemon Center. The rest is play.
+# Checks: WAIT HERE is offered only inside a Center (not in Birch's lab:
+# the seventh line there is BACK); "It's NIGHT. Rest here until..."; NIGHT
+# says "It's already NIGHT."; MORNING fades, "rested until MORNING" and the
+# time of day is MORNING (outside too: morning tint); the cartridge clock's
+# day and hour are unchanged (the shift is the save's own); the shift is
+# saved and kept after a reload (centre_wait_solo_reload); REAL TIME goes
+# back to NIGHT there.
+include continue.inc
+b no_wild 1
+b mash_field 300 B
+0 expect gTimeOfDay 3
+# In the lab, the seventh line is BACK: the start menu comes back.
+include centre_wait_wait.inc
+0 wait 60
+0 expect_cb2 CB2_Overworld
+0 press B 2
+0 mash_field 300 B
+0 fixture_warp 2 2 7 5
+0 until_field 3000
+0 wait 60
+0 hex gLocalTime 8
+0 note_text already_NIGHT
+include centre_wait_wait.inc
+0 until_task Task_HandleScrollingMultichoiceInput 2000
+0 wait 30
+0 shot wait-menu
+0 press DOWN 2
+0 wait 8
+0 press DOWN 2
+0 wait 8
+0 press DOWN 2
+0 wait 8
+0 press A 2
+0 wait 60
+0 mash_field 600 B
+0 expect_noted
+0 expect gTimeOfDay 3
+0 note_text rested_until_MORNING
+include centre_wait_wait.inc
+0 until_task Task_HandleScrollingMultichoiceInput 2000
+0 wait 30
+0 press A 2
+0 until_field_text rested 600
+0 shot rested
+0 mash_field 600 B
+0 expect_noted
+0 expect gTimeOfDay 0
+0 hex gSaveblock3 2 572
+0 hex gLocalTime 8
+# Outside: the morning tint.
+0 walk 7 7 2000
+0 cross DOWN 0 10 3000
+0 wait 120
+0 expect gTimeOfDay 0
+0 expect_tint 1 morning-outside
+0 shot morning-outside
+0 walk 6 17 3000
+0 cross UP 2 2 3000
+0 wait 30
+include save_again.inc

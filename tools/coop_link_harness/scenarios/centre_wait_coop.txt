@@ -1,0 +1,74 @@
+# Waiting at a Pokemon Center together (lab saves, linked). FIXTURES: the
+# two clocks set apart by the runner (RTC_EPOCH0 23:00, RTC_EPOCH1 12:00:
+# linked, both show the master's NIGHT); fixture_warp of both into Oldale
+# Town's Pokemon Center.
+# Checks: Rosa (player 0) asks to rest until MORNING; Kai is asked "ROSA
+# wants to rest here until MORNING. Rest together?"; YES: both rest and
+# both show MORNING. Rosa asks for DAY; Kai says NO: "said no.", still
+# MORNING on both. Kai leaves the Center: Rosa is told to meet first and
+# nothing changes. UNLINK: each game keeps MORNING on its own clock (each
+# shifted its own time to reach it), though the clocks are 11 hours apart.
+include continue.inc
+b mash_field 300 B
+include relink.inc
+b no_wild 1
+b expect coop.sLinkState 2
+b wait 240
+b expect gTimeOfDay 3
+0 fixture_warp 2 2 6 5
+1 fixture_warp 2 2 8 5
+b until_field 3000
+b wait 120
+b expect gTimeOfDay 3
+include centre_wait_linked_menu.inc
+0 shot wait-linked-menu
+1 note_text Rest_together
+0 press A 2
+1 until_task Task_HandleYesNoInput 2000
+1 wait 30
+1 expect_noted
+1 shot asked
+1 note_text rested_until_MORNING
+0 note_text rested_until_MORNING
+1 press A 2
+b until_field_text rested 900
+b shot rested-together
+b mash_field 600 B
+b expect_noted
+b expect gTimeOfDay 0
+b hex gSaveblock3 2 572
+# DAY: Kai says NO.
+include centre_wait_linked_menu.inc
+0 press DOWN 2
+0 wait 8
+0 note_text said_no
+0 press A 2
+1 until_task Task_HandleYesNoInput 2000
+1 wait 30
+1 press DOWN 2
+1 wait 8
+1 press A 2
+0 until_field_text said_no 900
+0 mash_field 600 B
+1 mash_field 600 B
+0 expect_noted
+b expect gTimeOfDay 0
+# Kai leaves; Rosa is told to meet first.
+1 walk 7 7 2000
+1 cross DOWN 0 10 3000
+1 wait 60
+include centre_wait_linked_menu.inc
+0 press DOWN 2
+0 wait 8
+0 note_text Meet_your_partner
+0 press A 2
+0 until_field_text Meet 600
+0 mash_field 600 B
+0 expect_noted
+b expect gTimeOfDay 0
+include unlink.inc
+b expect coop.sLinkState 0
+b wait 120
+b expect gTimeOfDay 0
+b hex gSaveblock3 2 572
+b hex gLocalTime 8

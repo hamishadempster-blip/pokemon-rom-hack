@@ -1,6 +1,7 @@
 #include "global.h"
 #include "coop_bond.h"
 #include "coop_autosave.h"
+#include "coop_time.h"
 #include "overworld.h"
 #include "coop_deal.h"
 #include "battle_pyramid.h"
@@ -1765,6 +1766,8 @@ void UpdateTimeOfDay(bool32 updateBlend)
     RtcCalcLocalTime();
     hours = gLocalTime.hours;
     minutes = gLocalTime.minutes;
+    // A wait at a Pokémon Center shifts the time of day only (src/coop_time.c).
+    CoopTime_AdjustClock(&hours, &minutes);
     // Linked: the shared world follows the link master's time of day
     // (src/coop_deal.c). The game's own clock is not changed.
     CoopDeal_SharedClock(&hours, &minutes);

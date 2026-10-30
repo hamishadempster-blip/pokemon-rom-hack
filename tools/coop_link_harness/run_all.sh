@@ -340,6 +340,10 @@ run autosave_go_back_autosave_reload SAVE0="$out/autosave_go_back_autosave/p0.sa
 for s in autosave_off autosave_coop; do
 	run "$s" SAVE0="$lab0" SAVE1="$lab1"
 done
+# Waiting at a Pokemon Center (after 0xC0170141).
+run centre_wait_solo SAVE0="$lab0" SAVE1="$lab1"
+run centre_wait_solo_reload SAVE0="$out/centre_wait_solo/p0.sav" SAVE1="$out/centre_wait_solo/p1.sav"
+run centre_wait_coop SAVE0="$lab0" SAVE1="$lab1" RTC_EPOCH0=1699963200 RTC_EPOCH1=1699923600
 # The same expiry by the wall clock while the harness runs faster than real
 # time: more frames pass, the same 30 seconds of clock time.
 run_as invite_expiry_clock_wall invite_expiry_clock SAVE0="$lab0" SAVE1="$lab1" RTC_WALL0=1 RTC_WALL1=1

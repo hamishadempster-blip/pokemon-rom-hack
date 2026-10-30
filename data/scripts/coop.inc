@@ -334,7 +334,14 @@ Coop_EventScript_Menu::
 	@ Not linked: LINK UP first, so A, A still links as it always has.
 	special Coop_BufferUnlinkedMenu
 	messageinstant gStringVar4
+	specialvar VAR_RESULT, CoopTime_CanWaitHere
+	goto_if_eq VAR_RESULT, TRUE, Coop_EventScript_MenuUnlinkedCentre
 	dynmultichoice 18, 1, FALSE, 7, 0, DYN_MULTICHOICE_CB_NONE, Coop_Text_OptLinkUp, Coop_Text_OptJournal, Coop_Text_OptPartnerDex, Coop_Text_OptLevelCap, Coop_Text_OptAppearance, Coop_Text_OptSettings, Coop_Text_OptBack
+	goto Coop_EventScript_MenuUnlinkedChoice
+@ In a Pokemon Center: WAIT HERE above BACK (src/coop_time.c).
+Coop_EventScript_MenuUnlinkedCentre::
+	dynmultichoice 18, 1, FALSE, 7, 0, DYN_MULTICHOICE_CB_NONE, Coop_Text_OptLinkUp, Coop_Text_OptJournal, Coop_Text_OptPartnerDex, Coop_Text_OptLevelCap, Coop_Text_OptAppearance, Coop_Text_OptSettings, Coop_Text_OptWait, Coop_Text_OptBack
+Coop_EventScript_MenuUnlinkedChoice::
 	switch VAR_RESULT
 	case 0, Coop_EventScript_MenuLinkUp
 	case 1, Coop_EventScript_MenuJournal
@@ -342,6 +349,7 @@ Coop_EventScript_Menu::
 	case 3, Coop_EventScript_AskToggleCap
 	case 4, Coop_EventScript_MenuAppearance
 	case 5, Coop_EventScript_MenuSettings
+	case 6, Coop_EventScript_MenuWaitIfCentre
 	goto Coop_EventScript_MenuBack
 
 @ SETTINGS: this save's personal conveniences (COOP_SET_*, src/coop.c);
@@ -471,11 +479,22 @@ Coop_EventScript_MenuLinked::
 	@ DOWN, A is never lost to the text.
 	specialvar VAR_RESULT, Coop_BufferMenuExplain
 	messageinstant gStringVar4
-	goto_if_eq VAR_RESULT, TRUE, Coop_EventScript_MenuLinkedBeaconOn
+	copyvar VAR_0x8005, VAR_RESULT
+	specialvar VAR_RESULT, CoopTime_CanWaitHere
+	goto_if_eq VAR_RESULT, TRUE, Coop_EventScript_MenuLinkedCentre
+	goto_if_eq VAR_0x8005, TRUE, Coop_EventScript_MenuLinkedBeaconOn
 	dynmultichoice 18, 1, FALSE, 8, 0, DYN_MULTICHOICE_CB_NONE, Coop_Text_OptBeaconOn, Coop_Text_OptUnlink, Coop_Text_OptPartnerDex, Coop_Text_OptJournal, Coop_Text_OptNameTag, Coop_Text_OptPing, Coop_Text_OptAppearance, Coop_Text_OptSettings, Coop_Text_OptBack
 	goto Coop_EventScript_MenuLinkedChoice
 Coop_EventScript_MenuLinkedBeaconOn::
 	dynmultichoice 18, 1, FALSE, 8, 0, DYN_MULTICHOICE_CB_NONE, Coop_Text_OptBeaconOff, Coop_Text_OptUnlink, Coop_Text_OptPartnerDex, Coop_Text_OptJournal, Coop_Text_OptNameTag, Coop_Text_OptPing, Coop_Text_OptAppearance, Coop_Text_OptSettings, Coop_Text_OptBack
+	goto Coop_EventScript_MenuLinkedChoice
+@ In a Pokemon Center: WAIT HERE above BACK (src/coop_time.c).
+Coop_EventScript_MenuLinkedCentre::
+	goto_if_eq VAR_0x8005, TRUE, Coop_EventScript_MenuLinkedCentreBeaconOn
+	dynmultichoice 18, 1, FALSE, 8, 0, DYN_MULTICHOICE_CB_NONE, Coop_Text_OptBeaconOn, Coop_Text_OptUnlink, Coop_Text_OptPartnerDex, Coop_Text_OptJournal, Coop_Text_OptNameTag, Coop_Text_OptPing, Coop_Text_OptAppearance, Coop_Text_OptSettings, Coop_Text_OptWait, Coop_Text_OptBack
+	goto Coop_EventScript_MenuLinkedChoice
+Coop_EventScript_MenuLinkedCentreBeaconOn::
+	dynmultichoice 18, 1, FALSE, 8, 0, DYN_MULTICHOICE_CB_NONE, Coop_Text_OptBeaconOff, Coop_Text_OptUnlink, Coop_Text_OptPartnerDex, Coop_Text_OptJournal, Coop_Text_OptNameTag, Coop_Text_OptPing, Coop_Text_OptAppearance, Coop_Text_OptSettings, Coop_Text_OptWait, Coop_Text_OptBack
 Coop_EventScript_MenuLinkedChoice::
 	switch VAR_RESULT
 	case 0, Coop_EventScript_MenuBeacon
@@ -486,6 +505,7 @@ Coop_EventScript_MenuLinkedChoice::
 	case 5, Coop_EventScript_MenuPing
 	case 6, Coop_EventScript_MenuAppearance
 	case 7, Coop_EventScript_MenuSettings
+	case 8, Coop_EventScript_MenuWaitIfCentre
 	goto Coop_EventScript_MenuBack
 
 @ PING from anywhere (the partner menu has it too): a sound, a note and the
@@ -674,6 +694,113 @@ Coop_Text_OptUnlink:
 
 Coop_Text_OptBack:
 	.string "BACK$"
+
+@ ------------------------------------------------------------ WAIT HERE
+@ Rest at a Pokemon Center until another time of day (src/coop_time.c).
+@ Linked, the partner in the same Center must agree (a COOP_DEAL_WAIT
+@ request); the answer settles it on both games.
+Coop_Text_OptWait:
+	.string "WAIT HERE$"
+
+@ BACK sits where WAIT HERE would be outside a Center.
+Coop_EventScript_MenuWaitIfCentre::
+	specialvar VAR_RESULT, CoopTime_CanWaitHere
+	goto_if_eq VAR_RESULT, FALSE, Coop_EventScript_MenuBack
+Coop_EventScript_MenuWait::
+	specialvar VAR_RESULT, CoopTime_BufferNow
+	message Coop_Text_WaitAsk
+	waitmessage
+	goto_if_eq VAR_RESULT, TRUE, Coop_EventScript_MenuWaitShifted
+	dynmultichoice 18, 1, FALSE, 5, 0, DYN_MULTICHOICE_CB_NONE, Coop_Text_OptMorning, Coop_Text_OptDay, Coop_Text_OptEvening, Coop_Text_OptNight, Coop_Text_OptCancelWait
+	goto_if_ge VAR_RESULT, 4, Coop_EventScript_MenuWaitCancel
+	goto Coop_EventScript_MenuWaitChosen
+Coop_EventScript_MenuWaitShifted::
+	dynmultichoice 18, 1, FALSE, 6, 0, DYN_MULTICHOICE_CB_NONE, Coop_Text_OptMorning, Coop_Text_OptDay, Coop_Text_OptEvening, Coop_Text_OptNight, Coop_Text_OptRealTime, Coop_Text_OptCancelWait
+	goto_if_ge VAR_RESULT, 5, Coop_EventScript_MenuWaitCancel
+Coop_EventScript_MenuWaitChosen::
+	copyvar VAR_0x8006, VAR_RESULT
+	specialvar VAR_RESULT, CoopTime_PrepareWait
+	switch VAR_RESULT
+	case 0, Coop_EventScript_WaitApply
+	case 1, Coop_EventScript_WaitTogether
+	case 2, Coop_EventScript_WaitMeetFirst
+	case 3, Coop_EventScript_WaitAlready
+	goto Coop_EventScript_MenuWaitCancel
+
+Coop_EventScript_MenuWaitCancel::
+	closemessage
+	releaseall
+	end
+
+Coop_EventScript_WaitTogether::
+	closemessage
+	setvar VAR_0x8005, COOP_DEAL_WAIT
+	specialvar VAR_RESULT, CoopDeal_StartRequest
+	goto_if_ne VAR_RESULT, COOP_DEAL_OK, CoopDeal_EventScript_Result
+	call CoopDeal_EventScript_WaitAnswer
+	goto_if_ne VAR_RESULT, COOP_DEAL_OK, CoopDeal_EventScript_Result
+	goto Coop_EventScript_WaitApply
+
+@ Both games come here: the one that asked (above) and the partner who
+@ said YES (src/coop_deal.c, CoopDeal_EventScript_InWait). VAR_0x8006: the
+@ time of day chosen.
+Coop_EventScript_WaitApply::
+	closemessage
+	fadescreen FADE_TO_BLACK
+	special CoopTime_ApplyWait
+	delay 50
+	fadescreen FADE_FROM_BLACK
+	goto_if_eq VAR_0x8006, 4, Coop_EventScript_WaitedRealTime
+	msgbox Coop_Text_Waited, MSGBOX_DEFAULT
+	releaseall
+	end
+Coop_EventScript_WaitedRealTime::
+	msgbox Coop_Text_WaitedRealTime, MSGBOX_DEFAULT
+	releaseall
+	end
+
+Coop_EventScript_WaitMeetFirst::
+	msgbox Coop_Text_WaitMeetFirst, MSGBOX_DEFAULT
+	releaseall
+	end
+
+Coop_EventScript_WaitAlready::
+	goto_if_eq VAR_0x8006, 4, Coop_EventScript_WaitAlreadyReal
+	msgbox Coop_Text_WaitAlready, MSGBOX_DEFAULT
+	releaseall
+	end
+Coop_EventScript_WaitAlreadyReal::
+	msgbox Coop_Text_WaitAlreadyReal, MSGBOX_DEFAULT
+	releaseall
+	end
+
+Coop_Text_WaitAsk:
+	.string "It's {STR_VAR_1}. Rest here until…$"
+Coop_Text_OptMorning:
+	.string "MORNING$"
+Coop_Text_OptDay:
+	.string "DAY$"
+Coop_Text_OptEvening:
+	.string "EVENING$"
+Coop_Text_OptNight:
+	.string "NIGHT$"
+Coop_Text_OptRealTime:
+	.string "REAL TIME$"
+Coop_Text_OptCancelWait:
+	.string "CANCEL$"
+Coop_Text_Waited:
+	.string "{PLAYER} rested until {STR_VAR_2}.$"
+Coop_Text_WaitedRealTime:
+	.string "The time of day follows your\n"
+	.string "clock again.$"
+Coop_Text_WaitMeetFirst:
+	.string "You're linked: rest together.\n"
+	.string "Meet your partner in this CENTER.$"
+Coop_Text_WaitAlready:
+	.string "It's already {STR_VAR_2}.$"
+Coop_Text_WaitAlreadyReal:
+	.string "The time of day already follows\n"
+	.string "your clock.$"
 
 Coop_Text_OptPartnerDex:
 	.string "PARTNER DEX$"

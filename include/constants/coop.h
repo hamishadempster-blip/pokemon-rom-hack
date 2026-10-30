@@ -38,6 +38,7 @@
 #define COOP_DEAL_TRADE       2
 #define COOP_DEAL_GIVE_MON    3
 #define COOP_DEAL_GIVE_ITEM   4
+#define COOP_DEAL_WAIT        5   // rest at a Pokemon Center together (src/coop_time.c)
 
 // Escrow record states in the save. Append only.
 #define COOP_TXN_NONE         0

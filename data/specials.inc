@@ -735,6 +735,10 @@ gSpecials::
 	def_special Coop_BufferCatchResult
 	def_special CoopAutosave_Write
 	def_special CoopAutosave_LoadManual
+	def_special CoopTime_CanWaitHere
+	def_special CoopTime_BufferNow
+	def_special CoopTime_PrepareWait
+	def_special CoopTime_ApplyWait
 	def_special CoopDeal_CheckOfferMon
 	def_special CoopDeal_CheckGiftItem
 	def_special CoopDeal_BufferItemCount

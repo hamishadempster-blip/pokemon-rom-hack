@@ -339,8 +339,8 @@ struct CoopSaveV5
     u8 settings;            // COOP_SET_* bits (0: the defaults)
     u8 settings2;
     u16 reservedSettings;
-    u8 periodShift;         // encounter-period shift (src/coop_time.c)
-    u8 periodFlags;
+    u16 periodShift;        // minutes added to the clock's time of day after
+                            // waiting at a Pokémon Center, 0-1439 (src/coop_time.c)
     u16 reservedPeriod;
     struct CoopBondSave bond;
     struct CoopHabitatSave habitat;

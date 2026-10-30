@@ -468,6 +468,7 @@ CoopDeal_EventScript_Incoming::
 	case COOP_DEAL_TRADE, CoopDeal_EventScript_InTrade
 	case COOP_DEAL_GIVE_MON, CoopDeal_EventScript_InGiveMon
 	case COOP_DEAL_GIVE_ITEM, CoopDeal_EventScript_InGiveItem
+	case COOP_DEAL_WAIT, CoopDeal_EventScript_InWait
 	msgbox CoopDeal_Text_ResCancelled, MSGBOX_DEFAULT
 	goto CoopDeal_EventScript_End
 
@@ -504,6 +505,21 @@ CoopDeal_EventScript_InGift::
 	call CoopDeal_EventScript_WaitConfirm
 	goto_if_ne VAR_RESULT, COOP_DEAL_OK, CoopDeal_EventScript_Result
 	goto CoopDeal_EventScript_Transfer
+
+@ Rest at the Pokemon Center together (src/coop_time.c). VAR_0x8006: the
+@ time of day asked for (4: back to the clock's own time).
+CoopDeal_EventScript_InWait::
+	goto_if_eq VAR_0x8006, 4, CoopDeal_EventScript_InWaitReal
+	msgbox CoopDeal_Text_InWait, MSGBOX_YESNO
+	goto CoopDeal_EventScript_InWaitAnswer
+CoopDeal_EventScript_InWaitReal::
+	msgbox CoopDeal_Text_InWaitReal, MSGBOX_YESNO
+CoopDeal_EventScript_InWaitAnswer::
+	goto_if_eq VAR_RESULT, NO, CoopDeal_EventScript_InDecline
+	setvar VAR_0x8004, 1
+	specialvar VAR_RESULT, CoopDeal_Answer
+	goto_if_ne VAR_RESULT, COOP_DEAL_OK, CoopDeal_EventScript_Result
+	goto Coop_EventScript_WaitApply
 
 CoopDeal_EventScript_InDecline::
 	setvar VAR_0x8004, 0
@@ -542,6 +558,13 @@ CoopDeal_EventScript_NoRoomToSettle::
 	end
 
 @ ------------------------------------------------------------ text
+
+CoopDeal_Text_InWait:
+	.string "{STR_VAR_1} wants to rest here\n"
+	.string "until {STR_VAR_2}. Rest together?$"
+CoopDeal_Text_InWaitReal:
+	.string "{STR_VAR_1} wants the time of day\n"
+	.string "to follow the clock again. OK?$"
 
 CoopDeal_Text_WhatToDo:
 	.string "What would you like to do\n"
