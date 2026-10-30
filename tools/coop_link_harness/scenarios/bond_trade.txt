@@ -4,7 +4,9 @@
 # records share a key); Kai's MACHOKE is designated as his Partner Pokemon
 # without the mentor (test_data bonddesignate) and given 3,000 Bond XP
 # (Companion, +5).
-# Checks: Kai trades his partner away. On Kai's save the designation ends
+# Checks: offering his partner, Kai is asked first ("... is your Partner
+# POKeMON ... Offer it?"; the driver's A answers YES). Kai trades his
+# partner away. On Kai's save the designation ends
 # (no partner; the POOCHYENA he receives is nobody's partner). On Rosa's
 # save the MACHOKE (now MACHAMP, evolved by the trade) keeps its 3,000 Bond
 # XP and its history, but not the active flag and no bonus: it is not her
@@ -20,7 +22,9 @@ include deal_setup.inc
 0 expect gCoopBondTest+2:2 3000
 1 expect gCoopBondTest+30:1 0
 b party
+0 note_text Partner_POK
 include deal_trade_offer.inc
+0 expect_noted
 1 until_mem coop_deal.sDeal+13 1 900 A
 0 until_mem coop_deal.sDeal+13 1 900 A
 b mash_field 9000 B

@@ -728,6 +728,7 @@ gSpecials::
 	def_special CoopBond_ScriptCheckChoiceName
 	def_special CoopBond_ScriptDesignate
 	def_special CoopBond_ScriptCheckBond
+	def_special CoopBond_ScriptSlotIsPartner
 	def_special CoopDeal_CheckOfferMon
 	def_special CoopDeal_CheckGiftItem
 	def_special CoopDeal_BufferItemCount

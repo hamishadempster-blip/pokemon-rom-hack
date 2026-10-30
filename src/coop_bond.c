@@ -484,6 +484,19 @@ void CoopBond_MonArrived(struct BoxPokemon *boxMon)
         Bond_SetActiveFlag(boxMon, FALSE);
 }
 
+// Partner menu offer (VAR_0x8004 the party slot): is it the active
+// partner? Its nickname goes to gStringVar1 for the question.
+u16 CoopBond_ScriptSlotIsPartner(void)
+{
+    u16 slot = gSpecialVar_0x8004;
+
+    if (slot >= PARTY_SIZE || CoopBond_ActiveSlot() != (s8)slot)
+        return FALSE;
+    GetMonData(&gParties[B_TRAINER_PLAYER][slot], MON_DATA_NICKNAME, gStringVar1);
+    StringGet_Nickname(gStringVar1);
+    return TRUE;
+}
+
 // --- Bond XP -------------------------------------------------------------
 
 static EWRAM_DATA u16 sNoticeGain = 0;

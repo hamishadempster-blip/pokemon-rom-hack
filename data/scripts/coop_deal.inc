@@ -281,7 +281,7 @@ CoopDeal_EventScript_PickMon::
 	waitstate
 	goto_if_ge VAR_0x8004, PARTY_SIZE, CoopDeal_EventScript_PickMonNone
 	specialvar VAR_RESULT, CoopDeal_CheckOfferMon
-	goto_if_eq VAR_RESULT, COOP_DEAL_OK, CoopDeal_EventScript_PickMonDone
+	goto_if_eq VAR_RESULT, COOP_DEAL_OK, CoopDeal_EventScript_PickMonPartner
 	goto_if_eq VAR_RESULT, COOP_DEAL_NO_ROOM, CoopDeal_EventScript_PickMonLast
 	goto_if_eq VAR_RESULT, COOP_DEAL_BUSY, CoopDeal_EventScript_PickMonItem
 	msgbox CoopDeal_Text_CantOfferEgg, MSGBOX_DEFAULT
@@ -295,6 +295,16 @@ CoopDeal_EventScript_PickMonItem::
 CoopDeal_EventScript_PickMonNone::
 	setvar VAR_RESULT, COOP_DEAL_CANCELLED
 CoopDeal_EventScript_PickMonDone::
+	return
+@ Trainer Bond: offering the Partner Pokemon asks first (it stops being
+@ the partner if it leaves; its Bond XP goes with it).
+CoopDeal_EventScript_PickMonPartner::
+	specialvar VAR_RESULT, CoopBond_ScriptSlotIsPartner
+	goto_if_eq VAR_RESULT, FALSE, CoopDeal_EventScript_PickMonOk
+	msgbox CoopDeal_Text_OfferPartner, MSGBOX_YESNO
+	goto_if_eq VAR_RESULT, NO, CoopDeal_EventScript_PickMon
+CoopDeal_EventScript_PickMonOk::
+	setvar VAR_RESULT, COOP_DEAL_OK
 	return
 
 @ ------------------------------------------------------------ gifts
@@ -743,6 +753,12 @@ CoopDeal_Text_YouReceive:
 	.string "You would receive\n"
 	.string "{STR_VAR_2}\p"
 	.string "{STR_VAR_3}.$"
+
+CoopDeal_Text_OfferPartner:
+	.string "{STR_VAR_1} is your Partner POKéMON.\n"
+	.string "If it goes, it stops being your\l"
+	.string "partner; its BOND XP goes with it.\l"
+	.string "Offer it?$"
 
 CoopDeal_Text_YouGiveTrade:
 	.string "for your {STR_VAR_2}\n"
