@@ -740,6 +740,8 @@ gSpecials::
 	def_special CoopTime_PrepareWait
 	def_special CoopTime_ApplyWait
 	def_special CoopVisitor_ReportPage
+	def_special CoopNotes_PayKind
+	def_special CoopNotes_BufferPage
 	def_special CoopDeal_CheckOfferMon
 	def_special CoopDeal_CheckGiftItem
 	def_special CoopDeal_BufferItemCount

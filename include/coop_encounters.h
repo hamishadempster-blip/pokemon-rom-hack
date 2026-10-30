@@ -49,5 +49,6 @@ struct CoopVisitorReport
 
 u16 CoopVisitor_Species(u8 area, u8 rod, u16 species);
 bool8 CoopVisitor_MapHasSpecies(u8 mapGroup, u8 mapNum, u16 species);
+u16 CoopVisitor_CountCaught(u16 *total);
 
 #endif // GUARD_COOP_ENCOUNTERS_H

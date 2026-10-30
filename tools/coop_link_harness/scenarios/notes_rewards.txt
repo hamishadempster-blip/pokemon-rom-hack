@@ -1,0 +1,113 @@
+# FIELD NOTES collection rewards (lab saves, player 0 alone).
+# FIXTURES: Pokedex caught flags set (dex_caught) to reach 10 and then 25
+# kinds; the POKe BALLS pocket filled with other items (fixture_fill_pocket)
+# and emptied again; the map-entry check requested directly twice
+# (gCoopNotesCheck), then real map entries (fixture_warp onto Route 101).
+# Checks: entering a map with 10 kinds caught pays "10 kinds caught!" and
+# 5 GREAT BALLS once (ledger bit 0); with 25 kinds and no room for ULTRA
+# BALLS the reward is claimed and waits (pending[0], "No room"); after room
+# is made, the next map entry hands it over ("There's room now") and the
+# queue is empty; no more rewards on later entries; FIELD NOTES pages (CO-OP
+# > JOURNAL > FIELD NOTES). notes_rewards_reload checks nothing is paid
+# again after a power cycle.
+include continue.inc
+b no_wild 1
+b mash_field 300 B
+0 hex gSaveblock3 24 624
+0 expect gSaveblock3+624:1 0
+0 dex_caught 3 1
+0 dex_caught 6 1
+0 dex_caught 9 1
+0 dex_caught 12 1
+0 dex_caught 15 1
+0 dex_caught 18 1
+0 dex_caught 21 1
+0 dex_caught 24 1
+0 dex_caught 27 1
+0 dex_caught 30 1
+0 note_text 10_kinds_caught!
+0 until_field 600
+0 wait 30
+0 write gCoopNotesCheck 1
+0 until_field_text FIELD_NOTES 900
+0 shot reward-given
+0 mash_field 600 B
+0 expect_noted
+0 expect gCoopNotesPaid 1
+0 expect_item 1 2 5
+0 expect gSaveblock3+624:1 1
+0 fixture_fill_pocket 1
+0 dex_caught 33 1
+0 dex_caught 36 1
+0 dex_caught 39 1
+0 dex_caught 42 1
+0 dex_caught 45 1
+0 dex_caught 48 1
+0 dex_caught 51 1
+0 dex_caught 54 1
+0 dex_caught 57 1
+0 dex_caught 60 1
+0 dex_caught 63 1
+0 dex_caught 66 1
+0 dex_caught 69 1
+0 dex_caught 72 1
+0 dex_caught 75 1
+0 note_text No_room
+0 wait 30
+0 write gCoopNotesCheck 1
+0 until_field_text No_room 900
+0 shot reward-queued
+0 mash_field 600 B
+0 expect_noted
+0 expect gSaveblock3+624:1 3
+0 expect gSaveblock3+632:2 3
+0 expect gSaveblock3+634:1 5
+0 until_mem gCoopNotesCheck 0 600
+0 wait 30
+0 expect gSaveblock3+632:2 3
+0 fixture_unfill_pocket 1
+0 note_text room_now
+0 fixture_warp 0 16 10 6
+0 until_field_text room_now 3000
+0 mash_field 600 B
+0 expect_noted
+0 expect_item 1 3 5
+0 expect gSaveblock3+632:2 0
+0 expect gCoopNotesPaid 3
+0 fixture_warp 0 16 10 7
+0 until_field 3000
+0 wait 120
+0 expect gCoopNotesPaid 3
+# FIELD NOTES pages.
+0 press START 2
+0 wait 40
+0 menu_to COOP
+0 press A 2
+0 until_task Task_HandleScrollingMultichoiceInput 2000
+0 wait 20
+0 press DOWN 2
+0 wait 8
+0 press A 2
+0 until_task Task_HandleScrollingMultichoiceInput 2000
+0 wait 20
+0 press DOWN 2
+0 wait 8
+0 press DOWN 2
+0 wait 8
+0 press DOWN 2
+0 wait 8
+0 press DOWN 2
+0 wait 8
+0 press DOWN 2
+0 wait 8
+0 press DOWN 2
+0 wait 8
+0 note_text Caught:_
+0 press A 2
+0 until_field_text Caught 600
+0 shot notes-page1
+0 expect_noted
+0 until_field_text Visitors_caught 600
+0 shot notes-page2
+0 mash_field 900 B
+include save_again.inc

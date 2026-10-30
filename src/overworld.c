@@ -1,6 +1,7 @@
 #include "global.h"
 #include "coop_bond.h"
 #include "coop_autosave.h"
+#include "coop_notes.h"
 #include "coop_time.h"
 #include "overworld.h"
 #include "coop_deal.h"
@@ -947,6 +948,7 @@ void LoadMapFromCameraTransition(u8 mapGroup, u8 mapNum)
     Coop_ApplyPendingStory();
     CoopBond_RefreshParty(); // the bond bonus that applies on this map
     CoopAutosave_NoteMapEntry();
+    CoopNotes_NoteMapEntry();
     RunOnTransitionMapScript();
     InitMap();
     CopySecondaryTilesetToVramUsingHeap(gMapHeader.mapLayout);
@@ -1022,6 +1024,7 @@ static void LoadMapFromWarp(bool32 a1)
     Coop_ApplyPendingStory();
     CoopBond_RefreshParty(); // the bond bonus that applies on this map
     CoopAutosave_NoteMapEntry();
+    CoopNotes_NoteMapEntry();
     RunOnTransitionMapScript();
     UpdateLocationHistoryForRoamer();
     MoveAllRoamersToOtherLocationSets();
@@ -1742,7 +1745,8 @@ void CB1_Overworld(void)
     Coop_OverworldFrame();
     Coop_UpdateRivalTwin();
     CoopBond_FieldPoll();
-    CoopAutosave_Poll();
+    if (!CoopNotes_Poll())   // a FIELD NOTES reward first (src/coop_notes.c)
+        CoopAutosave_Poll();
 }
 
 #define TINT_NIGHT Q_8_8(0.456) | Q_8_8(0.456) << 8 | Q_8_8(0.615) << 16

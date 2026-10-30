@@ -95,6 +95,13 @@
 #define COOP_REWARD_TWIN_SOREN   5   // Exhibition: Soren's gift
 #define COOP_REWARD_TWIN_MIRA    6   // Exhibition: Mira's gift
 #define COOP_REWARD_TOURNEY      7   // Twin Beacon tournament: first win
+
+// CoopSaveV5.pending[].source: what a reward waiting for room in the BAG
+// is for (src/coop_notes.c).
+#define COOP_REWARD_SRC_NONE     0
+#define COOP_REWARD_SRC_NOTES    1   // FIELD NOTES collection reward
+#define COOP_REWARD_SRC_HABITAT  2   // a hidden habitat (src/coop_habitat.c)
+#define COOP_REWARD_SRC_TOWN     3   // a town speciality (src/coop_town.c)
 #define COOP_REWARD_TWIN_SPAR_1  8   // Soren's first spar prize
 #define COOP_REWARD_TWIN_SPAR_2  9   // Soren's second spar prize
 #define COOP_REWARD_SHRINE_LORE  10  // Twin Beacon: the keeper's charm

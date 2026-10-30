@@ -1,0 +1,13 @@
+# After notes_rewards: the rewards paid are in the save (ledger bits 0 and
+# 1, the queue empty): after a power cycle, entering a map pays nothing.
+include continue.inc
+b no_wild 1
+b mash_field 300 B
+0 expect gSaveblock3+624:1 3
+0 expect gSaveblock3+632:2 0
+0 fixture_warp 0 16 10 6
+0 until_field 3000
+0 wait 200
+0 expect gCoopNotesPaid 0
+0 expect_item 1 2 5
+0 expect_item 1 3 5

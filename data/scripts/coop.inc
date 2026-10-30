@@ -438,12 +438,66 @@ Coop_EventScript_AskToggleCap::
 
 @ This save's quests: what is done, what is next, and what the partner did.
 Coop_EventScript_MenuJournal::
-	dynmultichoice 13, 1, FALSE, 6, 0, DYN_MULTICHOICE_CB_NONE, Coop_Text_JrnPower, Coop_Text_JrnShoal, Coop_Text_JrnCaravan, Coop_Text_JrnTwins, Coop_Text_JrnCoast, Coop_Text_JrnBeacon, Coop_Text_OptBack
+	dynmultichoice 13, 1, FALSE, 6, 0, DYN_MULTICHOICE_CB_NONE, Coop_Text_JrnPower, Coop_Text_JrnShoal, Coop_Text_JrnCaravan, Coop_Text_JrnTwins, Coop_Text_JrnCoast, Coop_Text_JrnBeacon, Coop_Text_JrnNotes, Coop_Text_OptBack
+	goto_if_eq VAR_RESULT, 6, Coop_EventScript_FieldNotes
 	goto_if_ge VAR_RESULT, 6, Coop_EventScript_MenuBack
 	copyvar VAR_0x8004, VAR_RESULT
 	special CoopQuest_BufferJournal
 	msgbox gStringVar4, MSGBOX_DEFAULT
 	goto Coop_EventScript_MenuBack
+
+Coop_Text_JrnNotes:
+	.string "FIELD NOTES$"
+
+@ FIELD NOTES (src/coop_notes.c): this save's collection, a page each.
+Coop_EventScript_FieldNotes::
+	setvar VAR_0x8004, 0
+Coop_EventScript_FieldNotesPage::
+	specialvar VAR_RESULT, CoopNotes_BufferPage
+	goto_if_eq VAR_RESULT, FALSE, Coop_EventScript_MenuBack
+	msgbox gStringVar4, MSGBOX_DEFAULT
+	addvar VAR_0x8004, 1
+	goto Coop_EventScript_FieldNotesPage
+
+@ A collection reward, at a calm moment after entering a map
+@ (CoopNotes_Poll). The item is already in the BAG (or waiting for room).
+	.global Coop_EventScript_NotesReward
+Coop_EventScript_NotesReward::
+	lockall
+	specialvar VAR_RESULT, CoopNotes_PayKind
+	goto_if_eq VAR_RESULT, 2, Coop_EventScript_NotesQueued
+	goto_if_eq VAR_RESULT, 3, Coop_EventScript_NotesDelivered
+	playfanfare MUS_OBTAIN_ITEM
+	message Coop_Text_NotesGiven
+	waitmessage
+	waitfanfare
+	waitbuttonpress
+	closemessage
+	releaseall
+	end
+Coop_EventScript_NotesQueued::
+	msgbox Coop_Text_NotesQueued, MSGBOX_DEFAULT
+	releaseall
+	end
+Coop_EventScript_NotesDelivered::
+	playfanfare MUS_OBTAIN_ITEM
+	message Coop_Text_NotesDelivered
+	waitmessage
+	waitfanfare
+	waitbuttonpress
+	closemessage
+	releaseall
+	end
+
+Coop_Text_NotesGiven:
+	.string "FIELD NOTES: {STR_VAR_1}\n"
+	.string "{PLAYER} got {STR_VAR_2}!$"
+Coop_Text_NotesQueued:
+	.string "FIELD NOTES: {STR_VAR_1}\n"
+	.string "No room: {STR_VAR_2} wait.$"
+Coop_Text_NotesDelivered:
+	.string "There's room now: {PLAYER} got\n"
+	.string "the waiting {STR_VAR_2}!$"
 
 Coop_Text_JrnPower:
 	.string "POWER PROBLEMS$"

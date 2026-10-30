@@ -279,3 +279,26 @@ u16 CoopVisitor_ReportPage(void)
     *p = EOS;
     return TRUE;
 }
+
+// For the FIELD NOTES (src/coop_notes.c): how many visitor species there are
+// and how many this save has caught.
+u16 CoopVisitor_CountCaught(u16 *total)
+{
+    u16 seen[ARRAY_COUNT(sCoopVisitors)];
+    u32 i, j, n = 0, caught = 0;
+
+    for (i = 0; i < ARRAY_COUNT(sCoopVisitors); i++)
+    {
+        bool8 dup = FALSE;
+
+        for (j = 0; j < n; j++)
+            dup |= (seen[j] == sCoopVisitors[i].species);
+        if (dup)
+            continue;
+        seen[n++] = sCoopVisitors[i].species;
+        if (GetSetPokedexFlag(SpeciesToNationalPokedexNum(sCoopVisitors[i].species), FLAG_GET_CAUGHT))
+            caught++;
+    }
+    *total = n;
+    return caught;
+}

@@ -348,6 +348,8 @@ run centre_wait_solo SAVE0="$lab0" SAVE1="$lab1"
 run centre_wait_solo_reload SAVE0="$out/centre_wait_solo/p0.sav" SAVE1="$out/centre_wait_solo/p1.sav"
 run centre_wait_coop SAVE0="$lab0" SAVE1="$lab1" RTC_EPOCH0=1699963200 RTC_EPOCH1=1699923600
 run visitors_time SAVE0="$lab0" SAVE1="$lab1"
+run notes_rewards SAVE0="$lab0" SAVE1="$lab1"
+run notes_rewards_reload SAVE0="$out/notes_rewards/p0.sav" SAVE1="$out/notes_rewards/p1.sav"
 # The same expiry by the wall clock while the harness runs faster than real
 # time: more frames pass, the same 30 seconds of clock time.
 run_as invite_expiry_clock_wall invite_expiry_clock SAVE0="$lab0" SAVE1="$lab1" RTC_WALL0=1 RTC_WALL1=1

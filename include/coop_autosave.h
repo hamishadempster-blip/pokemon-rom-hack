@@ -8,5 +8,7 @@ extern u8 gCoopAutosaveCount;
 extern u32 gCoopAutosaveTestInterval;
 void CoopAutosave_Write(void);
 void CoopAutosave_LoadManual(void);
+bool8 CoopField_Calm(void);
+bool8 CoopField_OrdinaryPlace(void);
 
 #endif // GUARD_COOP_AUTOSAVE_H

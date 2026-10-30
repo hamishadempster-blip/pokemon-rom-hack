@@ -66,7 +66,8 @@ void CoopAutosave_NoteMapEntry(void)
 }
 
 // Everything but the time since the last save: a safe moment to write.
-static bool8 Autosave_SafeNow(void)
+// Also the moment the FIELD NOTES pay a reward (src/coop_notes.c).
+bool8 CoopField_Calm(void)
 {
     if (gMain.callback2 != CB2_Overworld || gMain.inBattle)
         return FALSE;
@@ -79,6 +80,16 @@ static bool8 Autosave_SafeNow(void)
     return TRUE;
 }
 
+// An ordinary place: not where START has no SAVE (src/start_menu.c), a
+// Trainer Bond facility (src/coop_bond.c) or Trainer Hill. The FIELD NOTES
+// pay rewards only here too (the Battle Pyramid has its own bag).
+bool8 CoopField_OrdinaryPlace(void)
+{
+    return !(IsOverworldLinkActive() || InUnionRoom() || GetSafariZoneFlag() || InBattlePike()
+          || CurrentBattlePyramidLocation() != PYRAMID_LOCATION_NONE || InMultiPartnerRoom()
+          || CoopBond_InFacilityMap() || InTrainerHill());
+}
+
 // Places and states where an autosave is never made.
 static bool8 Autosave_Allowed(void)
 {
@@ -86,13 +97,7 @@ static bool8 Autosave_Allowed(void)
         return FALSE;
     if (!Coop_SaveSchemaSupported() || Coop_SettingOn(COOP_SET_NO_AUTOSAVE))
         return FALSE;
-    // Where the START menu has no SAVE (src/start_menu.c), or Trainer Bond
-    // facilities (src/coop_bond.c) and Trainer Hill.
-    if (IsOverworldLinkActive() || InUnionRoom() || GetSafariZoneFlag() || InBattlePike()
-     || CurrentBattlePyramidLocation() != PYRAMID_LOCATION_NONE || InMultiPartnerRoom()
-     || CoopBond_InFacilityMap() || InTrainerHill())
-        return FALSE;
-    return TRUE;
+    return CoopField_OrdinaryPlace();
 }
 
 void CoopAutosave_Poll(void)
@@ -103,7 +108,7 @@ void CoopAutosave_Poll(void)
     // and offer the manual save, once, as soon as the field is calm.
     if (gSaveLoadedAutosaveOverManual)
     {
-        if (!Autosave_SafeNow())
+        if (!CoopField_Calm())
             return;
         gSaveLoadedAutosaveOverManual = FALSE;
         LockPlayerFieldControls();
@@ -118,7 +123,7 @@ void CoopAutosave_Poll(void)
         gCoopAutosavePending = FALSE;   // until the next map
         return;
     }
-    if (!Autosave_SafeNow())
+    if (!CoopField_Calm())
     {
         if (++sPendingFrames >= AUTOSAVE_WAIT_FRAMES)
             gCoopAutosavePending = FALSE;

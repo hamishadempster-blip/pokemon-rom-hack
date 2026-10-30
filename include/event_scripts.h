@@ -809,5 +809,6 @@ extern const u8 EventScript_Indigo_HighestAuthority[];
 
 extern const u8 Coop_EventScript_Autosave[];
 extern const u8 Coop_EventScript_AutosaveLoaded[];
+extern const u8 Coop_EventScript_NotesReward[];
 
 #endif // GUARD_EVENT_SCRIPTS_H
