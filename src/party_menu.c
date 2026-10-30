@@ -3009,6 +3009,25 @@ static void SetPartyMonFieldSelectionActions(struct Pokemon *mons, u8 slotId)
         }
     }
 
+    // HM field moves no Pokémon has to know (Fly and Flash exist only here;
+    // the others also work from the map). Room is kept for the three entries
+    // below, and a move this Pokémon already lists is not added twice.
+    for (j = 0; j != FIELD_MOVES_COUNT; j++)
+    {
+        u8 k;
+        bool8 listed = FALSE;
+
+        if (sPartyMenuInternal->numActions >= ARRAY_COUNT(sPartyMenuInternal->actions) - 3)
+            break;
+        if (!FieldMove_IsVisible(j) || !IsHmFieldMoveUsableWithoutMon(j))
+            continue;
+        for (k = 0; k < sPartyMenuInternal->numActions; k++)
+            if (sPartyMenuInternal->actions[k] == j + MENU_FIELD_MOVES)
+                listed = TRUE;
+        if (!listed)
+            AppendToList(sPartyMenuInternal->actions, &sPartyMenuInternal->numActions, j + MENU_FIELD_MOVES);
+    }
+
     if (!InBattlePike())
     {
         if (GetMonData(&mons[1], MON_DATA_SPECIES) != SPECIES_NONE)
@@ -4934,60 +4953,6 @@ void ItemUseCB_BattleChooseMove(u8 taskId, TaskFunc task)
     DisplayPartyMenuStdMessage(PARTY_MSG_RESTORE_WHICH_MOVE);
     ShowMoveSelectWindow(gPartyMenu.slotId);
     gTasks[taskId].func = Task_HandleWhichMoveInput;
-}
-
-// HEALING VIAL: HP to full and status cured for one Pokemon that can still
-// fight; never a revive, never PP; one charge (src/coop.c CoopKit_*).
-void ItemUseCB_HealingVial(u8 taskId, TaskFunc task)
-{
-    struct Pokemon *party = NULL;
-    s8 partySlot = 0;
-    GetPartyAndSlotFromPartyMenuId(gPartyMenu.slotId, &party, &partySlot);
-    struct Pokemon *mon = &party[partySlot];
-    u16 hp = GetMonData(mon, MON_DATA_HP);
-    u16 maxHp = GetMonData(mon, MON_DATA_MAX_HP);
-    u32 status = GetMonData(mon, MON_DATA_STATUS);
-    const u8 *refuse = NULL;
-
-    if (GetMonData(mon, MON_DATA_IS_EGG))
-        refuse = gText_WontHaveEffect;
-    else if (hp == 0)
-        refuse = COMPOUND_STRING("It can't revive a fainted POKéMON.");
-    else if (hp == maxHp && status == STATUS1_NONE)
-        refuse = gText_WontHaveEffect;
-    else if (!CoopKit_UseVialCharge())
-        refuse = COMPOUND_STRING("The HEALING VIAL is empty.");
-    if (refuse != NULL)
-    {
-        gPartyMenuUseExitCallback = FALSE;
-        PlaySE(SE_SELECT);
-        DisplayPartyMenuMessage(refuse, TRUE);
-        ScheduleBgCopyTilemapToVram(2);
-        if (gPartyMenu.menuType == PARTY_MENU_TYPE_FIELD)
-            gTasks[taskId].func = Task_ReturnToChooseMonAfterText;
-        else
-            gTasks[taskId].func = task;
-        return;
-    }
-    gPartyMenuUseExitCallback = TRUE;
-    PlaySE(SE_USE_ITEM);
-    status = STATUS1_NONE;
-    SetMonData(mon, MON_DATA_STATUS, &status);
-    SetPartyMonAilmentGfx(mon, &sPartyMenuBoxes[gPartyMenu.slotId]);
-    if (gSprites[sPartyMenuBoxes[gPartyMenu.slotId].statusSpriteId].invisible)
-        DisplayPartyPokemonLevelCheck(mon, &sPartyMenuBoxes[gPartyMenu.slotId], 1);
-    if (hp < maxHp)
-    {
-        SetMonData(mon, MON_DATA_HP, &maxHp);
-        PartyMenuModifyHP(taskId, gPartyMenu.slotId, 1, maxHp - hp, Task_DisplayHPRestoredMessage);
-        ResetHPTaskData(taskId, 0, hp);
-        return;
-    }
-    GetMonNickname(mon, gStringVar1);
-    StringExpandPlaceholders(gStringVar4, COMPOUND_STRING("{STR_VAR_1} is healthy again."));
-    DisplayPartyMenuMessage(gStringVar4, TRUE);
-    ScheduleBgCopyTilemapToVram(2);
-    gTasks[taskId].func = task;
 }
 
 void ItemUseCB_Medicine(u8 taskId, TaskFunc task)
@@ -7996,11 +7961,34 @@ u8 GetPartyIdFromBattlePartyId(u8 battlePartyId)
 static const u8 sMultiBattlePartyIdToMenuId_Left[PARTY_SIZE] = { 0, 2, 3, 1, 4, 5};
 static const u8 sMultiBattlePartyIdToMenuId_Right[PARTY_SIZE] = { 1, 4, 5, 0, 2, 3};
 
+// The battle party order is six party slots packed two to a byte. Anything
+// that is not a permutation of 0-5 (never set up, stale, overwritten) would make
+// the two Update* functions below copy one Pokémon over the others.
+bool32 IsBattlePartyOrderValid(const u8 *order)
+{
+    u32 seen = 0;
+    u8 i;
+
+    for (i = 0; i < PARTY_SIZE; i++)
+    {
+        u8 id = (i & 1) ? (order[i / 2] & 0xF) : (order[i / 2] >> 4);
+
+        if (id >= PARTY_SIZE || (seen & (1u << id)))
+            return FALSE;
+        seen |= 1u << id;
+    }
+    return TRUE;
+}
+
 static void UpdatePartyToBattleOrder(void)
 {
-    struct Pokemon *partyBuffer = Alloc(sizeof(gParties[B_TRAINER_PLAYER]));
+    struct Pokemon *partyBuffer;
     u8 i;
     const u8 *multiBattlePartyIdToMenuId = sMultiBattlePartyIdToMenuId_Left;
+
+    if (!IsBattlePartyOrderValid(gBattlePartyCurrentOrder))
+        return;
+    partyBuffer = Alloc(sizeof(gParties[B_TRAINER_PLAYER]));
 
     if ((gBattleTypeFlags & BATTLE_TYPE_LINK) && ((gBattlerInMenuId & BIT_FLANK) != B_FLANK_LEFT))
         multiBattlePartyIdToMenuId = sMultiBattlePartyIdToMenuId_Right;
@@ -8031,10 +8019,14 @@ static void UpdatePartyToBattleOrder(void)
 
 static void UpdatePartyToFieldOrder(void)
 {
-    struct Pokemon *partyBuffer = Alloc(sizeof(gParties[B_TRAINER_PLAYER]));
+    struct Pokemon *partyBuffer;
     u8 i;
 
     const u8 *multiBattlePartyIdToMenuId = sMultiBattlePartyIdToMenuId_Left;
+
+    if (!IsBattlePartyOrderValid(gBattlePartyCurrentOrder))
+        return;
+    partyBuffer = Alloc(sizeof(gParties[B_TRAINER_PLAYER]));
 
     if ((gBattleTypeFlags & BATTLE_TYPE_LINK)
      && ((gBattlerInMenuId & BIT_FLANK) != B_FLANK_LEFT))

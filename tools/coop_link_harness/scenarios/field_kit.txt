@@ -4,8 +4,10 @@
 # lead's HP and status written down to test healing; a Battle Frontier warp
 # for the "not here" rule.
 # 1. The Oldale nurse gives both once (and heals); the vial has 1 charge.
-# 2. Lead at 5 HP and poisoned: the vial (BAG, KEY ITEMS) heals HP and
-#    status; 0 charges; a second use says it is empty.
+# 2. Lead at 5 HP and poisoned: the vial (BAG, KEY ITEMS) heals the whole
+#    party (D1500001; HP, status, PP, fainted too); 0 charges; a second use
+#    says it is empty. NOT RERUN for D1500001 (needs the j13 checkpoint, not
+#    available when the vial changed); vial_team_heal covers the new flow.
 # 3. BOX LINK: deposit the lead at 5 HP and take it back: still 5 HP (no
 #    free healing; OW_PC_HEAL).
 # 4. A Center heal refills the vial; the nurse gives nothing new.
@@ -40,18 +42,13 @@ b mash_field 300 B
 0 press A 2
 0 wait 40
 0 shot vial-menu
+# D1500001: no party menu; one use heals the whole party (see vial_team_heal).
 0 press A 2
-0 until_cb2 CB2_UpdatePartyMenu 600
-0 wait 60
-0 press A 2
-0 wait 150
+0 mash_field 4000 A
 0 shot vial-used
 0 expect_equal gParties+86:2 gParties+88
 0 expect gParties+80:4 0
 0 expect gCoopVialCharges 0
-0 press A 2
-0 wait 60
-0 mash_field 2000 B
 # second use: empty
 0 note_text is_empty
 0 press START 2

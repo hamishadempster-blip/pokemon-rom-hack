@@ -1,0 +1,54 @@
+# Move effectiveness hint (D1500001): in a co-op wild double the PP row of the
+# move menu shows how the highlighted move matches up against the foes (the
+# engine's own indicator, now on for every fight: it used to need the foe to
+# be "seen" in the Pokedex, which a link battle never records, so it never
+# showed). Checked on BOTH games, the link master and the joining player:
+#   - a damaging move shows a real result (1..6, never 0 = "cannot view");
+#   - a status move shows nothing (255);
+#   - choosing the target shows a real result for each foe.
+# Lab saves, Route 101, Beacon ON. gMoveEffectivenessShown is test visibility
+# (src/battle_controller_player.c).
+include wild_route101_start.inc
+0 write sWildEncountersDisabled 0
+0 pace_until_battle 9000
+0 write sWildEncountersDisabled 1
+0 until_cb2 BattleMainCB2 12000 A
+1 until_cb2 BattleMainCB2 12000 A
+0 until_mem gBattlerControllerFuncs:4 HandleInputChooseAction 9000 A
+1 until_mem gBattlerControllerFuncs+8:4 HandleInputChooseAction 9000 A
+b wait 30
+b press A 2
+0 until_mem gBattlerControllerFuncs:4 HandleInputChooseMove 300
+1 until_mem gBattlerControllerFuncs+8:4 HandleInputChooseMove 300
+b wait 40
+# slot 1 (a damaging move)
+b expect_range gMoveEffectivenessShown 1 6
+b shot effectiveness-move1
+# slot 2 (a status move)
+b press RIGHT 2
+b wait 20
+b expect gMoveEffectivenessShown 255
+# slot 3 (the other damaging move)
+b press LEFT 2
+b wait 20
+b press DOWN 2
+b wait 20
+b expect_range gMoveEffectivenessShown 1 6
+b shot effectiveness-move3
+# choosing the target: each foe's own result is shown (a real result for both)
+b press A 2
+0 until_mem gBattlerControllerFuncs:4 HandleInputChooseTarget 300
+1 until_mem gBattlerControllerFuncs+8:4 HandleInputChooseTarget 300
+b wait 30
+b expect_range gMoveEffectivenessShown 1 6
+b shot effectiveness-target1
+b press RIGHT 2
+b wait 30
+b expect_range gMoveEffectivenessShown 1 6
+b shot effectiveness-target2
+b press B 2
+b wait 30
+b press B 2
+b wait 30
+b mash_field 30000
+b expect coop.sLinkState 2

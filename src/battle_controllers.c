@@ -23,6 +23,7 @@
 #include "m4a.h"
 #include "overworld.h"
 #include "palette.h"
+#include "party_exp.h"
 #include "party_menu.h"
 #include "pokemon_animation.h"
 #include "recorded_battle.h"
@@ -882,6 +883,9 @@ static void Task_HandleCopyReceivedLinkBuffersData(u8 taskId)
             break;
         case B_COMM_COOP_TURN:
             CoopTurn_HandleMsg(battler, &BYTE_TO_RECEIVE(LINK_BUFF_DATA));
+            break;
+        case B_COMM_COOP_BENCH:
+            PartyExp_HandleMsg(&BYTE_TO_RECEIVE(LINK_BUFF_DATA));
             break;
         }
 

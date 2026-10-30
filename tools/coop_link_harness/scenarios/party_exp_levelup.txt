@@ -1,0 +1,33 @@
+# Whole-party experience, level-ups (co-op wild double): the whole team is one
+# experience point below level 16, so one knockout levels every Pokemon.
+# The Pokemon that fought levels on screen as always; the others level without
+# a screen: all six end at level 16 on both games, none stalls the battle, and
+# every one of them is offered its evolution after the battle like any other
+# level-up (Torchic evolves at 16): all six end as Combusken.
+# FIXTURE: fixture_lead (Torchic, level 15, 1 point short) then fixture_six.
+include wild_route101_start.inc
+b fixture_lead 255 15 2534
+b fixture_six
+0 write sWildEncountersDisabled 0
+0 pace_until_battle 9000
+0 write sWildEncountersDisabled 1
+0 until_cb2 BattleMainCB2 12000 A
+1 until_cb2 BattleMainCB2 12000 A
+b expect gBattlersCount 4
+b mash_field 40000
+b expect gBattleOutcome 1
+b expect coop.sLinkState 2
+b expect_mon 0 level 16
+b expect_mon 1 level 16
+b expect_mon 2 level 16
+b expect_mon 3 level 16
+b expect_mon 4 level 16
+b expect_mon 5 level 16
+b expect_mon 0 species 256
+b expect_mon 1 species 256
+b expect_mon 2 species 256
+b expect_mon 3 species 256
+b expect_mon 4 species 256
+b expect_mon 5 species 256
+b expect gPartiesCount 6
+b shot levelup-done

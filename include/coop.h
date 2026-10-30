@@ -123,6 +123,8 @@ extern u16 gCoopBusyRetries;
 struct Pokemon;
 
 void Coop_RecordLevelUp(u8 slot, u8 oldLevel);
+void Coop_RecordSilentLevelUp(u8 slot, u8 oldLevel);
+void Coop_NoteBenchLevelUp(u32 personality);
 void Coop_RestoreFieldPalettes(void);
 u16 Coop_NextProgression(void);
 void Coop_StartProgressionEvolution(void);
@@ -310,6 +312,8 @@ bool8 Coop_HasBattleReadyMon(void);
 u8 CoopKit_VialMax(void);
 u8 CoopKit_VialCharges(void);
 bool8 CoopKit_UseVialCharge(void);
+bool8 CoopKit_PartyNeedsHeal(void);
+void CoopKit_VialHealParty(void);
 void CoopKit_RefillVial(void);
 u16 CoopKit_NeedsBoxLink(void);
 u16 CoopKit_NeedsVial(void);

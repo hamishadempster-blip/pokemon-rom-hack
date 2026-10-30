@@ -1,0 +1,40 @@
+# HM moves need no Pokemon that knows them (user request). Lab save, player 0,
+# not linked: nobody in the party knows Rock Smash. With HM06 in the bag and the
+# Dynamo Badge (FIXTURES: test_item, fixture_flag) the rock on Route 114 can be
+# smashed; without the HM item it cannot (the rock stays); with the HM but
+# without the badge it cannot either. FIXTURE: fixture_warp in front of the rock.
+b wait 1100
+b press START 2
+b wait 200
+b until_cb2 CB2_Overworld 8000 A
+b until_field 3000
+0 no_wild 1
+0 fixture_warp 0 29 29 54
+0 until_field 3000
+0 press UP 2
+0 wait 20
+0 press A 2
+0 mash_field 400
+0 wait 60
+0 expect_flag 0x12 0
+0 shot no_hm_item
+# The HM, no badge: still refused.
+0 test_item 687 1
+0 fixture_flag 0x869 0
+0 press A 2
+0 mash_field 400
+0 wait 60
+0 expect_flag 0x12 0
+0 shot hm_no_badge
+# The HM and the badge: the rock is smashed with nobody knowing Rock Smash.
+0 fixture_flag 0x869 1
+0 press A 2
+0 wait 100
+0 shot ask
+0 press A 2
+0 wait 100
+0 shot yes
+0 press A 2
+0 wait 300
+0 shot used
+0 expect_flag 0x12 1

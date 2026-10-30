@@ -2472,6 +2472,13 @@ static void frameCallback(struct mCoreThread* t) {
             // An evolution scene at the battle's end (battle-end evolutions,
             // level-ups): A, never B, which would stop it.
             if (cb2 == (symFind("CB2_EvolutionSceneUpdate") & ~1u)) { ++p->step; keys = (p->step % 24) < 2 ? 1 : 0; break; }
+            // SWAP 8+N: also YES to "Give a nickname?"; in the naming screen
+            // START (to OK) then A, keeping the default name.
+            if (c->args[0] >= 8 && taskActive(p, "Task_NamingScreen")) {
+                ++p->step; unsigned t = p->step % 40;
+                keys = t < 2 ? (1u << 3) : (t >= 20 && t < 22) ? 1 : 0;
+                break;
+            }
             if (++p->step >= c->frames) {
                 out("[p%d] FAIL catch timeout (%d throws)\n", p->id, p->grindCount);
                 dump(p, "fail"); writePng(p, "fail"); sFailures++;
@@ -2488,6 +2495,7 @@ static void frameCallback(struct mCoreThread* t) {
             }
             if (!p->grindInBattle) { p->catchBallDowns = 0; p->catchFightLeft = c->addr; p->catchWasMenu = 0; }
             p->grindInBattle = 1;
+            if (getenv("CATCH_SHOTS_ALL") && (p->step % 45) == 0) { char nm[40]; snprintf(nm, sizeof nm, "c%06d", p->frame); writePng(p, nm); }
             if (cb2 == bagCb) {
                 unsigned t = p->step % 30;
                 if (rd8(p, symAddr("gBagPosition") + 5) != 1) { keys = t < 2 ? (1u << 4) : 0; break; }
@@ -2544,10 +2552,39 @@ static void frameCallback(struct mCoreThread* t) {
                 if (t != 0) { keys = 0; break; }
                 if (cur & 2) keys = 1u << 6;               // UP
                 else if (!(cur & 1)) keys = 1u << 4;       // RIGHT
-                else { keys = 1; p->grindCount++; out("[p%d] catch: throw %d\n", p->id, p->grindCount); p->step += 30; }
+                else { keys = 1; p->grindCount++; out("[p%d] catch: throw %d\n", p->id, p->grindCount); if (getenv("CATCH_SHOTS")) { char nm[32]; snprintf(nm, sizeof nm, "throw%d", p->grindCount); writePng(p, nm); } p->step += 30; }
                 break;
             }
             if (atMenu) { keys = autoKeys(p, p->step); break; }
+            // SWAP (catch ... SLOT): the full-party prompt "Send a Pokemon to
+            // the PC?" is answered YES and the party menu's cursor is moved to
+            // SLOT, then A (and A at the confirm). Anything else: B (NO).
+            if (c->args[0] >= 8) {
+                static unsigned nkA;
+                if (!nkA) nkA = symAddr("BattleScript_TryNicknameCaughtMon") & ~1u;
+                unsigned ip = rd32(p, symAddr("gBattlescriptCurrInstr")) & ~1u;
+                if (ip >= nkA && ip < nkA + 0xF /* up to givecaughtmon */ && cb2 != (symFind("CB2_UpdatePartyMenu") & ~1u)) { keys = (p->step % 24) < 2 ? 1 : 0; break; }
+            }
+            if (c->args[0]) {
+                unsigned slotArg = c->args[0] >= 8 ? c->args[0] - 8 : c->args[0];
+                unsigned bc = symAddr("gBattleCommunication");
+                unsigned st = rd8(p, bc + 0);
+                static unsigned partyCbS;
+                if (!partyCbS) partyCbS = symFind("CB2_UpdatePartyMenu") & ~1u;
+                if (cb2 == partyCbS && taskActive(p, "Task_HandleChooseMonInput") && slotArg == 7) {
+                    keys = (p->step % 24) < 2 ? 2 : 0;   // SWAP 7: back out of the menu with B
+                    break;
+                }
+                if (cb2 == partyCbS && taskActive(p, "Task_HandleChooseMonInput")) {
+                    int slot = (signed char)rd8(p, symAddr("gPartyMenu") + 9);
+                    unsigned t = p->step % 16;
+                    if (slot != (int)slotArg - 1) keys = t == 0 ? (slot < (int)slotArg - 1 ? (1u << 7) : (1u << 6)) : 0;
+                    else keys = t < 2 ? 1 : 0;
+                    break;
+                }
+                if (cb2 == partyCbS) { keys = (p->step % 16) < 2 ? 2 : 0; break; }   // menu opening or a message: B (A here once chose slot 1 before the cursor moved)
+                if (st == 2 /* GIVECAUGHTMON_HANDLE_INPUT */) { keys = (p->step % 24) < 2 ? (slotArg ? 1 : 2) : 0; break; }   // slot 0 (SWAP 8): NO
+            }
             // A fainted battler's forced replacement: the party menu.
             {
                 static unsigned partyCbC;
@@ -4101,7 +4138,7 @@ static void loadScript(const char* path, int depth) {
 		char* hash = strchr(line, '#');
 		if (hash) *hash = 0;
 		char who[8], cmd[32], a[96] = "", b[96] = "", d[96] = "", e[96] = "";
-		int n = sscanf(line, "%7s %31s %95s %95s %95s %95s", who, cmd, a, b, d, e);
+		char f7[96] = ""; int n = sscanf(line, "%7s %31s %95s %95s %95s %95s %95s", who, cmd, a, b, d, e, f7);
 		if (n < 1) continue;
 		if (!strcmp(who, "include")) {
 			char inc[512], rel[256];
@@ -4221,13 +4258,13 @@ static void loadScript(const char* path, int depth) {
         	memset(c.args, 0, sizeof(c.args));
         	sscanf(line, "%*s %*s %u %u %u %u %u %u %u %u", &c.args[0], &c.args[1], &c.args[2], &c.args[3], &c.args[4], &c.args[5], &c.args[6], &c.args[7]);
         	if (!strcmp(cmd, "test_held")) c.args[2] = 1;
-        	// test_data SLOT hp|tracker VALUE: a hurt Pokemon, a move-use count.
+        	// test_data SLOT hp|tracker|pp VALUE: a hurt Pokemon, a move-use count, spent PP.
         	if (!strcmp(cmd, "test_data")) {
         		char field[32] = ""; unsigned slot = 0, val = 0;
         		sscanf(line, "%*s %*s %u %31s %u", &slot, field, &val);
         		memset(c.args, 0, sizeof(c.args));
         		c.args[0] = slot; c.args[1] = val; c.args[2] = 2;
-        		c.args[3] = !strcmp(field, "hp") ? 1 : !strcmp(field, "tracker") ? 2 : !strcmp(field, "evs") ? 3 : !strcmp(field, "ivs") ? 4 : !strcmp(field, "clear") ? 5 : !strcmp(field, "dcsteps") ? 6 : !strcmp(field, "hyper") ? 7 : !strcmp(field, "bondxp") ? 8 : !strcmp(field, "bonddesignate") ? 9 : 0;
+        		c.args[3] = !strcmp(field, "hp") ? 1 : !strcmp(field, "tracker") ? 2 : !strcmp(field, "evs") ? 3 : !strcmp(field, "ivs") ? 4 : !strcmp(field, "clear") ? 5 : !strcmp(field, "dcsteps") ? 6 : !strcmp(field, "hyper") ? 7 : !strcmp(field, "bondxp") ? 8 : !strcmp(field, "bonddesignate") ? 9 : !strcmp(field, "pp") ? 10 : 0;
         	}
         	snprintf(c.text, sizeof(c.text), "%s", cmd);
         	c.frames = 600;
@@ -4246,7 +4283,7 @@ static void loadScript(const char* path, int depth) {
         	// (or Day Care) Pokemon read by the ROM's test hook; VALUE "-" only
         	// prints it. Read-only.
         	static const char *const fields[] = { "species", "level", "nature", "mint", "ability", "evtotal", "hyper", "iv",
-        	    "held", "egg", "personality", "move", "friendship", "gender", "ev", "otid", "perfect", "exp", "hasmove", "stat", "dcsteps", "dexcaught", "hp" };
+        	    "held", "egg", "personality", "move", "friendship", "gender", "ev", "otid", "perfect", "exp", "hasmove", "stat", "dcsteps", "dexcaught", "hp", "pp" };
         	char slot[16] = "", field[24] = "", val[24] = "", arg[24] = "", src[24] = "";
         	sscanf(line, "%*s %*s %15s %23s %23s %23s %23s", slot, field, val, arg, src);
         	c.kind = C_TEST_HOOK;
@@ -4459,6 +4496,7 @@ static void loadScript(const char* path, int depth) {
             c.frames = n >= 4 ? atoi(b) : 20000;
             c.size = n >= 5 ? atoi(d) : 0;   // the ball's item id (0: the first row)
             c.addr = n >= 6 ? (unsigned)atoi(e) : 0;   // action menus to fight first
+            c.args[0] = n >= 7 ? (unsigned)atoi(f7) : 0;   // SWAP: with a full party answer YES and send this slot (1-6) to the PC; 7 backs out with B; +8 also says YES to the nickname
         } else if (!strcmp(cmd, "grind")) {
             // grind N PCT [timeout]
             c.kind = C_GRIND;

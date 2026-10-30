@@ -1,0 +1,38 @@
+# REGRESSION (user bug report): a wild catch with six DIFFERENT Pokemon in the
+# party, one of them knowing an HM move (Rock Smash). Answer YES to "Add it to
+# your party?", pick slot 2 in "Send which POKeMON to the PC?": exactly that
+# Pokemon goes to the PC, the other five keep their places and identities, and
+# the caught Pokemon takes slot 2. (Before: HM-knowing Pokemon could not be
+# boxed, and the menu once listed six copies of one Pokemon.) Lab save,
+# player 0, NOT linked.
+# TEST HELPERS (logged): test_mon slots (distinct species, slot 2 with Rock
+# Smash), POKe BALLs. FIXTURE: fixture_warp onto Route 101 (grass).
+b wait 1100
+b press START 2
+b wait 200
+b until_cb2 CB2_Overworld 8000 A
+b until_field 3000
+b test_mon 1 259 17 249 33 45 10 0
+b test_mon 2 396 20
+b test_mon 3 280 20
+b test_mon 4 304 20
+b test_mon 5 261 20
+b test_item 4 30
+b party
+b expect_pc_count 0
+b fixture_warp 0 16 3 4
+b until_field 3000
+b walk 13 11 2000
+b pace_until_battle 20000
+b until_cb2 BattleMainCB2 6000
+b catch 8 30000 4 160 2
+b wait 60
+b expect_pc_count 1
+b expect_mon 0 species -
+b expect_mon 2 species 396
+b expect_mon 3 species 280
+b expect_mon 4 species 304
+b expect_mon 5 species 261
+b expect_mon 1 hasmove 0 249
+b party
+b boxes

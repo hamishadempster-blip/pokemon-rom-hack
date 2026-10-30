@@ -1,0 +1,66 @@
+# REGRESSION (user bug report): a catch in an ordinary SOLO battle while the
+# players are linked (Beacon on), with six DIFFERENT Pokemon in the party.
+# Lab saves. TEST HELPERS: test_mon slots, POKe BALLs.
+include beacon_battle.txt
+b mash_field 2000 B
+0 test_mon 1 259 17 249 33 45 10 0
+0 test_mon 2 396 20
+0 test_mon 3 280 20
+0 test_mon 4 304 20
+0 test_mon 5 261 20
+0 test_item 4 30
+0 party
+0 press DOWN 200
+0 until_field 2000
+0 goto 11 1 2000
+0 press UP 60
+0 until_field 2000
+0 write sWildEncountersDisabled 0
+0 fixture_flag 0x74 1
+0 goto 7 17 2000
+0 press UP 24
+0 press LEFT 64
+0 press RIGHT 64
+0 press LEFT 64
+0 press RIGHT 64
+0 press LEFT 64
+0 press RIGHT 64
+0 press LEFT 64
+0 press RIGHT 64
+0 press LEFT 64
+0 press RIGHT 64
+0 press LEFT 64
+0 press RIGHT 64
+0 press LEFT 64
+0 press RIGHT 64
+0 press LEFT 64
+0 press RIGHT 64
+0 press LEFT 64
+0 press RIGHT 64
+0 press LEFT 64
+0 press RIGHT 64
+0 press LEFT 64
+0 press RIGHT 64
+0 press LEFT 64
+0 press RIGHT 64
+0 press LEFT 64
+0 press RIGHT 64
+0 press LEFT 64
+0 press RIGHT 64
+0 press LEFT 64
+0 press RIGHT 64
+0 press LEFT 64
+0 press RIGHT 64
+0 until_cb2 BattleMainCB2 6000
+0 until_mem gBattlerControllerFuncs:4 HandleInputChooseAction 10000 A
+0 expect gBattlersCount 2
+0 catch 8 30000 4 160 2
+0 wait 60
+0 expect_pc_count 1
+0 expect_mon 2 species 396
+0 expect_mon 3 species 280
+0 expect_mon 4 species 304
+0 expect_mon 5 species 261
+0 expect_mon 1 hasmove 0 249
+0 party
+0 boxes

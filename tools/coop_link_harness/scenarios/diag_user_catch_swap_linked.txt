@@ -1,0 +1,17 @@
+# DIAGNOSTIC (user report 2026-10-30): needs the players' own saves (not in git;
+# SAVE0 = Before_Bond_H, SAVE1 = Before_Bond_J, made on D1400002). Relinked,
+# player 0 warped into Petalburg Woods grass (FIXTURE), POKe BALLs (TEST HELPER).
+include continue.inc
+b mash_field 300 B
+include relink.inc
+b expect coop.sLinkState 2
+0 test_item 4 20
+0 fixture_warp 24 11 23 35
+0 until_field 3000
+0 pace_until_battle 20000
+0 until_cb2 BattleMainCB2 6000
+0 catch 6 30000 4 0 2
+0 wait 120
+0 shot after
+0 party
+0 boxes

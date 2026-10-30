@@ -16122,13 +16122,13 @@ const struct ItemInfo gItemsInfo[] =
         .name = ITEM_NAME("Healing Vial"),
         .price = 0,
         .description = COMPOUND_STRING(
-            "Heals one {PKMN}'s\n"
-            "HP and status, not\n"
-            "in battle. Refillable."),
+            "Heals the whole team\n"
+            "like a Center. Not in\n"
+            "battle. Refillable."),
         .importance = 1,
         .pocket = POCKET_KEY_ITEMS,
         .sortType = ITEM_TYPE_FIELD_USE,
-        .type = ITEM_USE_PARTY_MENU,
+        .type = ITEM_USE_FIELD,
         .fieldUseFunc = ItemUseOutOfBattle_HealingVial,
         .iconPic = gItemIcon_FreshWater,
         .iconPalette = gItemIconPalette_FreshWater,

@@ -1,0 +1,24 @@
+# DIAGNOSTIC (user screenshot): catch a VENIPEDE in Rusturf Tunnel with six
+# different Pokemon (lead a Lv17 Marshtomp with Rock Smash), declining "Add it
+# to your party?" so it goes to BOX 1, as in the report. Lab save, player 0
+# not linked. TEST HELPERS: test_mon, test_item. FIXTURE: fixture_warp.
+b wait 1100
+b press START 2
+b wait 200
+b until_cb2 CB2_Overworld 8000 A
+b until_field 3000
+0 test_mon 0 259 17 249 33 55 189 0
+0 test_mon 1 255 15
+0 test_mon 2 396 15
+0 test_mon 3 280 15
+0 test_mon 4 304 15
+0 test_mon 5 261 15
+0 test_item 4 40
+0 party
+0 fixture_warp 24 4 5 10
+0 until_field 3000
+0 hunt 6 543 60000
+0 wait 300
+0 shot after
+0 party
+0 boxes

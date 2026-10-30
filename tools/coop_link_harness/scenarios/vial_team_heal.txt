@@ -1,0 +1,108 @@
+# HEALING VIAL, whole-team heal. Lab saves, Kai not linked. FIXTURES:
+# fixture_warp; fixture_six (six copies of the lead); TEST HELPER test_data sets
+# HP and PP, a raw write a status.
+# 1. The Oldale nurse gives the vial (1 charge).
+# 2. A team with a fainted Pokemon, a poisoned one, hurt ones and spent PP:
+#    one use (BAG, KEY ITEMS) restores ALL of it, like a Center, and takes one
+#    charge. No party menu opens.
+# 3. Empty: a second use says so and changes nothing.
+# 4. A Center refills it; with the team in perfect shape the vial refuses and
+#    keeps its charge.
+include continue.inc
+b mash_field 300 B
+0 expect coop.sLinkState 0
+0 fixture_warp 2 2 7 5
+0 until_field 3000
+0 walk 7 4 2000
+0 press UP 2
+0 wait 10
+0 note_text every_trainer_on_a
+0 press A 2
+0 mash_field 4000 A
+0 expect_noted
+0 expect_item 4 875 1
+0 expect gCoopVialCharges 1
+0 fixture_six
+# 2. spend the team
+0 test_data 0 hp 5
+0 write gParties+80:4 8
+0 test_data 1 hp 0
+0 test_data 2 hp 1
+0 test_data 3 pp 1
+0 test_data 4 pp 0
+0 expect_mon 0 hp 5
+0 expect_mon 1 hp 0
+0 expect_mon 3 pp 1 0
+0 expect_mon 4 pp 0 0
+0 press START 2
+0 wait 40
+0 menu_to BAG
+0 press A 2
+0 until_cb2 CB2_BagMenuRun 2500
+0 wait 30
+0 bag_item 875
+0 shot vial-in-bag
+0 press A 2
+0 wait 40
+0 shot vial-menu
+0 note_text fully_restored
+0 press A 2
+0 mash_field 4000 A
+0 expect_noted
+0 shot vial-used
+0 expect gCoopVialCharges 0
+0 expect gParties+80:4 0
+0 expect_equal gParties+86:2 gParties+88
+0 expect_equal gParties+186:2 gParties+188
+0 expect_equal gParties+286:2 gParties+288
+0 expect_equal gParties+386:2 gParties+388
+0 expect_equal gParties+486:2 gParties+488
+0 expect_mon 1 hp 0..999
+0 expect_mon 2 hp 0..999
+0 expect_mon 3 pp 0..99
+0 expect_nz gParties+186:2
+# the fainted Pokemon is back, the spent PP are full again
+0 expect_mon 3 pp @5 0
+0 expect_mon 4 pp @5 0
+# 3. empty
+0 note_text is_empty
+0 press START 2
+0 wait 40
+0 menu_to BAG
+0 press A 2
+0 until_cb2 CB2_BagMenuRun 2500
+0 wait 30
+0 bag_item 875
+0 press A 2
+0 wait 40
+0 press A 2
+0 wait 90
+0 shot vial-empty
+0 mash_field 3000 B
+0 expect_noted
+0 expect gCoopVialCharges 0
+# 4. A Center refills it; a perfect team keeps the charge
+0 fixture_warp 2 2 7 5
+0 until_field 3000
+0 walk 7 4 2000
+0 press UP 2
+0 wait 10
+0 press A 2
+0 mash_field 4000 A
+0 expect gCoopVialCharges 1
+0 note_text already_in
+0 press START 2
+0 wait 40
+0 menu_to BAG
+0 press A 2
+0 until_cb2 CB2_BagMenuRun 2500
+0 wait 30
+0 bag_item 875
+0 press A 2
+0 wait 40
+0 press A 2
+0 wait 90
+0 shot vial-perfect
+0 mash_field 3000 B
+0 expect_noted
+0 expect gCoopVialCharges 1

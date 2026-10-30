@@ -1,6 +1,7 @@
 #include "global.h"
 #include "coop_bond.h"
 #include "coop.h"
+#include "party_exp.h"
 #include "coop_catch.h"
 #include "pokedex.h"
 #include "coop_prep.h"
@@ -206,6 +207,16 @@ static EWRAM_DATA const u8 *sPendingMessage = NULL;
 // Local level-up work survives battle resource cleanup, but never an abort.
 static EWRAM_DATA u8 sProgressLevels[COOP_BATTLE_SLOTS] = {0};
 static EWRAM_DATA u16 sProgressMoves[COOP_BATTLE_SLOTS] = {0};
+static EWRAM_DATA bool8 sProgressNeedsMoves[COOP_BATTLE_SLOTS] = {0}; // levelled silently: offer its new moves after the battle
+// Benched Pokémon that levelled in the whole-party payout (src/party_exp.c):
+// found again by personality once the party is back in its own order, then
+// offered their evolution after the battle like the three that fought.
+#define COOP_BENCH_EVO_MAX (PARTY_SIZE - COOP_BATTLE_SLOTS)
+static EWRAM_DATA u32 sBenchPid[COOP_BENCH_EVO_MAX] = {0};
+static EWRAM_DATA u8 sBenchSlot[COOP_BENCH_EVO_MAX] = {0};   // party slot + 1, 0 = none
+static EWRAM_DATA u8 sBenchCount = 0;
+static EWRAM_DATA u8 sBenchNext = 0;
+static EWRAM_DATA u8 sProgressDirectSlot = 0;                // party slot + 1 of a benched evolution, 0 = a battle slot
 static EWRAM_DATA bool8 sProgressGuest = FALSE;
 static EWRAM_DATA bool8 sProgressPending = FALSE;
 static EWRAM_DATA u8 sProgressSlot = 0;
@@ -4536,8 +4547,14 @@ void Coop_OnBattleLaunched(void)
     Coop_ClearCatchState();
     memset(sProgressLevels, 0, sizeof(sProgressLevels));
     memset(sProgressMoves, 0, sizeof(sProgressMoves));
+    memset(sProgressNeedsMoves, 0, sizeof(sProgressNeedsMoves));
+    memset(sBenchSlot, 0, sizeof(sBenchSlot));
+    sBenchCount = 0;
+    sBenchNext = 0;
+    sProgressDirectSlot = 0;
     sProgressPending = FALSE;
     sProgressSlot = 0;
+    PartyExp_Reset();
     memcpy(sPartySnap, gParties[B_TRAINER_PLAYER], sizeof(sPartySnap));
     for (i = COOP_BATTLE_SLOTS; i < PARTY_SIZE; i++)
         ZeroMonData(&gParties[B_TRAINER_PLAYER][i]);
@@ -4603,6 +4620,40 @@ static void Coop_RevertBattleMegas(void)
     }
 }
 
+void Coop_NoteBenchLevelUp(u32 personality)
+{
+    if (sBenchCount < COOP_BENCH_EVO_MAX)
+        sBenchPid[sBenchCount++] = personality;
+}
+
+// The party is back in its own order: find where each levelled benched
+// Pokémon ended up. Searched from the last slot, so identical copies (a
+// harness fixture) still map to different slots.
+static void Coop_ResolveBenchEvolutions(void)
+{
+    u32 i, k;
+
+    memset(sBenchSlot, 0, sizeof(sBenchSlot));
+    sBenchNext = 0;
+    for (k = 0; k < sBenchCount; k++)
+    {
+        for (i = PARTY_SIZE; i-- > 0;)
+        {
+            u32 used = 0, j;
+
+            for (j = 0; j < k; j++)
+                used |= (sBenchSlot[j] != 0 && sBenchSlot[j] - 1 == (u8)i);
+            if (!used && GetMonData(&gParties[B_TRAINER_PLAYER][i], MON_DATA_SPECIES) != SPECIES_NONE
+             && GetMonData(&gParties[B_TRAINER_PLAYER][i], MON_DATA_PERSONALITY) == sBenchPid[k])
+            {
+                sBenchSlot[k] = i + 1;
+                sProgressPending = TRUE;
+                break;
+            }
+        }
+    }
+}
+
 static void Coop_RestoreParty(bool8 aborted)
 {
     struct Pokemon arrivals[PARTY_SIZE - COOP_BATTLE_SLOTS];
@@ -4616,6 +4667,7 @@ static void Coop_RestoreParty(bool8 aborted)
         {
             CoopDuo_AbortBattle();
             memset(sProgressLevels, 0, sizeof(sProgressLevels));
+            memset(sProgressNeedsMoves, 0, sizeof(sProgressNeedsMoves));
             sProgressPending = FALSE;
         }
         sHasSnapshot = FALSE;
@@ -4626,11 +4678,19 @@ static void Coop_RestoreParty(bool8 aborted)
     if (!sHasSnapshot)
         return;
     if (!aborted)
+    {
         Coop_RevertBattleMegas();
+        // Everyone who did not fight gets the experience now: the fielded
+        // three in the live party, the benched three in the pre-battle copy
+        // that goes back below (src/party_exp.c).
+        PartyExp_ApplyCoop(sPartySnap, sIsGuest);
+    }
     if (aborted)
     {
         memset(sProgressLevels, 0, sizeof(sProgressLevels));
+        memset(sProgressNeedsMoves, 0, sizeof(sProgressNeedsMoves));
         sProgressPending = FALSE;
+        PartyExp_Drop();
     }
     // Anything sitting in 4-6 now joined during the battle, such as a catch.
     if (!aborted)
@@ -4659,6 +4719,7 @@ static void Coop_RestoreParty(bool8 aborted)
             CopyMonToPC(&arrivals[i]);
     }
     CalculatePlayerPartyCount();
+    Coop_ResolveBenchEvolutions();
     sHasSnapshot = FALSE;
 }
 
@@ -6313,6 +6374,21 @@ void Coop_RecordLevelUp(u8 slot, u8 oldLevel)
     }
 }
 
+// A Pokémon on the field that levelled without a level-up screen (the
+// whole-party payout, src/party_exp.c): the same follow-up as a recorded
+// level-up (evolution check, new-move prompts) once the battle is over.
+// Friendship for the levels was already given by the payout.
+void Coop_RecordSilentLevelUp(u8 slot, u8 oldLevel)
+{
+    if (!(gBattleTypeFlags & BATTLE_TYPE_COOP) || slot >= COOP_BATTLE_SLOTS || gCoopDuoBattle)
+        return;
+    if (sProgressLevels[slot] == 0)
+        sProgressLevels[slot] = oldLevel;
+    sProgressNeedsMoves[slot] = TRUE;
+    sProgressGuest = sIsGuest;
+    sProgressPending = TRUE;
+}
+
 u16 Coop_NextProgression(void)
 {
     for (; sProgressSlot < COOP_BATTLE_SLOTS; sProgressSlot++)
@@ -6321,7 +6397,7 @@ u16 Coop_NextProgression(void)
         u32 oldLevel = sProgressLevels[sProgressSlot];
         if (oldLevel == 0)
             continue;
-        if (sProgressGuest)
+        if (sProgressGuest || sProgressNeedsMoves[sProgressSlot])
         {
             const struct LevelUpMove *moves = GetSpeciesLevelUpLearnset(GetMonData(mon, MON_DATA_SPECIES));
             while (moves[sProgressMoves[sProgressSlot]].move != LEVEL_UP_MOVE_END)
@@ -6342,19 +6418,39 @@ u16 Coop_NextProgression(void)
             }
         }
         sProgressLevels[sProgressSlot] = 0;
+        sProgressNeedsMoves[sProgressSlot] = FALSE;
         bool32 canStop = TRUE;
         sProgressEvolution = GetEvolutionTargetSpecies(mon, EVO_MODE_BATTLE_ONLY, 0, NULL, &canStop, CHECK_EVO);
         sProgressCanStop = canStop;
         if (sProgressEvolution != SPECIES_NONE)
             return 2;
     }
+    for (; sBenchNext < sBenchCount; sBenchNext++)
+    {
+        u8 slot = sBenchSlot[sBenchNext];
+        bool32 canStop = TRUE;
+
+        if (slot == 0)
+            continue;
+        sBenchSlot[sBenchNext] = 0;
+        sProgressEvolution = GetEvolutionTargetSpecies(&gParties[B_TRAINER_PLAYER][slot - 1], EVO_MODE_BATTLE_ONLY, 0, NULL, &canStop, CHECK_EVO);
+        sProgressCanStop = canStop;
+        if (sProgressEvolution != SPECIES_NONE)
+        {
+            sProgressDirectSlot = slot;
+            return 2;
+        }
+    }
+    sBenchCount = 0;
     gLeveledUpInBattle = 0;
     return 0;
 }
 
 void Coop_StartProgressionEvolution(void)
 {
-    u8 slot = CoopPrep_PartySlotForBattleSlot(sProgressSlot);
+    u8 slot = sProgressDirectSlot != 0 ? sProgressDirectSlot - 1 : CoopPrep_PartySlotForBattleSlot(sProgressSlot);
+
+    sProgressDirectSlot = 0;
     struct Pokemon *mon = &gParties[B_TRAINER_PLAYER][slot];
     bool32 canStop = sProgressCanStop;
     GetEvolutionTargetSpecies(mon, EVO_MODE_BATTLE_ONLY, 0, NULL, &canStop, DO_EVO);
@@ -6501,8 +6597,9 @@ void Coop_BufferPrepOpponents(u8 *dst, bool8 host)
 // --- Field kit (build 0xC017013E) ----------------------------------------
 // Each save gets a POKéMON BOX LINK (the storage system from the field) and
 // a HEALING VIAL from the first POKéMON CENTER nurse it talks to once it has
-// a Pokemon. The vial holds 1 charge plus 1 for every two badges, heals one
-// Pokemon's HP and status outside battle (no revive, no PP), and is
+// a Pokemon. One charge is a Center's full heal for the whole party (HP,
+// status, PP and fainted Pokemon too), outside battle. It holds 1 charge,
+// 2 after the first badge, then one more at 4 and at 7 badges, and is
 // refilled by a Center's heal. Deposits do not heal (OW_PC_HEAL), so the
 // BOX LINK is not a free Center.
 
@@ -6521,7 +6618,8 @@ u8 CoopKit_VialMax(void)
         if (FlagGet(FLAG_BADGE01_GET + i))
             badges++;
     }
-    return 1 + badges / 2;
+    // 1 to start, 2 after the first gym, then one more every three gyms.
+    return 1 + (badges >= 1) + (badges >= 4) + (badges >= 7);
 }
 
 u8 CoopKit_VialCharges(void)
@@ -6556,6 +6654,47 @@ void CoopKit_RefillVial(void)
         save->vialCharges = CoopKit_VialMax();
     if (save != NULL)
         gCoopVialCharges = save->vialCharges;
+}
+
+// TRUE when a Center would change something: a hurt or fainted Pokemon, a
+// status, or spent PP. An egg never needs it.
+bool8 CoopKit_PartyNeedsHeal(void)
+{
+    u32 i, m;
+
+    for (i = 0; i < gPartiesCount[B_TRAINER_PLAYER]; i++)
+    {
+        struct Pokemon *mon = &gParties[B_TRAINER_PLAYER][i];
+
+        if (GetMonData(mon, MON_DATA_SPECIES) == SPECIES_NONE || GetMonData(mon, MON_DATA_IS_EGG))
+            continue;
+        if (GetMonData(mon, MON_DATA_HP) != GetMonData(mon, MON_DATA_MAX_HP) || GetMonData(mon, MON_DATA_STATUS) != STATUS1_NONE)
+            return TRUE;
+        for (m = 0; m < MAX_MON_MOVES; m++)
+        {
+            enum Move move = GetMonData(mon, MON_DATA_MOVE1 + m);
+
+            if (move != MOVE_NONE && GetMonData(mon, MON_DATA_PP1 + m) < CalculatePPWithBonus(move, GetMonData(mon, MON_DATA_PP_BONUSES), m))
+                return TRUE;
+        }
+    }
+    return FALSE;
+}
+
+// The HEALING VIAL's field script: one charge, then the same full heal a
+// Center gives the party. VAR_RESULT is TRUE when it healed; 0x8004 is the
+// charges left. Nothing is spent when nothing needs healing.
+void CoopKit_VialHealParty(void)
+{
+    gSpecialVar_Result = FALSE;
+    if (!CoopKit_PartyNeedsHeal() || !CoopKit_UseVialCharge())
+    {
+        gSpecialVar_0x8004 = CoopKit_VialCharges();
+        return;
+    }
+    HealPlayerParty();
+    gSpecialVar_0x8004 = CoopKit_VialCharges();
+    gSpecialVar_Result = TRUE;
 }
 
 u16 CoopKit_NeedsBoxLink(void)

@@ -768,21 +768,32 @@ void ItemUseOutOfBattle_PokemonBoxLink(u8 taskId)
     SetUpItemUseOnFieldCallback(taskId);
 }
 
-// HEALING VIAL (0xC017013E): one Pokemon's HP and status, outside battle,
-// one charge each (src/party_menu.c ItemUseCB_HealingVial).
+// HEALING VIAL: one charge is a POKéMON CENTER's full heal for the whole
+// party, outside battle (src/coop.c CoopKit_VialHealParty). Nothing is spent
+// when the party is already in perfect shape.
+static void Task_UseHealingVial(u8 taskId);
+
 void ItemUseOutOfBattle_HealingVial(u8 taskId)
 {
     const u8 *blocked = CoopKit_FieldUseBlocked();
 
     if (blocked == NULL && CoopKit_VialCharges() == 0)
         blocked = COMPOUND_STRING("The HEALING VIAL is empty.\nA POKéMON CENTER refills it.");
+    if (blocked == NULL && !CoopKit_PartyNeedsHeal())
+        blocked = COMPOUND_STRING("Your team is already in\nperfect shape.");
     if (blocked != NULL)
     {
         ItemUse_SayBlocked(taskId, blocked);
         return;
     }
-    gItemUseCB = ItemUseCB_HealingVial;
-    SetUpItemUseCallback(taskId);
+    sItemUseOnFieldCB = Task_UseHealingVial;
+    SetUpItemUseOnFieldCallback(taskId);
+}
+
+static void Task_UseHealingVial(u8 taskId)
+{
+    ScriptContext_SetupScript(Coop_EventScript_UseHealingVial);
+    DestroyTask(taskId);
 }
 
 static void Task_AccessPokemonBoxLink(u8 taskId)

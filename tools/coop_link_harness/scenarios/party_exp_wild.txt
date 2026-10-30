@@ -1,0 +1,40 @@
+# Whole-party experience (co-op wild double): every Pokemon in each player's
+# party gains experience, the fielded three and the benched three alike, and
+# the ones that did not fight get exactly what the one that did gets (the same
+# full amount; nobody is paid half). Lab saves, Route 101, Beacon ON.
+# FIXTURE: fixture_six fills each party with six copies of its lead, so every
+# slot starts equal and a difference after the fight can only come from the
+# payout.
+include wild_route101_start.inc
+b fixture_six
+b expect_mon 0 exp @0
+b expect_mon 1 exp @1
+b expect_mon 2 exp @2
+b expect_mon 3 exp @3
+b expect_mon 4 exp @4
+b expect_mon 5 exp @5
+0 write sWildEncountersDisabled 0
+0 pace_until_battle 9000
+0 write sWildEncountersDisabled 1
+0 until_cb2 BattleMainCB2 12000 A
+1 until_cb2 BattleMainCB2 12000 A
+b expect gBattlersCount 4
+b expect coop.sInBattle 1
+b mash_field 25000
+b expect gBattleOutcome 1
+b expect coop.sLinkState 2
+# Slot 1 (the lead) fought; every slot has more experience than before.
+b expect_mon 0 exp >@0
+b expect_mon 1 exp >@1
+b expect_mon 2 exp >@2
+b expect_mon 3 exp >@3
+b expect_mon 4 exp >@4
+b expect_mon 5 exp >@5
+# Slot 1 is the Pokemon that fought; slots 2-6 must hold exactly its total.
+b expect_mon 0 exp @6
+b expect_mon 1 exp @6
+b expect_mon 2 exp @6
+b expect_mon 3 exp @6
+b expect_mon 4 exp @6
+b expect_mon 5 exp @6
+b expect gPartiesCount 6

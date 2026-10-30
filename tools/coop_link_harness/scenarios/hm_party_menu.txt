@@ -1,0 +1,41 @@
+# HM field moves in the party menu with nobody knowing them: Fly and Flash
+# (the two that exist only in this menu) are listed for the lead once the HM is
+# in the bag and the badge is held; without them the list has no field moves.
+# Lab save, player 0, not linked. FIXTURES: test_item (HM02 FLY, HM05 FLASH),
+# fixture_flag (the eight badges).
+b wait 1100
+b press START 2
+b wait 200
+b until_cb2 CB2_Overworld 8000 A
+b until_field 3000
+0 press START 2
+0 wait 40
+0 menu_to POKEMON
+0 press A 2
+0 until_cb2 CB2_UpdatePartyMenu 2000
+0 wait 60
+0 press A 2
+0 wait 60
+0 shot menu_plain
+0 press B 2
+0 wait 40
+0 press B 2
+0 wait 120
+0 test_item 683 1
+0 test_item 686 1
+0 fixture_flag 0x867 1
+0 fixture_flag 0x868 1
+0 fixture_flag 0x869 1
+0 fixture_flag 0x86A 1
+0 fixture_flag 0x86B 1
+0 fixture_flag 0x86C 1
+0 fixture_flag 0x86D 1
+0 fixture_flag 0x86E 1
+0 wait 20
+0 menu_to POKEMON
+0 press A 2
+0 until_cb2 CB2_UpdatePartyMenu 2000
+0 wait 60
+0 press A 2
+0 wait 60
+0 shot menu_hm

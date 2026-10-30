@@ -1,0 +1,33 @@
+# REGRESSION: the same full-party catch, YES at "Add it to your party?",
+# then B in "Send which POKeMON to the PC?": the catch goes to the PC and the
+# party is unchanged (all six in place). Lab save, player 0, NOT linked.
+# TEST HELPERS (logged): test_mon slots (distinct species, slot 2 with Rock
+# Smash), POKe BALLs. FIXTURE: fixture_warp onto Route 101 (grass).
+b wait 1100
+b press START 2
+b wait 200
+b until_cb2 CB2_Overworld 8000 A
+b until_field 3000
+b test_mon 1 259 17 249 33 45 10 0
+b test_mon 2 396 20
+b test_mon 3 280 20
+b test_mon 4 304 20
+b test_mon 5 261 20
+b test_item 4 30
+b party
+b expect_pc_count 0
+b fixture_warp 0 16 3 4
+b until_field 3000
+b walk 13 11 2000
+b pace_until_battle 20000
+b until_cb2 BattleMainCB2 6000
+b catch 8 30000 4 160 7
+b wait 60
+b party
+b boxes
+b expect_pc_count 1
+b expect_mon 1 species 259
+b expect_mon 2 species 396
+b expect_mon 3 species 280
+b expect_mon 4 species 304
+b expect_mon 5 species 261

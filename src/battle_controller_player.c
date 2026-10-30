@@ -2814,6 +2814,10 @@ static u32 CheckTargetTypeEffectiveness(enum BattlerId battler)
     return foeEffectiveness; // fallthrough for any other circumstance
 }
 
+// Test visibility: what the PP row last showed (an EFFECTIVENESS_* value, or
+// 0xFF for a status move, which shows nothing).
+EWRAM_DATA u8 gMoveEffectivenessShown = 0;
+
 static void MoveSelectionDisplayMoveEffectiveness(u32 foeEffectiveness, enum BattlerId battler)
 {
     static const u8 noIcon[] =  _("");
@@ -2828,6 +2832,7 @@ static void MoveSelectionDisplayMoveEffectiveness(u32 foeEffectiveness, enum Bat
 
     txtPtr = StringCopy(gDisplayedStringBattle, gText_MoveInterfacePP);
 
+    gMoveEffectivenessShown = IsBattleMoveStatus(moveInfo->moves[gMoveSelectionCursor[battler]]) ? 0xFF : foeEffectiveness;
     if (!IsBattleMoveStatus(moveInfo->moves[gMoveSelectionCursor[battler]]))
     {
         switch (foeEffectiveness)
@@ -2859,3 +2864,4 @@ static void MoveSelectionDisplayMoveEffectiveness(u32 foeEffectiveness, enum Bat
 
     BattlePutTextOnWindow(gDisplayedStringBattle, B_WIN_PP);
 }
+
