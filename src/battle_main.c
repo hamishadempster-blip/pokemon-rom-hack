@@ -1079,6 +1079,15 @@ static void CB2_HandleStartBattle(void)
     }
 }
 
+static void FinishMultiPartnerPartyExchange(void)
+{
+    for (enum BattleTrainer trainer = B_TRAINER_PLAYER; trainer < MAX_BATTLE_TRAINERS; trainer++)
+    {
+        for (u32 i = 0; i < PARTY_SIZE; i++)
+            TryCorrectShedinjaLanguage(&gParties[trainer][i]);
+    }
+}
+
 static void CB2_HandleStartMultiPartnerBattle(void)
 {
     u8 playerMultiplayerId;
@@ -1257,6 +1266,24 @@ static void CB2_HandleStartMultiPartnerBattle(void)
             ResetBlockReceivedFlags();
             if (GetMultiplayerId() != 0)
                 memcpy(gParties[B_TRAINER_OPPONENT_A], gBlockRecvBuffer[0], sizeof(struct Pokemon) * 2);
+            if (Coop_IsWildBattle())
+            {
+                // A wild fight has one or two enemy Pokémon, both in the first
+                // enemy block, so the five empty blocks are not sent. Both
+                // games take this decision from the wild flag they settled
+                // together in state 2. The game that did not build the parties
+                // clears the slots it would have received.
+                if (GetMultiplayerId() != 0)
+                {
+                    for (u32 i = 2; i < PARTY_SIZE; i++)
+                        ZeroMonData(&gParties[B_TRAINER_OPPONENT_A][i]);
+                    for (u32 i = 0; i < PARTY_SIZE; i++)
+                        ZeroMonData(&gParties[B_TRAINER_OPPONENT_B][i]);
+                }
+                FinishMultiPartnerPartyExchange();
+                gBattleCommunication[MULTIUSE_STATE] = 19;
+                break;
+            }
             gBattleCommunication[MULTIUSE_STATE]++;
         }
         break;
@@ -1349,11 +1376,7 @@ static void CB2_HandleStartMultiPartnerBattle(void)
             if (GetMultiplayerId() != 0)
                 memcpy(&gParties[B_TRAINER_OPPONENT_B][4], gBlockRecvBuffer[0], sizeof(struct Pokemon) * 2);
 
-            for (enum BattleTrainer trainer = B_TRAINER_PLAYER; trainer < MAX_BATTLE_TRAINERS; trainer++)
-            {
-                for (u32 i = 0; i < PARTY_SIZE; i++)
-                    TryCorrectShedinjaLanguage(&gParties[trainer][i]);
-            }
+            FinishMultiPartnerPartyExchange();
             gBattleCommunication[MULTIUSE_STATE]++;
         }
         break;
@@ -2464,7 +2487,7 @@ static void SpriteCB_MoveWildMonToRight(struct Sprite *sprite)
     if ((gIntroSlideFlags & 1) == 0)
     {
         if (B_FAST_INTRO_NO_SLIDE == FALSE && !gTestRunnerHeadless)
-            sprite->x2 += 2;
+            sprite->x2 += INTRO_SLIDE_SPEED;
         else
             sprite->x2 = 0;
 
@@ -3180,6 +3203,17 @@ static void DoBattleIntro(void)
     switch ((enum BattleIntroStates)gBattleStruct->eventState.battleIntro)
     {
     case BATTLE_INTRO_STATE_GET_MON_DATA:
+        if (gBattleTypeFlags & BATTLE_TYPE_COOP)
+        {
+            // The parties were exchanged just before this; read the starting
+            // battlers from them rather than asking each controller over the
+            // cable (four serial round trips).
+            for (battler = 0; battler < gBattlersCount; battler++)
+                BtlController_FillIntroMonDataLocally(battler);
+            gBattleCommunication[1] = gBattlersCount;
+            gBattleStruct->eventState.battleIntro = BATTLE_INTRO_STATE_PREPARE_BG_SLIDE;
+            break;
+        }
         battler = gBattleCommunication[1];
         BtlController_EmitGetMonData(battler, B_COMM_TO_CONTROLLER, REQUEST_ALL_BATTLE, 0);
         MarkBattlerForControllerExec(battler);
