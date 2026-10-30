@@ -2535,14 +2535,14 @@ static void frameCallback(struct mCoreThread* t) {
             // with the registered rod (SELECT); 2 Rock Smash: warp to the
             // tile in front of a rock (map reload brings the rock back), face
             // it, A and YES; again after a smash with no encounter.
-            static int huntSub[2], huntIdle[2], huntBattle[2], huntAnchorY[2] = {-1, -1}, huntStuck[2];
+            static int huntSub[2], huntIdle[2], huntBattle[2], huntAnchorY[2] = {-1, -1}, huntStuck[2], huntBag[2], huntFightTurn[2];
             if (p->step == 1) { huntAnchorY[p->id] = -1; huntStuck[p->id] = 0; }
             if (!battling && cb2 != bagCb) {
                 if (p->grindInBattle) {
                     if (!inField(p)) { keys = (p->step % 24) < 2 ? 2 : 0; break; }
                     unsigned outcome = rd8(p, symAddr("gBattleOutcome"));
                     out("[f%06d p%d hunt] battle over: outcome=%u throws=%d party=%u\n", p->frame, p->id, outcome, p->grindCount, rd8(p, symAddr("gPartiesCount")));
-                    p->grindInBattle = 0; p->grindCount = 0; huntSub[p->id] = 0; huntBattle[p->id] = 0;
+                    p->grindInBattle = 0; p->grindCount = 0; huntSub[p->id] = 0; huntBattle[p->id] = 0; huntBag[p->id] = 0; huntFightTurn[p->id] = 0;
                     if (outcome == 7) { advance = true; break; }
                 }
                 if (c->size == 1 && taskActive(p, "Task_Fishing")) {
@@ -2618,10 +2618,14 @@ static void frameCallback(struct mCoreThread* t) {
             }
             if (cb2 == bagCb) {
                 unsigned t = p->step % 30;
+                // The ball refused (the target in the air after BOUNCE or FLY,
+                // or underground): back out and fight this turn.
+                if (++huntBag[p->id] > 600) { keys = t < 2 ? 2 : 0; huntFightTurn[p->id] = 1; break; }
                 if (rd8(p, symAddr("gBagPosition") + 5) != 1) keys = t < 2 ? (1u << 4) : 0;
                 else keys = t < 2 ? 1 : 0;
                 break;
             }
+            huntBag[p->id] = 0;
             // A trainer who saw the player while pacing: fight it out (no RUN).
             // So too a wild battle that RUN has not ended in 2500 frames
             // (ARENA TRAP, SHADOW TAG): the driver's moves.
@@ -2633,6 +2637,7 @@ static void frameCallback(struct mCoreThread* t) {
                 if (!strcmp(symName(rd32(p, funcs + b * 4)), "HandleInputChooseAction")) atMenu = 1;
             // Steer the action cursor (0 FIGHT, 1 BAG, 2 POKEMON, 3 RUN)
             // to RUN or BAG by reading it, then press A.
+            if (atMenu && huntFightTurn[p->id] == 1) { keys = autoKeys(p, p->step); break; }
             if (atMenu && (!p->stable || p->grindCount < (int)c->value)) {
                 // Safari Zone: BALL is the first entry (0), RUN the last.
                 unsigned safari = rd32(p, symAddr("gBattleTypeFlags")) & (1u << 7);
@@ -2651,7 +2656,7 @@ static void frameCallback(struct mCoreThread* t) {
                 const char* fn = symName(rd32(p, funcs + b * 4));
                 if (!strcmp(fn, "HandleInputChooseMove") || !strcmp(fn, "HandleInputChooseTarget")) atMenu = 1;
             }
-            if (atMenu) { keys = autoKeys(p, p->step); break; }
+            if (atMenu) { huntFightTurn[p->id] = 0; keys = autoKeys(p, p->step); break; }
             keys = (p->step % 24) < 2 && !coopStandby(p) ? 2 : 0;
             break;
         }
