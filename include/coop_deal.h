@@ -24,6 +24,9 @@ void CoopDeal_SendLegend(u8 sub, u8 enc, u16 ball, u16 result);
 void CoopDeal_SaveInBackground(u8 enc, u16 result);
 bool8 CoopDeal_SaveBusy(void);
 bool8 CoopDeal_Busy(void);
+// Trainer Bond: this Pokemon (personality, trainer id) is offered in a
+// prepared deal, so it still belongs to this save.
+bool8 CoopDeal_EscrowHolds(u32 personality, u32 otId);
 bool8 CoopDeal_WaitingForPartner(void);
 bool8 CoopDeal_SharedClock(s32 *hours, s32 *minutes);
 bool8 CoopDeal_ItemGiftable(u16 item);

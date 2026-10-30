@@ -1737,6 +1737,7 @@ void CB1_Overworld(void)
         DoCB1_Overworld(gMain.newKeys, gMain.heldKeys);
     Coop_OverworldFrame();
     Coop_UpdateRivalTwin();
+    CoopBond_FieldPoll();
 }
 
 #define TINT_NIGHT Q_8_8(0.456) | Q_8_8(0.456) << 8 | Q_8_8(0.615) << 16

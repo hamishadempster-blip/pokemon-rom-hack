@@ -1,0 +1,54 @@
+# Trainer Bond across a partner-menu TRADE (story_seg6 saves, Rustboro,
+# linked). FIXTURES: each player gets a second Pokemon with test_mon (Kai a
+# Lv 20 MACHOKE, Rosa a Lv 20 POOCHYENA, fresh personalities, so no two
+# records share a key); Kai's MACHOKE is designated as his Partner Pokemon
+# without the mentor (test_data bonddesignate) and given 3,000 Bond XP
+# (Companion, +5).
+# Checks: Kai trades his partner away. On Kai's save the designation ends
+# (no partner; the POOCHYENA he receives is nobody's partner). On Rosa's
+# save the MACHOKE (now MACHAMP, evolved by the trade) keeps its 3,000 Bond
+# XP and its history, but not the active flag and no bonus: it is not her
+# partner. Rosa then chooses it and it gets its +5 (Companion) on her save.
+include deal_setup.inc
+0 test_mon 1 67 20 0 0 0 0 0
+1 test_mon 1 261 20 0 0 0 0 0
+0 test_data 1 bonddesignate 1
+0 test_data 1 bondxp 3000
+0 expect gCoopBondTest+30:1 1
+0 expect gCoopBondTest+31:1 1
+0 expect gCoopBondTest+25:1 1
+0 expect gCoopBondTest+2:2 3000
+1 expect gCoopBondTest+30:1 0
+b party
+include deal_trade_offer.inc
+1 until_mem coop_deal.sDeal+13 1 900 A
+0 until_mem coop_deal.sDeal+13 1 900 A
+b mash_field 9000 B
+b party
+b expect_txn 0
+b expect_mons_intact
+b expect_no_copies
+0 expect_species 1 261
+1 expect_species 1 68
+b expect coop_deal.sDeal 0
+# Kai: no partner now; the arrival has no history.
+0 expect gCoopBondTest+30:1 0
+0 expect gCoopBondTest+31:1 255
+0 expect gCoopBondTest+2:2 0
+0 expect gCoopBondTest+13:1 0
+0 expect gCoopBondTest+25:1 0
+# Rosa: the MACHAMP keeps 3,000 Bond XP and history only, no bonus.
+1 expect gCoopBondTest+2:2 3000
+1 expect gCoopBondTest+13:1 1
+1 expect gCoopBondTest+19:1 0
+1 expect gCoopBondTest+25:1 0
+1 expect gCoopBondTest+30:1 0
+# Rosa chooses it: +5 at once.
+1 test_data 1 bonddesignate 1
+1 expect gCoopBondTest+30:1 1
+1 expect gCoopBondTest+31:1 1
+1 expect gCoopBondTest+13:1 3
+1 expect gCoopBondTest+25:1 1
+1 expect gCoopBondTest+19:1 1
+1 expect gCoopBondTest+2:2 3000
+b shot bond-trade-done

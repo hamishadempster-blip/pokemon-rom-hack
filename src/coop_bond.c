@@ -31,6 +31,11 @@
 #include "pokemon.h"
 #include "pokemon_storage_system.h"
 #include "string_util.h"
+#include "map_name_popup.h"
+#include "palette.h"
+#include "daycare.h"
+#include "script.h"
+#include "field_screen_effect.h"
 #include "constants/characters.h"
 #include "constants/battle.h"
 #include "constants/flags.h"
@@ -219,8 +224,14 @@ u8 CoopBond_EffectiveRank(struct Pokemon *mon)
     }
     else if (!Bond_InParty(mon, B_TRAINER_PARTNER))
     {
-        // Copies (summary of a boxed Pokémon, rentals, practice foes,
-        // display sprites): never a real partner.
+        // Outside battle, a copy of this save's own partner (the PC's
+        // moving Pokémon, a summary of a boxed one) keeps its bonus: the PC
+        // copies a withdrawn Pokémon through such a copy, and mapping its
+        // HP down and back up would lose a point to rounding each move.
+        if (!gMain.inBattle && !sForBattle && Bond_KeyMatches(&mon->box))
+            return CoopBond_MonRank(mon);
+        // Other copies (rentals, practice foes, display sprites, a copy in
+        // battle): never a real partner.
         return 0;
     }
     // The partner's Pokémon in a co-op battle: its record says so (its
@@ -258,12 +269,66 @@ static void Bond_ClearStaleFlags(void)
     }
 }
 
+// Still on this save (party, PC or Day Care)? Personality and trainer id
+// are outside the record's encryption, so this is a cheap scan.
+static bool8 Bond_KeyOwned(u32 pid, u32 otId)
+{
+    u32 i, j;
+
+    for (i = 0; i < PARTY_SIZE; i++)
+    {
+        struct BoxPokemon *b = &gParties[B_TRAINER_PLAYER][i].box;
+
+        if (GetBoxMonData(b, MON_DATA_PERSONALITY) == pid && GetBoxMonData(b, MON_DATA_OT_ID) == otId
+         && GetBoxMonData(b, MON_DATA_SPECIES) != SPECIES_NONE)
+            return TRUE;
+    }
+    for (i = 0; i < DAYCARE_MON_COUNT; i++)
+    {
+        struct BoxPokemon *b = &gSaveBlock1Ptr->daycare.mons[i].mon;
+
+        if (GetBoxMonData(b, MON_DATA_PERSONALITY) == pid && GetBoxMonData(b, MON_DATA_OT_ID) == otId
+         && GetBoxMonData(b, MON_DATA_SPECIES) != SPECIES_NONE)
+            return TRUE;
+    }
+    for (i = 0; i < TOTAL_BOXES_COUNT; i++)
+    {
+        for (j = 0; j < IN_BOX_COUNT; j++)
+        {
+            struct BoxPokemon *b = GetBoxedMonPtr(i, j);
+
+            if (GetBoxMonData(b, MON_DATA_PERSONALITY) == pid && GetBoxMonData(b, MON_DATA_OT_ID) == otId
+             && GetBoxMonData(b, MON_DATA_SPECIES) != SPECIES_NONE)
+                return TRUE;
+        }
+    }
+    // Offered in a deal that is not settled yet: a rollback returns it.
+    return CoopDeal_EscrowHolds(pid, otId);
+}
+
+// The partner left this save (traded, given in a deal, released, given to
+// an in-game trade): the designation ends. Its history went with it; if it
+// ever comes back it is not the partner until chosen again.
+static void Bond_CheckDesignationOwned(void)
+{
+    struct CoopBondSave *bond = Bond_Save();
+
+    if (bond == NULL || !bond->active)
+        return;
+    if (Bond_KeyOwned(bond->pid, bond->otId))
+        return;
+    bond->active = FALSE;
+    bond->pid = 0;
+    bond->otId = 0;
+}
+
 void CoopBond_RefreshParty(void)
 {
     u32 i;
 
     if (gMain.inBattle)
         return;
+    Bond_CheckDesignationOwned();
     Bond_ClearStaleFlags();
     for (i = 0; i < PARTY_SIZE; i++)
         Bond_RefreshMon(&gParties[B_TRAINER_PLAYER][i]);
@@ -453,7 +518,10 @@ void CoopBond_Award(u8 source, u32 amount)
     SetMonData(mon, MON_DATA_BOND_XP, &xp);
     oldRank = CoopBond_RankFromXp(before);
     newRank = CoopBond_RankFromXp(xp);
-    if (sNoticeGain + (xp - before) < 0xFFFF)
+    // Battle and capture awards are announced; walking and friendship are
+    // not (a line after every few steps would be noise).
+    if (source != COOP_BOND_SRC_STEPS && source != COOP_BOND_SRC_FRIENDSHIP
+     && sNoticeGain + (xp - before) < 0xFFFF)
         sNoticeGain += xp - before;
     if (newRank > oldRank)
     {
@@ -695,7 +763,6 @@ void CoopBond_OnStep(void)
     {
         bond->stepTally = 0;
         CoopBond_Award(COOP_BOND_SRC_STEPS, 1);
-        sNoticeGain = 0;    // walking awards are not announced
     }
 }
 
@@ -707,8 +774,6 @@ void CoopBond_OnFriendshipGain(struct Pokemon *mon, s32 delta)
     if (delta > BOND_FRIENDSHIP_CAP)
         delta = BOND_FRIENDSHIP_CAP;
     CoopBond_Award(COOP_BOND_SRC_FRIENDSHIP, delta);
-    if (!gMain.inBattle)
-        sNoticeGain = 0;    // quiet outside battle
 }
 
 // --- Text and the Bond Mentor (data/scripts/coop_bond.inc) -----------------
@@ -974,4 +1039,46 @@ void CoopBond_PublishTest(void)
     gCoopBondTest.pid = bond != NULL ? bond->pid : 0;
     gCoopBondTest.activeSlot = (u8)CoopBond_ActiveSlot();
     gCoopBondTest.suppressed = CoopBond_ContextSuppressed();
+}
+
+// A compact "Bond +N" or rank-up line in the map-name popup, once the field
+// is quiet (never over a battle, a script, a fade or a message). Walking
+// and friendship awards are not announced.
+void CoopBond_FieldPoll(void)
+{
+    struct Pokemon *mon;
+    u8 *p;
+
+    if (sNoticeGain == 0 && sNoticeRank == 0)
+        return;
+    if (gMain.callback2 != CB2_Overworld || ArePlayerFieldControlsLocked() || ScriptContext_IsEnabled()
+     || gPaletteFade.active)
+        return;
+    mon = Bond_PartyPartner();
+    if (sNoticeRank != 0)
+    {
+        p = StringCopy(gCoopPopupText, COMPOUND_STRING("Bond: "));
+        p = StringCopy(p, sRankNames[(sNoticeRank - 1) % COOP_BOND_RANK_COUNT]);
+        StringCopy(p, COMPOUND_STRING("!"));
+    }
+    else if (mon != NULL)
+    {
+        // (The popup fits about 18 characters: no room for a long name.)
+        p = StringCopy(gCoopPopupText, COMPOUND_STRING("Partner: Bond +"));
+        ConvertIntToDecimalStringN(p, sNoticeGain, STR_CONV_MODE_LEFT_ALIGN, 4);
+    }
+    else
+    {
+        sNoticeGain = 0;
+        return;
+    }
+    if (ShowCoopPopup())
+    {
+        struct CoopBondSave *bond = Bond_Save();
+
+        sNoticeRank = 0;
+        sNoticeGain = 0;
+        if (bond != NULL)
+            bond->noticeRank = 0;
+    }
 }

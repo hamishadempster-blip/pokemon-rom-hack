@@ -57,6 +57,7 @@
 #include "constants/battle.h"
 #include "constants/battle_frontier.h"
 #include "constants/coop.h"
+#include "coop_bond.h"
 #include "constants/items.h"
 #include "constants/songs.h"
 #include "constants/species.h"
@@ -337,6 +338,18 @@ static bool8 Deal_HasPending(void)
     struct CoopDealRecord *rec = Deal_Record();
 
     return rec != NULL && rec->state == COOP_TXN_PREPARED;
+}
+
+// Trainer Bond: a Pokemon offered in a deal waits in the record until the
+// partner commits; it is still this save's (a rollback returns it).
+bool8 CoopDeal_EscrowHolds(u32 personality, u32 otId)
+{
+    struct CoopDealRecord *rec = Deal_Record();
+
+    if (rec == NULL || rec->state != COOP_TXN_PREPARED || !(rec->hasMons & 1))
+        return FALSE;
+    return GetBoxMonData((struct BoxPokemon *)rec->outMon, MON_DATA_PERSONALITY) == personality
+        && GetBoxMonData((struct BoxPokemon *)rec->outMon, MON_DATA_OT_ID) == otId;
 }
 
 static bool8 Deal_LinkOk(void)
@@ -705,6 +718,9 @@ static u8 Deal_DeliverMon(struct BoxPokemon *box)
     struct Pokemon mon;
     u32 i;
 
+    // Trainer Bond: an arrival keeps its history but is not a partner here
+    // (its own Pokemon coming back from a rollback stays the partner).
+    CoopBond_MonArrived(box);
     BoxMonToMon(box, &mon);
     CalculateMonStats(&mon);
     for (i = 0; i < PARTY_SIZE; i++)
@@ -753,6 +769,10 @@ static bool8 Deal_ApplyRecord(bool8 commit)
         return FALSE;
     if (commit)
     {
+        // Trainer Bond: the offered Pokemon has left; if it was the
+        // partner, the designation ends (its history goes with it).
+        if (rec->hasMons & 1)
+            CoopBond_MonLeaving((struct BoxPokemon *)rec->outMon);
         if (rec->hasMons & 2)
             Deal_DeliverMon((struct BoxPokemon *)rec->inMon);
         if (rec->inItem != ITEM_NONE)
@@ -782,6 +802,7 @@ static bool8 Deal_ApplyRecord(bool8 commit)
     rec->outSlot = 0xFF;
     memset(rec->outMon, 0, sizeof(rec->outMon));
     memset(rec->inMon, 0, sizeof(rec->inMon));
+    CoopBond_RefreshParty();
     return TRUE;
 }
 

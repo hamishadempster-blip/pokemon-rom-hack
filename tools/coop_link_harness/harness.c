@@ -622,7 +622,8 @@ static void showPartySpecies(struct Player* p) {
 	out("[f%06d p%d party-levels] %s\n", p->frame, p->id, line);
 }
 
-// Species and moves of a party slot of any trainer, decrypted.
+// Species and moves of a party slot of any trainer, decrypted (moves are
+// 11-bit fields; the bits above them hold trackers and Bond XP).
 static void showMonAddr(struct Player* p, unsigned mon, int trainer, int slot) {
 	static const unsigned char sub1[24] = {1,1,2,3,2,3,0,0,0,0,0,0,2,3,1,1,3,2,2,3,1,1,3,2};
 	unsigned pid = rd32(p, mon), key = pid ^ rd32(p, mon + 4);
@@ -630,7 +631,7 @@ static void showMonAddr(struct Player* p, unsigned mon, int trainer, int slot) {
 	for (int i = 0; i < 12; i++) w[i] = rd32(p, mon + 32 + i * 4) ^ key;
 	unsigned a = sSub0[pid % 24] * 3, b = sub1[pid % 24] * 3;
 	out("[f%06d p%d mon %d.%d] species=%u moves=%u,%u,%u,%u pid=%08x flags=%02x\n", p->frame, p->id, trainer, slot,
-	    w[a] & 0x7FF, w[b] & 0xFFFF, w[b] >> 16, w[b + 1] & 0xFFFF, w[b + 1] >> 16, pid, rd8(p, mon + 19));
+	    w[a] & 0x7FF, w[b] & 0x7FF, (w[b] >> 16) & 0x7FF, w[b + 1] & 0x7FF, (w[b + 1] >> 16) & 0x7FF, pid, rd8(p, mon + 19));
 }
 
 static void showMonAt(struct Player* p, int trainer, int slot) {

@@ -1,0 +1,39 @@
+# Trainer Bond in a co-op wild double (both roles). Lab saves, Route 101,
+# linked, Beacon ON. FIXTURES: each player's lead is designated as their
+# Partner Pokemon without the mentor (test_data bonddesignate; neither
+# lab save has a badge yet), and Rosa's lead is given 2,500 Bond XP
+# (Companion, +5). Driver aid: smart_moves.
+# Checks: before the battle Rosa's lead carries +5 and Kai's +0. In the
+# battle each game's copy of the other player's lead has the same stats as
+# its owner's (Kai's game sees Rosa's +5 Max HP and Attack; Rosa's game
+# sees Kai's plain ones): both games agree before launch. After the
+# battle each partner has Bond XP from its own part only: each game counts
+# its own partner (knockouts while on the field, damage it dealt, the win),
+# never the other player's; nobody's XP is counted twice. The bonus stays
+# active after the battle.
+include wild_route101_start.inc
+0 test_data 0 bonddesignate 1
+1 test_data 0 bonddesignate 1
+1 test_data 0 bondxp 2500
+1 expect gCoopBondTest+24:1 1
+0 expect gCoopBondTest+24:1 0
+b smart_moves 1
+0 write sWildEncountersDisabled 0
+0 pace_until_battle 9000
+0 write sWildEncountersDisabled 1
+0 until_cb2 BattleMainCB2 12000 A
+1 until_cb2 BattleMainCB2 12000 A
+0 until_mem gBattlerControllerFuncs:4 HandleInputChooseAction 9000 A
+1 until_mem gBattlerControllerFuncs+8:4 HandleInputChooseAction 9000 A
+b wait 30
+b expect gBattlersCount 4
+0 expect_mirror gParties+1288:2 gParties+88
+0 expect_mirror gParties+1290:2 gParties+90
+1 expect_mirror gParties+1288:2 gParties+88
+1 expect_mirror gParties+1290:2 gParties+90
+b mash_field 30000
+b expect gBattleOutcome 1
+0 expect_range gCoopBondTest:2 1 300
+1 expect_range gCoopBondTest:2 2501 2800
+1 expect gCoopBondTest+24:1 1
+0 expect gCoopBondTest+24:1 0

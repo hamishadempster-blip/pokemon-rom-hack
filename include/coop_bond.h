@@ -94,5 +94,6 @@ void CoopBond_RankProgress(struct Pokemon *mon, u32 *done, u32 *span);
 // A pending "Bond +N" / rank-up notice to show at a safe point.
 bool8 CoopBond_TakeNotice(u8 *rank, u16 *gain);
 void CoopBond_PublishTest(void);
+void CoopBond_FieldPoll(void);
 
 #endif // GUARD_COOP_BOND_H
