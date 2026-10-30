@@ -1,0 +1,85 @@
+# Battle conditions panel on the co-op guest (lab saves, Route 101, linked,
+# Beacon ON). FIXTURES: Rosa's lead made a Lv 12 PIKACHU knowing REFLECT,
+# TAILWIND, GROWL and THUNDER SHOCK, Kai's a Lv 12 PIKACHU knowing GROWL and
+# THUNDER SHOCK (test_mon). DRIVER: force_move: Rosa REFLECT then TAILWIND,
+# Kai GROWL (so the wild Pokemon stay); then smart_moves for both.
+# Checks: Rosa's action prompt shows the SELECT hint; on her third action
+# menu SELECT opens the panel on her screen only (the guest has no battle
+# engine: the state comes with the action request): FIELD, OUR SIDE with
+# REFLECT and TAILWIND and their turns left, FOE SIDE, then each Pokemon's
+# stat stages (pages with RIGHT). B closes it and her action menu works as
+# before. Kai (the master) opens his own panel at the same choice with the
+# same state. After "Reflect wore off" Rosa's panel no longer lists it.
+# The battle ends normally.
+include wild_route101_start.inc
+1 test_mon 0 25 12 115 366 45 84 0
+0 test_mon 0 25 12 45 84 0 0 0
+0 force_move 0
+1 force_move 0
+0 write sWildEncountersDisabled 0
+0 pace_until_battle 9000
+0 write sWildEncountersDisabled 1
+0 until_cb2 BattleMainCB2 12000 A
+1 until_cb2 BattleMainCB2 12000 A
+b until_battle_text Reflect_made 20000 auto
+1 force_move 1
+b until_battle_text tailwind_started 20000 auto
+1 force_move -1
+1 until_mem gBattlerControllerFuncs+8:4 HandleInputChooseAction 9000
+1 wait 30
+1 shot panel-hint
+1 press SELECT 2
+1 wait 20
+1 expect gBattlerControllerFuncs+8:4 CoopField_HandlePanel
+1 shot panel-1
+1 press RIGHT 2
+1 wait 10
+1 shot panel-2
+1 press RIGHT 2
+1 wait 10
+1 shot panel-3
+1 press RIGHT 2
+1 wait 10
+1 shot panel-4
+1 press RIGHT 2
+1 wait 10
+1 shot panel-5
+1 press B 2
+1 wait 20
+1 expect gBattlerControllerFuncs+8:4 HandleInputChooseAction
+1 shot panel-closed
+# Kai (the master) opens his own panel at the same choice.
+0 until_mem gBattlerControllerFuncs:4 HandleInputChooseAction 9000
+0 wait 20
+0 press SELECT 2
+0 wait 20
+0 expect gBattlerControllerFuncs:4 CoopField_HandlePanel
+0 press RIGHT 2
+0 wait 10
+0 shot master-panel-2
+0 press RIGHT 2
+0 wait 10
+0 press RIGHT 2
+0 wait 10
+0 shot master-panel-4
+0 press B 2
+0 wait 20
+0 expect gBattlerControllerFuncs:4 HandleInputChooseAction
+# Expiry: GROWL and REFLECT/TAILWIND choices again until "Reflect wore
+# off", then Rosa's panel at the next choice no longer lists it.
+1 force_move 2
+b until_battle_text Reflect_wore 30000 auto
+1 until_mem gBattlerControllerFuncs+8:4 HandleInputChooseAction 9000
+1 wait 20
+1 press SELECT 2
+1 wait 20
+1 press RIGHT 2
+1 wait 10
+1 shot panel-after-expiry
+1 press B 2
+1 wait 20
+1 force_move -1
+0 force_move -1
+b smart_moves 1
+b mash_field 30000
+b expect gBattleOutcome 1

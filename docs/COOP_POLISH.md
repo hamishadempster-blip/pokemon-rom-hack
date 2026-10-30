@@ -1,6 +1,6 @@
-# Polish: settings, shiny, catch result
+# Polish: settings, shiny, catch result, battle conditions
 
-Sections 5–7 of the collection update. Each player's settings are their own (CoopSave layout 5, `v5.settings`, `COOP_SET_*` in `include/global.h`). They are never sent to the partner and never touch battle state or the RNG.
+Sections 5–7 and 10 of the collection update. Each player's settings are their own (CoopSave layout 5, `v5.settings`, `COOP_SET_*` in `include/global.h`). They are never sent to the partner and never touch battle state or the RNG.
 
 ## CO-OP > SETTINGS
 
@@ -46,7 +46,24 @@ A migrated save has all bits 0, which is these defaults. The only difference fro
 - **Co-op (in the field after the shared battle):** after "Your ball caught the …", the catcher sees the same summary, then where it went: "It joined your party." or "Your party was full, so it went to BOX n in the PC." Only then comes the nickname question.
   - The partner only sees "… caught …" (unchanged). Nothing opens on the partner's side and nothing interrupts a battle.
 
-## Tests
+## Battle conditions panel (`src/coop_field.c`)
+
+- **Opening it.** At the action menu, SELECT opens a read-only panel in the message box. The action prompt shows the SELECT key after "… do?" when it fits after the name.
+  - LEFT/RIGHT (or UP/DOWN) change page; the page number shows top right.
+  - B, A or SELECT closes it, back to the same action menu.
+  - Not offered in PvP link battles (the sides differ per game) or with the debug battle menu on.
+- **Pages:**
+  - FIELD: weather, terrain, Trick Room, Gravity, Magic Room, Wonder Room.
+  - OUR SIDE and FOE SIDE: Reflect, Light Screen, Aurora Veil, Safeguard, Mist, Tailwind, Spikes and Toxic Spikes layers, Stealth Rock, Sticky Web, Steelsurge.
+  - One page per Pokémon on the field: its stat stages as modifiers (Atk+1, Spe-4), never stats. With a partner on our side, each of ours is labelled YOUR or ALLY.
+- **Where the data comes from.** The engine attaches a snapshot of its field state to each action request (`BtlController_EmitChooseAction`). The request reaches the asked player's controller on every game, so the co-op guest, which does not run the engine, shows the master's real state as of that choice.
+  - Opening the panel sends nothing, chooses nothing, consumes no RNG and does not hold up the link. The partner sees this player still choosing.
+- **Durations** are shown only where they are known without hidden information:
+  - Exact: rooms, Gravity, Tailwind, Safeguard, Mist, and our own screens.
+  - "?" turns: a foe's screens (its LIGHT CLAY is hidden), and weather or terrain with a timer (an extending item's owner is not recorded).
+  - "lasting": weather without an end.
+  - The count includes the current turn.
+
 
 | Scenario | Saves | Result |
 | --- | --- | --- |
@@ -54,6 +71,7 @@ A migrated save has all bits 0, which is these defaults. The only difference fro
 | `shiny_coop` | lab, linked | Star on both screens for the same Pokémon; the guest's RUN asks on the guest only; B back; the battle finishes normally |
 | `catch_result` | lab | The result pages appear (species, star, NEW, nature, ability, "join your party"); CATCH RESULT OFF in the real menu; a second catch shows none |
 | `lowhp_beeps` | lab | Three beeps then stop; no replay after the bag; OFF plays none |
+| `battle_panel_coop` | lab, linked | The guest's panel after REFLECT and TAILWIND (FIELD, OUR SIDE with turns, FOE SIDE, stat stages, YOUR/ALLY); the master's panel shows the same state; B returns to the action menu; after "Reflect wore off" it is no longer listed; the battle ends normally |
 | `easy_fishing` | j52 (SUPER ROD fixture, real SURF to Route 122) | A pressed 200 frames after the bite still hooks the Pokémon (the stock limit is 30) |
 
 **Not gameplay-tested:**

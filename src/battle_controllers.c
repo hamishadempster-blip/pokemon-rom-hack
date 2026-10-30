@@ -1,5 +1,6 @@
 #include "global.h"
 #include "coop_bond.h"
+#include "coop_field.h"
 #include "coop_outfit.h"
 #include "battle.h"
 #include "battle_ai_main.h"
@@ -1148,7 +1149,15 @@ void BtlController_EmitChooseAction(enum BattlerId battler, u32 bufferId, u8 act
     gBattleResources->transferBuffer[1] = action;
     gBattleResources->transferBuffer[2] = itemId;
     gBattleResources->transferBuffer[3] = (itemId & 0xFF00) >> 8;
-    PrepareBufferDataTransfer(battler, bufferId, gBattleResources->transferBuffer, 4);
+    // Co-op battle conditions panel: the engine's field state as of this
+    // choice, for the asked player's game (the co-op guest has no engine).
+    {
+        struct CoopFieldSnap snap;
+
+        CoopField_Fill(&snap);
+        memcpy(&gBattleResources->transferBuffer[4], &snap, sizeof(snap));
+    }
+    PrepareBufferDataTransfer(battler, bufferId, gBattleResources->transferBuffer, 4 + sizeof(struct CoopFieldSnap));
 }
 
 // Only used by the forfeit prompt in the Battle Frontier

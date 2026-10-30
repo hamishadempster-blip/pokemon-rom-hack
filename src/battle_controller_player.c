@@ -12,6 +12,7 @@
 #include "battle_gimmick.h"
 #include "bg.h"
 #include "coop.h"
+#include "coop_field.h"
 #include "data.h"
 #include "item.h"
 #include "item_menu.h"
@@ -271,6 +272,16 @@ static bool8 CoopShiny_ShouldAskBeforeRun(void)
 
 static void HandleInputChooseAction(enum BattlerId battler);
 
+static void CoopField_HandlePanel(enum BattlerId battler)
+{
+    if (CoopField_PanelInput())
+    {
+        gBattle_BG0_Y = DISPLAY_HEIGHT;
+        TryRestoreLastUsedBall();
+        gBattlerControllerFuncs[battler] = HandleInputChooseAction;
+    }
+}
+
 static void CoopShiny_BackToActions(enum BattlerId battler)
 {
     HandleBattleWindow(YESNOBOX_X_Y, WINDOW_CLEAR);
@@ -515,6 +526,14 @@ static void HandleInputChooseAction(enum BattlerId battler)
     else if (JOY_NEW(START_BUTTON))
     {
         SwapHpBarsWithHpText();
+    }
+    else if (DEBUG_BATTLE_MENU == FALSE && JOY_NEW(SELECT_BUTTON) && CoopField_PanelAvailable())
+    {
+        // Battle conditions panel: read-only; nothing is sent.
+        PlaySE(SE_SELECT);
+        TryHideLastUsedBall();
+        CoopField_OpenPanel();
+        gBattlerControllerFuncs[battler] = CoopField_HandlePanel;
     }
     else if (DEBUG_BATTLE_MENU == TRUE && JOY_NEW(SELECT_BUTTON))
     {
@@ -2330,6 +2349,9 @@ static void PlayerHandleChooseAction(enum BattlerId battler)
 {
     s32 i;
 
+    // The battle conditions snapshot sent with this request (src/coop_field.c).
+    memcpy(&gCoopFieldSnap, &gBattleResources->bufferA[battler][4], sizeof(gCoopFieldSnap));
+
     CoopTurn_OnChooseAction(battler);
     gBattlerControllerFuncs[battler] = HandleChooseActionAfterDma3;
     BattleTv_ClearExplosionFaintCause();
@@ -2381,6 +2403,14 @@ static void PlayerHandleChooseAction(enum BattlerId battler)
     }
     else
     {
+        // The battle conditions panel's key, when it fits after the name.
+        if (CoopField_PanelAvailable())
+        {
+            u8 *end = gDisplayedStringBattle + StringLength(gDisplayedStringBattle);
+            StringCopy(end, COMPOUND_STRING(" {SELECT_BUTTON}"));
+            if (GetStringWidth(FONT_NORMAL, gDisplayedStringBattle, 0) > 14 * 8 - 6)
+                *end = EOS;
+        }
         BattlePutTextOnWindow(gDisplayedStringBattle, B_WIN_ACTION_PROMPT);
     }
 }
