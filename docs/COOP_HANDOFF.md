@@ -1,4 +1,76 @@
-# Release-readiness pass: build 0xC0170140
+# Collection update, first delivery: build 0xC0170141
+
+Branch `coop-doorway-scenes-rivals` (continued from 0xC0170140), pushed, not merged. Both players need this build: 0xC0170140 and older refuse to link with it.
+
+Saves from earlier builds load unchanged. The co-op block gains layout 5 (376 bytes, zero), checked field by field on 11 save pairs (CoopSave layouts 1–4). A save from a newer build is refused and left untouched.
+
+Docs:
+- Test log: [COOP_TESTLOG_C0170141.md](COOP_TESTLOG_C0170141.md)
+- Storage design: [COOP_STORAGE_PLAN.md](COOP_STORAGE_PLAN.md)
+- Trainer Bond: [COOP_BOND.md](COOP_BOND.md)
+- Settings, shiny, catch result and battle conditions: [COOP_POLISH.md](COOP_POLISH.md)
+- Save rules: [COOP_SAVE_COMPAT.md](COOP_SAVE_COMPAT.md)
+
+## The build
+
+- **ROM:** `emerald-coop-C0170141.gba` from source `712d7dc3`. No game-code change after it.
+  - SHA-1 `dc7c31b978c6b3572a752a3a9793e401c2ff78ac`
+  - SHA-256 `3334223a8868bc1815e500303ffe1bd236edc336a7f24798e239389f384880b6`
+- **Commits:**
+  - storage preflight, layout 5, refusal of newer saves, full-slot link saves: `913f7663`
+  - Trainer Bond: `a7e8b0f2`, `612b5a66`, `ee98ec4b`, `51258ff4`
+  - settings, low-HP alarm, easy fishing, shiny, catch result: `c7a5e813`
+  - battle conditions panel: `ee2eb431`
+  - `debug_inputs_off` update
+  - build id: `712d7dc3`
+  - after the build: roster manifest, two scenario fixes, docs
+- **Testing:**
+  - Final suite on the delivered ROM: 307 scenarios, **301 PASS, 6 FAIL on the first run**:
+    - two of my new Bond scenarios had observed values that vary (fixed, rerun PASS);
+    - `twins_solo` lost a lucky battle (rerun PASS);
+    - `partner_menu`'s FOLLOW-through-door failed once (3/3 reruns PASS; intermittent, open);
+    - `roster_repair` failed because of a harness `hunt` regression that also fails on 0xC0170140 (not fixed).
+  - 27/27 power-cut loads recovered the previous save.
+  - Compatibility: 33/33 comparisons PASS.
+- **Readiness: the delivered features are ready for a player playthrough, with stated limitations.**
+  - No crash, freeze, save damage or progression blocker was found in this build.
+  - Most of the request is **not implemented yet** (below).
+  - The known open issues of 0xC0170140 remain, and one intermittent FOLLOW failure is new in the record.
+  - Not bug-free; nothing here claims so.
+
+## Status of the collection request (by section)
+
+| Section | Status |
+| --- | --- |
+| 15 Existing saves (release gate) | **Done for this delivery:** storage plan; layout 5 with migration; refusal of newer saves; interrupted-write tests; late unlock (the Bond Mentor checks the badge on any save: `bond_mentor` on a pre-update save); compatibility matrix; update guide. The user's own saves were not supplied, so they were not tested |
+| 14 Trainer Bond | **Implemented and tested**; gaps listed in COOP_BOND.md (no follower or greetings, Transform untested, award rates not tuned by unassisted play) |
+| 5 Shiny visibility and SHINY CHECK | **Implemented and tested** (solo and co-op guest); no overworld shiny appearances to cover |
+| 6 Catch result | **Implemented**; solo tested, co-op field path source-inspected only |
+| 7 Low-HP alarm, easy fishing | **Implemented and tested** (EASY FISHING B-cancel and other rods untested) |
+| 10 Battle conditions panel | **Implemented and tested** (both co-op roles, expiry) |
+| 1 Roster manifest | **Regenerated:** 908/908 obtainable, 0 issues; no roster change in this update |
+| 2 Encounter variety | Not started (time-of-day encounter tables off) |
+| 3 Five hidden habitats | Not started (save space reserved) |
+| 4 Notebook and collection rewards | Not started (ledger space reserved) |
+| 8 Waiting for a time of day | Not started (period-shift space reserved) |
+| 9 Expedition HQ | Not started (256 bytes reserved) |
+| 11 "Who can learn this?" | Not started |
+| 12 Town specialities | Not started (space reserved) |
+| 13 Verification and delivery | This handoff, the test log, ROM and hashes, four clips |
+
+## Updating both ROMs (keep your saves)
+
+1. Each player backs up their `.sav` (copy it somewhere safe).
+2. Each player replaces their ROM with `emerald-coop-C0170141.gba` **under the same file name as before** (mGBA pairs `name.gba` with `name.sav`), or renames the save to match the new name.
+3. Open both games and CONTINUE on each. The CONTINUE screen should say *Build C0170141*.
+4. CO-OP → LINK UP on both. A partner still on 0xC0170140 or older is refused: both must update.
+5. If CONTINUE says "This save is from a newer build", that save was written by a later ROM. It is left unchanged; use that ROM.
+6. If the game ever says "The save file is corrupted. The previous save file will be loaded.", the last save was interrupted. The previous complete save loads, and nothing is half-written.
+7. Do not go back to an older ROM with a save this one has written (layout 5 is not known there).
+
+# Previous build: 0xC0170140
+
+## Release-readiness pass: build 0xC0170140
 
 Branch `coop-doorway-scenes-rivals` (continued from 0xC017013E), pushed, not merged. A stability pass, no new features. Both players need this build: 0xC017013E and older refuse to link with it. Saves from earlier builds load unchanged (checked field by field, below). Test log: [COOP_TESTLOG_C0170140.md](COOP_TESTLOG_C0170140.md). Save rules for future updates: [COOP_SAVE_COMPAT.md](COOP_SAVE_COMPAT.md).
 
@@ -54,7 +126,7 @@ Harness only (no game change): `hunt` stays near its starting row (it drifted ou
 - Wild Pokémon and ordinary trainers use your first three Pokémon (no team screen); slots 4–6 sit out there.
 - FOLLOW stops before grass, cave floors, other warps and scene tiles by design.
 - Duo Tower battles give no EXP, prize money, bag use or catches; healed copies fight.
-- SELECT, R+START and L+R do nothing developer-side any more (the developer menus are off).
+- SELECT, R+START and L+R do nothing developer-side any more (the developer menus are off). Since 0xC0170141, SELECT at the battle action menu opens the read-only battle conditions panel.
 
 ## Where things are (work environment, not committed)
 

@@ -143,6 +143,18 @@ Since build 0xC017013E the first POKéMON CENTER nurse you talk to after getting
 
 In the move menu, **L** opens a compact panel over the top of the battlefield (L again, A or B closes it; cursor moves update it): the category icon, **PWR** (**var.** when the power depends on the battle, with what decides it, such as "Power: foe's weight."), **ACC** (**sure** for a move that never misses), who the move hits ("One target.", "Both foes.", "All others.", "Self."...), "No PP left." or "Disabled." when that applies (Disabled is shown on the game that runs the battle; the other player's game does not know it), then the move's description. The move menu's own box still shows PP and type.
 
+## Battle conditions (SELECT)
+
+At the action menu (FIGHT/BAG/POKéMON/RUN), **SELECT** shows what is on the field, read-only, in the message box. The prompt shows the SELECT key when it fits after the name.
+
+- **Pages** (LEFT/RIGHT to change; B, A or SELECT to close):
+  - FIELD: weather, terrain, rooms, Gravity.
+  - OUR SIDE and FOE SIDE: screens, Safeguard, Mist, Tailwind, hazards.
+  - One page per Pokémon with its stat stages. With a partner, each of ours is marked YOUR or ALLY.
+- **Turns** are shown where they are known. A foe's screens, and weather or terrain that an item may have lengthened, say "?".
+- **No side effects.** Opening it chooses nothing and does not hold up your partner, who sees you still choosing.
+- **Not offered** in link battles against a friend.
+
 ## Story rules
 
 - Both players' rescue saves get the same story state. Whoever opens Birch's bag and whoever waits on the route both run `Route101_EventScript_ApplyRescueState`. (Before build `0xC017012C`, the waiting player's save kept the rival visible in their bedroom, standing on the stair warp; see [Fixes](#fixes-in-build-0xc017012c).)
@@ -748,6 +760,16 @@ While linked with your partner somewhere else, these fights wait and say so: com
 - The start menu's party screen reopens on the Pokémon you last highlighted.
 - A second visit to the same Pokémon Center nurse in one session heals at once ("Welcome back! I'll heal them right away.") without the question.
 - The Bag already remembers its pocket and position, and an expired Repel already offers another one from the bag (stock expansion features, unchanged).
+- **CO-OP → SETTINGS** (your own, not your partner's):
+  - LOW HP ALARM: 3 BEEPS (default; once per low-health episode) or OFF.
+  - EASY FISHING: a bite waits for A; B lets it go.
+  - SHINY CHECK: RUN from a wild battle with a shiny still there asks "A shiny Pokémon is still here. Leave?".
+  - CATCH RESULT: after a catch, the species, NEW in your Pokédex, nature, ability and where it went.
+- A shiny Pokémon's battle box shows a star after its name.
+- **Trainer Bond:** after the STONE BADGE, the BOND MENTOR in Rustboro's Pokémon Center lets you choose one Partner Pokémon. Battles and travel together earn it Bond XP, and its rank adds +5, +10 or +15 to each stat.
+  - The bonus is off in the Battle Frontier, Battle Tents, practice and link battles against a friend.
+  - Every Pokémon keeps its own Bond XP, even after you switch partners.
+  - Details: [COOP_BOND.md](COOP_BOND.md).
 
 ## Known limits
 
