@@ -38,6 +38,7 @@
 #include "main.h"
 #include "contest.h"
 #include "item_menu.h"
+#include "coop_notes.h"
 #include "pokemon_storage_system.h"
 #include "pokemon_jump.h"
 #include "decoration_inventory.h"
@@ -234,6 +235,7 @@ void NewGameInitData(void)
     ResetItemFlags();
     ResetDexNav();
     ClearFollowerNPCData();
+    CoopNotes_ClearBaseline();   // a new game after a loaded one starts its FIELD NOTES from nothing
 }
 
 static void ResetMiniGamesRecords(void)

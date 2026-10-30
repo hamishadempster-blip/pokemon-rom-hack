@@ -562,6 +562,7 @@ Build 0xC017013E scenarios:
 | `visitors_weather_fish` | j52 | Same FIXTURE: SUPER ROD on Route 122 at night gives FRILLISH; Route 113 grass in falling ash (FIXTURE saved weather) gives a visitor (VULPIX), in sunshine none |
 | `learn_who` (+`_full`) | j52 | BAG > TMs & HMs > CAN LEARN: the count, party and box pages, "more" pages with a full PC (FIXTURE fixture_fill_pc), B back to the BAG, nothing changed (docs/COOP_LEARN.md) |
 | `notes_rewards` (+`_reload`) | lab | FIELD NOTES rewards: paid once at a calm moment, waiting for room (pending queue) and delivered later, not again after a reload; the notebook pages. FIXTURES dex_caught, fixture_fill_pocket, gCoopNotesCheck (docs/COOP_NOTES.md) |
+| `notes_catchup` (+`_collect`, `_reload`) | j68 | FIELD NOTES on a save that reached rewards before loading: nothing paid on the first steps; CO-OP > JOURNAL > FIELD NOTES asks to collect them and hands them over; not again after a reload. FIXTURE dex_caught 1-30 (docs/COOP_NOTES.md) |
 | `habitat_moss` | j16 | MOSS HOLLOW: entrance, first visit, encounter, marker, find once, exit, completion reward once (FIXTURE dex_caught), FIELD NOTES pages, Petalburg's rumor (docs/COOP_HABITATS.md) |
 | `habitat_tour` | j68 | The other four habitats: entrance, first visit, marker, find, an encounter (a SUPER ROD bite in TIDE GROTTO), exit |
 | `towns_tour` | j68 | The six town specialities: Dewford rest (daily) and its track reward once, Fallarbor BALL change, Verdanturf grooming (daily), Fortree berry (daily), Mossdeep IV reading, Pacifidlog tides (docs/COOP_TOWNS.md) |

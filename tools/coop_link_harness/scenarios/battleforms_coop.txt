@@ -35,6 +35,7 @@ b fixture_rom16 gRoute116_LandMons+34 270
 b fixture_rom16 gRoute116_LandMons+38 270
 b fixture_rom16 gRoute116_LandMons+42 270
 b fixture_rom16 gRoute116_LandMons+46 270
+b write gCoopVisitorTestChance 255
 0 fixture_warp 0 31 23 17
 1 fixture_warp 0 31 25 17
 b until_field 3000
@@ -92,6 +93,7 @@ b fixture_rom16 gRoute116_LandMons+34 265
 b fixture_rom16 gRoute116_LandMons+38 265
 b fixture_rom16 gRoute116_LandMons+42 265
 b fixture_rom16 gRoute116_LandMons+46 265
+b write gCoopVisitorTestChance 255
 0 test_mon 0 845 30 33 0 0 0 0
 1 test_mon 0 875 30 150 0 0 0 0
 b test_heal

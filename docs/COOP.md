@@ -297,6 +297,17 @@ Press A while facing your partner's sprite (linked, same map). A partner who is 
 - **Evolution hints.** In the summary screen's INFO page, SELECT shows what the Pokémon evolves into and how, from the game's own evolution data: the level, item, time of day, held item, move, friendship or place (regional forms name the place this game uses: near Dewford for Alola, on Route 114 for Galar, on Mt. Pyre for Hisui), whether each condition is met now (“Now Lv. 10: 6 levels to go.”, “None in BAG. Sold: Mauville Mart”), and where the item can be had. Pokémon with several evolutions page through them with SELECT; the last press returns to the trainer memo. On a partner's Pokémon (VIEW TEAM) it says what and how, but not whether it is met.
 - **Practice (the COACH).** A COACH stands in the Pokémon Centers of Rustboro, Dewford, Slateport, Verdanturf, Fallarbor, Mossdeep, Sootopolis, Pacifidlog, and Ever Grande. He sets up an AI battle against a copy of your own team or (linked) your partner's, singles or doubles, at your own levels or all at Lv. 50. Everything that fights is a copy: your party and money are put back afterwards, the bag is closed during the fight, and nothing is awarded.
 
+## Saving, exploring and collecting (build 0xC0170142)
+
+- **Autosave.** On entering a map, at most every five minutes, the game saves by itself into the slot that does not hold your own last SAVE. Loading an autosave asks whether to keep it or go back to your SAVE. CO-OP > SETTINGS > AUTOSAVE turns it off. [COOP_AUTOSAVE.md](COOP_AUTOSAVE.md)
+- **Waiting at a Pokémon Center.** CO-OP > WAIT HERE on a Center's ground floor rests until MORNING, DAY, EVENING or NIGHT (only the time of day moves, never the day). While linked, it is done together with the partner in the same Center. [COOP_TIME.md](COOP_TIME.md)
+- **Visitors.** 56 wild visitors appear by time of day and weather on 30 maps (grass, surfing, rods). WAIT HERE > REPORT in a Center pages through the nearby ones. [COOP_ENCOUNTERS.md](COOP_ENCOUNTERS.md)
+- **"Who can learn this?"** BAG > TMs & HMs > CAN LEARN counts and lists your party and PC Pokémon that can learn that move. [COOP_LEARN.md](COOP_LEARN.md)
+- **FIELD NOTES.** CO-OP > JOURNAL > FIELD NOTES tracks your collection and pays collection rewards once per save. [COOP_NOTES.md](COOP_NOTES.md)
+- **Hidden habitats.** Five hidden places with their own Pokémon, a find, and a reward for catching their three residents. [COOP_HABITATS.md](COOP_HABITATS.md)
+- **Town specialities.** Six specialists, in Dewford, Fallarbor, Verdanturf, Fortree, Mossdeep and Pacifidlog, each with a small track. [COOP_TOWNS.md](COOP_TOWNS.md)
+- **Expedition HQ.** Not in the game yet; its design is in [COOP_HQ_PLAN.md](COOP_HQ_PLAN.md).
+
 ## Quests
 
 **CO-OP, JOURNAL** lists each quest's progress on your save, with the next step. Six quests are in this build; all are optional and can be done alone ([COOP_QUESTS.md](COOP_QUESTS.md) has the walkthroughs and data). Whatever either player finds counts for both; a finished quest reaches the other save at its next map change; each save collects its own rewards once, and a full bag keeps them waiting.

@@ -24,6 +24,7 @@ b fixture_rom16 gRoute116_LandMons+34 63
 b fixture_rom16 gRoute116_LandMons+38 63
 b fixture_rom16 gRoute116_LandMons+42 63
 b fixture_rom16 gRoute116_LandMons+46 63
+b write gCoopVisitorTestChance 255
 b fixture_item 0 28 2
 b write gParties+86:2 5
 0 fixture_warp 0 31 23 17

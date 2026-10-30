@@ -32,6 +32,7 @@ b fixture_rom16 gRoute116_LandMons+34 265
 b fixture_rom16 gRoute116_LandMons+38 265
 b fixture_rom16 gRoute116_LandMons+42 265
 b fixture_rom16 gRoute116_LandMons+46 265
+b write gCoopVisitorTestChance 255
 0 fixture_warp 0 31 23 17
 1 fixture_warp 0 31 25 17
 b until_field 3000

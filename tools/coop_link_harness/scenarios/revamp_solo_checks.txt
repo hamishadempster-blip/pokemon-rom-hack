@@ -26,6 +26,7 @@ b no_wild 1
 0 fixture_rom16 gRoute116_LandMons+38 265
 0 fixture_rom16 gRoute116_LandMons+42 265
 0 fixture_rom16 gRoute116_LandMons+46 265
+0 write gCoopVisitorTestChance 255
 0 fixture_rom16 gRoute116_LandMons+0 5140
 0 fixture_rom16 gRoute116_LandMons+4 5140
 0 fixture_rom16 gRoute116_LandMons+8 5140

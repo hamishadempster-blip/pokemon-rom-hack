@@ -1,0 +1,45 @@
+# FIELD NOTES on a save that had already earned rewards before loading
+# (checkpoint 68 saves, player 0 alone; step 1 of 3). FIXTURE: dex_caught
+# marks national 1-30 caught (the save has 9 kinds), so the 10- and 25-kind
+# rewards are reached; no map is entered, so nothing is paid, and the game is
+# saved with them earned but unclaimed, as on a save from before the notes.
+# Next: notes_catchup_collect (from these saves), notes_catchup_reload.
+include continue.inc
+b no_wild 1
+b mash_field 300 B
+0 expect gSaveblock3+624:2 0
+0 dex_caught 1 1
+0 dex_caught 2 1
+0 dex_caught 3 1
+0 dex_caught 4 1
+0 dex_caught 5 1
+0 dex_caught 6 1
+0 dex_caught 7 1
+0 dex_caught 8 1
+0 dex_caught 9 1
+0 dex_caught 10 1
+0 dex_caught 11 1
+0 dex_caught 12 1
+0 dex_caught 13 1
+0 dex_caught 14 1
+0 dex_caught 15 1
+0 dex_caught 16 1
+0 dex_caught 17 1
+0 dex_caught 18 1
+0 dex_caught 19 1
+0 dex_caught 20 1
+0 dex_caught 21 1
+0 dex_caught 22 1
+0 dex_caught 23 1
+0 dex_caught 24 1
+0 dex_caught 25 1
+0 dex_caught 26 1
+0 dex_caught 27 1
+0 dex_caught 28 1
+0 dex_caught 29 1
+0 dex_caught 30 1
+0 wait 20
+0 expect gCoopNotesPaid 0
+include save_again.inc
+0 expect gCoopNotesPaid 0
+0 expect gSaveblock3+624:2 0

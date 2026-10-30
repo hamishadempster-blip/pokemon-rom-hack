@@ -221,6 +221,11 @@ fi
 if [ -n "${J68:-}" ]; then
 	run habitat_tour SAVE0="$J68/p0.sav" SAVE1="$J68/p1.sav"
 	run towns_tour SAVE0="$J68/p0.sav" SAVE1="$J68/p1.sav"
+	# FIELD NOTES on a save that reached rewards before loading: no payout on
+	# the first steps, collected in the notes, kept after a reload.
+	run notes_catchup SAVE0="$J68/p0.sav" SAVE1="$J68/p1.sav"
+	run notes_catchup_collect SAVE0="$out/notes_catchup/p0.sav" SAVE1="$out/notes_catchup/p1.sav"
+	run notes_catchup_reload SAVE0="$out/notes_catchup_collect/p0.sav" SAVE1="$out/notes_catchup_collect/p1.sav"
 	for s in legend_shared_ray legend_ray_rosa legend_ray_solo legend_ray_claimed legend_ray_story legend_groudon legend_regirock \
 	         legend_ray_simul legend_ray_ko legend_ray_full legend_ray_interrupt legend_ray_lostack legend_migration coop_bag_battle_tasks indicator_tour; do
 		run "$s" SAVE0="$J68/p0.sav" SAVE1="$J68/p1.sav"

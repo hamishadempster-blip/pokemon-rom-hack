@@ -742,6 +742,8 @@ gSpecials::
 	def_special CoopVisitor_ReportPage
 	def_special CoopNotes_PayKind
 	def_special CoopNotes_BufferPage
+	def_special CoopNotes_CollectNext
+	def_special CoopNotes_CountDue
 	def_special CoopHabitat_OnEnter
 	def_special CoopHabitat_BufferName
 	def_special CoopHabitat_HideClaimed

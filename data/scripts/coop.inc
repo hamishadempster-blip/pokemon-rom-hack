@@ -451,6 +451,35 @@ Coop_Text_JrnNotes:
 
 @ FIELD NOTES (src/coop_notes.c): this save's collection, a page each.
 Coop_EventScript_FieldNotes::
+	specialvar VAR_RESULT, CoopNotes_CountDue
+	goto_if_eq VAR_RESULT, 0, Coop_EventScript_FieldNotesPages
+	msgbox Coop_Text_NotesCollectAsk, MSGBOX_YESNO
+	goto_if_eq VAR_RESULT, NO, Coop_EventScript_FieldNotesPages
+Coop_EventScript_FieldNotesCollect::
+	specialvar VAR_RESULT, CoopNotes_CollectNext
+	goto_if_eq VAR_RESULT, 0, Coop_EventScript_FieldNotesPages
+	call_if_eq VAR_RESULT, 1, Coop_EventScript_NotesShowGiven
+	call_if_eq VAR_RESULT, 2, Coop_EventScript_NotesShowQueued
+	call_if_eq VAR_RESULT, 3, Coop_EventScript_NotesShowDelivered
+	goto Coop_EventScript_FieldNotesCollect
+Coop_EventScript_NotesShowGiven::
+	playfanfare MUS_OBTAIN_ITEM
+	message Coop_Text_NotesGiven
+	waitmessage
+	waitfanfare
+	waitbuttonpress
+	return
+Coop_EventScript_NotesShowQueued::
+	msgbox Coop_Text_NotesQueued, MSGBOX_DEFAULT
+	return
+Coop_EventScript_NotesShowDelivered::
+	playfanfare MUS_OBTAIN_ITEM
+	message Coop_Text_NotesDelivered
+	waitmessage
+	waitfanfare
+	waitbuttonpress
+	return
+Coop_EventScript_FieldNotesPages::
 	setvar VAR_0x8004, 0
 Coop_EventScript_FieldNotesPage::
 	specialvar VAR_RESULT, CoopNotes_BufferPage
@@ -489,6 +518,9 @@ Coop_EventScript_NotesDelivered::
 	releaseall
 	end
 
+Coop_Text_NotesCollectAsk:
+	.string "FIELD NOTES: {STR_VAR_1} reward(s) to\n"
+	.string "collect. Collect them now?$"
 Coop_Text_NotesGiven:
 	.string "FIELD NOTES: {STR_VAR_1}\n"
 	.string "{PLAYER} got {STR_VAR_2}!$"

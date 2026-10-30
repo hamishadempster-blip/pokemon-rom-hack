@@ -67,6 +67,17 @@ STATIC_ASSERT(ARRAY_COUNT(sRewards) <= 8 * sizeof(((struct CoopSaveV5 *)0)->coll
 EWRAM_DATA bool8 gCoopNotesCheck = FALSE;   // set on entering a map (test-visible: a harness fixture may set it)
 EWRAM_DATA u8 gCoopNotesPaid = 0;   // test visibility: rewards handed over this session
 
+// The collection as it was when this save was loaded (CONTINUE). Rewards
+// reached by then (on a save from before the FIELD NOTES, say) are not
+// announced one after another on the first steps: they wait in the FIELD
+// NOTES to be collected. Rewards reached while playing are paid at once.
+// A new game starts from nothing (all zero).
+static EWRAM_DATA struct {
+    u16 dex;
+    u16 visitors;
+    u8 habitatsComplete;
+} sBaseline = {0};
+
 static struct CoopSaveV5 *Notes_Save(void)
 {
     struct CoopSave *save = Coop_GetSave();
@@ -111,6 +122,21 @@ static bool8 Notes_Earned(u32 i, const struct NotesCounts *c)
         return c->visitors >= sRewards[i].need;
     case NOTES_VISITORS_ALL:
         return c->visitorKinds != 0 && c->visitors >= c->visitorKinds;
+    }
+    return FALSE;
+}
+
+// Reached already when the save was loaded (see sBaseline).
+static bool8 Notes_EarnedAtLoad(u32 i, const struct NotesCounts *c)
+{
+    switch (sRewards[i].kind)
+    {
+    case NOTES_DEX:
+        return sBaseline.dex >= sRewards[i].need;
+    case NOTES_VISITORS:
+        return sBaseline.visitors >= sRewards[i].need;
+    case NOTES_VISITORS_ALL:
+        return c->visitorKinds != 0 && sBaseline.visitors >= c->visitorKinds;
     }
     return FALSE;
 }
@@ -164,11 +190,27 @@ enum
 };
 
 static EWRAM_DATA u8 sPayKind = PAY_NONE;
+
+void CoopNotes_SetBaseline(void)
+{
+    u16 kinds;
+
+    sBaseline.dex = GetNationalPokedexCount(FLAG_GET_CAUGHT);
+    sBaseline.visitors = CoopVisitor_CountCaught(&kinds);
+    sBaseline.habitatsComplete = CoopHabitat_CompleteMask();
+}
+void CoopNotes_ClearBaseline(void)
+{
+    memset(&sBaseline, 0, sizeof(sBaseline));
+}
+
 static EWRAM_DATA bool8 sNotesPendingPageShown = FALSE;
 
 // What to pay now (into the BAG, or the queue), with the texts for the
 // script in STR_VAR_1 (why) and STR_VAR_2 (what). PAY_NONE: nothing.
-static u8 Notes_Pay(void)
+// `live`: only what was reached since loading (the automatic payout);
+// otherwise anything due (collecting in the FIELD NOTES).
+static u8 Notes_Pay(bool8 live)
 {
     struct CoopSaveV5 *v5 = Notes_Save();
     struct NotesCounts counts;
@@ -202,6 +244,8 @@ static u8 Notes_Pay(void)
 
         if (Notes_Claimed(v5, i) || !Notes_Earned(i, &counts))
             continue;
+        if (live && Notes_EarnedAtLoad(i, &counts))
+            continue;   // waits in the FIELD NOTES
         switch (r->kind)
         {
         case NOTES_DEX:
@@ -237,7 +281,7 @@ static u8 Notes_Pay(void)
         u16 item;
         u8 quantity;
 
-        if (CoopHabitat_PayDue(&item, &quantity, gStringVar1))
+        if (CoopHabitat_PayDue(&item, &quantity, gStringVar1, live ? sBaseline.habitatsComplete : 0))
         {
             Notes_BufferItem(item, quantity, gStringVar2);
             if (CheckBagHasSpace(item, quantity))
@@ -267,7 +311,7 @@ bool8 CoopNotes_Poll(void)
         gCoopNotesCheck = FALSE;
         return FALSE;
     }
-    sPayKind = Notes_Pay();
+    sPayKind = Notes_Pay(TRUE);
     if (sPayKind == PAY_NONE)
     {
         gCoopNotesCheck = FALSE;
@@ -284,6 +328,35 @@ bool8 CoopNotes_Poll(void)
 u16 CoopNotes_PayKind(void)
 {
     return sPayKind;
+}
+
+// Special, in the FIELD NOTES: hands over the next reward due, whenever it
+// was reached. VAR_RESULT: PAY_* (STR_VAR_1, STR_VAR_2 as for the payout).
+u16 CoopNotes_CollectNext(void)
+{
+    sPayKind = Notes_Pay(FALSE);
+    if (sPayKind != PAY_NONE)
+        gCoopNotesPaid++;
+    return sPayKind;
+}
+
+// Special, in the FIELD NOTES: how many rewards are due now (STR_VAR_1).
+u16 CoopNotes_CountDue(void)
+{
+    struct CoopSaveV5 *v5 = Notes_Save();
+    struct NotesCounts counts;
+    u32 i, n = 0;
+
+    if (v5 == NULL)
+        return 0;
+    for (i = 0; i < ARRAY_COUNT(v5->pending); i++)
+        n += Notes_PendingValid(&v5->pending[i]) && CheckBagHasSpace(v5->pending[i].item, v5->pending[i].quantity);
+    Notes_Count(&counts);
+    for (i = 0; i < ARRAY_COUNT(sRewards); i++)
+        n += !Notes_Claimed(v5, i) && Notes_Earned(i, &counts);
+    n += CoopHabitat_CountDue();
+    ConvertIntToDecimalStringN(gStringVar1, n, STR_CONV_MODE_LEFT_ALIGN, 2);
+    return n;
 }
 
 // ------------------------------------------------------------ the notebook

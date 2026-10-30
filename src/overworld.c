@@ -2304,6 +2304,7 @@ void CB2_ContinueSavedGame(void)
         ResetWinStreaks();
 
     gSaveLastWriteVBlank = gMain.vblankCounter1;   // autosave: play resumes now (src/coop_autosave.c)
+    CoopNotes_SetBaseline();   // FIELD NOTES: rewards reached before now wait to be collected
     LoadSaveblockMapHeader();
     ClearDiveAndHoleWarps();
     Coop_RepairUnsetHealLocation();

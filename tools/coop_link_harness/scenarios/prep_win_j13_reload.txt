@@ -1,6 +1,7 @@
 # prep_win_j13's saves after a power cycle: Kai's party in its own order
-# and Rosa's (the personalities read before the battle), the chosen LEAD's EXP gain and
-# the unchosen slot 1's EXP as they were after the battle, the badge on both.
+# and Rosa's (the personalities read before the battle), the EXP gains kept
+# (the LEAD's, and the benched slot 1's: EXP goes to the whole party), the
+# badge on both.
 include continue.inc
 b mash_field 300 B
 0 expect_mon 0 personality 0x5596ad8d
@@ -8,7 +9,7 @@ b mash_field 300 B
 0 expect_mon 2 personality 0xa06939d1
 0 expect_mon 3 personality 0xedb79ca8
 0 expect_mon 4 personality 0x21cdbd55
-0 expect_mon 0 exp 3397
+0 expect_mon 0 exp 3398..999999
 0 expect_mon 4 exp 2458..999999
 1 expect_mon 0 personality 0xd26d6303
 1 expect_mon 1 personality 0x34e65ee7

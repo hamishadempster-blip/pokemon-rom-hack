@@ -70,7 +70,9 @@ static u16 Visitor_CurrentMap(void)
 
 // Test fixtures (the harness writes them; nothing in the game does): a
 // visitor's chance in percent instead of COOP_VISITOR_CHANCE (0: the real
-// one), and the last visitor chosen (0: the last encounter was the table's).
+// one; COOP_VISITOR_TEST_NONE: no visitors, for a test that fixes the wild
+// table), and the last visitor chosen (0: the last encounter was the table's).
+#define COOP_VISITOR_TEST_NONE 255
 EWRAM_DATA u8 gCoopVisitorTestChance = 0;
 EWRAM_DATA u16 gCoopVisitorLast = 0;
 
@@ -82,7 +84,8 @@ u16 CoopVisitor_Species(u8 area, u8 rod, u16 species)
     u32 i, count = 0, pick;
 
     gCoopVisitorLast = 0;
-    if (InBattlePike() || CurrentBattlePyramidLocation() != PYRAMID_LOCATION_NONE)
+    if (gCoopVisitorTestChance == COOP_VISITOR_TEST_NONE
+     || InBattlePike() || CurrentBattlePyramidLocation() != PYRAMID_LOCATION_NONE)
         return species;
     for (i = 0; i < ARRAY_COUNT(sCoopVisitors); i++)
     {
@@ -92,7 +95,6 @@ u16 CoopVisitor_Species(u8 area, u8 rod, u16 species)
          && Visitor_ConditionNow(v->when))
             count++;
     }
-    gCoopVisitorLast = 0;
     if (count == 0 || Random() % 100 >= (gCoopVisitorTestChance != 0 ? gCoopVisitorTestChance : COOP_VISITOR_CHANCE))
         return species;
     pick = Random() % count;

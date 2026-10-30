@@ -106,6 +106,11 @@ Rods: the OLD ROD uses the table's first two fishing slots, the GOOD ROD the nex
 ## Tests (harness)
 
 The 100% chance in these tests is a fixture (`gCoopVisitorTestChance`); the game uses 25%.
+Older scenarios that fill Route 116's grass with one species (`fixture_rom16
+gRoute116_LandMons...`) also write `gCoopVisitorTestChance 255`: no visitors,
+so the fixed table decides. Without it, PURRLOIN (Route 116's night visitor;
+the harness clock is 21:00) replaced the fixed species one encounter in four
+(`battle_cancel` failed that way on its first run on build 0xC0170142).
 
 | Scenario | Checks |
 | --- | --- |

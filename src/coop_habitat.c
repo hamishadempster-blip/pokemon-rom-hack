@@ -223,7 +223,40 @@ void CoopHabitat_ReadMarker(void)
 // item goes in or waits, then sHabitatPaying is confirmed).
 static EWRAM_DATA s8 sHabitatPaying = 0;   // set by CoopHabitat_PayDue before use
 
-bool8 CoopHabitat_PayDue(u16 *item, u8 *quantity, u8 *why)
+// Habitats whose three residents are caught (and found): bit per habitat.
+u8 CoopHabitat_CompleteMask(void)
+{
+    struct CoopHabitatSave *h = Habitat_Save();
+    u8 mask = 0;
+    u32 i;
+
+    if (h == NULL)
+        return 0;
+    for (i = 0; i < COOP_HABITAT_COUNT; i++)
+    {
+        if ((h->found & (1 << i)) && Habitat_ResidentsCaught(i) == ARRAY_COUNT(sHabitats[i].residents))
+            mask |= 1 << i;
+    }
+    return mask;
+}
+
+// Completion rewards due (complete, not yet handed over).
+u8 CoopHabitat_CountDue(void)
+{
+    struct CoopHabitatSave *h = Habitat_Save();
+    u8 mask = CoopHabitat_CompleteMask(), n = 0;
+    u32 i;
+
+    if (h == NULL)
+        return 0;
+    for (i = 0; i < COOP_HABITAT_COUNT; i++)
+        n += (mask & (1 << i)) && !(h->rewarded & (1 << i));
+    return n;
+}
+
+// `skip`: habitats not to pay now (complete already when the save was
+// loaded: they wait in the FIELD NOTES, src/coop_notes.c).
+bool8 CoopHabitat_PayDue(u16 *item, u8 *quantity, u8 *why, u8 skip)
 {
     struct CoopHabitatSave *h = Habitat_Save();
     u32 i;
@@ -236,7 +269,7 @@ bool8 CoopHabitat_PayDue(u16 *item, u8 *quantity, u8 *why)
         if (!(h->found & (1 << i)) || Habitat_ResidentsCaught(i) < ARRAY_COUNT(sHabitats[i].residents))
             continue;
         h->complete |= 1 << i;
-        if (h->rewarded & (1 << i))
+        if ((h->rewarded & (1 << i)) || (skip & (1 << i)))
             continue;
         *item = sHabitats[i].reward;
         *quantity = sHabitats[i].rewardQuantity;

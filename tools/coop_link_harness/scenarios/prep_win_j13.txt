@@ -5,9 +5,10 @@
 # driver: each battler's most effective move.
 # Kai (five Pokemon) picks 5, 4, 3 (LEAD, SECOND, THIRD) for Roxanne and
 # Heath; Rosa (the guest) picks 1, 5, 4. After the win every Pokemon is back
-# in its own slot on both saves; Kai's slot 1 (not chosen) has the same
-# EXP; slot 5 (Kai's LEAD, on the field from the start) has more; Rosa's
-# slots 2 and 3 (not chosen) are unchanged; the badge is on both saves.
+# in its own slot on both saves; slot 5 (Kai's LEAD, on the field from the
+# start) has more EXP, and so do Kai's slot 1 and Rosa's slots 2 and 3 (not
+# chosen: since D1500001 the whole party gets EXP, benched included); the
+# badge is on both saves.
 include continue.inc
 include relink.inc
 b expect coop.sLinkState 2
@@ -170,7 +171,7 @@ b hex gBattleOutcome 1
 0 expect_mon 2 personality @2
 0 expect_mon 3 personality @3
 0 expect_mon 4 personality @4
-0 expect_mon 0 exp @5
+0 expect_mon 0 exp >@5
 0 expect_mon 3 exp -
 0 expect_mon 4 exp >@7
 0 expect_mon 2 exp -
@@ -179,8 +180,8 @@ b hex gBattleOutcome 1
 1 expect_mon 2 personality @2
 1 expect_mon 3 personality @3
 1 expect_mon 4 personality @4
-1 expect_mon 1 exp @5
-1 expect_mon 2 exp @6
+1 expect_mon 1 exp >@5
+1 expect_mon 2 exp >@6
 1 expect_mon 4 exp -
 b expect_flag 0x867 1
 b shot after

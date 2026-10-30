@@ -1,0 +1,18 @@
+# FIELD NOTES catch-up, step 3 of 3 (saves from notes_catchup_collect): after
+# a power cycle the collected rewards stay collected; walking into a map pays
+# nothing and the notes have nothing to collect.
+include continue.inc
+b no_wild 1
+b mash_field 300 B
+0 expect gSaveblock3+624:1 3
+0 fixture_warp 0 6 25 19
+0 until_field 3000
+0 wait 300
+0 expect gCoopNotesPaid 0
+include notes_open_field_notes.inc
+0 note_text Collect_them_now
+0 until_field_text Caught:_ 1500
+0 expect_not_noted
+0 mash_field 1500 B
+0 expect gCoopNotesPaid 0
+0 expect gSaveblock3+624:1 3

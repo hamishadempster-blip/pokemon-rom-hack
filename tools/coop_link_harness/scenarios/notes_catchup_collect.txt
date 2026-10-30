@@ -1,0 +1,44 @@
+# FIELD NOTES catch-up, step 2 of 3 (saves from notes_catchup: the 10- and
+# 25-kind rewards reached before loading, unclaimed).
+# Checks: walking into another map pays nothing by itself (rewards reached
+# before loading wait in the FIELD NOTES: no string of messages on the first
+# steps); CO-OP > JOURNAL > FIELD NOTES asks "FIELD NOTES: 2 reward(s) to
+# collect. Collect them now?"; YES hands both over (Great Ball x5, Ultra Ball
+# x5; ledger bits 0 and 1); opening it again asks nothing; saved for
+# notes_catchup_reload.
+include continue.inc
+b no_wild 1
+b mash_field 300 B
+0 expect gSaveblock3+624:2 0
+0 fixture_warp 0 6 25 19
+0 until_field 3000
+0 wait 300
+0 expect gCoopNotesPaid 0
+0 expect gSaveblock3+624:2 0
+0 fixture_warp 0 6 26 19
+0 until_field 3000
+0 wait 300
+0 expect gCoopNotesPaid 0
+include notes_open_field_notes.inc
+0 note_text NOTES:_2_reward
+0 until_task Task_HandleYesNoInput 1500 A
+0 wait 20
+0 expect_noted
+0 shot collect-ask
+0 note_text Ultra_Ball
+0 press A 2
+0 until_field_text Caught:_ 6000
+0 expect_noted
+0 shot notes-page
+0 mash_field 1500 B
+0 expect gCoopNotesPaid 2
+0 expect gSaveblock3+624:1 3
+# Again: nothing to collect, straight to the pages.
+include notes_open_field_notes.inc
+0 note_text Collect_them_now
+0 until_field_text Caught:_ 1500
+0 expect_not_noted
+0 mash_field 1500 B
+0 expect gCoopNotesPaid 2
+0 expect gSaveblock3+624:1 3
+include save_again.inc
