@@ -1,0 +1,89 @@
+# Whole-party experience, solo battle : in an ordinary single-player
+# wild fight every Pokemon in the party gains experience, not only the ones
+# that fought, and all get the same full amount. Same setup as solo_six (six
+# copies of the lead, slot 6 switched in). FIXTURE: fixture_six.
+# Lab save fixture, linked, Beacon on. Route 101 must still be solo.
+include beacon_battle.txt
+b mash_field 2000 B
+0 fixture_six
+0 expect gPartiesCount 6
+0 expect_mon 0 exp @0
+0 expect_mon 1 exp @1
+0 expect_mon 2 exp @2
+0 expect_mon 3 exp @3
+0 expect_mon 4 exp @4
+0 expect_mon 5 exp @5
+0 press DOWN 200
+0 until_field 2000
+0 goto 11 1 2000
+0 press UP 60
+0 until_field 2000
+0 write sWildEncountersDisabled 0
+0 fixture_flag 0x74 1
+0 goto 7 17 2000
+0 press UP 24
+0 press LEFT 64
+0 press RIGHT 64
+0 press LEFT 64
+0 press RIGHT 64
+0 press LEFT 64
+0 press RIGHT 64
+0 press LEFT 64
+0 press RIGHT 64
+0 press LEFT 64
+0 press RIGHT 64
+0 press LEFT 64
+0 press RIGHT 64
+0 press LEFT 64
+0 press RIGHT 64
+0 press LEFT 64
+0 press RIGHT 64
+0 press LEFT 64
+0 press RIGHT 64
+0 press LEFT 64
+0 press RIGHT 64
+0 press LEFT 64
+0 press RIGHT 64
+0 press LEFT 64
+0 press RIGHT 64
+0 press LEFT 64
+0 press RIGHT 64
+0 press LEFT 64
+0 press RIGHT 64
+0 press LEFT 64
+0 press RIGHT 64
+0 press LEFT 64
+0 press RIGHT 64
+0 until_cb2 BattleMainCB2 6000
+0 until_mem gBattlerControllerFuncs:4 HandleInputChooseAction 10000 A
+0 expect gBattlersCount 2
+0 expect gPartiesCount 6
+0 press DOWN 2
+0 press A 2
+0 until_cb2 CB2_UpdatePartyMenu 2000
+0 wait 60
+0 press RIGHT 2
+0 press DOWN 2 4
+0 expect gPartyMenu+9:1 5
+0 press A 2
+0 wait 45
+0 press A 2
+0 until_mem gBattlerPartyIndexes 5 5000 A
+0 expect gPartiesCount 6
+0 mash_field 20000
+0 expect gBattleOutcome 1
+0 expect gPartiesCount 6
+0 expect_mon 0 exp >@0
+0 expect_mon 1 exp >@1
+0 expect_mon 2 exp >@2
+0 expect_mon 3 exp >@3
+0 expect_mon 4 exp >@4
+0 expect_mon 5 exp >@5
+# Everyone, those who fought (slots 1 and 6) and the four benched, got exactly the same.
+0 expect_mon 0 exp @6
+0 expect_mon 1 exp @6
+0 expect_mon 2 exp @6
+0 expect_mon 3 exp @6
+0 expect_mon 4 exp @6
+0 expect_mon 5 exp @6
+0 shot party-exp-solo-finished

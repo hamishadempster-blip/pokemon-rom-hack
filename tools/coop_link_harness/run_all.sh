@@ -323,6 +323,7 @@ run guide_team_select SAVE0="$lab0" SAVE1="$lab1"
 run catch_before_dex SAVE0="$lab0" SAVE1="$lab1"
 for s in story_consent story_beacon_off story_cancel story_unanswered story_simultaneous invite_expiry_clock \
          prep_cancel prep_timeout prep_timeout_host_first prep_link_stall battle_visual_wild_double startup_timing_wild startup_timing_gym \
+         party_exp_wild party_exp_levelup party_exp_solo party_exp_solo_levelup vial_team_heal move_effectiveness \
          appearance_menu move_inspector story_not_ready debug_inputs_off battle_spare_buttons; do
 	run "$s" SAVE0="$lab0" SAVE1="$lab1"
 done

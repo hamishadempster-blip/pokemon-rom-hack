@@ -4221,13 +4221,13 @@ static void loadScript(const char* path, int depth) {
         	memset(c.args, 0, sizeof(c.args));
         	sscanf(line, "%*s %*s %u %u %u %u %u %u %u %u", &c.args[0], &c.args[1], &c.args[2], &c.args[3], &c.args[4], &c.args[5], &c.args[6], &c.args[7]);
         	if (!strcmp(cmd, "test_held")) c.args[2] = 1;
-        	// test_data SLOT hp|tracker VALUE: a hurt Pokemon, a move-use count.
+        	// test_data SLOT hp|tracker|pp VALUE: a hurt Pokemon, a move-use count, spent PP.
         	if (!strcmp(cmd, "test_data")) {
         		char field[32] = ""; unsigned slot = 0, val = 0;
         		sscanf(line, "%*s %*s %u %31s %u", &slot, field, &val);
         		memset(c.args, 0, sizeof(c.args));
         		c.args[0] = slot; c.args[1] = val; c.args[2] = 2;
-        		c.args[3] = !strcmp(field, "hp") ? 1 : !strcmp(field, "tracker") ? 2 : !strcmp(field, "evs") ? 3 : !strcmp(field, "ivs") ? 4 : !strcmp(field, "clear") ? 5 : !strcmp(field, "dcsteps") ? 6 : !strcmp(field, "hyper") ? 7 : !strcmp(field, "bondxp") ? 8 : !strcmp(field, "bonddesignate") ? 9 : 0;
+        		c.args[3] = !strcmp(field, "hp") ? 1 : !strcmp(field, "tracker") ? 2 : !strcmp(field, "evs") ? 3 : !strcmp(field, "ivs") ? 4 : !strcmp(field, "clear") ? 5 : !strcmp(field, "dcsteps") ? 6 : !strcmp(field, "hyper") ? 7 : !strcmp(field, "bondxp") ? 8 : !strcmp(field, "bonddesignate") ? 9 : !strcmp(field, "pp") ? 10 : 0;
         	}
         	snprintf(c.text, sizeof(c.text), "%s", cmd);
         	c.frames = 600;
@@ -4246,7 +4246,7 @@ static void loadScript(const char* path, int depth) {
         	// (or Day Care) Pokemon read by the ROM's test hook; VALUE "-" only
         	// prints it. Read-only.
         	static const char *const fields[] = { "species", "level", "nature", "mint", "ability", "evtotal", "hyper", "iv",
-        	    "held", "egg", "personality", "move", "friendship", "gender", "ev", "otid", "perfect", "exp", "hasmove", "stat", "dcsteps", "dexcaught", "hp" };
+        	    "held", "egg", "personality", "move", "friendship", "gender", "ev", "otid", "perfect", "exp", "hasmove", "stat", "dcsteps", "dexcaught", "hp", "pp" };
         	char slot[16] = "", field[24] = "", val[24] = "", arg[24] = "", src[24] = "";
         	sscanf(line, "%*s %*s %15s %23s %23s %23s %23s", slot, field, val, arg, src);
         	c.kind = C_TEST_HOOK;

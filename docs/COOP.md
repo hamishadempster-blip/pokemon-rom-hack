@@ -8,7 +8,7 @@ Based off RHH's pokeemerald-expansion 1.17.1
 https://github.com/rh-hideout/pokeemerald-expansion/
 Pinned commit `bb1093a7c72d3961d9a37d8e02ad2abc2c866682`.
 
-Build id baked into the link handshake: `0xC0170140` (also shown on CONTINUE and in the SAVE window). Both games must run this build. Explicit unlink is signalled separately from temporary missing heartbeats.
+Build id baked into the link handshake: `0xD1500001` on the isolated feature branch (the release line is `0xC0170140` and later) (also shown on CONTINUE and in the SAVE window). Both games must run this build. Explicit unlink is signalled separately from temporary missing heartbeats.
 
 ## Clean ROM
 
@@ -136,12 +136,22 @@ Since build 0xC017013E every Battle Frontier lobby has a **DUO DESK** (a link re
 Since build 0xC017013E the first POKéMON CENTER nurse you talk to after getting your first Pokémon gives each save two KEY ITEMS (once; a full pocket leaves them for next time):
 
 - **POKéMON BOX LINK** opens the POKéMON STORAGE SYSTEM from the field (BAG, KEY ITEMS, USE). Storing a Pokémon does not heal it: it comes back with the HP and status it went in with.
-- **HEALING VIAL** restores one Pokémon's HP to full and cures its status, outside battle only. It does not revive a fainted Pokémon and does not restore PP. It holds 1 charge, plus 1 for every two badges (5 with eight), and every Center heal refills it.
+- **HEALING VIAL** (BAG, KEY ITEMS, USE) is a POKéMON CENTER's full heal for your whole party, outside battle: HP, status and PP, and fainted Pokémon come back too. There is no party menu; one use takes one charge. It holds 1 charge, 2 after your first badge, 3 at four badges and 4 at seven, and every Center heal refills it. With the whole team already in perfect shape it says so and keeps the charge. (Before build 0xD1500001 it healed one Pokémon's HP and status, no revive, no PP, with 1 charge plus 1 per two badges.)
 - Neither works in the Battle Frontier (including the Pyramid and the Pike), the Safari Zone or Trainer Hill, nor while a trade, gift, shared-battle question or team preparation with your partner is open.
 
 ## Move information in battle
 
 In the move menu, **L** opens a compact panel over the top of the battlefield (L again, A or B closes it; cursor moves update it): the category icon, **PWR** (**var.** when the power depends on the battle, with what decides it, such as "Power: foe's weight."), **ACC** (**sure** for a move that never misses), who the move hits ("One target.", "Both foes.", "All others.", "Self."...), "No PP left." or "Disabled." when that applies (Disabled is shown on the game that runs the battle; the other player's game does not know it), then the move's description. The move menu's own box still shows PP and type.
+
+The PP row also shows how the highlighted move matches up against the foes in front of you, on both players' screens and in every fight (since build 0xD1500001; it used to need the foe to be "seen" in the Pokédex, which a link battle never records, so it never appeared): **○** normal damage, **◎** super effective, **★** four times, **△** not very effective, **▽** barely, **✕** no effect. A status move shows nothing. With two foes it shows the better result, and choosing a target shows that target's own result. It goes by the types and abilities in play.
+
+## Experience for the whole party
+
+Since build 0xD1500001 every Pokémon in the party gets the full experience for a knockout, not only the ones that fought, in solo and co-op fights alike (the engine's "Exp. Share" is not needed; a held Exp. Share does nothing extra). The Pokémon that fought are paid as before, with their bar and level-up screen. The others (the whole bench, and anyone on the field who was never sent out) are paid when the battle is over, silently, each on its own player's game: the same formula, level cap, Lucky Egg and Exp. Charm as a Pokémon that fought, effort values and friendship included, no screen and no link traffic per Pokémon. A Pokémon that was fainted at the time of a knockout gets nothing for it.
+
+- Level-ups from the silent payout: new moves are learned when there is a free move slot; a full moveset keeps its moves (the Move Relearner in Fallarbor Town teaches what was skipped), except that the Pokémon on a co-op field get the usual new-move prompt after the battle. Evolution is offered after the battle for every Pokémon that levelled, including benched ones.
+- Duo Frontier battles, Frontier facilities and link battles against another player give no experience, as before.
+- A Pokémon at the level cap gains nothing (but the effort values still count at level 100), as for a Pokémon that fought.
 
 ## Story rules
 
