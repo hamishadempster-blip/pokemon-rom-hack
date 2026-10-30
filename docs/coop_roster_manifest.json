@@ -1308,6 +1308,18 @@
      "requires": "Route 111 north (after the Mauville Gym)",
      "badges": 3,
      "renewable": true
+    },
+    {
+     "method": "wild",
+     "encounter": "grass/cave",
+     "location": "Habitat Starfall Cave",
+     "map": "MAP_HABITAT_STARFALL_CAVE",
+     "levels": "35-38",
+     "rate_percent": 30,
+     "table_encounter_rate": 10,
+     "requires": "Starfall Cave (Mossdeep)",
+     "badges": 7,
+     "renewable": true
     }
    ],
    "evolution": [
@@ -9788,6 +9800,18 @@
      "requires": "Surf (after the Petalburg Gym); Surf",
      "badges": 5,
      "renewable": true
+    },
+    {
+     "method": "wild",
+     "encounter": "surf",
+     "location": "Habitat Tide Grotto",
+     "map": "MAP_HABITAT_TIDE_GROTTO",
+     "levels": "30-35",
+     "rate_percent": 4,
+     "table_encounter_rate": 4,
+     "requires": "Tide Grotto (Route 109 islet, Surf); Surf",
+     "badges": 5,
+     "renewable": true
     }
    ],
    "evolution": [],
@@ -13745,6 +13769,18 @@
      "requires": "Route 111 north (after the Mauville Gym)",
      "badges": 3,
      "renewable": true
+    },
+    {
+     "method": "wild",
+     "encounter": "grass/cave",
+     "location": "Habitat Ember Hollow",
+     "map": "MAP_HABITAT_EMBER_HOLLOW",
+     "levels": "20-22",
+     "rate_percent": 10,
+     "table_encounter_rate": 10,
+     "requires": "Ember Hollow (Jagged Pass)",
+     "badges": 3,
+     "renewable": true
     }
    ],
    "evolution": [],
@@ -13903,6 +13939,54 @@
      "table_encounter_rate": 10,
      "requires": "the eighth badge (Waterfall); Super Rod (Mossdeep)",
      "badges": 8,
+     "renewable": true
+    },
+    {
+     "method": "wild",
+     "encounter": "surf",
+     "location": "Habitat Tide Grotto",
+     "map": "MAP_HABITAT_TIDE_GROTTO",
+     "levels": "25-30",
+     "rate_percent": 60,
+     "table_encounter_rate": 4,
+     "requires": "Tide Grotto (Route 109 islet, Surf); Surf",
+     "badges": 5,
+     "renewable": true
+    },
+    {
+     "method": "wild",
+     "encounter": "old rod",
+     "location": "Habitat Tide Grotto",
+     "map": "MAP_HABITAT_TIDE_GROTTO",
+     "levels": "10-15",
+     "rate_percent": 70,
+     "table_encounter_rate": 20,
+     "requires": "Tide Grotto (Route 109 islet, Surf); Old Rod (Dewford)",
+     "badges": 5,
+     "renewable": true
+    },
+    {
+     "method": "wild",
+     "encounter": "good rod",
+     "location": "Habitat Tide Grotto",
+     "map": "MAP_HABITAT_TIDE_GROTTO",
+     "levels": "20-25",
+     "rate_percent": 20,
+     "table_encounter_rate": 20,
+     "requires": "Tide Grotto (Route 109 islet, Surf); Good Rod (Route 118)",
+     "badges": 5,
+     "renewable": true
+    },
+    {
+     "method": "wild",
+     "encounter": "super rod",
+     "location": "Habitat Tide Grotto",
+     "map": "MAP_HABITAT_TIDE_GROTTO",
+     "levels": "30-35",
+     "rate_percent": 40,
+     "table_encounter_rate": 20,
+     "requires": "Tide Grotto (Route 109 islet, Surf); Super Rod (Mossdeep)",
+     "badges": 7,
      "renewable": true
     },
     {
@@ -14690,6 +14774,18 @@
      "rate_percent": 5,
      "table_encounter_rate": 10,
      "requires": "Route 111 north (after the Mauville Gym)",
+     "badges": 3,
+     "renewable": true
+    },
+    {
+     "method": "wild",
+     "encounter": "grass/cave",
+     "location": "Habitat Ember Hollow",
+     "map": "MAP_HABITAT_EMBER_HOLLOW",
+     "levels": "21-24",
+     "rate_percent": 6,
+     "table_encounter_rate": 10,
+     "requires": "Ember Hollow (Jagged Pass)",
      "badges": 3,
      "renewable": true
     }
@@ -17690,6 +17786,18 @@
      "requires": "Dewford (Mr. Briney, after the Rustboro Gym); Rock Smash (Mauville)",
      "badges": 3,
      "renewable": true
+    },
+    {
+     "method": "wild",
+     "encounter": "grass/cave",
+     "location": "Habitat Starfall Cave",
+     "map": "MAP_HABITAT_STARFALL_CAVE",
+     "levels": "37-39",
+     "rate_percent": 4,
+     "table_encounter_rate": 10,
+     "requires": "Starfall Cave (Mossdeep)",
+     "badges": 7,
+     "renewable": true
     }
    ],
    "evolution": [],
@@ -17874,6 +17982,18 @@
      "table_encounter_rate": 10,
      "requires": "the eighth badge (Waterfall)",
      "badges": 8,
+     "renewable": true
+    },
+    {
+     "method": "wild",
+     "encounter": "grass/cave",
+     "location": "Habitat Shade Chamber",
+     "map": "MAP_HABITAT_SHADE_CHAMBER",
+     "levels": "27-30",
+     "rate_percent": 15,
+     "table_encounter_rate": 10,
+     "requires": "Shade Chamber (Mt. Pyre)",
+     "badges": 5,
      "renewable": true
     }
    ],
@@ -19740,6 +19860,18 @@
     },
     {
      "method": "wild",
+     "encounter": "grass/cave",
+     "location": "Habitat Ember Hollow",
+     "map": "MAP_HABITAT_EMBER_HOLLOW",
+     "levels": "22-24",
+     "rate_percent": 4,
+     "table_encounter_rate": 10,
+     "requires": "Ember Hollow (Jagged Pass)",
+     "badges": 3,
+     "renewable": true
+    },
+    {
+     "method": "wild",
      "encounter": "grass/cave, visitor in falling ash",
      "location": "Route 113",
      "map": "MAP_ROUTE113",
@@ -20442,6 +20574,18 @@
      "renewable": true
     },
     {
+     "method": "wild",
+     "encounter": "grass/cave",
+     "location": "Habitat Starfall Cave",
+     "map": "MAP_HABITAT_STARFALL_CAVE",
+     "levels": "36-38",
+     "rate_percent": 10,
+     "table_encounter_rate": 10,
+     "requires": "Starfall Cave (Mossdeep)",
+     "badges": 7,
+     "renewable": true
+    },
+    {
      "method": "co-op wild pair",
      "encounter": "grass/cave",
      "location": "Meteor Falls B1F 2R",
@@ -20546,6 +20690,18 @@
      "rate_percent": 35,
      "requires": "after the Hall of Fame; both players on the same tile when a wild Solrock appears",
      "badges": 9,
+     "renewable": true,
+     "coop_only": true
+    },
+    {
+     "method": "co-op wild pair",
+     "encounter": "grass/cave",
+     "location": "Habitat Starfall Cave",
+     "map": "MAP_HABITAT_STARFALL_CAVE",
+     "levels": "35-37",
+     "rate_percent": 10,
+     "requires": "Starfall Cave (Mossdeep); both players on the same tile when a wild Solrock appears",
+     "badges": 7,
      "renewable": true,
      "coop_only": true
     }
@@ -20681,6 +20837,18 @@
      "renewable": true
     },
     {
+     "method": "wild",
+     "encounter": "grass/cave",
+     "location": "Habitat Starfall Cave",
+     "map": "MAP_HABITAT_STARFALL_CAVE",
+     "levels": "35-37",
+     "rate_percent": 10,
+     "table_encounter_rate": 10,
+     "requires": "Starfall Cave (Mossdeep)",
+     "badges": 7,
+     "renewable": true
+    },
+    {
      "method": "co-op wild pair",
      "encounter": "grass/cave",
      "location": "Meteor Falls 1F 1R",
@@ -20689,6 +20857,18 @@
      "rate_percent": 5,
      "requires": "Route 111 north (after the Mauville Gym); both players on the same tile when a wild Lunatone appears",
      "badges": 3,
+     "renewable": true,
+     "coop_only": true
+    },
+    {
+     "method": "co-op wild pair",
+     "encounter": "grass/cave",
+     "location": "Habitat Starfall Cave",
+     "map": "MAP_HABITAT_STARFALL_CAVE",
+     "levels": "36-38",
+     "rate_percent": 10,
+     "requires": "Starfall Cave (Mossdeep); both players on the same tile when a wild Lunatone appears",
+     "badges": 7,
      "renewable": true,
      "coop_only": true
     }
@@ -21134,6 +21314,18 @@
      "table_encounter_rate": 8,
      "requires": "the desert (Go-Goggles, after the Lavaridge Gym)",
      "badges": 4,
+     "renewable": true
+    },
+    {
+     "method": "wild",
+     "encounter": "grass/cave",
+     "location": "Habitat Starfall Cave",
+     "map": "MAP_HABITAT_STARFALL_CAVE",
+     "levels": "37-39",
+     "rate_percent": 4,
+     "table_encounter_rate": 10,
+     "requires": "Starfall Cave (Mossdeep)",
+     "badges": 7,
      "renewable": true
     }
    ],
@@ -21857,6 +22049,18 @@
      "requires": "Surf (after the Petalburg Gym)",
      "badges": 5,
      "renewable": true
+    },
+    {
+     "method": "wild",
+     "encounter": "grass/cave",
+     "location": "Habitat Shade Chamber",
+     "map": "MAP_HABITAT_SHADE_CHAMBER",
+     "levels": "29-31",
+     "rate_percent": 4,
+     "table_encounter_rate": 10,
+     "requires": "Shade Chamber (Mt. Pyre)",
+     "badges": 5,
+     "renewable": true
     }
    ],
    "evolution": [],
@@ -22503,7 +22707,7 @@
    "species": "SPECIES_LUVDISC",
    "national_dex": 370,
    "hoenn_dex": 197,
-   "earliest_badges_with_evolution": 8,
+   "earliest_badges_with_evolution": 5,
    "name": "Luvdisc",
    "types": [
     "Water"
@@ -22559,12 +22763,36 @@
      "requires": "the eighth badge (Waterfall); Super Rod (Mossdeep)",
      "badges": 8,
      "renewable": true
+    },
+    {
+     "method": "wild",
+     "encounter": "old rod",
+     "location": "Habitat Tide Grotto",
+     "map": "MAP_HABITAT_TIDE_GROTTO",
+     "levels": "10-15",
+     "rate_percent": 30,
+     "table_encounter_rate": 20,
+     "requires": "Tide Grotto (Route 109 islet, Surf); Old Rod (Dewford)",
+     "badges": 5,
+     "renewable": true
+    },
+    {
+     "method": "wild",
+     "encounter": "good rod",
+     "location": "Habitat Tide Grotto",
+     "map": "MAP_HABITAT_TIDE_GROTTO",
+     "levels": "20-25",
+     "rate_percent": 20,
+     "table_encounter_rate": 20,
+     "requires": "Tide Grotto (Route 109 islet, Surf); Good Rod (Route 118)",
+     "badges": 5,
+     "renewable": true
     }
    ],
    "evolution": [],
    "renewable": true,
    "solo": true,
-   "earliest_badges": 8,
+   "earliest_badges": 5,
    "dex_area": "wild areas shown",
    "issues": [],
    "verification": "source-checked (audit), not played"
@@ -22681,52 +22909,33 @@
    ],
    "sources": [
     {
+     "method": "wild",
+     "encounter": "grass/cave",
+     "location": "Habitat Starfall Cave",
+     "map": "MAP_HABITAT_STARFALL_CAVE",
+     "levels": "38-40",
+     "rate_percent": 1,
+     "table_encounter_rate": 10,
+     "requires": "Starfall Cave (Mossdeep)",
+     "badges": 7,
+     "renewable": true
+    },
+    {
      "method": "gift",
      "location": "Mossdeep City Stevens House",
      "map": "MAP_MOSSDEEP_CITY_STEVENS_HOUSE",
      "requires": "Mossdeep (after the Fortree Gym)",
      "badges": 7,
      "renewable": false
-    },
-    {
-     "method": "breeding",
-     "parent": "SPECIES_BELDUM",
-     "location": "Day Care, Route 117 (with Ditto)",
-     "map": "MAP_ROUTE117",
-     "requires": "Route 117; a Beldum and a Ditto",
-     "badges": 9,
-     "renewable": true,
-     "needs_ditto": true
-    },
-    {
-     "method": "breeding",
-     "parent": "SPECIES_METANG",
-     "location": "Day Care, Route 117 (with Ditto)",
-     "map": "MAP_ROUTE117",
-     "requires": "Route 117; a Metang and a Ditto",
-     "badges": 9,
-     "renewable": true,
-     "needs_ditto": true
-    },
-    {
-     "method": "breeding",
-     "parent": "SPECIES_METAGROSS",
-     "location": "Day Care, Route 117 (with Ditto)",
-     "map": "MAP_ROUTE117",
-     "requires": "Route 117; a Metagross and a Ditto",
-     "badges": 9,
-     "renewable": true,
-     "needs_ditto": true
     }
    ],
    "evolution": [],
    "renewable": true,
    "solo": true,
    "earliest_badges": 7,
-   "dex_area": "acquisition hint",
+   "dex_area": "wild areas shown",
    "issues": [],
-   "verification": "source-checked (audit), not played",
-   "dex_hint": "GIFT: MOSSDEEP CITY STEVENS HOUSE"
+   "verification": "source-checked (audit), not played"
   },
   {
    "species": "SPECIES_METANG",
@@ -23990,6 +24199,18 @@
      "requires": "Petalburg/Rustboro reached",
      "badges": 0,
      "renewable": true
+    },
+    {
+     "method": "wild",
+     "encounter": "grass/cave",
+     "location": "Habitat Moss Hollow",
+     "map": "MAP_HABITAT_MOSS_HOLLOW",
+     "levels": "7-9",
+     "rate_percent": 10,
+     "table_encounter_rate": 20,
+     "requires": "Moss Hollow (behind Petalburg Woods)",
+     "badges": 0,
+     "renewable": true
     }
    ],
    "evolution": [],
@@ -24419,6 +24640,18 @@
      "requires": "start",
      "badges": 0,
      "renewable": true
+    },
+    {
+     "method": "wild",
+     "encounter": "grass/cave",
+     "location": "Habitat Moss Hollow",
+     "map": "MAP_HABITAT_MOSS_HOLLOW",
+     "levels": "8-10",
+     "rate_percent": 4,
+     "table_encounter_rate": 20,
+     "requires": "Moss Hollow (behind Petalburg Woods)",
+     "badges": 0,
+     "renewable": true
     }
    ],
    "evolution": [],
@@ -24612,7 +24845,7 @@
    "species": "SPECIES_CHINGLING",
    "national_dex": 433,
    "hoenn_dex": 160,
-   "earliest_badges_with_evolution": 5,
+   "earliest_badges_with_evolution": 7,
    "name": "Chingling",
    "types": [
     "Psychic"
@@ -24622,24 +24855,25 @@
    ],
    "sources": [
     {
-     "method": "breeding",
-     "parent": "SPECIES_CHIMECHO",
-     "location": "Day Care, Route 117 (a female and a male Chimecho)",
-     "map": "MAP_ROUTE117",
-     "requires": "Route 117; a Chimecho",
-     "badges": 5,
-     "renewable": true,
-     "needs_ditto": false
+     "method": "wild",
+     "encounter": "grass/cave",
+     "location": "Habitat Starfall Cave",
+     "map": "MAP_HABITAT_STARFALL_CAVE",
+     "levels": "38-40",
+     "rate_percent": 1,
+     "table_encounter_rate": 10,
+     "requires": "Starfall Cave (Mossdeep)",
+     "badges": 7,
+     "renewable": true
     }
    ],
    "evolution": [],
    "renewable": true,
    "solo": true,
-   "earliest_badges": 5,
-   "dex_area": "acquisition hint",
+   "earliest_badges": 7,
+   "dex_area": "wild areas shown",
    "issues": [],
-   "verification": "source-checked (audit), not played",
-   "dex_hint": "DAY CARE EGG FROM CHIMECHO, ROUTE 117"
+   "verification": "source-checked (audit), not played"
   },
   {
    "species": "SPECIES_STUNKY",
@@ -24732,6 +24966,18 @@
      "table_encounter_rate": 10,
      "requires": "Route 111 north (after the Mauville Gym)",
      "badges": 3,
+     "renewable": true
+    },
+    {
+     "method": "wild",
+     "encounter": "grass/cave",
+     "location": "Habitat Starfall Cave",
+     "map": "MAP_HABITAT_STARFALL_CAVE",
+     "levels": "35-38",
+     "rate_percent": 15,
+     "table_encounter_rate": 10,
+     "requires": "Starfall Cave (Mossdeep)",
+     "badges": 7,
      "renewable": true
     }
    ],
@@ -24936,6 +25182,18 @@
      "rate_percent": 10,
      "table_encounter_rate": 10,
      "requires": "Surf (after the Petalburg Gym)",
+     "badges": 5,
+     "renewable": true
+    },
+    {
+     "method": "wild",
+     "encounter": "grass/cave",
+     "location": "Habitat Shade Chamber",
+     "map": "MAP_HABITAT_SHADE_CHAMBER",
+     "levels": "29-31",
+     "rate_percent": 1,
+     "table_encounter_rate": 10,
+     "requires": "Shade Chamber (Mt. Pyre)",
      "badges": 5,
      "renewable": true
     }
@@ -25468,6 +25726,18 @@
      "rate_percent": 5,
      "table_encounter_rate": 9,
      "requires": "Surf (after the Petalburg Gym); Surf",
+     "badges": 5,
+     "renewable": true
+    },
+    {
+     "method": "wild",
+     "encounter": "surf",
+     "location": "Habitat Tide Grotto",
+     "map": "MAP_HABITAT_TIDE_GROTTO",
+     "levels": "30-35",
+     "rate_percent": 1,
+     "table_encounter_rate": 4,
+     "requires": "Tide Grotto (Route 109 islet, Surf); Surf",
      "badges": 5,
      "renewable": true
     }
@@ -28127,6 +28397,18 @@
      "requires": "Petalburg/Rustboro reached",
      "badges": 0,
      "renewable": true
+    },
+    {
+     "method": "wild",
+     "encounter": "grass/cave",
+     "location": "Habitat Moss Hollow",
+     "map": "MAP_HABITAT_MOSS_HOLLOW",
+     "levels": "7-9",
+     "rate_percent": 30,
+     "table_encounter_rate": 20,
+     "requires": "Moss Hollow (behind Petalburg Woods)",
+     "badges": 0,
+     "renewable": true
     }
    ],
    "evolution": [],
@@ -29021,6 +29303,18 @@
      "rate_percent": 10,
      "table_encounter_rate": 10,
      "requires": "Surf (after the Petalburg Gym)",
+     "badges": 5,
+     "renewable": true
+    },
+    {
+     "method": "wild",
+     "encounter": "grass/cave",
+     "location": "Habitat Shade Chamber",
+     "map": "MAP_HABITAT_SHADE_CHAMBER",
+     "levels": "27-30",
+     "rate_percent": 30,
+     "table_encounter_rate": 10,
+     "requires": "Shade Chamber (Mt. Pyre)",
      "badges": 5,
      "renewable": true
     },
@@ -30547,6 +30841,18 @@
      "requires": "Route 111 north (after the Mauville Gym)",
      "badges": 3,
      "renewable": true
+    },
+    {
+     "method": "wild",
+     "encounter": "grass/cave",
+     "location": "Habitat Starfall Cave",
+     "map": "MAP_HABITAT_STARFALL_CAVE",
+     "levels": "35-38",
+     "rate_percent": 25,
+     "table_encounter_rate": 10,
+     "requires": "Starfall Cave (Mossdeep)",
+     "badges": 7,
+     "renewable": true
     }
    ],
    "evolution": [],
@@ -30635,6 +30941,18 @@
      "rate_percent": 20,
      "table_encounter_rate": 10,
      "requires": "Surf (after the Petalburg Gym)",
+     "badges": 5,
+     "renewable": true
+    },
+    {
+     "method": "wild",
+     "encounter": "grass/cave",
+     "location": "Habitat Shade Chamber",
+     "map": "MAP_HABITAT_SHADE_CHAMBER",
+     "levels": "29-31",
+     "rate_percent": 4,
+     "table_encounter_rate": 10,
+     "requires": "Shade Chamber (Mt. Pyre)",
      "badges": 5,
      "renewable": true
     }
@@ -31170,6 +31488,18 @@
      "requires": "Surf (after the Petalburg Gym)",
      "badges": 5,
      "renewable": true
+    },
+    {
+     "method": "wild",
+     "encounter": "grass/cave",
+     "location": "Habitat Shade Chamber",
+     "map": "MAP_HABITAT_SHADE_CHAMBER",
+     "levels": "27-30",
+     "rate_percent": 30,
+     "table_encounter_rate": 10,
+     "requires": "Shade Chamber (Mt. Pyre)",
+     "badges": 5,
+     "renewable": true
     }
    ],
    "evolution": [],
@@ -31502,6 +31832,18 @@
      "rate_percent": 4,
      "table_encounter_rate": 10,
      "requires": "Route 111 north (after the Mauville Gym)",
+     "badges": 3,
+     "renewable": true
+    },
+    {
+     "method": "wild",
+     "encounter": "grass/cave",
+     "location": "Habitat Ember Hollow",
+     "map": "MAP_HABITAT_EMBER_HOLLOW",
+     "levels": "20-23",
+     "rate_percent": 30,
+     "table_encounter_rate": 10,
+     "requires": "Ember Hollow (Jagged Pass)",
      "badges": 3,
      "renewable": true
     }
@@ -32378,6 +32720,18 @@
      "requires": "Route 111 north (after the Mauville Gym)",
      "badges": 3,
      "renewable": true
+    },
+    {
+     "method": "wild",
+     "encounter": "grass/cave",
+     "location": "Habitat Ember Hollow",
+     "map": "MAP_HABITAT_EMBER_HOLLOW",
+     "levels": "20-23",
+     "rate_percent": 20,
+     "table_encounter_rate": 10,
+     "requires": "Ember Hollow (Jagged Pass)",
+     "badges": 3,
+     "renewable": true
     }
    ],
    "evolution": [],
@@ -32562,6 +32916,18 @@
      "table_encounter_rate": 20,
      "requires": "Surf (after the Petalburg Gym)",
      "badges": 5,
+     "renewable": true
+    },
+    {
+     "method": "wild",
+     "encounter": "grass/cave",
+     "location": "Habitat Moss Hollow",
+     "map": "MAP_HABITAT_MOSS_HOLLOW",
+     "levels": "8-10",
+     "rate_percent": 4,
+     "table_encounter_rate": 20,
+     "requires": "Moss Hollow (behind Petalburg Woods)",
+     "badges": 0,
      "renewable": true
     }
    ],
@@ -33349,6 +33715,42 @@
      "table_encounter_rate": 10,
      "requires": "Dewford (Mr. Briney, after the Rustboro Gym); Good Rod (Route 118)",
      "badges": 5,
+     "renewable": true
+    },
+    {
+     "method": "wild",
+     "encounter": "surf",
+     "location": "Habitat Tide Grotto",
+     "map": "MAP_HABITAT_TIDE_GROTTO",
+     "levels": "25-30",
+     "rate_percent": 30,
+     "table_encounter_rate": 4,
+     "requires": "Tide Grotto (Route 109 islet, Surf); Surf",
+     "badges": 5,
+     "renewable": true
+    },
+    {
+     "method": "wild",
+     "encounter": "good rod",
+     "location": "Habitat Tide Grotto",
+     "map": "MAP_HABITAT_TIDE_GROTTO",
+     "levels": "20-25",
+     "rate_percent": 60,
+     "table_encounter_rate": 20,
+     "requires": "Tide Grotto (Route 109 islet, Surf); Good Rod (Route 118)",
+     "badges": 5,
+     "renewable": true
+    },
+    {
+     "method": "wild",
+     "encounter": "super rod",
+     "location": "Habitat Tide Grotto",
+     "map": "MAP_HABITAT_TIDE_GROTTO",
+     "levels": "30-35",
+     "rate_percent": 40,
+     "table_encounter_rate": 20,
+     "requires": "Tide Grotto (Route 109 islet, Surf); Super Rod (Mossdeep)",
+     "badges": 7,
      "renewable": true
     }
    ],
@@ -34573,6 +34975,18 @@
      "rate_percent": 10,
      "table_encounter_rate": 20,
      "requires": "start",
+     "badges": 0,
+     "renewable": true
+    },
+    {
+     "method": "wild",
+     "encounter": "grass/cave",
+     "location": "Habitat Moss Hollow",
+     "map": "MAP_HABITAT_MOSS_HOLLOW",
+     "levels": "7-9",
+     "rate_percent": 30,
+     "table_encounter_rate": 20,
+     "requires": "Moss Hollow (behind Petalburg Woods)",
      "badges": 0,
      "renewable": true
     }
@@ -36093,6 +36507,18 @@
      "requires": "Route 111 north (after the Mauville Gym)",
      "badges": 3,
      "renewable": true
+    },
+    {
+     "method": "wild",
+     "encounter": "grass/cave",
+     "location": "Habitat Shade Chamber",
+     "map": "MAP_HABITAT_SHADE_CHAMBER",
+     "levels": "27-30",
+     "rate_percent": 15,
+     "table_encounter_rate": 10,
+     "requires": "Shade Chamber (Mt. Pyre)",
+     "badges": 5,
+     "renewable": true
     }
    ],
    "evolution": [],
@@ -36263,6 +36689,18 @@
      "requires": "Route 111 north (after the Mauville Gym)",
      "badges": 3,
      "renewable": true
+    },
+    {
+     "method": "wild",
+     "encounter": "grass/cave",
+     "location": "Habitat Ember Hollow",
+     "map": "MAP_HABITAT_EMBER_HOLLOW",
+     "levels": "20-23",
+     "rate_percent": 25,
+     "table_encounter_rate": 10,
+     "requires": "Ember Hollow (Jagged Pass)",
+     "badges": 3,
+     "renewable": true
     }
    ],
    "evolution": [],
@@ -36368,6 +36806,18 @@
      "requires": "Surf (after the Petalburg Gym); Super Rod (Mossdeep)",
      "badges": 7,
      "renewable": true
+    },
+    {
+     "method": "wild",
+     "encounter": "super rod",
+     "location": "Habitat Tide Grotto",
+     "map": "MAP_HABITAT_TIDE_GROTTO",
+     "levels": "30-35",
+     "rate_percent": 4,
+     "table_encounter_rate": 20,
+     "requires": "Tide Grotto (Route 109 islet, Surf); Super Rod (Mossdeep)",
+     "badges": 7,
+     "renewable": true
     }
    ],
    "evolution": [],
@@ -36436,6 +36886,18 @@
      "rate_percent": 4,
      "table_encounter_rate": 20,
      "requires": "Surf (after the Petalburg Gym); Super Rod (Mossdeep)",
+     "badges": 7,
+     "renewable": true
+    },
+    {
+     "method": "wild",
+     "encounter": "super rod",
+     "location": "Habitat Tide Grotto",
+     "map": "MAP_HABITAT_TIDE_GROTTO",
+     "levels": "30-35",
+     "rate_percent": 1,
+     "table_encounter_rate": 20,
+     "requires": "Tide Grotto (Route 109 islet, Surf); Super Rod (Mossdeep)",
      "badges": 7,
      "renewable": true
     }
@@ -37017,6 +37479,18 @@
      "rate_percent": 4,
      "table_encounter_rate": 20,
      "requires": "Petalburg/Rustboro reached",
+     "badges": 0,
+     "renewable": true
+    },
+    {
+     "method": "wild",
+     "encounter": "grass/cave",
+     "location": "Habitat Moss Hollow",
+     "map": "MAP_HABITAT_MOSS_HOLLOW",
+     "levels": "7-9",
+     "rate_percent": 5,
+     "table_encounter_rate": 20,
+     "requires": "Moss Hollow (behind Petalburg Woods)",
      "badges": 0,
      "renewable": true
     }
@@ -37782,6 +38256,30 @@
      "requires": "start; Surf",
      "badges": 5,
      "renewable": true
+    },
+    {
+     "method": "wild",
+     "encounter": "surf",
+     "location": "Habitat Tide Grotto",
+     "map": "MAP_HABITAT_TIDE_GROTTO",
+     "levels": "28-32",
+     "rate_percent": 5,
+     "table_encounter_rate": 4,
+     "requires": "Tide Grotto (Route 109 islet, Surf); Surf",
+     "badges": 5,
+     "renewable": true
+    },
+    {
+     "method": "wild",
+     "encounter": "super rod",
+     "location": "Habitat Tide Grotto",
+     "map": "MAP_HABITAT_TIDE_GROTTO",
+     "levels": "30-35",
+     "rate_percent": 15,
+     "table_encounter_rate": 20,
+     "requires": "Tide Grotto (Route 109 islet, Surf); Super Rod (Mossdeep)",
+     "badges": 7,
+     "renewable": true
     }
    ],
    "evolution": [],
@@ -38192,6 +38690,18 @@
      "rate_percent": 5,
      "table_encounter_rate": 20,
      "requires": "Petalburg/Rustboro reached",
+     "badges": 0,
+     "renewable": true
+    },
+    {
+     "method": "wild",
+     "encounter": "grass/cave",
+     "location": "Habitat Moss Hollow",
+     "map": "MAP_HABITAT_MOSS_HOLLOW",
+     "levels": "9-10",
+     "rate_percent": 2,
+     "table_encounter_rate": 20,
+     "requires": "Moss Hollow (behind Petalburg Woods)",
      "badges": 0,
      "renewable": true
     }
@@ -39402,6 +39912,18 @@
      "requires": "Surf (after the Petalburg Gym)",
      "badges": 5,
      "renewable": true
+    },
+    {
+     "method": "wild",
+     "encounter": "grass/cave",
+     "location": "Habitat Shade Chamber",
+     "map": "MAP_HABITAT_SHADE_CHAMBER",
+     "levels": "29-31",
+     "rate_percent": 1,
+     "table_encounter_rate": 10,
+     "requires": "Shade Chamber (Mt. Pyre)",
+     "badges": 5,
+     "renewable": true
     }
    ],
    "evolution": [],
@@ -40190,6 +40712,18 @@
      "rate_percent": 10,
      "table_encounter_rate": 20,
      "requires": "start",
+     "badges": 0,
+     "renewable": true
+    },
+    {
+     "method": "wild",
+     "encounter": "grass/cave",
+     "location": "Habitat Moss Hollow",
+     "map": "MAP_HABITAT_MOSS_HOLLOW",
+     "levels": "7-10",
+     "rate_percent": 15,
+     "table_encounter_rate": 20,
+     "requires": "Moss Hollow (behind Petalburg Woods)",
      "badges": 0,
      "renewable": true
     }
@@ -41326,6 +41860,18 @@
      "rate_percent": 20,
      "table_encounter_rate": 10,
      "requires": "Route 111 north (after the Mauville Gym)",
+     "badges": 3,
+     "renewable": true
+    },
+    {
+     "method": "wild",
+     "encounter": "grass/cave",
+     "location": "Habitat Ember Hollow",
+     "map": "MAP_HABITAT_EMBER_HOLLOW",
+     "levels": "22-24",
+     "rate_percent": 5,
+     "table_encounter_rate": 10,
+     "requires": "Ember Hollow (Jagged Pass)",
      "badges": 3,
      "renewable": true
     }

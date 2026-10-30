@@ -67,6 +67,12 @@ RAIN_WEATHERS = {v for k, v in enum_values('include/constants/weather.h', 'WEATH
 # number is the badge count the gate implies, for sorting and summaries.
 GATES = [
     (r'SAFARI_ZONE_(NORTHEAST|SOUTHEAST)|BATTLE_FRONTIER', 9, 'after the Hall of Fame (National Dex areas)'),
+    # Hidden habitats (src/coop_habitat.c): their entrance's map.
+    (r'HABITAT_MOSS_HOLLOW', 0, 'Moss Hollow (behind Petalburg Woods)'),
+    (r'HABITAT_EMBER_HOLLOW', 3, 'Ember Hollow (Jagged Pass)'),
+    (r'HABITAT_TIDE_GROTTO', 5, 'Tide Grotto (Route 109 islet, Surf)'),
+    (r'HABITAT_SHADE_CHAMBER', 5, 'Shade Chamber (Mt. Pyre)'),
+    (r'HABITAT_STARFALL_CAVE', 7, 'Starfall Cave (Mossdeep)'),
     (r'ROUTE10[123]$|OLDALE|LITTLEROOT', 0, 'start'),
     (r'ROUTE104$|PETALBURG_(CITY|WOODS)|RUSTBORO|ROUTE116$|RUSTURF', 0, 'Petalburg/Rustboro reached'),
     (r'DEWFORD|GRANITE_CAVE', 1, 'Dewford (Mr. Briney, after the Rustboro Gym)'),

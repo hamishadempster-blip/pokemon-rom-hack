@@ -1,0 +1,240 @@
+# The other four hidden habitats, in turn (checkpoint 68 saves, player 0
+# alone; MOSS HOLLOW is habitat_moss). FIXTURES: fixture_warp next to each
+# entrance; force_encounter; the SUPER ROD registered (as easy_fishing).
+# Checks, for each: A at its entrance asks to go through; YES: inside,
+# "FIELD NOTES: ... found <NAME>!" and its found bit; the marker stone; the
+# find (once, claims bit); a wild Pokemon of its own (a cave encounter, or
+# a SUPER ROD bite in TIDE GROTTO); its exit leads back to the entrance.
+include continue.inc
+b no_wild 1
+b mash_field 300 B
+0 fixture_item 4 711 1
+0 writep gSaveBlock1Ptr+0x496:2 711
+# TIDE GROTTO: in from its entrance.
+0 fixture_warp 0 24 32 31
+0 until_field 3000
+0 wait 30
+0 press RIGHT 2
+0 wait 20
+0 press A 2
+0 until_task Task_HandleYesNoInput 1500 A
+0 wait 20
+0 shot tide-grotto-entrance
+0 note_text found_TIDE_GROTTO
+0 press A 2
+0 until_field_text found_TIDE_GROTTO 3000
+0 expect_map 24 111
+0 mash_field 900 B
+0 expect_noted
+0 shot tide-grotto-inside
+0 goto 13 2 3000
+0 press LEFT 2
+0 wait 20
+0 press A 2
+0 until_field_text Tide_Grotto. 900
+0 mash_field 900 B
+0 expect gSaveblock3+612:1 2
+0 goto 15 2 3000
+0 goto 15 11 3000
+0 goto 17 11 3000
+0 press DOWN 2
+0 wait 20
+0 press A 2
+0 until_field_text found_Water_Stone 900
+0 mash_field 900 B
+0 expect gSaveblock3+613:1 2
+0 goto 15 8 3000
+0 press LEFT 2
+0 wait 20
+0 no_wild 0
+0 fish 9000
+0 until_cb2 BattleMainCB2 3000
+0 no_wild 1
+0 until_battle_text encountered 2000
+0 mash_field 20000 A
+0 goto 15 6 3000
+0 goto 14 6 3000
+0 goto 14 2 3000
+0 press UP 30
+0 until_field 3000
+0 wait 30
+0 expect_map 0 24
+0 shot tide-back
+# EMBER HOLLOW: in from its entrance.
+0 fixture_warp 24 13 20 28
+0 until_field 3000
+0 wait 30
+0 press LEFT 2
+0 wait 20
+0 press A 2
+0 until_task Task_HandleYesNoInput 1500 A
+0 wait 20
+0 shot ember-hollow-entrance
+0 note_text found_EMBER_HOLLOW
+0 press A 2
+0 until_field_text found_EMBER_HOLLOW 3000
+0 expect_map 24 112
+0 mash_field 900 B
+0 expect_noted
+0 shot ember-hollow-inside
+0 goto 10 18 3000
+0 goto 10 17 3000
+0 goto 11 17 3000
+0 goto 11 16 3000
+0 goto 15 16 3000
+0 goto 15 3 3000
+0 goto 14 3 3000
+0 press UP 2
+0 wait 20
+0 press A 2
+0 until_field_text found_Fire_Stone 900
+0 mash_field 900 B
+0 expect gSaveblock3+613:1 6
+0 goto 13 3 3000
+0 goto 13 2 3000
+0 press UP 2
+0 wait 20
+0 press A 2
+0 until_field_text Ember_Hollow. 900
+0 mash_field 900 B
+0 expect gSaveblock3+612:1 6
+0 force_encounter 1
+0 no_wild 0
+0 pace_until_battle 3000
+0 force_encounter 0
+0 no_wild 1
+0 until_cb2 BattleMainCB2 3000
+0 until_battle_text encountered 2000
+0 mash_field 20000 A
+0 hex gSaveBlock1Ptr 4
+0 goto 15 2 3000
+0 goto 15 10 3000
+0 goto 11 10 3000
+0 goto 11 12 3000
+0 goto 10 12 3000
+0 goto 10 13 3000
+0 goto 9 13 3000
+0 goto 9 14 3000
+0 goto 8 14 3000
+0 goto 8 17 3000
+0 press DOWN 30
+0 until_field 3000
+0 wait 30
+0 expect_map 24 13
+0 shot ember-back
+# SHADE CHAMBER: in from its entrance.
+0 fixture_warp 24 21 27 27
+0 until_field 3000
+0 wait 30
+0 press RIGHT 2
+0 wait 20
+0 press A 2
+0 until_task Task_HandleYesNoInput 1500 A
+0 wait 20
+0 shot shade-chamber-entrance
+0 note_text found_SHADE_CHAMBER
+0 press A 2
+0 until_field_text found_SHADE_CHAMBER 3000
+0 expect_map 24 113
+0 mash_field 900 B
+0 expect_noted
+0 shot shade-chamber-inside
+0 goto 4 4 3000
+0 goto 10 4 3000
+0 goto 10 3 3000
+0 press UP 2
+0 wait 20
+0 press A 2
+0 until_field_text Shade_Chamber. 900
+0 mash_field 900 B
+0 expect gSaveblock3+612:1 14
+0 goto 18 3 3000
+0 press DOWN 2
+0 wait 20
+0 press A 2
+0 until_field_text found_Dusk_Stone 900
+0 mash_field 900 B
+0 expect gSaveblock3+613:1 14
+0 force_encounter 1
+0 no_wild 0
+0 pace_until_battle 3000
+0 force_encounter 0
+0 no_wild 1
+0 until_cb2 BattleMainCB2 3000
+0 until_battle_text encountered 2000
+0 mash_field 20000 A
+0 goto 18 8 3000
+0 press DOWN 30
+0 until_field 3000
+0 wait 30
+0 expect_map 24 21
+0 shot shade-back
+# STARFALL CAVE: in from its entrance.
+0 fixture_warp 0 6 63 30
+0 until_field 3000
+0 wait 30
+0 press RIGHT 2
+0 wait 20
+0 press A 2
+0 until_task Task_HandleYesNoInput 1500 A
+0 wait 20
+0 shot starfall-cave-entrance
+0 note_text found_STARFALL_CAVE
+0 press A 2
+0 until_field_text found_STARFALL_CAVE 3000
+0 expect_map 24 114
+0 mash_field 900 B
+0 expect_noted
+0 shot starfall-cave-inside
+0 goto 10 28 3000
+0 goto 11 28 3000
+0 goto 11 27 3000
+0 goto 16 27 3000
+0 goto 16 23 3000
+0 goto 17 23 3000
+0 goto 17 14 3000
+0 goto 16 14 3000
+0 goto 16 9 3000
+0 goto 17 9 3000
+0 goto 17 8 3000
+0 goto 19 8 3000
+0 goto 19 4 3000
+0 press UP 2
+0 wait 20
+0 press A 2
+0 until_field_text found_Moon_Stone 900
+0 mash_field 900 B
+0 expect gSaveblock3+613:1 30
+0 goto 19 7 3000
+0 press RIGHT 2
+0 wait 20
+0 press A 2
+0 until_field_text Starfall_Cave. 900
+0 mash_field 900 B
+0 expect gSaveblock3+612:1 30
+0 force_encounter 1
+0 no_wild 0
+0 pace_until_battle 3000
+0 force_encounter 0
+0 no_wild 1
+0 until_cb2 BattleMainCB2 3000
+0 until_battle_text encountered 2000
+0 mash_field 20000 A
+0 goto 17 7 3000
+0 goto 17 9 3000
+0 goto 16 9 3000
+0 goto 16 14 3000
+0 goto 17 14 3000
+0 goto 17 20 3000
+0 goto 16 20 3000
+0 goto 16 21 3000
+0 goto 14 21 3000
+0 goto 14 25 3000
+0 goto 10 25 3000
+0 goto 10 28 3000
+0 press DOWN 30
+0 until_field 3000
+0 wait 30
+0 expect_map 0 6
+0 shot starfall-back
+0 expect gSaveblock3+608:1 30

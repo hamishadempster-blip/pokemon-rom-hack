@@ -1,0 +1,146 @@
+# MOSS HOLLOW, the first hidden habitat (checkpoint 16 saves, player 0
+# alone).
+# FIXTURES: fixture_warp next to the entrance in Petalburg Woods and into
+# Petalburg's Pokemon Center; force_encounter; caught flags for the three
+# residents (dex_caught: SEWADDLE #540, PIKIPEK #731, NYMBLE #919) and the FIELD NOTES check requested directly
+# (gCoopNotesCheck). The rest is play.
+# Checks: A at the tree gives "Behind these trees ... Go through?"; YES:
+# MOSS HOLLOW, "FIELD NOTES: ASH found MOSS HOLLOW!" once (found bit); a
+# grass encounter starts; the marker stone's lore (interactions bit); the
+# find, a LEAF STONE, once (claims bit; the ball is gone); the arrow at the
+# bottom leads back to the tree in Petalburg Woods; with the three
+# residents caught the FIELD NOTES pay "MOSS HOLLOW complete!" and 5 NEST
+# BALLS once (complete and rewarded bits); the FIELD NOTES habitat pages;
+# Petalburg's WILDLIFE REPORT ends with the rumor (cluesHeard bit).
+include continue.inc
+b no_wild 1
+b mash_field 300 B
+0 expect gSaveblock3+608:4 0
+0 fixture_warp 24 11 8 19
+0 until_field 3000
+0 wait 30
+0 press DOWN 2
+0 wait 20
+0 note_text narrow_way
+0 press A 2
+0 until_task Task_HandleYesNoInput 1500 A
+0 wait 20
+0 expect_noted
+0 shot entrance
+0 note_text found_MOSS_HOLLOW
+0 press A 2
+0 until_field_text found_MOSS_HOLLOW 3000
+0 expect_map 24 110
+0 shot found
+0 mash_field 900 B
+0 expect_noted
+0 expect gSaveblock3+608:1 1
+# An encounter in the grass.
+0 force_encounter 1
+0 no_wild 0
+0 pace_until_battle 3000
+0 force_encounter 0
+0 no_wild 1
+0 until_cb2 BattleMainCB2 3000
+0 until_battle_text encountered 2000
+0 shot habitat-battle
+0 mash_field 15000 A
+0 expect_map 24 110
+# The marker stone.
+0 goto 14 10 3000
+0 press UP 2
+0 wait 20
+0 note_text Moss_Hollow.
+0 press A 2
+0 until_field_text Moss_Hollow 600
+0 mash_field 600 B
+0 expect_noted
+0 expect gSaveblock3+612:1 1
+# The find.
+0 goto 12 8 3000
+0 goto 8 7 3000
+0 goto 8 6 3000
+0 press UP 2
+0 wait 20
+0 note_text found_Leaf_Stone
+0 press A 2
+0 until_field_text Leaf_Stone 600
+0 mash_field 600 B
+0 expect_noted
+0 expect gSaveblock3+613:1 1
+0 press A 2
+0 wait 60
+0 expect_cb2 CB2_Overworld
+0 expect_item 0 214 1
+# Out by the arrow: back at the tree.
+0 goto 12 12 3000
+0 goto 12 18 4000
+0 press DOWN 30
+0 until_field 3000
+0 wait 30
+0 expect_map 24 11
+0 shot back-in-woods
+# Completion.
+0 dex_caught 540 1
+0 dex_caught 731 1
+0 dex_caught 919 1
+0 note_text 5_Nest_Balls!
+0 write gCoopNotesCheck 1
+0 until_field_text complete 900
+0 mash_field 600 B
+0 expect_noted
+0 expect gCoopNotesPaid 1
+0 expect gSaveblock3+609:1 1
+0 expect gSaveblock3+610:1 1
+0 write gCoopNotesCheck 1
+0 wait 200
+0 expect gCoopNotesPaid 1
+# FIELD NOTES: the habitat pages (JOURNAL, FIELD NOTES; A through).
+0 press START 2
+0 wait 40
+0 menu_to COOP
+0 press A 2
+0 until_task Task_HandleScrollingMultichoiceInput 2000
+0 wait 20
+0 press DOWN 2
+0 wait 8
+0 press A 2
+0 until_task Task_HandleScrollingMultichoiceInput 2000
+0 wait 20
+0 press DOWN 2
+0 wait 8
+0 press DOWN 2
+0 wait 8
+0 press DOWN 2
+0 wait 8
+0 press DOWN 2
+0 wait 8
+0 press DOWN 2
+0 wait 8
+0 press DOWN 2
+0 wait 8
+0 press A 2
+0 until_field_text Hidden_habitats_found:_1_of_5 1500
+0 until_field_text MOSS_HOLLOW:_3_of_3 600
+0 mash_field 900 B
+# The rumor in Petalburg's Center.
+0 fixture_warp 8 4 7 5
+0 until_field 3000
+0 wait 30
+include centre_wait_wait.inc
+0 until_task Task_HandleScrollingMultichoiceInput 2000
+0 wait 30
+0 press DOWN 2
+0 wait 8
+0 press DOWN 2
+0 wait 8
+0 press DOWN 2
+0 wait 8
+0 press DOWN 2
+0 wait 8
+0 press A 2
+0 until_field_text Travelers 3000
+0 until_field_text PETALBURG_WOODS 600
+0 mash_field 900 B
+0 expect gSaveblock3+611:1 1
+include save_again.inc

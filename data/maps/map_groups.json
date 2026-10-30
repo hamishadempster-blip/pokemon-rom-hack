@@ -473,7 +473,12 @@
     "AlteringCave",
     "MeteorFalls_StevensCave",
     "SandburiedRuins",
-    "TwinBeaconShrine"
+    "TwinBeaconShrine",
+    "Habitat_MossHollow",
+    "Habitat_TideGrotto",
+    "Habitat_EmberHollow",
+    "Habitat_ShadeChamber",
+    "Habitat_StarfallCave"
   ],
   "gMapGroup_IndoorDynamic": [
     "SecretBase_RedCave1",

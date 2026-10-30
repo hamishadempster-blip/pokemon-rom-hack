@@ -22,6 +22,7 @@
 #include "coop_autosave.h"
 #include "coop_deal.h"
 #include "coop_encounters.h"
+#include "coop_habitat.h"
 #include "coop_notes.h"
 #include "event_data.h"
 #include "event_scripts.h"
@@ -162,6 +163,7 @@ enum
 };
 
 static EWRAM_DATA u8 sPayKind = PAY_NONE;
+static EWRAM_DATA bool8 sNotesPendingPageShown = FALSE;
 
 // What to pay now (into the BAG, or the queue), with the texts for the
 // script in STR_VAR_1 (why) and STR_VAR_2 (what). PAY_NONE: nothing.
@@ -229,6 +231,27 @@ static u8 Notes_Pay(void)
         }
         return PAY_NONE;    // the queue is full: offered again later
     }
+    // A hidden habitat completed (src/coop_habitat.c).
+    {
+        u16 item;
+        u8 quantity;
+
+        if (CoopHabitat_PayDue(&item, &quantity, gStringVar1))
+        {
+            Notes_BufferItem(item, quantity, gStringVar2);
+            if (CheckBagHasSpace(item, quantity))
+            {
+                AddBagItem(item, quantity);
+                CoopHabitat_ConfirmPaid();
+                return PAY_GIVEN;
+            }
+            if (CoopNotes_QueueReward(item, quantity, COOP_REWARD_SRC_HABITAT))
+            {
+                CoopHabitat_ConfirmPaid();
+                return PAY_QUEUED;
+            }
+        }
+    }
     return PAY_NONE;
 }
 
@@ -273,6 +296,8 @@ u16 CoopNotes_BufferPage(void)
     u16 total, caught;
     u32 i;
 
+    if (gSpecialVar_0x8004 == 0)
+        sNotesPendingPageShown = FALSE;
     switch (gSpecialVar_0x8004)
     {
     case 0:
@@ -305,7 +330,14 @@ u16 CoopNotes_BufferPage(void)
         p = ConvertIntToDecimalStringN(p, total, STR_CONV_MODE_LEFT_ALIGN, 3);
         p = StringCopy(p, COMPOUND_STRING(" kinds.\nCENTER REPORTS tell where."));
         return TRUE;
-    case 2:
+    }
+    // Hidden habitats: a summary, then one page each found or heard of.
+    if (gSpecialVar_0x8004 >= 2 && CoopHabitat_NotesPage(gSpecialVar_0x8004 - 2, gStringVar4))
+        return TRUE;
+    if (sNotesPendingPageShown)
+        return FALSE;
+    sNotesPendingPageShown = TRUE;
+    {
         if (v5 == NULL)
             return FALSE;
         for (i = 0; i < ARRAY_COUNT(v5->pending); i++)
@@ -319,5 +351,4 @@ u16 CoopNotes_BufferPage(void)
         Notes_BufferItem(v5->pending[i].item, v5->pending[i].quantity, p);
         return TRUE;
     }
-    return FALSE;
 }

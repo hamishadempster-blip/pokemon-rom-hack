@@ -742,6 +742,11 @@ gSpecials::
 	def_special CoopVisitor_ReportPage
 	def_special CoopNotes_PayKind
 	def_special CoopNotes_BufferPage
+	def_special CoopHabitat_OnEnter
+	def_special CoopHabitat_BufferName
+	def_special CoopHabitat_HideClaimed
+	def_special CoopHabitat_ClaimFind
+	def_special CoopHabitat_ReadMarker
 	def_special CoopDeal_CheckOfferMon
 	def_special CoopDeal_CheckGiftItem
 	def_special CoopDeal_BufferItemCount

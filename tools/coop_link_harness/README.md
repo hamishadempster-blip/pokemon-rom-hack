@@ -562,6 +562,8 @@ Build 0xC017013E scenarios:
 | `visitors_weather_fish` | j52 | Same FIXTURE: SUPER ROD on Route 122 at night gives FRILLISH; Route 113 grass in falling ash (FIXTURE saved weather) gives a visitor (VULPIX), in sunshine none |
 | `learn_who` (+`_full`) | j52 | BAG > TMs & HMs > CAN LEARN: the count, party and box pages, "more" pages with a full PC (FIXTURE fixture_fill_pc), B back to the BAG, nothing changed (docs/COOP_LEARN.md) |
 | `notes_rewards` (+`_reload`) | lab | FIELD NOTES rewards: paid once at a calm moment, waiting for room (pending queue) and delivered later, not again after a reload; the notebook pages. FIXTURES dex_caught, fixture_fill_pocket, gCoopNotesCheck (docs/COOP_NOTES.md) |
+| `habitat_moss` | j16 | MOSS HOLLOW: entrance, first visit, encounter, marker, find once, exit, completion reward once (FIXTURE dex_caught), FIELD NOTES pages, Petalburg's rumor (docs/COOP_HABITATS.md) |
+| `habitat_tour` | j68 | The other four habitats: entrance, first visit, marker, find, an encounter (a SUPER ROD bite in TIDE GROTTO), exit |
 | `centre_wait_coop` | lab, `RTC_EPOCH0` 23:00 / `RTC_EPOCH1` 12:00 | Linked rest: the partner is asked; YES: both MORNING; NO: "said no", nothing changes; partner outside: "meet first"; after UNLINK both keep MORNING on their own clocks |
 
 New verbs: `expect_mon SLOT hp VALUE`, `expect_mon ... >@K` (more than note

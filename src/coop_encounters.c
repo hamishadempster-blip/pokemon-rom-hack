@@ -25,6 +25,7 @@
 #include "battle_pike.h"
 #include "battle_pyramid.h"
 #include "coop_encounters.h"
+#include "coop_habitat.h"
 #include "event_data.h"
 #include "overworld.h"
 #include "pokedex.h"
@@ -246,7 +247,17 @@ u16 CoopVisitor_ReportPage(void)
     if (gSpecialVar_0x8004 == 0)
         Report_Build();
     if (gSpecialVar_0x8004 >= sReportPageCount)
+    {
+        // Then a hidden habitat's rumor, in its nearby town (src/coop_habitat.c).
+        if (gSpecialVar_0x8004 == sReportPageCount && CoopHabitat_ClueForTown(gMapHeader.regionMapSectionId, gStringVar4))
+        {
+            StringCopy(gStringVar4, COMPOUND_STRING("Travelers also tell of a hidden\nplace near here where POKéMON live:"));
+            return TRUE;
+        }
+        if (gSpecialVar_0x8004 == sReportPageCount + 1 && CoopHabitat_ClueForTown(gMapHeader.regionMapSectionId, gStringVar4))
+            return TRUE;
         return FALSE;
+    }
     page = &sReportPages[gSpecialVar_0x8004];
     p = GetMapName(p, Overworld_GetMapHeaderByGroupAndId(page->map >> 8, page->map & 0xFF)->regionMapSectionId, 0);
     p = StringCopy(p, COMPOUND_STRING(", "));

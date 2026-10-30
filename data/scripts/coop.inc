@@ -1895,3 +1895,85 @@ Coop_Text_VialHealed:
 Coop_Text_VialNothing:
 	.string "Your team is already in perfect\n"
 	.string "shape.$"
+
+@ ------------------------------------------------------------ hidden habitats
+@ Shared by the five habitat maps (src/coop_habitat.c).
+	.global Coop_EventScript_HabitatOnLoad
+	.global Coop_EventScript_HabitatOnTransition
+	.global Coop_EventScript_HabitatFrameTable
+	.global Coop_EventScript_HabitatFind
+	.global Coop_EventScript_HabitatMarker
+	.global Coop_EventScript_HabitatStay
+
+Coop_EventScript_HabitatOnLoad::
+	special CoopHabitat_HideClaimed
+	end
+
+Coop_EventScript_HabitatOnTransition::
+	specialvar VAR_RESULT, CoopHabitat_OnEnter
+	setvar VAR_TEMP_1, 1
+	goto_if_eq VAR_RESULT, FALSE, Coop_EventScript_HabitatOnTransitionEnd
+	setvar VAR_TEMP_1, 0
+Coop_EventScript_HabitatOnTransitionEnd::
+	end
+
+Coop_EventScript_HabitatFrameTable::
+	map_script_2 VAR_TEMP_1, 0, Coop_EventScript_HabitatFirstVisit
+	.2byte 0
+
+Coop_EventScript_HabitatFirstVisit::
+	lockall
+	setvar VAR_TEMP_1, 1
+	special CoopHabitat_BufferName
+	playfanfare MUS_OBTAIN_ITEM
+	message Coop_Text_HabitatFound
+	waitmessage
+	waitfanfare
+	waitbuttonpress
+	msgbox Coop_Text_HabitatResidents, MSGBOX_DEFAULT
+	releaseall
+	end
+
+Coop_EventScript_HabitatFind::
+	lock
+	specialvar VAR_RESULT, CoopHabitat_ClaimFind
+	goto_if_eq VAR_RESULT, 1, Coop_EventScript_HabitatFindNoRoom
+	goto_if_eq VAR_RESULT, 2, Coop_EventScript_HabitatFindEnd
+	removeobject VAR_LAST_TALKED
+	playfanfare MUS_OBTAIN_ITEM
+	message Coop_Text_HabitatFindGot
+	waitmessage
+	waitfanfare
+	waitbuttonpress
+	closemessage
+Coop_EventScript_HabitatFindEnd::
+	release
+	end
+Coop_EventScript_HabitatFindNoRoom::
+	msgbox Coop_Text_HabitatFindNoRoom, MSGBOX_DEFAULT
+	release
+	end
+
+Coop_EventScript_HabitatMarker::
+	lockall
+	special CoopHabitat_ReadMarker
+	msgbox gStringVar4, MSGBOX_DEFAULT
+	releaseall
+	end
+
+Coop_EventScript_HabitatStay::
+	closemessage
+	releaseall
+	end
+
+Coop_Text_HabitatFound:
+	.string "FIELD NOTES: {PLAYER} found\n"
+	.string "{STR_VAR_1}!$"
+Coop_Text_HabitatResidents:
+	.string "Three kinds of POKéMON live here.\n"
+	.string "Catch all three to complete it.$"
+Coop_Text_HabitatFindGot:
+	.string "{PLAYER} found {STR_VAR_2}!$"
+Coop_Text_HabitatFindNoRoom:
+	.string "There's {STR_VAR_2} here, but\n"
+	.string "the BAG is full.$"

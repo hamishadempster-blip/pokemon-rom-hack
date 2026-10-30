@@ -219,6 +219,7 @@ fi
 # legendaries (src/coop_legend.c) and the partner indicator tour, then the
 # runs that continue their saves (reload, reconnect).
 if [ -n "${J68:-}" ]; then
+	run habitat_tour SAVE0="$J68/p0.sav" SAVE1="$J68/p1.sav"
 	for s in legend_shared_ray legend_ray_rosa legend_ray_solo legend_ray_claimed legend_ray_story legend_groudon legend_regirock \
 	         legend_ray_simul legend_ray_ko legend_ray_full legend_ray_interrupt legend_ray_lostack legend_migration coop_bag_battle_tasks indicator_tour; do
 		run "$s" SAVE0="$J68/p0.sav" SAVE1="$J68/p1.sav"
@@ -358,6 +359,7 @@ for s in boss_pair_solo boss_pair_coop rival_case_grass rival_case_fire rival_ca
 done
 if [ -n "${J16:-}" ]; then
 	run items_personal SAVE0="$J16/p0.sav" SAVE1="$J16/p1.sav"
+	run habitat_moss SAVE0="$J16/p0.sav" SAVE1="$J16/p1.sav"
 	run items_personal_reload SAVE0="$out/items_personal/p0.sav" SAVE1="$out/items_personal/p1.sav"
 fi
 if [ -n "${J46:-}" ]; then
