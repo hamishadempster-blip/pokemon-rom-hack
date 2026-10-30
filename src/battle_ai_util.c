@@ -1764,7 +1764,12 @@ enum Ability AI_DecideKnownAbilityForTurn(enum BattlerId battlerId)
     u8 numValidAbilities = 0;
     enum Ability knownAbility = GetBattlerAbilityIgnoreMoldBreaker(battlerId);
     enum Ability indexAbility;
-    enum Ability abilityAiRatings[NUM_ABILITY_SLOTS] = {0};
+    // Weights for RandomWeighted. aiRating is signed (Klutz, Truant, Slow
+    // Start... are below zero) and a negative value stored here wrapped to a
+    // huge number: the weights' sum broke RandomWeightedArray's sum <= 0xFFFF
+    // assert (a gym leader's AI predicting Buneary's ability crashed the game).
+    // A valid ability weighs at least 1.
+    u16 abilityAiRatings[NUM_ABILITY_SLOTS] = {0};
 
     // We've had ability overwritten by e.g. Worry Seed. It is not part of gAiPartyData in case of switching
     if (gBattleMons[battlerId].volatiles.overwrittenAbility)
@@ -1790,7 +1795,7 @@ enum Ability AI_DecideKnownAbilityForTurn(enum BattlerId battlerId)
         indexAbility = GetSpeciesAbility(gBattleMons[battlerId].species, abilityIndex);
         if (indexAbility != ABILITY_NONE)
         {
-            abilityAiRatings[numValidAbilities] = gAbilitiesInfo[indexAbility].aiRating;
+            abilityAiRatings[numValidAbilities] = gAbilitiesInfo[indexAbility].aiRating > 0 ? gAbilitiesInfo[indexAbility].aiRating : 1;
             validAbilities[numValidAbilities++] = indexAbility;
         }
     }

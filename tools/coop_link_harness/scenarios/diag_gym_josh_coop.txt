@@ -1,0 +1,113 @@
+# DIAGNOSTIC (user reports 2026-10-30): the first Rustboro Gym trainer (Josh,
+# two Pokemon) in a co-op battle showed only one foe HP box (both screens), and
+# switching to Buneary (Klutz) crashed with "src/random.c:197 sum <= 0xFFFF"
+# (the trainer AI's ability guess). Switch: player 0 sends out party slot 3. Needs the players'
+# own saves (Before_Bond_H / _J, not in git). Relink, Beacon on, both warped in
+# front of Josh (FIXTURE), no wild battles.
+include continue.inc
+b mash_field 300 B
+include relink.inc
+b expect coop.sLinkState 2
+0 press START 2
+0 wait 40
+0 menu_to BAG
+0 press A 2
+0 until_cb2 CB2_BagMenuRun 2500
+0 wait 80
+0 hex gBagPosition 8
+0 press RIGHT 4
+0 wait 30
+0 press RIGHT 4
+0 wait 30
+0 press RIGHT 4
+0 wait 30
+0 press RIGHT 4
+0 wait 30
+0 hex gBagPosition 8
+0 expect gBagPosition+5:1 4
+0 press A 4
+0 wait 40
+0 shot context
+0 press A 4
+0 wait 40
+0 shot afteruse
+0 hex coop.sBeacon 6
+0 hex gLinkCallback 4
+1 until_mem sGlobalScriptContextStatus:1 1 6000
+1 wait 90
+1 press A 4
+1 wait 50
+1 press A 4
+1 wait 50
+1 press A 4
+1 wait 80
+1 hex coop.sBeacon 6
+0 wait 40
+0 press B 4
+0 wait 20
+0 press B 4
+b wait 1500
+b hex coop.sBeacon 6
+b expect coop.sBeacon+1:1 1
+b party
+b dump beacon-on
+
+b mash_field 2000 B
+0 no_wild 1
+1 no_wild 1
+0 fixture_warp 11 3 5 15
+1 fixture_warp 11 3 6 15
+0 until_cb2 BattleMainCB2 12000 A
+1 until_cb2 BattleMainCB2 12000 A
+b hex gBattleTypeFlags 4
+b hex gBattlersCount 1
+0 until_mem gBattlerControllerFuncs:4 HandleInputChooseAction 12000
+1 until_mem gBattlerControllerFuncs+8:4 HandleInputChooseAction 12000
+b wait 60
+b shot gym_menu
+b hex gBattlerPartyIndexes 8
+b hex gHealthboxSpriteIds 4
+b shot gym_menu_both
+0 press DOWN 2
+0 wait 10
+0 press A 2
+0 until_cb2 CB2_UpdatePartyMenu 3000
+0 wait 90
+0 shot party_menu
+0 party_slot 2 2000
+0 press A 2
+0 wait 40
+0 shot party_sub
+0 press A 2
+0 wait 60
+1 press A 2
+1 wait 40
+1 press A 2
+1 wait 40
+1 press A 2
+1 wait 40
+1 press A 2
+b wait 1500
+b shot after_switch
+b dump after_switch
+b hex gBattlerPartyIndexes 8
+# The turn after the switch: the trainer AI now sizes up Buneary.
+0 until_mem gBattlerControllerFuncs:4 HandleInputChooseAction 15000
+1 until_mem gBattlerControllerFuncs+8:4 HandleInputChooseAction 15000
+0 press A 2
+0 wait 40
+0 press A 2
+0 wait 40
+0 press A 2
+0 wait 40
+0 press A 2
+1 press A 2
+1 wait 40
+1 press A 2
+1 wait 40
+1 press A 2
+1 wait 40
+1 press A 2
+b wait 1500
+b shot next_turn
+b dump next_turn
