@@ -2,6 +2,9 @@
 # balls thrown): nothing granted, it flies off and returns on the next
 # visit (no defeated flag). Retried: Kai's ball catches it.
 include legend_top.inc
+# FIXTURE (build 0xC0170142): FIELD NOTES payouts off (patch_ret CoopNotes_Poll).
+# Not what this test covers: catching a 10th kind paid a reward mid-run.
+b patch_ret CoopNotes_Poll 0
 b strong_battlers 400
 0 fixture_item 1 4 3 0
 0 fixture_warp 24 85 14 8

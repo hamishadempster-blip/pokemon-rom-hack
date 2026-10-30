@@ -16,7 +16,9 @@ b wait 60
 0 wait 10
 0 press A 2
 b until_cb2 BattleMainCB2 12000 A
-0 catch 8 20000 1
-1 catch 0 20000
+# (40,000 frames: the battle with eight throws ran close to 20,000, and
+# whole-party EXP (D1500001) can add evolution scenes after it.)
+0 catch 8 40000 1
+1 catch 0 40000
 b expect_tasks Task_CoopSession 1
 b expect_tasks MAX 1

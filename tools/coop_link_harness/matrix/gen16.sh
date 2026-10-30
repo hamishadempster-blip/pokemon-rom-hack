@@ -17,6 +17,7 @@ b expect coop.sBeacon+1:1 1
 b no_wild 1
 H
 for k in 0 1 2 3 4 5 6 7 8 9 10 11; do echo "b fixture_rom16 gRoute116_LandMons+$((k*4+2)) 63"; done
+echo "b write gCoopVisitorTestChance 255"   # no wild visitors (0xC0170142): the fixed table decides
 echo "0 fixture_warp 0 31 23 17"
 echo "1 fixture_warp 0 31 25 17"
 echo "b until_field 3000"

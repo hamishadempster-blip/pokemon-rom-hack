@@ -301,9 +301,9 @@ Press A while facing your partner's sprite (linked, same map). A partner who is 
 
 - **Autosave.** On entering a map, at most every five minutes, the game saves by itself into the slot that does not hold your own last SAVE. Loading an autosave asks whether to keep it or go back to your SAVE. CO-OP > SETTINGS > AUTOSAVE turns it off. [COOP_AUTOSAVE.md](COOP_AUTOSAVE.md)
 - **Waiting at a Pokémon Center.** CO-OP > WAIT HERE on a Center's ground floor rests until MORNING, DAY, EVENING or NIGHT (only the time of day moves, never the day). While linked, it is done together with the partner in the same Center. [COOP_TIME.md](COOP_TIME.md)
-- **Visitors.** 56 wild visitors appear by time of day and weather on 30 maps (grass, surfing, rods). WAIT HERE > REPORT in a Center pages through the nearby ones. [COOP_ENCOUNTERS.md](COOP_ENCOUNTERS.md)
+- **Visitors.** 21 kinds of wild visitor (57 appearances on 26 maps) come by time of day and weather, in grass, caves, surfing and on a rod: 1 encounter in 4 while one is around. WAIT HERE > REPORT in a Center pages through the nearby ones. [COOP_ENCOUNTERS.md](COOP_ENCOUNTERS.md)
 - **"Who can learn this?"** BAG > TMs & HMs > CAN LEARN counts and lists your party and PC Pokémon that can learn that move. [COOP_LEARN.md](COOP_LEARN.md)
-- **FIELD NOTES.** CO-OP > JOURNAL > FIELD NOTES tracks your collection and pays collection rewards once per save. [COOP_NOTES.md](COOP_NOTES.md)
+- **FIELD NOTES.** CO-OP > JOURNAL > FIELD NOTES tracks your collection and pays collection rewards once per save. Rewards reached while playing are paid at once; on a save that had already reached some (one from an earlier build), they wait in FIELD NOTES, which asks to collect them. [COOP_NOTES.md](COOP_NOTES.md)
 - **Hidden habitats.** Five hidden places with their own Pokémon, a find, and a reward for catching their three residents. [COOP_HABITATS.md](COOP_HABITATS.md)
 - **Town specialities.** Six specialists, in Dewford, Fallarbor, Verdanturf, Fortree, Mossdeep and Pacifidlog, each with a small track. [COOP_TOWNS.md](COOP_TOWNS.md)
 - **Expedition HQ.** Not in the game yet; its design is in [COOP_HQ_PLAN.md](COOP_HQ_PLAN.md).

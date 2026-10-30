@@ -11,6 +11,9 @@
 # Player 1: from Route 121's bank, SURF onto Route 122: a surfing battle,
 # then fishing with the SUPER ROD from the water.
 include continue.inc
+# FIXTURE (build 0xC0170142): FIELD NOTES payouts off (patch_ret CoopNotes_Poll).
+# Not what this test covers: catching a 10th kind paid a reward mid-run.
+b patch_ret CoopNotes_Poll 0
 include relink.inc
 b expect coop.sLinkState 2
 b smart_moves 1
@@ -28,7 +31,12 @@ b no_wild 0
 0 pace_until_battle 12000
 0 mash_field 25000
 0 expect gBattleOutcome 1
-0 hunt 6 425 120000
+# DRIFLOON is a 4% slot: the hunt has room for about 300 encounters (the
+# suite runs this with MAX_FRAMES=500000). FIXTURE (0xC0170142): no
+# visitors during it (Route 121's night visitors made the slot rarer).
+0 write gCoopVisitorTestChance 255
+0 hunt 12 425 300000
+0 write gCoopVisitorTestChance 0
 0 expect_dex_caught 425 1
 0 pace_until_battle 12000
 0 until_mem gBattlerControllerFuncs:4 HandleInputChooseAction 3000 A

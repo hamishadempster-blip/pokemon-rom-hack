@@ -7,6 +7,9 @@
 # FIXTURES: fixture_warp to the camp and into the ruins (the desert needs
 # the GO-GOGGLES); strong cached battle stats; no random wild battles.
 include continue.inc
+# FIXTURE (build 0xC0170142): FIELD NOTES payouts off (patch_ret CoopNotes_Poll).
+# Not what this test covers: catching a 10th kind paid a reward mid-run.
+b patch_ret CoopNotes_Poll 0
 0 no_wild 1
 0 smart_moves 1
 0 strong_battlers 600

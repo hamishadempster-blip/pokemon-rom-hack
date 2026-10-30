@@ -10,6 +10,9 @@
 # the ordinary talk. DEVON's scientist lists her fossils and takes it;
 # after leaving the floor and coming back, OMANYTE is revived (Lv 20).
 include continue.inc
+# FIXTURE (build 0xC0170142): FIELD NOTES payouts off (patch_ret CoopNotes_Poll).
+# Not what this test covers: catching a 10th kind paid a reward mid-run.
+b patch_ret CoopNotes_Poll 0
 b no_wild 1
 b mash_field 300 B
 # Kai: three guests

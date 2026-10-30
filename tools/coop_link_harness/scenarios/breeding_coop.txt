@@ -19,6 +19,9 @@
 # the hatch registers VULPIX in Kai's POKeDEX; the Day Care Pokemon come
 # back with the same identity.
 include continue.inc
+# FIXTURE (build 0xC0170142): FIELD NOTES payouts off (patch_ret CoopNotes_Poll).
+# Not what this test covers: catching a 10th kind paid a reward mid-run.
+b patch_ret CoopNotes_Poll 0
 include relink.inc
 b no_wild 1
 b mash_field 300 B
