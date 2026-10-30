@@ -404,6 +404,13 @@ void Controller_WaitForHealthBar(enum BattlerId battler);
 
 // handlers
 void BtlController_HandleGetMonData(enum BattlerId battler);
+void BtlController_FillIntroMonDataLocally(enum BattlerId battler);
+
+// Pixels per frame for the intro slide-ins (trainers, wild Pokémon). Each
+// starts 240 px away and stops when it reaches 0, so the speed must divide
+// 240. A co-op battle slides at 6 (40 frames) instead of 2 (120 frames).
+#define INTRO_SLIDE_SPEED_COOP  6
+#define INTRO_SLIDE_SPEED       ((gBattleTypeFlags & BATTLE_TYPE_COOP) ? INTRO_SLIDE_SPEED_COOP : 2)
 void BtlController_HandleGetRawMonData(enum BattlerId battler);
 void BtlController_HandleSetMonData(enum BattlerId battler);
 void BtlController_HandleSetRawMonData(enum BattlerId battler);

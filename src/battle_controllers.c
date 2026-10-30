@@ -707,7 +707,10 @@ static void Task_HandleSendLinkBuffersData(u8 taskId)
     switch (gTasks[taskId].tState)
     {
     case SENDTASK_STATE_INITIALIZE:
-        gTasks[taskId].tInitialDelayTimer = 100;
+        // Co-op reuses an established cable and completes its party/state
+        // exchange before commands run. Keep the player-count and block
+        // readiness checks below; omit only the stock connection grace wait.
+        gTasks[taskId].tInitialDelayTimer = (gBattleTypeFlags & BATTLE_TYPE_COOP) ? 8 : 100;
         gTasks[taskId].tState++;
         break;
     case SENDTASK_STATE_INITIAL_DELAY:
@@ -2426,6 +2429,30 @@ void BtlController_HandleGetMonData(enum BattlerId battler)
     BtlController_Complete(battler);
 }
 
+// Co-op intro only. The battle engine (the link master) needs each starting
+// battler's data once, before anything is drawn. Both games already hold the
+// exchanged parties, so build the same reply BtlController_HandleGetMonData
+// would send (REQUEST_ALL_BATTLE, the battler's current party slot) in place
+// of one link round trip per battler. Only the engine reads these buffers; the
+// other game's controllers have no state to update from this command.
+void BtlController_FillIntroMonDataLocally(enum BattlerId battler)
+{
+    u8 monData[sizeof(struct BattlePokemon) + 8];
+    u32 size;
+
+    gBattleResources->bufferA[battler][0] = CONTROLLER_GETMONDATA;
+    gBattleResources->bufferA[battler][1] = REQUEST_ALL_BATTLE;
+    gBattleResources->bufferA[battler][2] = 0;
+    gBattleResources->bufferA[battler][3] = 0;
+    size = GetBattlerMonData(battler, GetBattlerParty(battler), gBattlerPartyIndexes[battler], monData);
+
+    gBattleResources->bufferB[battler][0] = CONTROLLER_DATATRANSFER;
+    gBattleResources->bufferB[battler][1] = CONTROLLER_DATATRANSFER;
+    gBattleResources->bufferB[battler][2] = size;
+    gBattleResources->bufferB[battler][3] = (size & 0xFF00) >> 8;
+    memcpy(&gBattleResources->bufferB[battler][4], monData, size);
+}
+
 void BtlController_HandleGetRawMonData(enum BattlerId battler)
 {
     struct BattlePokemon battleMon;
@@ -2578,7 +2605,7 @@ void BtlController_HandleDrawTrainerPic(enum BattlerId battler, enum TrainerPicI
         gSprites[gBattleStruct->trainerSlideSpriteIds[battler]].oam.paletteNum = IndexOfSpritePaletteTag(GetTrainerPicTag(trainerPicId, TRUE));
         CoopOutfit_BattleTrainerSprite(battler, gBattleStruct->trainerSlideSpriteIds[battler], trainerPicId);
         gSprites[gBattleStruct->trainerSlideSpriteIds[battler]].x2 = -DISPLAY_WIDTH;
-        gSprites[gBattleStruct->trainerSlideSpriteIds[battler]].sSpeedX = 2;
+        gSprites[gBattleStruct->trainerSlideSpriteIds[battler]].sSpeedX = INTRO_SLIDE_SPEED;
         gSprites[gBattleStruct->trainerSlideSpriteIds[battler]].oam.affineParam = trainerPicId;
     }
     else // Player's side
@@ -2618,7 +2645,7 @@ void BtlController_HandleDrawTrainerPic(enum BattlerId battler, enum TrainerPicI
             CoopOutfit_BattleTrainerSprite(battler, gBattleStruct->trainerSlideSpriteIds[battler], trainerPicId);
         }
         gSprites[gBattleStruct->trainerSlideSpriteIds[battler]].x2 = DISPLAY_WIDTH;
-        gSprites[gBattleStruct->trainerSlideSpriteIds[battler]].sSpeedX = -2;
+        gSprites[gBattleStruct->trainerSlideSpriteIds[battler]].sSpeedX = -INTRO_SLIDE_SPEED;
     }
     if (B_FAST_INTRO_NO_SLIDE || gTestRunnerHeadless)
         gSprites[gBattleStruct->trainerSlideSpriteIds[battler]].callback = SpriteCB_TrainerSpawn;
