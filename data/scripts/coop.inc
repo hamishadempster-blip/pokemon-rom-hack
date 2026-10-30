@@ -1607,8 +1607,35 @@ Coop_Text_NurseKit:
 Coop_Text_NurseKitExplain:
 	.string "The BOX LINK opens your POKéMON\n"
 	.string "STORAGE from the field.\p"
-	.string "The HEALING VIAL heals one POKéMON's\n"
-	.string "HP and status outside battle.\p"
-	.string "It holds one charge, one more for\n"
-	.string "every two BADGES, and any CENTER\l"
-	.string "refills it. It can't revive.$"
+	.string "The HEALING VIAL heals your whole\n"
+	.string "team like a CENTER, outside battle:\l"
+	.string "HP, status, PP, even fainted ones.\p"
+	.string "It holds one charge, one more after\n"
+	.string "your first BADGE and then every\l"
+	.string "three, and any CENTER refills it.$"
+
+@ HEALING VIAL used from the bag (src/item_use.c): one charge, the whole
+@ party healed as at a CENTER. VAR_RESULT is FALSE only if nothing needed it.
+Coop_EventScript_UseHealingVial::
+	lockall
+	special CoopKit_VialHealParty
+	goto_if_eq VAR_RESULT, FALSE, Coop_EventScript_VialNothing
+	playfanfare MUS_HEAL
+	waitfanfare
+	buffernumberstring STR_VAR_1, VAR_0x8004
+	msgbox Coop_Text_VialHealed, MSGBOX_DEFAULT
+	releaseall
+	end
+
+Coop_EventScript_VialNothing::
+	msgbox Coop_Text_VialNothing, MSGBOX_DEFAULT
+	releaseall
+	end
+
+Coop_Text_VialHealed:
+	.string "Your whole team is fully restored!\p"
+	.string "HEALING VIAL charges left: {STR_VAR_1}.$"
+
+Coop_Text_VialNothing:
+	.string "Your team is already in perfect\n"
+	.string "shape.$"

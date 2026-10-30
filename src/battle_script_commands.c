@@ -39,6 +39,7 @@
 #include "string_util.h"
 #include "pokemon_icon.h"
 #include "caps.h"
+#include "party_exp.h"
 #include "m4a.h"
 #include "mail.h"
 #include "event_data.h"
@@ -345,6 +346,7 @@ static void PutMonIconOnLvlUpBanner(void);
 static void DrawLevelUpBannerText(void);
 static void SpriteCB_MonIconOnLvlUpBanner(struct Sprite *sprite);
 void ApplyExperienceMultipliers(s32 *expAmount, u8 expGetterMonId, u8 faintedBattler);
+void ApplyExperienceMultipliersToMon(s32 *expAmount, struct Pokemon *mon, bool32 partner, u32 faintedLevel);
 static void RemoveAllWeather(void);
 static void RemoveAllTerrains(void);
 static void ResetValuesForCalledMove(void);
@@ -2257,13 +2259,10 @@ static void Cmd_getexp(void)
                     continue;
                 if ((1u << i) & sentInBits)
                     viaSentIn++;
-
-                holdEffect = GetMonHoldEffect(&gParties[B_TRAINER_PLAYER][i]);
-                if (holdEffect == HOLD_EFFECT_EXP_SHARE || IsGen6ExpShareEnabled())
-                {
-                    expShareBits |= 1u << i;
-                    viaExpShare++;
-                }
+                // A Pokémon that did not fight is not a getter here: the whole
+                // party gets full experience from src/party_exp.c once the
+                // battle is over, without a link round trip or a level-up
+                // screen per Pokémon.
             }
             if (coop)
             {
@@ -2273,14 +2272,6 @@ static void Cmd_getexp(void)
                         continue;
                     if ((1u << i) & partnerSent)
                         viaSentIn++;
-                    // The guest's Exp. Share is the item on that Pokémon.
-                    // The Gen 6 party flag belongs to each save, and this
-                    // machine only knows its own.
-                    if (GetMonHoldEffect(&gParties[B_TRAINER_PARTNER][i]) == HOLD_EFFECT_EXP_SHARE)
-                    {
-                        partnerShareBits |= 1u << i;
-                        viaExpShare++;
-                    }
                 }
             }
             // Sent-in mons first, then held Exp. Share. Partner slots are flagged.
@@ -2346,6 +2337,10 @@ static void Cmd_getexp(void)
                 if (gBattleStruct->expShareExpValue == 0)
                     gBattleStruct->expShareExpValue = 1;
             }
+
+            // Everyone who did not fight is paid from this record, once the
+            // battle is over (src/party_exp.c).
+            PartyExp_NoteKo(faintedSpecies, gBattleMons[gBattlerFainted].level, calculatedExp, sentInBits, partnerSent);
 
             gBattleScripting.getexpState++;
             gBattleStruct->expOrderId = 0;
@@ -9442,8 +9437,15 @@ u8 GetFirstFaintedPartyIndex(enum BattlerId battler)
 
 void ApplyExperienceMultipliers(s32 *expAmount, u8 expGetterMonId, u8 faintedBattler)
 {
-    bool32 partner = (expGetterMonId & EXP_GETTER_PARTNER) != 0;
-    struct Pokemon *mon = ExpGetterMon(expGetterMonId);
+    ApplyExperienceMultipliersToMon(expAmount, ExpGetterMon(expGetterMonId), (expGetterMonId & EXP_GETTER_PARTNER) != 0,
+                                    gBattleMons[faintedBattler].level);
+}
+
+// The same multipliers for any Pokémon, given the defeated level. src/party_exp.c
+// uses it for party members that did not fight (a benched Pokémon is not in
+// gParties during a co-op battle).
+void ApplyExperienceMultipliersToMon(s32 *expAmount, struct Pokemon *mon, bool32 partner, u32 faintedLevel)
+{
     enum HoldEffect holdEffect = GetMonHoldEffect(mon);
 
     // The guest's Pokémon carries the guest's OT, so the master would
@@ -9464,7 +9466,6 @@ void ApplyExperienceMultipliers(s32 *expAmount, u8 expGetterMonId, u8 faintedBat
         // Note: There is an edge case where if a Pokémon receives a large amount of exp, it wouldn't be properly calculated
         //       because of multiplying by scaling factor(the value would simply be larger than an u32 can hold). Hence u64 is needed.
         u64 value = *expAmount;
-        u8 faintedLevel = gBattleMons[faintedBattler].level;
         u8 expGetterLevel = GetMonData(mon, MON_DATA_LEVEL);
 
         value *= sExperienceScalingFactors[(faintedLevel * 2) + 10];

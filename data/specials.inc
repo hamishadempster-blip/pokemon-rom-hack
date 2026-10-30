@@ -683,6 +683,7 @@ gSpecials::
 	def_special CoopKit_NeedsVial
 	def_special CoopKit_MarkBoxLink
 	def_special CoopKit_MarkVial
+	def_special CoopKit_VialHealParty
 	def_special Coop_TakeGuestFollowup
 	def_special Coop_NextCaughtNickname
 	def_special Coop_NextPartnerCatch

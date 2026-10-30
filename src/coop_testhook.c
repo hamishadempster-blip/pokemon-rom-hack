@@ -196,6 +196,7 @@ static bool8 TestHook_GetData(void)
         break;
     case COOP_TEST_FIELD_STAT:        v = (mon != NULL && arg < NUM_STATS) ? GetMonData(mon, MON_DATA_MAX_HP + arg) : 0; break;
     case COOP_TEST_FIELD_HP:          v = mon != NULL ? GetMonData(mon, MON_DATA_HP) : 0; break;
+    case COOP_TEST_FIELD_PP:          v = arg < MAX_MON_MOVES ? GetBoxMonData(box, MON_DATA_PP1 + arg) : 0; break;
     case COOP_TEST_FIELD_DEX_CAUGHT:
         v = GetSetPokedexFlag(SpeciesToNationalPokedexNum(GetBoxMonData(box, MON_DATA_SPECIES)), FLAG_GET_CAUGHT) ? 1 : 0;
         break;
@@ -300,6 +301,26 @@ void CoopTest_Poll(void)
                 for (k = 0; k < NUM_STATS; k++)
                     SetMonData(mon, MON_DATA_HYPER_TRAINED_HP + k, &v);
                 CalculateMonStats(mon);
+                ok = TRUE;
+            }
+            else if (gCoopTestMailbox.arg[3] == 10 && v <= 99)
+            {
+                // 10: current PP of every move the slot knows (a spent
+                // Pokemon to heal), never above the move's own maximum.
+                u32 k;
+                for (k = 0; k < MAX_MON_MOVES; k++)
+                {
+                    u32 pp = v;
+                    u16 move = GetMonData(mon, MON_DATA_MOVE1 + k);
+                    u32 max = CalculatePPWithBonus(move, GetMonData(mon, MON_DATA_PP_BONUSES), k);
+
+                    if (move != MOVE_NONE)
+                    {
+                        if (pp > max)
+                            pp = max;
+                        SetMonData(mon, MON_DATA_PP1 + k, &pp);
+                    }
+                }
                 ok = TRUE;
             }
             else if (gCoopTestMailbox.arg[3] == 9)

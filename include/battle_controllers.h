@@ -177,7 +177,11 @@ enum {
 
    // Co-op: a change to an action already chosen this turn
    // (src/coop_battle_turn.c). Not tied to a controller command.
-   B_COMM_COOP_TURN
+   B_COMM_COOP_TURN,
+
+   // Co-op: one knockout, for the whole-party experience payout
+   // (src/party_exp.c). Not tied to a controller command.
+   B_COMM_COOP_BENCH
 };
 
 enum {

@@ -10,6 +10,7 @@
 #include "battle_ai_record.h"
 #include "battle_arena.h"
 #include "battle_controllers.h"
+#include "party_exp.h"
 #include "battle_end_turn.h"
 #include "battle_hold_effects.h"
 #include "battle_interface.h"
@@ -2839,6 +2840,7 @@ static void BattleStartClearSetData(void)
 {
     s32 i;
 
+    PartyExp_Reset();
     TurnValuesCleanUp(FALSE);
     memset(&gSpecialStatuses, 0, sizeof(gSpecialStatuses));
 
@@ -5493,6 +5495,10 @@ static void FreeResetData_ReturnToOvOrDoEvolutions(void)
 {
     if (!gPaletteFade.active)
     {
+        // Whoever did not fight gets the full experience now, before the
+        // evolution check below looks at who levelled up (a co-op battle does
+        // this when the party is put back, src/coop.c).
+        PartyExp_ApplySolo();
         memset(&gBattleMons, 0, sizeof(struct BattlePokemon) * MAX_BATTLERS_COUNT);
         gIsFishingEncounter = FALSE;
         gIsSurfingEncounter = FALSE;
