@@ -1,0 +1,42 @@
+# Regression (D1400002, faster co-op battle intro): a co-op WILD fight sends
+# only the first enemy block (the one or two wild Pokemon); the five empty
+# enemy-party blocks are no longer exchanged. The game that did not build the
+# parties must therefore clear the slots the exchange used to overwrite.
+# FIXTURE: just before the exchange the guest's enemy party slots 4-5 of side A
+# and slots 2-3 of side B hold stale non-zero data (gParties is 4 sides of 6
+# slots of 100 bytes; side 1 is opponent A, side 3 is opponent B). They must
+# be empty at the first action menu, on both games, while both wild Pokemon
+# are present. Lab saves, Route 101, Beacon ON.
+include wild_route101_start.inc
+1 until_mem coop.sGuestPairPending 1 12000
+1 wait 2
+1 press A 2
+1 wait 2
+1 until_cb2 CB2_HandleStartMultiPartnerBattle 12000 A
+1 write gParties+900:4 0x12345678
+1 write gParties+1000:4 0x23456789
+1 write gParties+1900:4 0x3456789A
+1 write gParties+2000:4 0x456789AB
+1 until_cb2 BattleMainCB2 12000 A
+0 write sWildEncountersDisabled 0
+0 pace_until_battle 9000
+0 write sWildEncountersDisabled 1
+0 until_cb2 BattleMainCB2 12000
+0 until_mem gBattlerControllerFuncs:4 HandleInputChooseAction 9000 A
+1 until_mem gBattlerControllerFuncs+8:4 HandleInputChooseAction 9000 A
+b wait 5
+b expect gBattlersCount 4
+# Both wild Pokemon are there on both games.
+b expect_nz gParties+600:4
+b expect_nz gParties+700:4
+# Every other enemy slot is empty on both games (side A slots 2-5, side B all).
+b expect gParties+800:4 0
+b expect gParties+900:4 0
+b expect gParties+1000:4 0
+b expect gParties+1100:4 0
+b expect gParties+1800:4 0
+b expect gParties+1900:4 0
+b expect gParties+2000:4 0
+b expect gParties+2100:4 0
+b expect gParties+2200:4 0
+b expect gParties+2300:4 0
