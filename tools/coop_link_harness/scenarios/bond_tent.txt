@@ -4,7 +4,9 @@
 # 25,000 Bond XP (Ace Partner, +15). The rest is walking.
 # Checks: +15 in town (67 Max HP); walking into the Slateport Battle Tent
 # the bonus is off (suppressed, 52 Max HP, full HP stays full); walking out
-# it is back (67, full). Bond XP unchanged.
+# it is back (67, full). Bond XP: nothing from inside the tent; walking
+# outside may add a point or two (steps, a walking friendship gain, which is
+# random), so 25,000-25,010.
 include continue.inc
 0 test_data 0 bonddesignate 1
 0 test_data 0 bondxp 25000
@@ -34,4 +36,4 @@ include continue.inc
 0 expect gCoopBondTest+18:1 3
 0 expect gParties+88:2 67
 0 expect gParties+86:2 67
-0 expect gCoopBondTest:2 25000
+0 expect_range gCoopBondTest:2 25000 25010

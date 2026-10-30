@@ -1,12 +1,13 @@
 # Trainer Bond through Mega Evolution in a co-op double (as mega_hp_same:
 # j57 saves, Mossdeep, linked, Beacon ON, against Tate & Liza). TEST HELPERS
-# and FIXTURES as mega_hp_same (Lv 54, 31 IVs, no EVs; the nature drawn
-# out neutral for Kai's BANETTE), plus: each lead designated as its player's
+# and FIXTURES as mega_hp_same (Lv 54, 31 IVs, no EVs), with both natures
+# fixed to HARDY (neutral; test_mon arg 7), plus: each lead designated as its player's
 # Partner Pokemon without the mentor; Kai's given 2,500 Bond XP (+5),
 # Rosa's none (New Partner, +0). DRIVER: mega_next 1, smart_moves;
 # strong_battlers ends the fight (not a balance result).
 # Checks: after both Mega Evolve, each Mega's party stats include its
-# owner's bonus (Kai's Mega BANETTE Attack 204 = 199 calculated + 5), the master's battle
+# owner's bonus (Kai's Mega BANETTE Attack 204 = 199 calculated + 5; Rosa's
+# Mega CHIMECHO 75, no bonus), the master's battle
 # data has the same Attack for both Megas, and each game's copy of the
 # other's Mega has the owner's Max HP (Kai's game also the Attack; Rosa's
 # game, the guest, keeps the partner's pre-Mega party copy: the engine runs
@@ -20,8 +21,8 @@ b expect coop.sLinkState 2
 include beacon_on_p1.inc
 b mash_field 2000 B
 b no_wild 1
-0 test_mon 0 354 54 0 0 0 0 0
-1 test_mon 0 358 54 0 0 0 0 0
+0 test_mon 0 354 54 0 0 0 0 256
+1 test_mon 0 358 54 0 0 0 0 256
 0 test_held 0 325
 1 test_held 0 860
 b test_item 703 1
@@ -54,7 +55,7 @@ b expect_mon 0 stat @4 0
 1 expect_mirror gParties+1288:2 gParties+88
 0 expect_mirror gParties+1290:2 gParties+90
 0 expect gBattleMons+2:2 204
-0 expect gBattleMons+282:2 67
+0 expect gBattleMons+282:2 75
 b shot mega-hp
 b expect gCoopMegaRejected 0
 b strong_battlers 400
