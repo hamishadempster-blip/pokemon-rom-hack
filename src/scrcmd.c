@@ -2325,6 +2325,25 @@ bool8 ScrCmd_checkfieldmove(struct ScriptContext *ctx)
         }
     }
 
+    // No Pokémon knows it: an HM field move still works with the HM in the
+    // bag and the badge. The first Pokémon in the party stands in (its name
+    // and sprite are used by the field effect).
+    if (gSpecialVar_Result == PARTY_SIZE && IsHmFieldMoveUsableWithoutMon(fieldMove))
+    {
+        for (u32 i = 0; i < PARTY_SIZE; i++)
+        {
+            enum Species species = GetMonData(&gParties[B_TRAINER_PLAYER][i], MON_DATA_SPECIES);
+            if (!species)
+                break;
+            if (!GetMonData(&gParties[B_TRAINER_PLAYER][i], MON_DATA_IS_EGG) && GetMonData(&gParties[B_TRAINER_PLAYER][i], MON_DATA_HP) != 0)
+            {
+                gSpecialVar_Result = i;
+                gSpecialVar_0x8004 = species;
+                break;
+            }
+        }
+    }
+
     return FALSE;
 }
 

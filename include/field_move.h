@@ -62,4 +62,9 @@ static inline bool32 FieldMove_IsVisible(enum FieldMove fieldMove)
     return !gFieldMoveInfo[fieldMove].hideIfLocked || IsFieldMoveUnlocked(fieldMove);
 }
 
+// An HM field move (Cut, Flash, Rock Smash, Strength, Surf, Fly, Dive, Waterfall)
+// is usable with the HM in the bag and the badge that unlocks it: no Pokémon has
+// to know the move. Returns FALSE for every other field move.
+bool32 IsHmFieldMoveUsableWithoutMon(enum FieldMove fieldMove);
+
 #endif //GUARD_FIELD_MOVE_H

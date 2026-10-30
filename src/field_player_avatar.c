@@ -9,6 +9,7 @@
 #include "field_effect_helpers.h"
 #include "field_screen_effect.h"
 #include "field_player_avatar.h"
+#include "field_move.h"
 #include "fieldmap.h"
 #include "follower_npc.h"
 #include "menu.h"
@@ -1640,6 +1641,9 @@ bool8 PartyHasMonWithSurf(void)
             if (MonKnowsMove(&gParties[B_TRAINER_PLAYER][i], MOVE_SURF))
                 return TRUE;
         }
+        // The HM and the badge are enough: nobody has to know Surf.
+        if (IsHmFieldMoveUsableWithoutMon(FIELD_MOVE_SURF) && GetMonData(&gParties[B_TRAINER_PLAYER][0], MON_DATA_SPECIES) != SPECIES_NONE)
+            return TRUE;
     }
     return FALSE;
 }

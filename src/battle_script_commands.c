@@ -8481,6 +8481,8 @@ static void Cmd_givecaughtmon(void)
         if (JOY_NEW(A_BUTTON))
         {
             PlaySE(SE_SELECT);
+            // The YES/NO box was left on screen over the next message.
+            HandleBattleWindow(YESNOBOX_X_Y, WINDOW_CLEAR);
             if (gBattleCommunication[CURSOR_POSITION] == 0)
             {
                 gBattleCommunication[MULTIUSE_STATE] = GIVECAUGHTMON_DO_CHOOSE_MON;
@@ -8493,12 +8495,19 @@ static void Cmd_givecaughtmon(void)
         else if (JOY_NEW(B_BUTTON))
         {
             PlaySE(SE_SELECT);
+            HandleBattleWindow(YESNOBOX_X_Y, WINDOW_CLEAR);
             gBattleCommunication[MULTIUSE_STATE] = GIVECAUGHTMON_GIVE_AND_SHOW_MSG;
         }
         break;
     case GIVECAUGHTMON_DO_CHOOSE_MON:
         if (!gPaletteFade.active)
         {
+            // The menu reorders the real party by this battler's order, so an
+            // order that is not a permutation of the six slots (never set up,
+            // or stale) must not reach it: six copies of one Pokémon came out
+            // of that. Rebuild it from the battle's own party indexes.
+            if (!IsBattlePartyOrderValid(gBattleStruct->battlerPartyOrders[gBattlerAttacker]))
+                BufferBattlePartyCurrentOrderBySide(gBattlerAttacker, GetBattlerPosition(gBattlerAttacker) & BIT_FLANK);
             BtlController_EmitChoosePokemon(gBattlerAttacker, B_COMM_TO_CONTROLLER, PARTY_ACTION_SEND_MON_TO_BOX, PARTY_SIZE, ABILITY_NONE, 0, gBattleStruct->battlerPartyOrders[gBattlerAttacker]);
             MarkBattlerForControllerExec(gBattlerAttacker);
             gBattleCommunication[MULTIUSE_STATE] = GIVECAUGHTMON_HANDLE_CHOSEN_MON;
@@ -8515,6 +8524,13 @@ static void Cmd_givecaughtmon(void)
             }
             else
             {
+                if (GetMonData(&gParties[B_TRAINER_PLAYER][gSelectedMonPartyId], MON_DATA_SPECIES) == SPECIES_NONE)
+                {
+                    // Nothing there to send: treat it as cancelled.
+                    gSelectedMonPartyId = PARTY_SIZE;
+                    gBattleCommunication[MULTIUSE_STATE] = GIVECAUGHTMON_GIVE_AND_SHOW_MSG;
+                    break;
+                }
                 //Before sending to PC, we revert battle form
                 TryRevertPartyMonFormChange(gSelectedMonPartyId);
                 // Mon chosen, try to put it in the PC

@@ -3,6 +3,8 @@
 #include "field_move.h"
 #include "fldeff.h"
 #include "fldeff_misc.h"
+#include "item.h"
+#include "pokemon.h"
 #include "party_menu.h"
 #include "strings.h"
 #include "constants/field_move.h"
@@ -42,6 +44,23 @@ const struct FieldMoveUnlock gFieldMoveUnlocks[FIELD_MOVE_UNLOCK_COUNT] =
         .lockedMessage = gText_CantUseUntilNewBadge,
     },
 };
+
+bool32 IsHmFieldMoveUsableWithoutMon(enum FieldMove fieldMove)
+{
+    enum Move move = gFieldMoveInfo[fieldMove].moveID;
+    u32 i;
+
+    if (!IsMoveHM(move) || !IsFieldMoveUnlocked(fieldMove))
+        return FALSE;
+    for (i = 0; i < 8; i++)
+    {
+        enum Item hm = ITEM_HM01 + i;
+
+        if (GetItemTMHMMoveId(hm) == move && CheckBagHasItem(hm, 1))
+            return TRUE;
+    }
+    return FALSE;
+}
 
 #define FLAG_TO_BADGE(flag) flag - FLAG_BADGE01_GET
 

@@ -122,6 +122,7 @@ void OpenPartyMenuInBattle(u8 partyAction);
 void ChooseMonForInBattleItem(void);
 void BufferBattlePartyCurrentOrder(void);
 void BufferBattlePartyCurrentOrderBySide(enum BattlerId battler, u8 flankId);
+bool32 IsBattlePartyOrderValid(const u8 *order);
 void SwitchPartyOrderLinkMulti(enum BattlerId battler, u8 slot, u8 slot2);
 void SwitchPartyMonSlots(u8 slot, u8 slot2);
 u8 GetPartyIdFromBattlePartyId(u8 battlePartyId);

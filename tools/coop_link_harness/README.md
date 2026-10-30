@@ -415,7 +415,7 @@ battle, catch, link messages, saves and delivery on both cores.
 New verbs: `expect_legend FIELD VALUE` and `fixture_legend FIELD VALUE`
 (FIELD claimed, pending or owed; one bit per COOP_ENC_*), `legend_owned
 SPECIES MIN [MAX]` (party and PC, own OT counted; prints OT, met location
-and level, IVs), `expect_dex_caught NUM VALUE`, `expect_tasks FUNC N` (live tasks running FUNC; `expect_tasks MAX N`: the most co-op session tasks seen in any frame), `catch N [T] [BALL] [FIGHT]` (pick a ball; fight the first FIGHT turns, or with FIGHT 100+P fight while the foe has more than P% HP; reads the cursor to reach BAG; skips a move with no PP), `fixture_fill_pc` (every
+and level, IVs), `expect_dex_caught NUM VALUE`, `expect_tasks FUNC N` (live tasks running FUNC; `expect_tasks MAX N`: the most co-op session tasks seen in any frame), `catch N [T] [BALL] [FIGHT] [SWAP]` (SWAP 1-6, D1500002: with a full party answer YES to "Add it to your party?" and send that slot to the PC; without it the prompt gets NO; `CATCH_SHOTS=1` in the environment saves a screenshot at each throw; pick a ball; fight the first FIGHT turns, or with FIGHT 100+P fight while the foe has more than P% HP; reads the cursor to reach BAG; skips a move with no PP), `fixture_fill_pc` (every
 empty PC slot gets a copy of party slot 1) and `fixture_unfill_pc`. A
 crashed core now prints its PC, LR and the code addresses on its stack.
 
@@ -518,6 +518,10 @@ Build 0xC017013E scenarios:
 | `party_exp_solo` / `party_exp_solo_levelup` | lab | The same in an ordinary solo wild fight (slot 6 switched in): all six gain the same EXP; all six level and evolve through the stock check |
 | `vial_team_heal` | lab | HEALING VIAL heals the whole party (HP, status, PP, a fainted Pokémon) for one charge, no party menu; empty refuses; a Center refills it; a perfect team refuses and keeps the charge. FIXTURES: fixture_six, test_data hp/pp (`pp` added) |
 | `move_effectiveness` | lab | The move menu's effectiveness hint is on for both games in a co-op wild double (damaging 1..6, status 255, each target's own result). `gMoveEffectivenessShown` is test visibility |
+| `catch_full_party_solo` | lab | D1500002 regression for a user report (in-battle "Send which POKéMON to the PC?" listing six copies of one Pokémon). A wild catch with six DIFFERENT Pokémon, slot 2 knowing Rock Smash: YES at "Add it to your party?", slot 2 chosen; exactly that Pokémon goes to the PC (HM moves no longer block it), the other five keep their places, the catch takes slot 2. TEST HELPERS: test_mon, test_item |
+| `catch_full_party_linked_solo` | lab | The same in an ordinary solo battle while linked with the Beacon on (Route 101 stays solo) |
+| `hm_no_mon` | lab | HM moves need no Pokémon that knows them (D1500002): Route 114 rock refused without HM06, refused with HM06 but no Dynamo Badge, smashed with both while nobody knows Rock Smash. FIXTURES: fixture_warp, test_item, fixture_flag |
+| `hm_party_menu` | lab | The party menu lists FLASH and FLY for a Pokémon that does not know them once HM05/HM02 and the badges are held; without them it lists no field moves (screenshots `menu_plain`, `menu_hm`) |
 | `startup_timing_wild` / `_gym` | lab | MEASUREMENT: frames from the request to the first action menu by stage (`gCoopStartTimes`); team-screen time separate |
 | `appearance_menu` | lab | CO-OP menu APPEARANCE opens the outfit list, unlinked and linked; the partner sees the change |
 | `relink_policy_setup` → `relink_policy` → `relink_policy_reload` | seg6 | Relink ownership policy: progress made unlinked (a crate found alone; FIXTURE: a solo badge and rival stage) stays on its save; joint outcomes recorded with this same partner by trainer id (FIXTURE: a joint badge, rival stage and crate whose message was lost) come back once; a joint badge recorded with another partner does not; checked after linking, after a map change, after a power cycle and a second link (nothing restored twice) |
