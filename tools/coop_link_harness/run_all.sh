@@ -362,8 +362,9 @@ run centre_wait_coop SAVE0="$lab0" SAVE1="$lab1" RTC_EPOCH0=1699963200 RTC_EPOCH
 run visitors_time SAVE0="$lab0" SAVE1="$lab1"
 # After 0xC0170142: the trainer AI's ability guess with a negative rating
 # (Roxanne's crash), one-trainer co-op HP boxes and replacements, ROAR in
-# a one-trainer co-op battle, the CONTINUE screen's top row (shots).
-for s in ai_ability_klutz_coop coop_one_trainer_hpbox coop_one_trainer_replace coop_roar_one_trainer continue_screen_names; do
+# a one-trainer co-op battle, EXP from the second trainer of a pair, the
+# CONTINUE screen's top row (shots).
+for s in ai_ability_klutz_coop coop_one_trainer_hpbox coop_one_trainer_replace coop_roar_one_trainer coop_pair_exp continue_screen_names; do
 	run "$s" SAVE0="$lab0" SAVE1="$lab1"
 done
 run notes_rewards SAVE0="$lab0" SAVE1="$lab1"

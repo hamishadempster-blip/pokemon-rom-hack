@@ -566,6 +566,7 @@ Build 0xC017013E scenarios:
 | `coop_one_trainer_hpbox` | lab | Co-op battle against JOSH alone (two Pokemon): both foes' HP boxes in use and visible on both screens (DWEBBLE's was invisible on 0xC0170142) |
 | `coop_one_trainer_replace` | lab | Co-op battle against LYLE alone (four Pokemon): after replacements both foe boxes are visible again |
 | `coop_roar_one_trainer` | lab | ROAR against a one-trainer co-op foe drags out the trainer's slot 4 when it is the only one left (failed on 0xC0170142). TEST HELPERS test_mon; DRIVER force_move |
+| `coop_pair_exp` | lab | Co-op pair battle (Roxanne and Heath), level-12 leads: Heath's lead GEODUDE pays EXP when it faints (it paid none on 0xC0170142: the paid-EXP record was indexed by trainer id & 2). FIXTURES: fixture_lead, cached stats, fixture_warp |
 | `continue_screen_names` | any | Shots of the CONTINUE screen's top row: the build and a long location must not overlap (checked by eye on the lab, j16, j52 and j68 saves) |
 | `notes_catchup` (+`_collect`, `_reload`) | j68 | FIELD NOTES on a save that reached rewards before loading: nothing paid on the first steps; CO-OP > JOURNAL > FIELD NOTES asks to collect them and hands them over; not again after a reload. FIXTURE dex_caught 1-30 (docs/COOP_NOTES.md) |
 | `habitat_moss` | j16 | MOSS HOLLOW: entrance, first visit, encounter, marker, find once, exit, completion reward once (FIXTURE dex_caught), FIELD NOTES pages, Petalburg's rumor (docs/COOP_HABITATS.md) |

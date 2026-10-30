@@ -2236,7 +2236,7 @@ static void Cmd_getexp(void)
         else
         {
             gBattleScripting.getexpState++;
-            gBattleStruct->givenExpMons[GetBattlerTrainer(gBattlerFainted) & BIT_FLANK] |= (1u << gBattlerPartyIndexes[gBattlerFainted]);
+            gBattleStruct->givenExpMons[GetBattlerTrainer(gBattlerFainted) == B_TRAINER_OPPONENT_B] |= (1u << gBattlerPartyIndexes[gBattlerFainted]);
         }
         break;
     case 1: // calculate experience points to redistribute
@@ -10200,7 +10200,8 @@ void BS_TryRevivalBlessing(void)
 
         // If an on-field battler is revived, it needs to be sent out again.
         if (IsDoubleBattle() &&
-            gBattlerPartyIndexes[GetPartnerBattler(gBattlerAttacker)] == gSelectedMonPartyId)
+            gBattlerPartyIndexes[GetPartnerBattler(gBattlerAttacker)] == gSelectedMonPartyId
+            && BattlersShareParty(gBattlerAttacker, GetPartnerBattler(gBattlerAttacker)))
         {
             enum BattlerId i = GetPartnerBattler(gBattlerAttacker);
             gAbsentBattlerFlags &= ~(1u << i);

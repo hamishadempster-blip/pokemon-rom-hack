@@ -4524,7 +4524,9 @@ s32 CountUsablePartyMons(enum BattlerId battlerId)
     struct Pokemon *party;
     party = GetBattlerParty(battlerId);
 
-    if (IsDoubleBattle())
+    // The partner's slot only counts when it is in this battler's own party
+    // (not for two trainers on a side, such as the two co-op players).
+    if (IsDoubleBattle() && BattlersShareParty(battlerId, GetPartnerBattler(battlerId)))
     {
         battlerOnField1 = gBattlerPartyIndexes[battlerId];
         battlerOnField2 = gBattlerPartyIndexes[GetPartnerBattler(battlerId)];

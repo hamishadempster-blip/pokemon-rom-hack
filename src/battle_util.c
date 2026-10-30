@@ -1890,7 +1890,7 @@ bool32 HandleFaintedMonActions(void)
             {
                 gBattlerFainted = gBattlerTarget = gBattleStruct->eventState.faintedActionBattler;
                 if (gBattleMons[gBattlerFainted].hp == 0
-                 && !(gBattleStruct->givenExpMons[GetBattlerTrainer(gBattlerFainted) & BIT_FLANK] & (1u << gBattlerPartyIndexes[gBattlerFainted]))
+                 && !(gBattleStruct->givenExpMons[GetBattlerTrainer(gBattlerFainted) == B_TRAINER_OPPONENT_B] & (1u << gBattlerPartyIndexes[gBattlerFainted]))
                  && !(gAbsentBattlerFlags & (1u << gBattlerFainted)))
                 {
                     BattleScriptExecute(BattleScript_GiveExp);

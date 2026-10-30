@@ -598,7 +598,7 @@ struct BattleStruct
     u8 expOrderId:3;
     u8 teamGotExpMsgPrinted:1; // The 'Rest of your team got msg' has been printed.
     u8 padding0:4;
-    u8 givenExpMons[2]; // Bits for enemy party's Pokémon that gave exp to player's party.
+    u8 givenExpMons[2]; // Bits for enemy party's Pokémon that gave exp to player's party: [0] opponent A, [1] opponent B (not trainer & BIT_FLANK: B is 3, so that read index 2).
     u8 expSentInMons; // As bits for player party mons - not including exp share mons.
     u8 wildVictorySong;
     enum Type dynamicMoveType;

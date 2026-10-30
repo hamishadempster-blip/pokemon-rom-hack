@@ -1,0 +1,48 @@
+# EXP from the SECOND trainer's Pokemon in a co-op pair battle (Roxanne and
+# Heath). The record of which foes already paid EXP was indexed by trainer
+# id & 2: Heath (opponent B, id 3) read past it into the player's
+# sent-in bits, so his lead's knockout paid no EXP ("The opposing Geodude
+# fainted!" with no "gained" after it; seen in the 0xC0170142 suite log).
+# Linked, Beacon on, lab saves. FIXTURES: level-12 leads (under the cap of
+# 18, so EXP is paid) with strong cached stats; fixture_warp below the pair.
+# Checks: after Geodude faints, "gained ... Exp. Points" is shown before
+# Heath sends out his next Pokemon; the parties are intact afterwards.
+include beacon_battle.txt
+b mash_field 2000 B
+b write sWildEncountersDisabled 1
+b smart_moves 1
+0 fixture_lead 255 12 973
+1 fixture_lead 228 12 2160
+0 fixture_warp 11 3 6 3
+1 fixture_warp 11 3 5 3
+b until_field 3000
+b sync
+b wait 40
+b sync
+b write gParties+86:2 999
+b write gParties+88:2 999
+b write gParties+90:2 600
+b write gParties+92:2 600
+b write gParties+94:2 600
+b write gParties+96:2 600
+b write gParties+98:2 600
+0 press UP 2
+0 wait 20
+b note_money
+0 note_text ROXANNE_and_I_battle_as_a_pair
+0 press A 2
+b until_cb2 BattleMainCB2 9000 A
+0 expect_noted
+b expect coop.sInBattle 1
+b expect gBattlersCount 4
+b expect gTrainerBattleParameter+2:2 265
+b shot pair-exp
+b until_battle_text Geodude_fainted 30000 auto
+b note_text gained
+b until_battle_text HEATH_sent_out 9000 auto
+b expect_noted
+# (The outcome is not checked: a level-up recalculates the fixture's
+# cached stats, so the battle can be lost.)
+b mash_field 30000
+b until_field 6000
+b expect_mons_intact
