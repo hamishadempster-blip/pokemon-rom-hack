@@ -252,7 +252,8 @@ AUTO_GEN_TARGETS +=  $(INCLUDE_DIRS)/constants/script_commands.h
 
 # coop_visitors.h: wild visitors by time and weather (src/coop_encounters.c)
 AUTO_GEN_TARGETS += $(DATA_SRC_SUBDIR)/coop_visitors.h
-$(DATA_SRC_SUBDIR)/coop_visitors.h: $(DATA_SRC_SUBDIR)/coop_visitors.json $(TOOLS_DIR)/coop_encounters/visitors_to_header.py $(DATA_SRC_SUBDIR)/wild_encounters.json $(TOOLS_DIR)/coop_text_width.py
+# (map_groups.h and region_map_sections.h are generated too: needed first on a clean clone)
+$(DATA_SRC_SUBDIR)/coop_visitors.h: $(DATA_SRC_SUBDIR)/coop_visitors.json $(TOOLS_DIR)/coop_encounters/visitors_to_header.py $(DATA_SRC_SUBDIR)/wild_encounters.json $(TOOLS_DIR)/coop_text_width.py $(INCLUDE_DIRS)/constants/map_groups.h $(INCLUDE_DIRS)/constants/region_map_sections.h
 	python3 $(TOOLS_DIR)/coop_encounters/visitors_to_header.py
 
 $(DATA_SRC_SUBDIR)/wild_encounters.h: $(DATA_SRC_SUBDIR)/wild_encounters.json $(WILD_ENCOUNTERS_TOOL_DIR)/wild_encounters_to_header.py $(INCLUDE_DIRS)/config/overworld.h $(INCLUDE_DIRS)/config/dexnav.h
