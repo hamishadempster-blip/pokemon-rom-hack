@@ -747,6 +747,17 @@ gSpecials::
 	def_special CoopHabitat_HideClaimed
 	def_special CoopHabitat_ClaimFind
 	def_special CoopHabitat_ReadMarker
+	def_special CoopTown_FreeToday
+	def_special CoopTown_CountUse
+	def_special CoopTown_BufferTrack
+	def_special CoopTown_BeachRest
+	def_special CoopTown_CheckReBall
+	def_special CoopTown_BufferBall
+	def_special CoopTown_ReBall
+	def_special CoopTown_Groom
+	def_special CoopTown_TodaysBerry
+	def_special CoopTown_JudgeIVs
+	def_special CoopTown_ReadTides
 	def_special CoopDeal_CheckOfferMon
 	def_special CoopDeal_CheckGiftItem
 	def_special CoopDeal_BufferItemCount

@@ -32,6 +32,7 @@ enum
     COOP_BOND_SRC_STEPS,        // walked leading the party, healthy
     COOP_BOND_SRC_FRIENDSHIP,   // a genuine friendship gain
     COOP_BOND_SRC_SUPPORT,      // useful support in battle
+    COOP_BOND_SRC_REST,         // rested at the Dewford BEACH HUT (src/coop_town.c)
     COOP_BOND_SRC_COUNT,
 };
 

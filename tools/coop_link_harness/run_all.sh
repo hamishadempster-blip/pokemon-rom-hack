@@ -220,6 +220,7 @@ fi
 # runs that continue their saves (reload, reconnect).
 if [ -n "${J68:-}" ]; then
 	run habitat_tour SAVE0="$J68/p0.sav" SAVE1="$J68/p1.sav"
+	run towns_tour SAVE0="$J68/p0.sav" SAVE1="$J68/p1.sav"
 	for s in legend_shared_ray legend_ray_rosa legend_ray_solo legend_ray_claimed legend_ray_story legend_groudon legend_regirock \
 	         legend_ray_simul legend_ray_ko legend_ray_full legend_ray_interrupt legend_ray_lostack legend_migration coop_bag_battle_tasks indicator_tour; do
 		run "$s" SAVE0="$J68/p0.sav" SAVE1="$J68/p1.sav"

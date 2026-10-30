@@ -564,6 +564,7 @@ Build 0xC017013E scenarios:
 | `notes_rewards` (+`_reload`) | lab | FIELD NOTES rewards: paid once at a calm moment, waiting for room (pending queue) and delivered later, not again after a reload; the notebook pages. FIXTURES dex_caught, fixture_fill_pocket, gCoopNotesCheck (docs/COOP_NOTES.md) |
 | `habitat_moss` | j16 | MOSS HOLLOW: entrance, first visit, encounter, marker, find once, exit, completion reward once (FIXTURE dex_caught), FIELD NOTES pages, Petalburg's rumor (docs/COOP_HABITATS.md) |
 | `habitat_tour` | j68 | The other four habitats: entrance, first visit, marker, find, an encounter (a SUPER ROD bite in TIDE GROTTO), exit |
+| `towns_tour` | j68 | The six town specialities: Dewford rest (daily) and its track reward once, Fallarbor BALL change, Verdanturf grooming (daily), Fortree berry (daily), Mossdeep IV reading, Pacifidlog tides (docs/COOP_TOWNS.md) |
 | `centre_wait_coop` | lab, `RTC_EPOCH0` 23:00 / `RTC_EPOCH1` 12:00 | Linked rest: the partner is asked; YES: both MORNING; NO: "said no", nothing changes; partner outside: "meet first"; after UNLINK both keep MORNING on their own clocks |
 
 New verbs: `expect_mon SLOT hp VALUE`, `expect_mon ... >@K` (more than note

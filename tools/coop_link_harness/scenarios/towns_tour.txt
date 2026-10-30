@@ -1,0 +1,135 @@
+# Town specialities (checkpoint 68 saves, player 0 alone). FIXTURES:
+# fixture_warp in front of each specialist; party slot 0 made the Trainer
+# Bond partner (test_data bonddesignate); the Dewford track's count and
+# last day set (4 days, another day) to reach its reward. The rest is play.
+# Checks: DEWFORD BEACH HUT rests with the partner once a day ("Your bond
+# grew stronger", then "You've rested here today"), the fifth day pays the
+# SHELL BELL once; FALLARBOR BALL ARTISAN moves slot 0 into the first BALL
+# listed after its own (POKe BALL, its BALL already, is first); VERDANTURF GROOMER grooms once a day; FORTREE BERRY KEEPER gives
+# today's BERRY once a day; MOSSDEEP STAR JUDGE reads slot 0's IVs;
+# PACIFIDLOG TIDE READER reads today's tides and weather. Each town's use
+# count is in its CoopSaveV5.town row.
+include continue.inc
+b no_wild 1
+b mash_field 300 B
+0 test_data 0 bonddesignate 1
+0 expect gSaveblock3+648:1 0
+0 fixture_warp 0 11 4 13
+0 until_field 3000
+0 wait 30
+0 press UP 2
+0 wait 20
+0 note_text Your_bond_grew_stronger
+0 press A 2
+0 until_task Task_HandleYesNoInput 1500 A
+0 wait 20
+0 shot dewford-ask
+0 press A 2
+0 until_field_text grew_stronger 1500
+0 mash_field 900 B
+0 expect_noted
+0 expect gSaveblock3+648:1 1
+0 press A 2
+0 until_field_text rested_here_today 900
+0 mash_field 600 B
+0 expect gSaveblock3+648:1 1
+0 write gSaveblock3+648:1 4
+0 write gSaveblock3+650:2 1
+0 note_text Shell_Bell
+0 press A 2
+0 until_task Task_HandleYesNoInput 1500 A
+0 wait 20
+0 press A 2
+0 until_field_text keep_coming_back 1500
+0 mash_field 900 B
+0 expect_noted
+0 expect gSaveblock3+648:1 5
+0 expect gSaveblock3+649:1 1
+0 expect_item 0 473 1
+0 fixture_warp 0 13 16 10
+0 until_field 3000
+0 wait 30
+0 press UP 2
+0 wait 20
+0 press A 2
+0 until_task Task_HandleYesNoInput 1500 A
+0 wait 20
+0 press A 2
+0 until_cb2 CB2_UpdatePartyMenu 900 A
+0 wait 60
+0 press A 2
+0 wait 40
+0 until_task Task_HandleScrollingMultichoiceInput 1500
+0 wait 30
+0 shot fallarbor-balls
+0 note_text Whiscash_is_in_a
+0 press DOWN 2
+0 wait 10
+0 press A 2
+0 until_field_text is_in_a 900
+0 mash_field 900 B
+0 expect_noted
+0 expect gSaveblock3+654:1 1
+0 expect_item 1 2 1
+0 fixture_warp 0 14 18 6
+0 until_field 3000
+0 wait 30
+0 press UP 2
+0 wait 20
+0 press A 2
+0 until_task Task_HandleYesNoInput 1500 A
+0 wait 20
+0 press A 2
+0 until_cb2 CB2_UpdatePartyMenu 900 A
+0 wait 60
+0 press A 2
+0 wait 40
+0 until_field_text with_you 900
+0 mash_field 900 B
+0 expect gSaveblock3+660:1 1
+0 press A 2
+0 until_field_text today's_grooming 900
+0 mash_field 600 B
+0 fixture_warp 0 4 2 9
+0 until_field 3000
+0 wait 30
+0 press UP 2
+0 wait 20
+0 note_text today's_pick
+0 press A 2
+0 until_field_text BERRY 900
+0 mash_field 900 B
+0 expect gSaveblock3+666:1 1
+0 press A 2
+0 until_field_text today's_pick 900
+0 mash_field 600 B
+0 expect_noted
+0 expect gSaveblock3+666:1 1
+0 fixture_warp 0 6 25 19
+0 until_field 3000
+0 wait 30
+0 press UP 2
+0 wait 20
+0 press A 2
+0 until_task Task_HandleYesNoInput 1500 A
+0 wait 20
+0 press A 2
+0 until_cb2 CB2_UpdatePartyMenu 900 A
+0 wait 60
+0 press A 2
+0 wait 40
+0 until_field_text potential_is 900
+0 shot mossdeep-judge
+0 mash_field 900 B
+0 expect gSaveblock3+672:1 1
+0 fixture_warp 0 15 11 17
+0 until_field 3000
+0 wait 30
+0 press UP 2
+0 wait 20
+0 press A 2
+0 until_field_text SHOAL_CAVE's_tide 1200
+0 shot pacifidlog-tides
+0 until_field_text ROUTE_119 900
+0 mash_field 900 B
+0 expect gSaveblock3+678:1 1

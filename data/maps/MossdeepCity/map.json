@@ -270,6 +270,19 @@
       "trainer_sight_or_berry_tree_id": "0",
       "script": "Coop_EventScript_TwinS3",
       "flag": "FLAG_HIDE_TWIN_S3"
+    },
+    {
+      "graphics_id": "OBJ_EVENT_GFX_PSYCHIC_M",
+      "x": 25,
+      "y": 18,
+      "elevation": 5,
+      "movement_type": "MOVEMENT_TYPE_FACE_DOWN",
+      "movement_range_x": 0,
+      "movement_range_y": 0,
+      "trainer_type": "TRAINER_TYPE_NONE",
+      "trainer_sight_or_berry_tree_id": "0",
+      "script": "Coop_EventScript_TownMossdeep",
+      "flag": "0"
     }
   ],
   "warp_events": [
