@@ -33,6 +33,9 @@ EXPRS = {
     'coop': '__builtin_offsetof(struct SaveBlock3, coop)',
     'coopLayout': '__builtin_offsetof(struct CoopSave, layout)',
     'coopSize': 'sizeof(struct CoopSave)',
+    'v5': '__builtin_offsetof(struct CoopSave, v5)',
+    'v5Size': 'sizeof(struct CoopSaveV5)',
+    'v5Kind': '__builtin_offsetof(struct CoopSaveV5, saveKind)',
     'trainerId': '__builtin_offsetof(struct SaveBlock2, playerTrainerId)',
 }
 
@@ -105,7 +108,13 @@ def read_slots(data, O):
                 secs[sid] = (sec, ctr)
         complete = len(secs) == 14
         counters = sorted(set(c for _, c in secs.values()))
-        slots.append({'complete': complete, 'counters': counters, 'sectors': info, 'data': secs})
+        kind = None
+        if complete:
+            sb3 = b''.join(secs[k][0][3968:3968 + 116] for k in range(14))
+            v5 = O['coop'] + O['v5']
+            size = struct.unpack_from('<H', sb3, v5)[0]
+            kind = 'auto' if size == O['v5Size'] and sb3[v5 + O['v5Kind']] == 1 else 'manual'
+        slots.append({'complete': complete, 'counters': counters, 'sectors': info, 'data': secs, 'kind': kind})
     return slots, sizes
 
 
@@ -157,7 +166,7 @@ def inspect(path, O):
     slots, sizes = read_slots(data, O)
     res = {'file': path, 'size': len(data), 'slots': [], 'loaded': None}
     for s in slots:
-        res['slots'].append({'complete': s['complete'], 'counters': ['%x' % c for c in s['counters']],
+        res['slots'].append({'complete': s['complete'], 'kind': s['kind'], 'counters': ['%x' % c for c in s['counters']],
                              'badSectors': [x for x in s['sectors'] if not (x['signature'] and x['checksum'])]})
     k = pick(slots)
     if k is None:
@@ -195,9 +204,9 @@ def main():
         print(json.dumps(out, indent=1))
         return
     for r in out:
-        print('%s: slot0 %s %s, slot1 %s %s, loads slot %s, trainer %s, CoopSave layout %s, %s Pokémon, %d bad checksums, %d with reserved bits set' % (
-            r['file'], 'complete' if r['slots'][0]['complete'] else 'INCOMPLETE', r['slots'][0]['counters'],
-            'complete' if r['slots'][1]['complete'] else 'INCOMPLETE', r['slots'][1]['counters'],
+        print('%s: slot0 %s %s %s, slot1 %s %s %s, loads slot %s, trainer %s, CoopSave layout %s, %s Pokémon, %d bad checksums, %d with reserved bits set' % (
+            r['file'], 'complete' if r['slots'][0]['complete'] else 'INCOMPLETE', r['slots'][0]['counters'], r['slots'][0]['kind'],
+            'complete' if r['slots'][1]['complete'] else 'INCOMPLETE', r['slots'][1]['counters'], r['slots'][1]['kind'],
             r['loaded'], r.get('trainerId'), r.get('coopLayout'), r.get('mons'), len(r.get('badChecksum', [])),
             len(r.get('unusedBitsSet', []))))
 

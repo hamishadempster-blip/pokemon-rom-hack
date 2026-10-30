@@ -1,0 +1,19 @@
+# Power cut in the middle of an autosave (autosave_basic saves: slot 0 an
+# autosave in Oldale Town, slot 1 the lab's manual save). Rosa continues
+# from the autosave (YES), sets a marker and fills her PC, and enters a map
+# 30 s later; the power is cut once 7 sectors of the slot the autosave is
+# writing are complete. FIXTURES: the 30 s interval, fixture_var,
+# fixture_fill_pc, fixture_warp (as in autosave_basic).
+# autosave_power_cut_load loads the result.
+include continue_autosave_yes.inc
+b no_wild 1
+0 write gCoopAutosaveTestInterval:4 1800
+0 fixture_var 0x40F8 4660
+0 fixture_fill_pc
+0 wait 1900
+0 arm_cut 7 clean
+0 fixture_warp 0 16 10 6
+0 until_field 3000
+0 wait 600
+# (The run ends at the cut; reaching here means the autosave never wrote.)
+0 expect gSaveCounter:4 0

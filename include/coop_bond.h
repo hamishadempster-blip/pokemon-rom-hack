@@ -53,6 +53,8 @@ u8 CoopBond_EffectiveRank(struct Pokemon *mon);
 // The bonus is switched off here (Frontier and tents, PvP link, practice,
 // duo copies): the summary says "Bonus inactive here".
 bool8 CoopBond_ContextSuppressed(void);
+// A Battle Frontier facility or Battle Tent map (also used by the autosave).
+bool8 CoopBond_InFacilityMap(void);
 // Recalculate the party where the bonus baked into its stats is not the
 // one that applies now (safe points: field entry, battle start, after
 // designation, rank-up, withdrawal). Never heals: see CalculateMonStatsCont.

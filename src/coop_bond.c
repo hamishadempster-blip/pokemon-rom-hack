@@ -134,7 +134,7 @@ static bool8 Bond_InParty(struct Pokemon *mon, u8 trainer)
 }
 
 // Battle facilities and rental challenges (outside battle: by map).
-static bool8 Bond_MapSuppresses(void)
+bool8 CoopBond_InFacilityMap(void)
 {
     u16 map = (gSaveBlock1Ptr->location.mapGroup << 8) | gSaveBlock1Ptr->location.mapNum;
 
@@ -200,7 +200,7 @@ bool8 CoopBond_ContextSuppressed(void)
 {
     if (gMain.inBattle)
         return Bond_BattleSuppresses();
-    return Bond_MapSuppresses() || gCoopDuoBattle || gCoopPracticeBattle;
+    return CoopBond_InFacilityMap() || gCoopDuoBattle || gCoopPracticeBattle;
 }
 
 static EWRAM_DATA bool8 sForBattle = FALSE;

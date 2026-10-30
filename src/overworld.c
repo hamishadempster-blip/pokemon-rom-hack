@@ -1,5 +1,6 @@
 #include "global.h"
 #include "coop_bond.h"
+#include "coop_autosave.h"
 #include "overworld.h"
 #include "coop_deal.h"
 #include "battle_pyramid.h"
@@ -944,6 +945,7 @@ void LoadMapFromCameraTransition(u8 mapGroup, u8 mapNum)
     // own scripts read it.
     Coop_ApplyPendingStory();
     CoopBond_RefreshParty(); // the bond bonus that applies on this map
+    CoopAutosave_NoteMapEntry();
     RunOnTransitionMapScript();
     InitMap();
     CopySecondaryTilesetToVramUsingHeap(gMapHeader.mapLayout);
@@ -1018,6 +1020,7 @@ static void LoadMapFromWarp(bool32 a1)
     // own scripts read it.
     Coop_ApplyPendingStory();
     CoopBond_RefreshParty(); // the bond bonus that applies on this map
+    CoopAutosave_NoteMapEntry();
     RunOnTransitionMapScript();
     UpdateLocationHistoryForRoamer();
     MoveAllRoamersToOtherLocationSets();
@@ -1738,6 +1741,7 @@ void CB1_Overworld(void)
     Coop_OverworldFrame();
     Coop_UpdateRivalTwin();
     CoopBond_FieldPoll();
+    CoopAutosave_Poll();
 }
 
 #define TINT_NIGHT Q_8_8(0.456) | Q_8_8(0.456) << 8 | Q_8_8(0.615) << 16
@@ -2292,6 +2296,7 @@ void CB2_ContinueSavedGame(void)
     if (gSaveFileStatus == SAVE_STATUS_ERROR)
         ResetWinStreaks();
 
+    gSaveLastWriteVBlank = gMain.vblankCounter1;   // autosave: play resumes now (src/coop_autosave.c)
     LoadSaveblockMapHeader();
     ClearDiveAndHoleWarps();
     Coop_RepairUnsetHealLocation();

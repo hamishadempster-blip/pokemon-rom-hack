@@ -1,0 +1,23 @@
+# After autosave_power_cut: the autosave slot was cut halfway and is
+# refused; the manual save is whole. The main menu reports the corrupted
+# save, CONTINUE loads the lab's manual save (no marker, PC as it was) and
+# asks nothing about an autosave. A manual SAVE then writes normally.
+b wait 1100
+b press START 2
+b wait 300
+b press A 2
+b wait 250
+0 expect gSaveFileStatus:2 255
+0 shot recovery-message
+b press A 2
+b until_cb2 CB2_ContinueSavedGame 4000 A
+b mash_field 3000 B
+b until_field 5000
+b wait 120
+0 expect_map 1 4
+0 expect_var 0x40F8 0
+0 expect_pc_count 0
+0 expect gSaveCounter:4 1
+0 expect gSaveLoadedAutosaveOverManual 0
+include save_again.inc
+0 expect gSaveCounter:4 2

@@ -562,6 +562,7 @@ static const u8 *const sCoopSettingNames[COOP_SETTINGS_COUNT] = {
     COMPOUND_STRING("EASY FISHING: "),
     COMPOUND_STRING("SHINY CHECK: "),
     COMPOUND_STRING("CATCH RESULT: "),
+    COMPOUND_STRING("AUTOSAVE: "),
 };
 
 // The label of setting VAR_0x8004 with its current value, in gStringVar1

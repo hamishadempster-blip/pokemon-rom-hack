@@ -1,0 +1,46 @@
+# After autosave_basic: power on, CONTINUE (the autosave, Oldale Town),
+# NO to "Keep playing from here?", YES to "Go back to your last SAVE
+# instead?". The game reloads the lab's manual save and continues in
+# Birch's lab. A manual SAVE now replaces the abandoned autosave, never the
+# save just loaded: afterwards both slots are manual saves and CONTINUE asks
+# nothing (autosave_load_manual_reload).
+b wait 1100
+b press START 2
+b wait 300
+b press A 2
+b wait 250
+b press A 2
+1 mash_field 4000
+1 until_field 5000
+0 until_cb2 CB2_Overworld 5000 A
+0 until_task Task_HandleYesNoInput 1500
+0 wait 20
+0 press DOWN 2
+0 wait 10
+0 press A 2
+0 note_text Go_back
+0 until_task Task_HandleYesNoInput 1500
+0 wait 20
+0 expect_noted
+0 shot autosave-go-back
+0 press A 2
+0 until_cb2 CB2_ContinueSavedGame 2000
+0 until_field 5000
+0 wait 60
+0 expect_map 1 4
+0 hex gSaveCounter 4
+# START > SAVE, YES (and overwrite YES).
+0 press START 2
+0 wait 60
+0 menu_to SAVE
+0 press A 2
+0 wait 50
+0 press A 2
+0 wait 120
+0 press A 2
+0 wait 300
+0 press A 2
+0 wait 40
+0 mash_field 1500 B
+0 until_field 3000
+0 hex gSaveCounter 4

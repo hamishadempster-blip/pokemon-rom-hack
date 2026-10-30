@@ -61,7 +61,7 @@ run_as() {
 
 fresh="littleroot doors_stagger rescue guest_move guest_evolution target_navigation spread_selection
        mays_house_doorway mays_house_doorway_p1bag rival_join rival_pending rival_latejoin
-       rival_simultaneous rival_reconnect save_lab solo_opening new_species_evo"
+       rival_simultaneous rival_reconnect save_lab solo_opening new_species_evo autosave_new_game"
 if [ -n "${ONLY:-}" ]; then
 	for s in $ONLY; do run "$s"; done
 	exit $failed
@@ -326,6 +326,18 @@ for s in story_consent story_beacon_off story_cancel story_unanswered story_simu
          party_exp_wild party_exp_levelup party_exp_solo party_exp_solo_levelup vial_team_heal move_effectiveness \
          catch_full_party_solo catch_full_party_cancel catch_full_party_linked_solo hm_no_mon hm_party_menu \
          appearance_menu move_inspector story_not_ready debug_inputs_off battle_spare_buttons; do
+	run "$s" SAVE0="$lab0" SAVE1="$lab1"
+done
+# Autosave (after 0xC0170141): slot roles, the question after CONTINUE,
+# going back to the manual save, power cut, setting, linked.
+run autosave_basic SAVE0="$lab0" SAVE1="$lab1"
+for s in autosave_reload autosave_load_manual autosave_power_cut autosave_go_back_autosave; do
+	run "$s" SAVE0="$out/autosave_basic/p0.sav" SAVE1="$out/autosave_basic/p1.sav"
+done
+run autosave_load_manual_reload SAVE0="$out/autosave_load_manual/p0.sav" SAVE1="$out/autosave_load_manual/p1.sav"
+run autosave_power_cut_load SAVE0="$out/autosave_power_cut/p0.sav" SAVE1="$out/autosave_power_cut/p1.sav"
+run autosave_go_back_autosave_reload SAVE0="$out/autosave_go_back_autosave/p0.sav" SAVE1="$out/autosave_go_back_autosave/p1.sav"
+for s in autosave_off autosave_coop; do
 	run "$s" SAVE0="$lab0" SAVE1="$lab1"
 done
 # The same expiry by the wall clock while the harness runs faster than real

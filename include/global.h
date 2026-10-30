@@ -322,12 +322,20 @@ struct CoopPendingReward
 #define COOP_SET_EASY_FISHING    (1 << 1)   // a bite waits for A (B cancels)
 #define COOP_SET_NO_SHINY_ASK    (1 << 2)   // don't ask before running from a shiny
 #define COOP_SET_NO_CATCH_RESULT (1 << 3)   // don't show the catch result card
-#define COOP_SETTINGS_COUNT      4
+#define COOP_SET_NO_AUTOSAVE     (1 << 4)   // autosave off (default: on)
+#define COOP_SETTINGS_COUNT      5
+
+// CoopSaveV5.saveKind: 0 a save the player (or a deal, a link, the game's
+// own story save) made; 1 an autosave. An autosave never overwrites the
+// newest manual save (src/save.c).
+#define COOP_SAVE_KIND_MANUAL    0
+#define COOP_SAVE_KIND_AUTO      1
 
 struct CoopSaveV5
 {
     u16 size;               // sizeof(struct CoopSaveV5) when written (0: never)
-    u16 reserved;
+    u8 saveKind;            // COOP_SAVE_KIND_*: what wrote this slot (src/save.c)
+    u8 reservedKind;
     u8 settings;            // COOP_SET_* bits (0: the defaults)
     u8 settings2;
     u16 reservedSettings;

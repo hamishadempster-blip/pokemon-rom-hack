@@ -73,3 +73,18 @@ The headquarters figure is a cap: if a later stage needs more, it comes out of t
 - `WriteSaveBlock2` / `WriteSaveBlock1Sector` (linked Berry Blender) become the incremental full-slot write the co-op deals already use (`LinkFullSave_*`), one sector per call.
 
 Both keep every sector of a slot from the same moment, so `CoopSave` may grow past SaveBlock3 byte 579 safely, and an interruption in either leaves the previous complete slot.
+
+## Autosave slot roles (after 0xC0170141)
+
+No new storage: the flash has no free sectors for a third slot, so the autosave ([COOP_AUTOSAVE.md](COOP_AUTOSAVE.md)) uses the two existing slots with roles.
+
+- **Kind byte.** `CoopSaveV5.saveKind` (layout-5 offset 2, formerly the first byte of a zero `u16 reserved`): 0 a manual save (any save that is not the autosave: START > SAVE, link, deal, trade, Hall of Fame, Frontier), 1 an autosave. It sits at SaveBlock3 offset 566, chunk 4, so it is in the sector with id 4 and inside the in-place paths' chunks 0–4 too. Older layouts and every layout-5 save before this change read as 0, a manual save. No layout change.
+- **Choosing the slot** (`ChooseSaveSlotForWrite`, `src/save.c`; every full-slot write, including the incremental link writes). The two slots are read first (all 14 ids, signature, checksum).
+  - Neither complete (a new file): the stock order.
+  - One complete: the other.
+  - A manual save: the slot that is not the newest (the stock rule).
+  - An autosave: the slot that does not hold the newest manual save. So an autosave can never replace the player's newest manual save; two autosaves in a row replace each other.
+  - After going back to the manual save (below): the next save of either kind replaces the abandoned autosave, never the save just loaded.
+  - The counter becomes the larger of the two + 1, raised by one more if needed so its parity names the chosen slot (as `gSaveCounter % 2` does in the stock code); the chosen slot's own rotation advances by one.
+- **Power cuts:** each write still goes to one slot with a nonzero rotation, so the earlier analysis holds: a cut autosave leaves the manual save, a cut manual save leaves the other slot (tested: `autosave_power_cut`, `autosave_power_cut_load`).
+- **Loading:** `GetSaveValidStatus` is unchanged and loads the newest complete slot. When that is an autosave and the other a complete manual save, the game asks on arrival whether to keep it; "go back" reloads with `gSaveLoadPreferManual` (IWRAM, which `ReloadSave` does not clear), which loads the manual slot and marks the autosave abandoned.

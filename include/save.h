@@ -98,6 +98,12 @@ void ClearSaveData(void);
 void Save_ResetSaveCounters(void);
 u8 HandleSavingData(u8 saveType);
 u8 TrySavingData(u8 saveType);
+// Co-op autosave (src/save.c, src/coop_autosave.c).
+extern bool8 gSaveWritingAutosave;
+extern bool8 gSaveLoadPreferManual;
+extern u32 gSaveLastWriteVBlank;
+extern bool8 gSaveLoadedAutosaveOverManual;
+bool8 Save_AutosaveNewerThanManual(void);
 bool8 LinkFullSave_Init(void);
 bool8 LinkFullSave_WriteSector(void);
 bool8 LinkFullSave_ReplaceLastSector(void);

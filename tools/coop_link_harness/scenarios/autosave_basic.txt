@@ -1,0 +1,39 @@
+# Autosave, solo (lab saves: one manual save in Birch's lab; not linked).
+# FIXTURES: the autosave interval shortened from 5 minutes to 30 s
+# (gCoopAutosaveTestInterval, 1,800 frames); fixture_warp onto Route 101's
+# path (a map entry, as a door would be). The rest is play.
+# Checks: no autosave on a map entered within 30 s of loading; 30 s later
+# entering Route 101 shows "Autosaving..." and saves once (the player
+# cannot move meanwhile); entering it again at once does not save again;
+# walking north into Oldale Town more than 30 s later autosaves again.
+# The file then holds the lab's manual save and one autosave slot
+# (autosave_reload and autosave_load_manual load it).
+include continue.inc
+b no_wild 1
+b mash_field 300 B
+0 write gCoopAutosaveTestInterval:4 1800
+0 expect gCoopAutosaveCount 0
+0 fixture_warp 0 16 10 6
+0 until_field 3000
+0 wait 120
+0 expect gCoopAutosaveCount 0
+0 wait 1900
+0 note_text Autosaving
+0 fixture_warp 0 16 10 6
+0 until_field 3000
+0 wait 20
+0 shot autosaving
+0 until_mem gCoopAutosaveCount 1 1200
+0 mash_field 600 B
+0 expect_noted
+0 hex gSaveCounter 4
+0 fixture_warp 0 16 10 6
+0 until_field 3000
+0 wait 300
+0 expect gCoopAutosaveCount 1
+0 wait 1900
+0 cross UP 0 10 4000
+0 until_mem gCoopAutosaveCount 2 1500
+0 mash_field 600 B
+0 expect_map 0 10
+0 hex gSaveCounter 4

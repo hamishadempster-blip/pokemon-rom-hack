@@ -1,0 +1,39 @@
+# Autosave on a NEW GAME (fresh flash): none before the file's first manual
+# save (the first save of a new file replaces the old file and its Hall of
+# Fame, and must be the player's own); after it, autosaves as usual.
+# FIXTURES: the 30 s interval; fixture_warp back into the player's own
+# bedroom (a map entry; the room has no arrival script).
+include boot.inc
+0 write gCoopAutosaveTestInterval:4 1800
+0 expect gDifferentSaveFile 1
+0 wait 1900
+0 fixture_warp 1 1 5 5
+0 until_field 3000
+0 wait 700
+0 expect_map 1 1
+0 expect gCoopAutosaveCount 0
+0 expect gSaveCounter:4 0
+# START > SAVE > YES on the new file.
+0 press START 2
+0 wait 60
+0 menu_to SAVE
+0 press A 2
+0 wait 50
+0 press A 2
+0 wait 120
+0 press A 2
+0 wait 300
+0 press A 2
+0 wait 40
+0 mash_field 1500 B
+0 until_field 3000
+0 expect gDifferentSaveFile 0
+0 hex gSaveCounter 4
+0 wait 1900
+0 note_text Autosaving
+0 fixture_warp 1 1 5 5
+0 until_field 3000
+0 until_mem gCoopAutosaveCount 1 1200
+0 mash_field 600 B
+0 expect_noted
+0 hex gSaveCounter 4

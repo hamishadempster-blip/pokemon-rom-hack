@@ -1,0 +1,88 @@
+# CO-OP > SETTINGS > AUTOSAVE: OFF (lab saves, solo). FIXTURES: the 30 s
+# interval; fixture_warp onto Route 101 (as in autosave_basic).
+# Checks: the setting line reads AUTOSAVE ON, then OFF after A; entering a
+# map 30 s later does not autosave; turned back ON, the next entry does.
+include continue.inc
+b no_wild 1
+b mash_field 300 B
+0 write gCoopAutosaveTestInterval:4 1800
+0 press START 2
+0 wait 40
+0 menu_to COOP
+0 press A 2
+0 until_task Task_HandleScrollingMultichoiceInput 2000
+0 wait 20
+0 press DOWN 2
+0 wait 10
+0 press DOWN 2
+0 wait 10
+0 press DOWN 2
+0 wait 10
+0 press DOWN 2
+0 wait 10
+0 press DOWN 2
+0 wait 10
+0 press A 2
+0 until_task Task_HandleScrollingMultichoiceInput 2000
+0 wait 20
+0 press DOWN 2
+0 wait 10
+0 press DOWN 2
+0 wait 10
+0 press DOWN 2
+0 wait 10
+0 press DOWN 2
+0 wait 10
+0 shot autosave-on
+0 press A 2
+0 until_task Task_HandleScrollingMultichoiceInput 2000
+0 wait 20
+0 shot autosave-off
+0 press B 2
+0 mash_field 600 B
+0 wait 1900
+0 fixture_warp 0 16 10 6
+0 until_field 3000
+0 wait 700
+0 expect gCoopAutosaveCount 0
+0 expect gSaveCounter:4 1
+# Back ON (the menu reopens on the same line? press from the top again).
+0 press START 2
+0 wait 40
+0 menu_to COOP
+0 press A 2
+0 until_task Task_HandleScrollingMultichoiceInput 2000
+0 wait 20
+0 press DOWN 2
+0 wait 10
+0 press DOWN 2
+0 wait 10
+0 press DOWN 2
+0 wait 10
+0 press DOWN 2
+0 wait 10
+0 press DOWN 2
+0 wait 10
+0 press A 2
+0 until_task Task_HandleScrollingMultichoiceInput 2000
+0 wait 20
+0 press DOWN 2
+0 wait 10
+0 press DOWN 2
+0 wait 10
+0 press DOWN 2
+0 wait 10
+0 press DOWN 2
+0 wait 10
+0 press A 2
+0 until_task Task_HandleScrollingMultichoiceInput 2000
+0 wait 20
+0 shot autosave-on-again
+0 press B 2
+0 mash_field 600 B
+0 note_text Autosaving
+0 fixture_warp 0 16 10 6
+0 until_field 3000
+0 until_mem gCoopAutosaveCount 1 1200
+0 mash_field 600 B
+0 expect_noted

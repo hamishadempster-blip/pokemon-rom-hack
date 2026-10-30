@@ -4910,7 +4910,11 @@ static void lsUnload(struct mLockstep* l, int id) {
 
 static void quietLog(struct mLogger* l, int cat, enum mLogLevel lvl, const char* fmt, va_list args) {
 	(void)l; (void)cat;
-	if (lvl & (mLOG_FATAL)) vfprintf(stderr, fmt, args), fputc('\n', stderr);
+	if (lvl & (mLOG_FATAL)) { vfprintf(stderr, fmt, args); fputc('\n', stderr); return; }
+	// The game's own debug output (mgba_printf): assertion and warning texts.
+	char buf[512];
+	vsnprintf(buf, sizeof(buf), fmt, args);
+	if (strstr(buf, "ASSERTION") || strstr(buf, "WARING")) fprintf(stdout, "[game debug] %s\n", buf);
 }
 
 int main(int argc, char** argv) {

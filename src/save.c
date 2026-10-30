@@ -3,6 +3,7 @@
 #include "gba/flash_internal.h"
 #include "fieldmap.h"
 #include "save.h"
+#include "main.h"
 #include "task.h"
 #include "decompress.h"
 #include "load_save.h"
@@ -22,6 +23,7 @@ static u8 HandleWriteSector(u16, const struct SaveSectorLocation *);
 static u8 HandleReplaceSector(u16, const struct SaveSectorLocation *);
 static void CopyToSaveBlock3(u32, struct SaveSector *);
 static void CopyFromSaveBlock3(u32, struct SaveSector *);
+static void UpdateSaveAddresses(void);
 
 // Divide save blocks into individual chunks to be written to flash sectors
 
@@ -96,6 +98,153 @@ COMMON_DATA u16 gSaveAttemptStatus = 0;
 
 EWRAM_DATA struct SaveSector gSaveDataBuffer = {0}; // Buffer used for reading/writing sectors
 
+// --- Co-op autosave: the two slots' roles ---------------------------------
+// The stock game alternates its two save slots, so a power cut leaves the
+// other, complete one. The autosave (src/coop_autosave.c) keeps that, and
+// adds one rule: an autosave never overwrites the newest manual save. Which
+// slot a write goes to is chosen here from what is on the flash (each slot's
+// counter, kind and sector rotation), not from parity alone:
+//   - one slot not complete (empty, or cut off): write that one;
+//   - after loading an older manual save on purpose (the CONTINUE question,
+//     "last save"), the newer slot is an abandoned autosave: write that one;
+//   - a manual save: the slot that is not the newest (stock alternation);
+//   - an autosave: the slot that is not the newest manual save.
+// The counter becomes the highest on the flash plus one or two (its parity
+// selects the slot), so the newest write always loads first. The slot's
+// sector rotation advances by one from what that slot holds, so a write cut
+// off part-way always leaves an id missing (never a complete mixture).
+EWRAM_DATA bool8 gSaveWritingAutosave = FALSE;
+EWRAM_DATA u32 gSaveLastWriteVBlank = 0;   // gMain.vblankCounter1 at the last save or load
+// Kept in IWRAM: ReloadSave() clears EWRAM before it loads.
+bool8 gSaveLoadPreferManual = FALSE;
+EWRAM_DATA bool8 gSaveLoadedAutosaveOverManual = FALSE; // the loaded slot is an autosave newer than the last manual save
+static EWRAM_DATA bool8 sAbandonedFuture = FALSE;
+
+#define COOP_V5_SB3_OFFSET (offsetof(struct SaveBlock3, coop) + offsetof(struct CoopSave, v5))
+#define COOP_KIND_SB3_OFFSET (COOP_V5_SB3_OFFSET + offsetof(struct CoopSaveV5, saveKind))
+#define COOP_KIND_SECTOR_ID (COOP_KIND_SB3_OFFSET / SAVE_BLOCK_3_CHUNK_SIZE)
+STATIC_ASSERT(COOP_KIND_SECTOR_ID == COOP_V5_SB3_OFFSET / SAVE_BLOCK_3_CHUNK_SIZE
+           && (COOP_V5_SB3_OFFSET + 1) / SAVE_BLOCK_3_CHUNK_SIZE == COOP_KIND_SECTOR_ID
+           && COOP_KIND_SECTOR_ID < NUM_SECTORS_PER_SLOT, CoopSaveKindInOneChunk);
+
+struct SaveSlotInfo
+{
+    bool8 complete;
+    u8 kind;
+    u8 rotation;    // physical index of the sector with id 0
+    u32 counter;
+};
+
+static void ReadSaveSlotInfo(u32 slot, struct SaveSlotInfo *info)
+{
+    u32 i, valid = 0;
+
+    gReadWriteSector = &gSaveDataBuffer;
+    info->complete = FALSE;
+    info->kind = COOP_SAVE_KIND_MANUAL;
+    info->rotation = 0;
+    info->counter = 0;
+    for (i = 0; i < NUM_SECTORS_PER_SLOT; i++)
+    {
+        u16 id;
+
+        ReadFlashSector(i + NUM_SECTORS_PER_SLOT * slot, gReadWriteSector);
+        id = gReadWriteSector->id;
+        if (gReadWriteSector->signature != SECTOR_SIGNATURE || id >= NUM_SECTORS_PER_SLOT)
+            continue;
+        if (gReadWriteSector->checksum != CalculateChecksum(gReadWriteSector->data, gRamSaveSectorLocations[id].size))
+            continue;
+        valid |= 1 << id;
+        info->counter = gReadWriteSector->counter;
+        if (id == 0)
+            info->rotation = i;
+        if (id == COOP_KIND_SECTOR_ID)
+        {
+            const u8 *chunk = gReadWriteSector->saveBlock3Chunk;
+            u32 base = COOP_KIND_SECTOR_ID * SAVE_BLOCK_3_CHUNK_SIZE;
+            u16 size = chunk[COOP_V5_SB3_OFFSET - base] | (chunk[COOP_V5_SB3_OFFSET - base + 1] << 8);
+
+            // A layout-5 block only (older saves have no kind: manual).
+            if (size == sizeof(struct CoopSaveV5) && chunk[COOP_KIND_SB3_OFFSET - base] == COOP_SAVE_KIND_AUTO)
+                info->kind = COOP_SAVE_KIND_AUTO;
+        }
+    }
+    info->complete = (valid == (1 << NUM_SECTORS_PER_SLOT) - 1);
+}
+
+// Called just before a full-slot write increments gSaveCounter and
+// gLastWrittenSector; sets them so the increments land on the chosen slot.
+static void ChooseSaveSlotForWrite(void)
+{
+    struct SaveSlotInfo slot[NUM_SAVE_SLOTS];
+    u32 target, newest, counter;
+
+    ReadSaveSlotInfo(0, &slot[0]);
+    ReadSaveSlotInfo(1, &slot[1]);
+    if (!slot[0].complete && !slot[1].complete)
+    {
+        sAbandonedFuture = FALSE;
+        return; // a new file: the stock order
+    }
+    if (!slot[0].complete || !slot[1].complete)
+    {
+        target = slot[0].complete ? 1 : 0;
+    }
+    else
+    {
+        newest = slot[1].counter > slot[0].counter ? 1 : 0;
+        if (sAbandonedFuture)
+            target = newest;
+        else if (!gSaveWritingAutosave)
+            target = 1 - newest;
+        else if (slot[newest].kind == COOP_SAVE_KIND_MANUAL)
+            target = 1 - newest;
+        else if (slot[1 - newest].kind == COOP_SAVE_KIND_MANUAL)
+            target = newest;
+        else
+            target = 1 - newest;
+    }
+    sAbandonedFuture = FALSE;
+    counter = 0;
+    if (slot[0].complete)
+        counter = slot[0].counter;
+    if (slot[1].complete && slot[1].counter > counter)
+        counter = slot[1].counter;
+    counter++;
+    if (counter % NUM_SAVE_SLOTS != target)
+        counter++;
+    gSaveCounter = counter - 1;
+    if (slot[target].complete)
+        gLastWrittenSector = slot[target].rotation;
+}
+
+// The newest complete slot is an autosave and the other a complete manual
+// save (the question after CONTINUE, src/coop_autosave.c).
+bool8 Save_AutosaveNewerThanManual(void)
+{
+    struct SaveSlotInfo slot[NUM_SAVE_SLOTS];
+    u32 newest;
+
+    if (gFlashMemoryPresent != TRUE)
+        return FALSE;
+    UpdateSaveAddresses();
+    ReadSaveSlotInfo(0, &slot[0]);
+    ReadSaveSlotInfo(1, &slot[1]);
+    if (!slot[0].complete || !slot[1].complete)
+        return FALSE;
+    newest = slot[1].counter > slot[0].counter ? 1 : 0;
+    return slot[newest].kind == COOP_SAVE_KIND_AUTO && slot[1 - newest].kind == COOP_SAVE_KIND_MANUAL;
+}
+
+// Stamps the save being written as a manual save or an autosave (read back
+// by ReadSaveSlotInfo) and restarts the autosave interval.
+static void MarkSaveKind(void)
+{
+    gSaveLastWriteVBlank = gMain.vblankCounter1;
+    if (gSaveblock3.coop.v5.size == sizeof(struct CoopSaveV5))
+        gSaveblock3.coop.v5.saveKind = gSaveWritingAutosave ? COOP_SAVE_KIND_AUTO : COOP_SAVE_KIND_MANUAL;
+}
+
 void ClearSaveData(void)
 {
     u16 i;
@@ -154,6 +303,7 @@ static u8 WriteSaveSectorOrSlot(u16 sectorId, const struct SaveSectorLocation *l
         // No sector was specified, write full save slot.
         gLastKnownGoodSector = gLastWrittenSector; // backup the current written sector before attempting to write.
         gLastSaveCounter = gSaveCounter;
+        ChooseSaveSlotForWrite();
         gLastWrittenSector++;
         gLastWrittenSector = gLastWrittenSector % NUM_SECTORS_PER_SLOT;
         gSaveCounter++;
@@ -250,6 +400,8 @@ static u32 RestoreSaveBackupVarsAndIncrement(const struct SaveSectorLocation *lo
     gReadWriteSector = &gSaveDataBuffer;
     gLastKnownGoodSector = gLastWrittenSector;
     gLastSaveCounter = gSaveCounter;
+    ChooseSaveSlotForWrite();
+    gReadWriteSector = &gSaveDataBuffer;
     gLastWrittenSector++;
     gLastWrittenSector %= NUM_SECTORS_PER_SLOT;
     gSaveCounter++;
@@ -421,6 +573,28 @@ static u8 TryLoadSaveSlot(u16 sectorId, struct SaveSectorLocation *locations)
     else
     {
         status = GetSaveValidStatus(locations);
+        sAbandonedFuture = FALSE;
+        if (gSaveLoadPreferManual && status == SAVE_STATUS_OK)
+        {
+            // The player chose the last manual save over a newer autosave.
+            struct SaveSlotInfo slot[NUM_SAVE_SLOTS];
+            u32 newest;
+
+            ReadSaveSlotInfo(0, &slot[0]);
+            ReadSaveSlotInfo(1, &slot[1]);
+            newest = slot[1].counter > slot[0].counter ? 1 : 0;
+            if (slot[0].complete && slot[1].complete
+             && slot[newest].kind == COOP_SAVE_KIND_AUTO && slot[1 - newest].kind == COOP_SAVE_KIND_MANUAL)
+            {
+                gSaveCounter = slot[1 - newest].counter;
+                sAbandonedFuture = TRUE;
+            }
+            gReadWriteSector = &gSaveDataBuffer;
+        }
+        gSaveLoadedAutosaveOverManual = !gSaveLoadPreferManual && status == SAVE_STATUS_OK && Save_AutosaveNewerThanManual();
+        gReadWriteSector = &gSaveDataBuffer;
+        gSaveLoadPreferManual = FALSE;
+        gSaveLastWriteVBlank = gMain.vblankCounter1;
         CopySaveSlotData(FULL_SAVE_SLOT, locations);
     }
 
@@ -658,6 +832,7 @@ u8 HandleSavingData(u8 saveType)
 
     gTrainerHillVBlankCounter = NULL;
     UpdateSaveAddresses();
+    MarkSaveKind();
     switch (saveType)
     {
     case SAVE_HALL_OF_FAME_ERASE_BEFORE:
@@ -738,6 +913,7 @@ bool8 LinkFullSave_Init(void)
     if (gFlashMemoryPresent != TRUE)
         return TRUE;
     UpdateSaveAddresses();
+    MarkSaveKind();
     CopyPartyAndObjectsToSave();
     RestoreSaveBackupVarsAndIncrement(gRamSaveSectorLocations);
     return FALSE;

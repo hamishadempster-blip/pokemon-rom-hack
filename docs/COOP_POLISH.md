@@ -12,6 +12,7 @@ The new entry sits just above BACK in the CO-OP list, both linked and unlinked. 
 | EASY FISHING | OFF / ON | ON: after "Oh! A bite!" the rod waits for A, and B lets it go. The rod, the map's fishing Pokémon and the encounter are unchanged. |
 | SHINY CHECK | ON / OFF | ON: RUN in a wild battle while a shiny foe is still on the field asks first. |
 | CATCH RESULT | ON / OFF | ON: a short result after each catch. |
+| AUTOSAVE | ON / OFF | ON: the game saves by itself on entering a map, at most every five minutes ([COOP_AUTOSAVE.md](COOP_AUTOSAVE.md)). |
 
 A migrated save has all bits 0, which is these defaults. The only difference from before the update is the low-HP alarm: three beeps instead of the stock four, and once per episode.
 

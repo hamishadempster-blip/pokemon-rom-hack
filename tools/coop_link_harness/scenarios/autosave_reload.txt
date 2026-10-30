@@ -1,0 +1,23 @@
+# After autosave_basic: power on, CONTINUE. The newest slot is an autosave
+# and the other the lab's manual save: the game continues from the
+# autosave (Oldale Town) and says at once "This is your AUTOSAVE. Your last
+# SAVE is older. Keep playing from here?". YES keeps playing there.
+b wait 1100
+b press START 2
+b wait 300
+b press A 2
+b wait 250
+b press A 2
+1 mash_field 4000
+1 until_field 5000
+0 until_cb2 CB2_Overworld 5000 A
+0 note_text This_is_your_AUTOSAVE
+0 until_task Task_HandleYesNoInput 1500
+0 wait 20
+0 expect_noted
+0 shot autosave-question
+0 press A 2
+0 mash_field 1500 B
+0 until_field 3000
+0 expect_map 0 10
+0 expect gCoopAutosaveCount 0

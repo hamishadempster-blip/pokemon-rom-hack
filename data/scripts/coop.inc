@@ -362,9 +362,12 @@ Coop_EventScript_MenuSettingsShow::
 	setvar VAR_0x8004, 3
 	special Coop_BufferSettingLabel
 	dynmultipush Coop_Text_SettingLabel, 3
-	dynmultipush Coop_Text_OptBack, 4
-	dynmultistack 8, 1, FALSE, 5, FALSE, VAR_0x8006, DYN_MULTICHOICE_CB_NONE
-	goto_if_ge VAR_RESULT, 4, Coop_EventScript_MenuBack
+	setvar VAR_0x8004, 4
+	special Coop_BufferSettingLabel
+	dynmultipush Coop_Text_SettingLabel, 4
+	dynmultipush Coop_Text_OptBack, 5
+	dynmultistack 8, 1, FALSE, 6, FALSE, VAR_0x8006, DYN_MULTICHOICE_CB_NONE
+	goto_if_ge VAR_RESULT, 5, Coop_EventScript_MenuBack
 	copyvar VAR_0x8004, VAR_RESULT
 	copyvar VAR_0x8006, VAR_RESULT
 	special Coop_ToggleSetting
@@ -1141,6 +1144,45 @@ Coop_EventScript_CaughtNicknameNext::
 Coop_EventScript_CaughtNicknameDone::
 	releaseall
 	end
+
+@ Autosave (src/coop_autosave.c): the stock save's wait, said plainly.
+Coop_EventScript_Autosave::
+	lockall
+	message Coop_Text_Autosaving
+	waitmessage
+	special CoopAutosave_Write
+	closemessage
+	releaseall
+	end
+
+@ CONTINUE loaded an autosave newer than the last manual save.
+Coop_EventScript_AutosaveLoaded::
+	lockall
+	msgbox Coop_Text_AutosaveLoaded, MSGBOX_YESNO
+	goto_if_eq VAR_RESULT, YES, Coop_EventScript_AutosaveKeep
+	msgbox Coop_Text_AutosaveGoBack, MSGBOX_YESNO
+	goto_if_eq VAR_RESULT, NO, Coop_EventScript_AutosaveKeep
+	closemessage
+	fadescreen FADE_TO_BLACK
+	special CoopAutosave_LoadManual
+	waitstate
+	end
+Coop_EventScript_AutosaveKeep::
+	closemessage
+	releaseall
+	end
+
+Coop_Text_AutosaveLoaded:
+	.string "This is your AUTOSAVE. Your last SAVE\n"
+	.string "is older. Keep playing from here?$"
+
+Coop_Text_AutosaveGoBack:
+	.string "Go back to your last SAVE instead?\n"
+	.string "The AUTOSAVE is replaced when you save.$"
+
+Coop_Text_Autosaving:
+	.string "Autosaving...\n"
+	.string "Don't turn off the power.$"
 
 Coop_EventScript_ShowCatchResult::
 	msgbox gStringVar4, MSGBOX_DEFAULT

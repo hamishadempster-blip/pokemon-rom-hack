@@ -1,0 +1,6 @@
+# After autosave_go_back_autosave: slot 0 holds the new autosave (Route
+# 101), slot 1 still the lab's manual save. CONTINUE loads the autosave and
+# asks; YES keeps Route 101.
+include continue_autosave_yes.inc
+0 expect_map 0 16
+0 expect gSaveCounter:4 6

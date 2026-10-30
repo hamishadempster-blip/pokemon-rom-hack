@@ -1,0 +1,6 @@
+# After autosave_load_manual: CONTINUE asks nothing (both slots are manual
+# saves) and the game continues in Birch's lab.
+include continue.inc
+0 wait 120
+0 expect_map 1 4
+0 expect gSaveLoadedAutosaveOverManual 0
